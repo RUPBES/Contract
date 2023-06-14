@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseLayer
 {
-    internal class ContractUoW:IContractUoW
+    public class ContractUoW:IContractUoW
     {
         private readonly ContractsContext _context;
         private AddressRepository addressRepository;
@@ -103,6 +103,7 @@ namespace DatabaseLayer
                 return phoneRepository;
             }
         }
+
         public void Dispose()
         {
             
