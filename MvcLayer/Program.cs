@@ -1,9 +1,24 @@
+using BusinessLayer.IoC;
+//using DatabaseLayer.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
+string connectionData = builder.Configuration.GetConnectionString("Data");
+string connectionIdentity = builder.Configuration.GetConnectionString("Identity");
+//Registeration OiC container from business layer
+
+//Container.RegisterContainer(builder.Services, connectionData);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+//builder.Services.AddDbContext<ContractsContext>(opt=> opt.UseSqlServer(connectionData));
+//builder.Services.AddAutoMapper();
+
+
 
 var app = builder.Build();
+
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -25,3 +40,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+
+//extra methods

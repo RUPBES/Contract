@@ -1,0 +1,106 @@
+﻿@model DatabaseLayer.Models.Contract
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Contract</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Number" class="control-label"></label>
+                <input asp-for="Number" class="form-control" />
+                <span asp-validation-for="Number" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SubContractId" class="control-label"></label>
+                <select asp-for="SubContractId" class ="form-control" asp-items="ViewBag.SubContractId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="AgreementContractId" class="control-label"></label>
+                <select asp-for="AgreementContractId" class ="form-control" asp-items="ViewBag.AgreementContractId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Date" class="control-label"></label>
+                <input asp-for="Date" class="form-control" />
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EnteringTerm" class="control-label"></label>
+                <input asp-for="EnteringTerm" class="form-control" />
+                <span asp-validation-for="EnteringTerm" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ContractTerm" class="control-label"></label>
+                <input asp-for="ContractTerm" class="form-control" />
+                <span asp-validation-for="ContractTerm" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateBeginWork" class="control-label"></label>
+                <input asp-for="DateBeginWork" class="form-control" />
+                <span asp-validation-for="DateBeginWork" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateEndWork" class="control-label"></label>
+                <input asp-for="DateEndWork" class="form-control" />
+                <span asp-validation-for="DateEndWork" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Сurrency" class="control-label"></label>
+                <input asp-for="Сurrency" class="form-control" />
+                <span asp-validation-for="Сurrency" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ContractPrice" class="control-label"></label>
+                <input asp-for="ContractPrice" class="form-control" />
+                <span asp-validation-for="ContractPrice" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NameObject" class="control-label"></label>
+                <input asp-for="NameObject" class="form-control" />
+                <span asp-validation-for="NameObject" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Client" class="control-label"></label>
+                <input asp-for="Client" class="form-control" />
+                <span asp-validation-for="Client" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FundingSource" class="control-label"></label>
+                <input asp-for="FundingSource" class="form-control" />
+                <span asp-validation-for="FundingSource" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IsSubContract" class="control-label"></label>
+                <input asp-for="IsSubContract" class="form-control" />
+                <span asp-validation-for="IsSubContract" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IsEngineering" class="control-label"></label>
+                <input asp-for="IsEngineering" class="form-control" />
+                <span asp-validation-for="IsEngineering" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IsAgreementContract" class="control-label"></label>
+                <input asp-for="IsAgreementContract" class="form-control" />
+                <span asp-validation-for="IsAgreementContract" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

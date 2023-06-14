@@ -1,0 +1,125 @@
+﻿@model IEnumerable<DatabaseLayer.Models.Contract>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EnteringTerm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ContractTerm)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateBeginWork)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateEndWork)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Сurrency)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ContractPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NameObject)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Client)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FundingSource)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsSubContract)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsEngineering)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsAgreementContract)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AgreementContract)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SubContract)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Number)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Date)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EnteringTerm)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContractTerm)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateBeginWork)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateEndWork)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Сurrency)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContractPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NameObject)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Client)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FundingSource)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsSubContract)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsEngineering)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsAgreementContract)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AgreementContract.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubContract.Id)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
