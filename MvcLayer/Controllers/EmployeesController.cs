@@ -7,91 +7,91 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DatabaseLayer.Data;
 using DatabaseLayer.Models;
+using AutoMapper;
+using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.Contracts;
+using MvcLayer.Models;
+using BusinessLayer.Models;
 
 namespace MvcLayer.Controllers
 {
     public class EmployeesController : Controller
     {
-        private readonly ContractsContext _context;
+        private readonly IEmployeeService _employeesService;
+        private readonly IMapper _mapper;
+        private readonly IDepartmentService _departmentService;       
 
-        public EmployeesController(ContractsContext context)
+        public EmployeesController(IEmployeeService employeesService, IMapper mapper, IDepartmentService departmentService)
         {
-            _context = context;
+            _departmentService = departmentService;
+            _employeesService = employeesService;
+            _mapper = mapper;
         }
 
         // GET: Employees
         public async Task<IActionResult> Index()
         {
-            var contractsContext = _context.Employees.Include(e => e.Contract);
-            return View(await contractsContext.ToListAsync());
+            var employees = _employeesService.GetAll();
+            return View(_mapper.Map<IEnumerable<EmployeeViewModel>>(employees));
         }
 
         // GET: Employees/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Employees == null)
+            if (id == null || _employeesService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var employee = await _context.Employees
-                .Include(e => e.Contract)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var employee = _employeesService.GetById((int)id);
             if (employee == null)
             {
                 return NotFound();
             }
 
-            return View(employee);
+            return View(_mapper.Map<EmployeeViewModel>(employee));
         }
 
-        // GET: Employees/Create
         public IActionResult Create()
         {
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id");
+            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name");
             return View();
         }
 
-        // POST: Employees/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Fio,Position,Email,ContractId")] Employee employee)
+        public async Task<IActionResult> Create([Bind("Id,FullName,Fio,Position,Email,ContractId")] EmployeeViewModel employee)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(employee);
-                await _context.SaveChangesAsync();
+                _employeesService.Create(_mapper.Map<EmployeeDTO>(employee));
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", employee.ContractId);
+            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
             return View(employee);
         }
 
-        // GET: Employees/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Employees == null)
+            if (id == null || _employeesService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = _employeesService.GetById((int)id);
             if (employee == null)
             {
                 return NotFound();
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", employee.ContractId);
-            return View(employee);
+
+            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
+            return View(_mapper.Map<EmployeeViewModel>(employee));  
         }
 
-        // POST: Employees/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Fio,Position,Email,ContractId")] Employee employee)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Fio,Position,Email,ContractId")] EmployeeViewModel employee)
         {
             if (id != employee.Id)
             {
@@ -102,12 +102,11 @@ namespace MvcLayer.Controllers
             {
                 try
                 {
-                    _context.Update(employee);
-                    await _context.SaveChangesAsync();
+                    _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!EmployeeExists(employee.Id))
+                    if (_employeesService.GetById(employee.Id) is null)
                     {
                         return NotFound();
                     }
@@ -118,51 +117,40 @@ namespace MvcLayer.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_context.Contracts, "Id", "Id", employee.ContractId);
+            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
             return View(employee);
         }
 
-        // GET: Employees/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Employees == null)
+            if (id == null || _employeesService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var employee = await _context.Employees
-                .Include(e => e.Contract)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var employee = _employeesService.GetById((int)id);
             if (employee == null)
             {
                 return NotFound();
             }
 
-            return View(employee);
+            return View(_mapper.Map<EmployeeViewModel>(employee));
         }
 
-        // POST: Employees/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Employees == null)
+            if (_employeesService.GetAll() == null)
             {
                 return Problem("Entity set 'ContractsContext.Employees'  is null.");
             }
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = _employeesService.GetById((int)id);
             if (employee != null)
             {
-                _context.Employees.Remove(employee);
+                _employeesService.Delete(id);
             }
-            
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool EmployeeExists(int id)
-        {
-          return (_context.Employees?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

@@ -1,97 +1,88 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DatabaseLayer.Data;
+using AutoMapper;
+using BusinessLayer.Interfaces.ContractInterfaces;
+using MvcLayer.Models;
+using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Contracts;
 using DatabaseLayer.Models;
 
 namespace MvcLayer.Controllers
 {
     public class DepartmentsController : Controller
     {
-        private readonly ContractsContext _context;
+        private readonly IMapper _mapper;
+        private readonly IDepartmentService _departmentService;
+        private readonly IOrganizationService _organizationService;
 
-        public DepartmentsController(ContractsContext context)
+        public DepartmentsController(IDepartmentService departmentService, IOrganizationService organization, IMapper mapper)
         {
-            _context = context;
+            _departmentService = departmentService;
+            _organizationService = organization;
+            _mapper = mapper;
         }
 
-        // GET: Departments
         public async Task<IActionResult> Index()
         {
-            var contractsContext = _context.Departments.Include(d => d.Organization);
-            return View(await contractsContext.ToListAsync());
+            var contractsContext = _departmentService.GetAll();
+            return View(_mapper.Map<IEnumerable<DepartmentViewModel>>(contractsContext));
         }
 
-        // GET: Departments/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Departments == null)
+            if (id == null || _departmentService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var department = await _context.Departments
-                .Include(d => d.Organization)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var department = _departmentService.GetById((int)id);
             if (department == null)
             {
                 return NotFound();
             }
 
-            return View(department);
+            return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
-        // GET: Departments/Create
         public IActionResult Create()
         {
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id");
+            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name");
             return View();
         }
 
-        // POST: Departments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,OrganizationId")] Department department)
+        public async Task<IActionResult> Create([Bind("Id,Name,OrganizationId")] DepartmentViewModel department)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(department);
-                await _context.SaveChangesAsync();
+                _departmentService.Create(_mapper.Map<DepartmentDTO>(department));
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id", department.OrganizationId);
+            ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Name", department.OrganizationId);
             return View(department);
         }
 
-        // GET: Departments/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Departments == null)
+            if (id == null || _departmentService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var department = await _context.Departments.FindAsync(id);
+            var department = _departmentService.GetById((int)id);
             if (department == null)
             {
                 return NotFound();
             }
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id", department.OrganizationId);
-            return View(department);
+            ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Id", department.OrganizationId);
+            return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
-        // POST: Departments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,OrganizationId")] Department department)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,OrganizationId")] DepartmentViewModel department)
         {
             if (id != department.Id)
             {
@@ -102,12 +93,11 @@ namespace MvcLayer.Controllers
             {
                 try
                 {
-                    _context.Update(department);
-                    await _context.SaveChangesAsync();
+                    _departmentService.Update(_mapper.Map<DepartmentDTO>(department));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DepartmentExists(department.Id))
+                    if (_departmentService.GetById(department.Id) == null)
                     {
                         return NotFound();
                     }
@@ -118,51 +108,41 @@ namespace MvcLayer.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id", department.OrganizationId);
+            ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Id", department.OrganizationId);
             return View(department);
         }
 
-        // GET: Departments/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Departments == null)
+            if (id == null || _departmentService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var department = await _context.Departments
-                .Include(d => d.Organization)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var department = _departmentService.GetById((int)id);
             if (department == null)
             {
                 return NotFound();
             }
 
-            return View(department);
+            return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
-        // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Departments == null)
+            if (_departmentService.GetAll() == null)
             {
                 return Problem("Entity set 'ContractsContext.Departments'  is null.");
             }
-            var department = await _context.Departments.FindAsync(id);
+            var department = _departmentService.GetById((int)id);
             if (department != null)
             {
-                _context.Departments.Remove(department);
+                _departmentService.Delete(id);
             }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool DepartmentExists(int id)
-        {
-          return (_context.Departments?.Any(e => e.Id == id)).GetValueOrDefault();
+            return RedirectToAction(nameof(Index));
         }
     }
 }

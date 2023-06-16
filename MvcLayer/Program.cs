@@ -1,18 +1,18 @@
 using BusinessLayer.IoC;
 //using DatabaseLayer.Data;
 using Microsoft.EntityFrameworkCore;
+using MvcLayer.Mapper;
 
 var builder = WebApplication.CreateBuilder(args);
 string connectionData = builder.Configuration.GetConnectionString("Data");
 string connectionIdentity = builder.Configuration.GetConnectionString("Identity");
 //Registeration OiC container from business layer
 
-//Container.RegisterContainer(builder.Services, connectionData);
+Container.RegisterContainer(builder.Services, connectionData);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-//builder.Services.AddDbContext<ContractsContext>(opt=> opt.UseSqlServer(connectionData));
-//builder.Services.AddAutoMapper();
+builder.Services.AddAutoMapper(typeof(MapperViewModel));
 
 
 

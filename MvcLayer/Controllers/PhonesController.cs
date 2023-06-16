@@ -7,95 +7,95 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DatabaseLayer.Data;
 using DatabaseLayer.Models;
+using AutoMapper;
+using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.Contracts;
+using MvcLayer.Models;
+using BusinessLayer.Models;
 
 namespace MvcLayer.Controllers
 {
     public class PhonesController : Controller
     {
-        private readonly ContractsContext _context;
+        private readonly IPhoneService _phoneService;
+        private readonly IEmployeeService _employeesService;
+        private readonly IMapper _mapper;
+        private readonly IOrganizationService _organizationService;
 
-        public PhonesController(ContractsContext context)
+        public PhonesController(IEmployeeService employeesService, IMapper mapper, IOrganizationService organizationService,
+            IPhoneService phoneService)
         {
-            _context = context;
+            _phoneService = phoneService;
+            _organizationService = organizationService;
+            _employeesService = employeesService;
+            _mapper = mapper;
         }
 
-        // GET: Phones
         public async Task<IActionResult> Index()
         {
-            var contractsContext = _context.Phones.Include(p => p.Employee).Include(p => p.Organization);
-            return View(await contractsContext.ToListAsync());
+            var phone = _phoneService.GetAll();
+            return View(_mapper.Map<IEnumerable<PhoneViewModel>>(phone));
         }
 
-        // GET: Phones/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Phones == null)
+            if (id == null || _phoneService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var phone = await _context.Phones
-                .Include(p => p.Employee)
-                .Include(p => p.Organization)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var phone = _phoneService.GetById((int) id);
             if (phone == null)
             {
                 return NotFound();
             }
 
-            return View(phone);
+            return View(_mapper.Map<PhoneViewModel>(phone));
         }
 
-        // GET: Phones/Create
         public IActionResult Create()
         {
-            ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "Id");
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id");
+            ViewData["EmployeeId"] = new SelectList(_employeesService.GetAll(), "Id", "FIO");
+            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name");
             return View();
         }
 
-        // POST: Phones/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Number,OrganizationId,EmployeeId")] Phone phone)
+        public async Task<IActionResult> Create([Bind("Id,Number,OrganizationId,EmployeeId")] PhoneViewModel phone)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(phone);
-                await _context.SaveChangesAsync();
+                _phoneService.Create(_mapper.Map<PhoneDTO>(phone));
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "Id", phone.EmployeeId);
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id", phone.OrganizationId);
+            ViewData["EmployeeId"] = new SelectList(_employeesService.GetAll(), "Id", "FIO");
+            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name");
             return View(phone);
         }
 
-        // GET: Phones/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Phones == null)
+            if (id == null || _phoneService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var phone = await _context.Phones.FindAsync(id);
+            var phone = _phoneService.GetById((int)id);
             if (phone == null)
             {
                 return NotFound();
             }
-            ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "Id", phone.EmployeeId);
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id", phone.OrganizationId);
-            return View(phone);
+
+            ViewData["EmployeeId"] = new SelectList(_employeesService.GetAll(), "Id", "FIO", phone.EmployeeId);
+            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name", phone.OrganizationId);
+            return View(_mapper.Map<PhoneViewModel>(phone));
+
         }
 
-        // POST: Phones/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Number,OrganizationId,EmployeeId")] Phone phone)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Number,OrganizationId,EmployeeId")] PhoneViewModel phone)
         {
             if (id != phone.Id)
             {
@@ -106,12 +106,11 @@ namespace MvcLayer.Controllers
             {
                 try
                 {
-                    _context.Update(phone);
-                    await _context.SaveChangesAsync();
+                    _phoneService.Update(_mapper.Map<PhoneDTO>(phone));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PhoneExists(phone.Id))
+                    if (_phoneService.GetById(id) is null)
                     {
                         return NotFound();
                     }
@@ -122,53 +121,42 @@ namespace MvcLayer.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["EmployeeId"] = new SelectList(_context.Employees, "Id", "Id", phone.EmployeeId);
-            ViewData["OrganizationId"] = new SelectList(_context.Organizations, "Id", "Id", phone.OrganizationId);
+            ViewData["EmployeeId"] = new SelectList(_employeesService.GetAll(), "Id", "FIO", phone.EmployeeId);
+            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name", phone.OrganizationId);
             return View(phone);
         }
 
-        // GET: Phones/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Phones == null)
+            if (id == null || _phoneService.GetAll() == null)
             {
                 return NotFound();
             }
 
-            var phone = await _context.Phones
-                .Include(p => p.Employee)
-                .Include(p => p.Organization)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var phone = _phoneService.GetById((int)id);
             if (phone == null)
             {
                 return NotFound();
             }
 
-            return View(phone);
+            return View(_mapper.Map<PhoneViewModel>(phone));
         }
 
-        // POST: Phones/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Phones == null)
+            if (_phoneService.GetAll() == null)
             {
                 return Problem("Entity set 'ContractsContext.Phones'  is null.");
             }
-            var phone = await _context.Phones.FindAsync(id);
+            var phone = _phoneService.GetById(id);
             if (phone != null)
             {
-                _context.Phones.Remove(phone);
+                _phoneService.Delete(id);
             }
-            
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        private bool PhoneExists(int id)
-        {
-          return (_context.Phones?.Any(e => e.Id == id)).GetValueOrDefault();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
