@@ -20,11 +20,24 @@ public partial class Organization
     /// </summary>
     public string? Abbr { get; set; }
 
+    /// <summary>
+    /// УНП предприятия
+    /// </summary>
     public string? Unp { get; set; }
+
+    /// <summary>
+    /// электронная почта
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>
+    /// расчетный счет
+    /// </summary>
+    public string? PaymentAccount { get; set; }
 
     public virtual List<Address> Addresses { get; set; } = new List<Address>();
 
-    public virtual ICollection<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
+    public virtual List<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
 
     public virtual List<Department> Departments { get; set; } = new List<Department>();
 
