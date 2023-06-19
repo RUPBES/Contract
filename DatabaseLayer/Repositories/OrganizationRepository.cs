@@ -73,6 +73,8 @@ namespace DatabaseLayer.Repositories
                     orgnization.Name = entity.Name;
                     orgnization.Abbr = entity.Abbr;
                     orgnization.Unp = entity.Unp;
+                    orgnization.Email = entity.Email;
+                    orgnization.PaymentAccount = entity.PaymentAccount;
 
                     orgnization.Departments.Clear();
                     orgnization.Departments.AddRange(entity.Departments);

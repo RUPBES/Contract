@@ -16,9 +16,19 @@ public partial class Address
     public string? FullAddress { get; set; }
 
     /// <summary>
+    /// фактический адрес
+    /// </summary>
+    public string? FullAddressFact { get; set; }
+
+    /// <summary>
     /// Почтовый индекс
     /// </summary>
     public string? PostIndex { get; set; }
+
+    /// <summary>
+    /// сайт
+    /// </summary>
+    public string? SiteAddress { get; set; }
 
     public int? OrganizationId { get; set; }
 

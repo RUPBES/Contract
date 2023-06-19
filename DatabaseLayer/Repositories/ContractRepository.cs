@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +48,11 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Contract> GetAll()
         {
-            return _context.Contracts.ToList();
+            return _context.Contracts
+                .Include(c => c.AgreementContract)
+                .Include(c => c.SubContract)
+                .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
+                .ToList();
         }
 
         public Contract GetById(int id, int? secondId = null)
@@ -82,8 +87,9 @@ namespace DatabaseLayer.Repositories
                     contract.Сurrency = entity.Сurrency;
                     contract.ContractPrice = entity.ContractPrice;
                     contract.NameObject = entity.NameObject;
+                    contract.PaymentСonditionsAvans = entity.PaymentСonditionsAvans;
+                    contract.PaymentСonditionsRaschet = entity.PaymentСonditionsRaschet;
 
-                    contract.Client = entity.Client;
                     contract.FundingSource = entity.FundingSource;
                     contract.IsSubContract = entity.IsSubContract;
                     contract.IsEngineering = entity.IsEngineering;
