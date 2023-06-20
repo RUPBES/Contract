@@ -58,14 +58,9 @@ public partial class Contract
     public decimal? ContractPrice { get; set; }
 
     /// <summary>
-    /// Цена СМР
+    /// Наименование Объекта
     /// </summary>
     public string? NameObject { get; set; }
-
-    /// <summary>
-    /// Заказчик
-    /// </summary>
-    public string? Client { get; set; }
 
     /// <summary>
     /// источник финансирования
@@ -87,6 +82,16 @@ public partial class Contract
     /// </summary>
     public bool? IsAgreementContract { get; set; }
 
+    /// <summary>
+    /// условия оплаты (авансы)
+    /// </summary>
+    public string? PaymentСonditionsAvans { get; set; }
+
+    /// <summary>
+    /// условия оплаты (расчеты за выполненные работы)
+    /// </summary>
+    public string? PaymentСonditionsRaschet { get; set; }
+
     public virtual ICollection<Act> Acts { get; set; } = new List<Act>();
 
     public virtual Contract? AgreementContract { get; set; }
@@ -97,7 +102,7 @@ public partial class Contract
 
     public virtual ICollection<Correspondence> Correspondences { get; set; } = new List<Correspondence>();
 
-    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    public virtual ICollection<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
 
     public virtual ICollection<EstimateDoc> EstimateDocs { get; set; } = new List<EstimateDoc>();
 

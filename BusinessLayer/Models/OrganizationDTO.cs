@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseLayer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,20 @@ namespace BusinessLayer.Models
         /// </summary>
         public string? Abbr { get; set; }
 
+        /// <summary>
+        /// УНП предприятия
+        /// </summary>
         public string? Unp { get; set; }
+
+        /// <summary>
+        /// электронная почта
+        /// </summary>
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// расчетный счет
+        /// </summary>
+        public string? PaymentAccount { get; set; }
 
         public List<AddressDTO> Addresses { get; set; } = new List<AddressDTO>();
 

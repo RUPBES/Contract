@@ -12,11 +12,17 @@ public partial class ContractOrganization
 
     public int ContactId { get; set; }
 
-    public int? TypeOrgId { get; set; }
+    /// <summary>
+    /// ген.подрядчик?
+    /// </summary>
+    public bool? IsGenContractor { get; set; }
+
+    /// <summary>
+    /// Заказчик?
+    /// </summary>
+    public bool? IsClient { get; set; }
 
     public virtual Contract Contact { get; set; } = null!;
 
     public virtual Organization Organization { get; set; } = null!;
-
-    public virtual TypeOrganization? TypeOrg { get; set; }
 }

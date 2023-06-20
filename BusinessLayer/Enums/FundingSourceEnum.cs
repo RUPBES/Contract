@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DatabaseLayer.Models
+namespace BusinessLayer.Enums
 {
-    internal class DepartmentEmployee
+    public enum FundingSourceEnum
     {
+        OwnFunds=1,
+        BudgetFunds
     }
 }

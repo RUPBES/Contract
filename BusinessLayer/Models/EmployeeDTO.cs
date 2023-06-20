@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseLayer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace BusinessLayer.Models
         public int? ContractId { get; set; }
 
         public ContractDTO? Contract { get; set; }
+        public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
         public List<PhoneDTO> Phones { get; set; } = new List<PhoneDTO>();
 
