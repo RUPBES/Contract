@@ -18,6 +18,7 @@ public partial class ContractsContext : DbContext
     {
     }
 
+    #region DbSet
     public virtual DbSet<Act> Acts { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }
@@ -37,6 +38,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<EmployeeContract> EmployeeContracts { get; set; }
 
     public virtual DbSet<EstimateDoc> EstimateDocs { get; set; }
+    public virtual DbSet<Log> Logs { get; set; }
 
     public virtual DbSet<File> Files { get; set; }
 
@@ -63,7 +65,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<TypeWorkContract> TypeWorkContracts { get; set; }
 
     public virtual DbSet<СommissionAct> СommissionActs { get; set; }
-
+    #endregion
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -78,12 +80,14 @@ public partial class ContractsContext : DbContext
         }
     }
 
-    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-    //        => optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Log>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("Log");           
+        });
+
         modelBuilder.Entity<Act>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_SuspensionAct_Id");
