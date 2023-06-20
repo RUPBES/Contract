@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DatabaseLayer.Data;
-using DatabaseLayer.Models;
-using BusinessLayer.Interfaces.ContractInterfaces;
 using AutoMapper;
-using BusinessLayer.Interfaces.Contracts;
+using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
-using System.Collections.Generic;
 using BusinessLayer.Models;
 
 namespace MvcLayer.Controllers

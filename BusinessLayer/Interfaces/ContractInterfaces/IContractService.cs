@@ -2,9 +2,9 @@
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
 
-namespace BusinessLayer.Interfaces.Contracts
+namespace BusinessLayer.Interfaces.ContractInterfaces
 {
-    internal interface IContractService : IService<ContractDTO, Contract>
+    public interface IContractService : IService<ContractDTO, Contract>
     {
     }
 }

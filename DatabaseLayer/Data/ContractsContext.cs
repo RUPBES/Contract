@@ -253,15 +253,15 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<ContractOrganization>(entity =>
         {
-            entity.HasKey(e => new { e.OrganizationId, e.ContactId }).HasName("PK_LINK_Contract_Organization");
+            entity.HasKey(e => new { e.OrganizationId, e.ContractId }).HasName("PK_LINK_Contract_Organization");
 
             entity.ToTable("ContractOrganization", tb => tb.HasComment("Связь \"Организации\" и \"Контракта\""));
 
             entity.Property(e => e.IsClient).HasComment("Заказчик?");
             entity.Property(e => e.IsGenContractor).HasComment("ген.подрядчик?");
 
-            entity.HasOne(d => d.Contact).WithMany(p => p.ContractOrganizations)
-                .HasForeignKey(d => d.ContactId)
+            entity.HasOne(d => d.Contract).WithMany(p => p.ContractOrganizations)
+                .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_LINK_Contract_Organization_Contract_Id");
 
             entity.HasOne(d => d.Organization).WithMany(p => p.ContractOrganizations)

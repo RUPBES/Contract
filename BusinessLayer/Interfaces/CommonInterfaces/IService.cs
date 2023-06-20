@@ -1,6 +1,6 @@
 ﻿namespace BusinessLayer.Interfaces.CommonInterfaces
 {
-    internal interface IService<T, K> where T : class where K : class
+    public interface IService<T, K> where T : class where K : class
     {
         void Create(T item);
         IEnumerable<T> GetAll();

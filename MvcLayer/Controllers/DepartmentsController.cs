@@ -5,8 +5,6 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
-using BusinessLayer.Interfaces.Contracts;
-using DatabaseLayer.Models;
 
 namespace MvcLayer.Controllers
 {

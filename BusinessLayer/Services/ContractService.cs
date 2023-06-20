@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLayer.Interfaces.Contracts;
+using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;

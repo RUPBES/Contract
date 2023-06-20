@@ -29,7 +29,7 @@ namespace BusinessLayer.Helpers
                 log.UserName = userName;
                 log.Date = DateTime.Now;
 
-                _contract.Logs.Create(_mapper.Map<Log>(log));
+                //_contract.Logs.Create(_mapper.Map<Log>(log));
             }
             catch (Exception)
             {

@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Models;
+﻿
+using BusinessLayer.Models;
 
 namespace MvcLayer.Models
 {
@@ -14,10 +15,8 @@ namespace MvcLayer.Models
 
         public string? Email { get; set; }
 
-        public int? ContractId { get; set; }
-
-        public ContractViewModel? Contract { get; set; }
-
+        public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
+               
         public List<PhoneViewModel> Phones { get; set; } = new List<PhoneViewModel>();
 
         public List<DepartmentViewModel> Departments { get; set; } = new List<DepartmentViewModel>();

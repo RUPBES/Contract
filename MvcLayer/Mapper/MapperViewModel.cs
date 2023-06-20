@@ -20,7 +20,6 @@ namespace MvcLayer.Mapper
             //CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
             CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap(); 
-            //CreateMap<TypeOrganization, TypeOrganizationDTO>().ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))

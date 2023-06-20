@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using DatabaseLayer.Models;
-using BusinessLayer.Interfaces.Contracts;
 using MvcLayer.Models;
 using AutoMapper;
 using BusinessLayer.Models;
+using BusinessLayer.Interfaces.ContractInterfaces;
 
 namespace MvcLayer.Controllers
 {

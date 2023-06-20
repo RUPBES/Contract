@@ -33,7 +33,7 @@ namespace DatabaseLayer.Repositories
             if (id > 0 && contractId != null)
             {
                 contractOrg = _context.ContractOrganizations
-                    .FirstOrDefault(x=>x.OrganizationId == id && x.ContactId == contractId);
+                    .FirstOrDefault(x=>x.OrganizationId == id && x.ContractId == contractId);
             }
 
             if (contractOrg is not null)
@@ -57,7 +57,7 @@ namespace DatabaseLayer.Repositories
             if (id > 0 && contractId != null)
             {
                 return _context.ContractOrganizations
-                    .FirstOrDefault(x => x.OrganizationId == id && x.ContactId == contractId);
+                    .FirstOrDefault(x => x.OrganizationId == id && x.ContractId == contractId);
             }
             else
             {
@@ -70,12 +70,12 @@ namespace DatabaseLayer.Repositories
             if (entity is not null)
             {
                 var contractOrg = _context.ContractOrganizations
-                    .FirstOrDefault(x => x.OrganizationId == entity.OrganizationId && x.ContactId == entity.ContactId);
+                    .FirstOrDefault(x => x.OrganizationId == entity.OrganizationId && x.ContractId == entity.ContractId);
 
                 if (contractOrg is not null)
                 {
                     contractOrg.OrganizationId = entity.OrganizationId;
-                    contractOrg.ContactId = entity.ContactId;
+                    contractOrg.ContractId = entity.ContractId;
                     contractOrg.IsClient = entity.IsClient;
                     contractOrg.IsGenContractor = entity.IsGenContractor;
 

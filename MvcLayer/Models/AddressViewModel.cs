@@ -1,5 +1,4 @@
-﻿using BusinessLayer.Models;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace MvcLayer.Models
 {

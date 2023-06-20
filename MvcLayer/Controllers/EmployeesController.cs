@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DatabaseLayer.Data;
-using DatabaseLayer.Models;
 using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Interfaces.Contracts;
 using MvcLayer.Models;
 using BusinessLayer.Models;
 
@@ -67,7 +60,7 @@ namespace MvcLayer.Controllers
                 _employeesService.Create(_mapper.Map<EmployeeDTO>(employee));
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
+            //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
             return View(employee);
         }
 
@@ -85,7 +78,7 @@ namespace MvcLayer.Controllers
                 return NotFound();
             }
 
-            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
+            //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee);
             return View(_mapper.Map<EmployeeViewModel>(employee));  
         }
 
@@ -117,7 +110,7 @@ namespace MvcLayer.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
+            //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
             return View(employee);
         }
 

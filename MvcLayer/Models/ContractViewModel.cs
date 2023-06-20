@@ -71,13 +71,7 @@ namespace MvcLayer.Models
         [DisplayName("Наименование объекта")]
         public string? NameObject { get; set; }
 
-        /// <summary>
-        /// Заказчик
-        /// </summary>
-        /// 
-        [DisplayName("Заказчик")]
-        public string? Client { get; set; }
-
+       
         /// <summary>
         /// источник финансирования
         /// </summary>
@@ -106,7 +100,7 @@ namespace MvcLayer.Models
 
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
-        public virtual ContractViewModel? AgreementContract { get; set; }
+        public ContractViewModel? AgreementContract { get; set; }
 
         public List<AmendmentDTO> Amendments { get; set; } = new List<AmendmentDTO>();
 
@@ -136,7 +130,7 @@ namespace MvcLayer.Models
 
         //public List<ServiceGcDTO> ServiceGcs { get; set; } = new List<ServiceGcDTO>();
 
-        public virtual ContractViewModel? SubContract { get; set; }
+        public ContractViewModel? SubContract { get; set; }
 
         //public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 

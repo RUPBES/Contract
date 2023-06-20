@@ -1,12 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Azure.Core.HttpHeader;
 
 namespace BusinessLayer.Mapper
 {
@@ -24,8 +18,7 @@ namespace BusinessLayer.Mapper
             CreateMap<Employee, EmployeeDTO>().ReverseMap();
             CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
-            CreateMap<Phone, PhoneDTO>().ReverseMap(); 
-            CreateMap<TypeOrganization, TypeOrganizationDTO>().ReverseMap();
+            CreateMap<Phone, PhoneDTO>().ReverseMap();             
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))

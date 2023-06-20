@@ -4,7 +4,7 @@ using DatabaseLayer.Models;
 
 namespace BusinessLayer.Interfaces.ContractInterfaces
 {
-    internal interface IEmployeeService : IService<EmployeeDTO, Employee>
+    public interface IEmployeeService : IService<EmployeeDTO, Employee>
     {
     }
 }

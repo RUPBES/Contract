@@ -4,7 +4,6 @@ namespace MvcLayer.Models
 {
     public class OrganizationViewModel
     {
-
         public int Id { get; set; }
 
         /// <summary>
@@ -17,7 +16,20 @@ namespace MvcLayer.Models
         /// </summary>
         public string? Abbr { get; set; }
 
+        /// <summary>
+        /// УНП предприятия
+        /// </summary>
         public string? Unp { get; set; }
+
+        /// <summary>
+        /// электронная почта
+        /// </summary>
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// расчетный счет
+        /// </summary>
+        public string? PaymentAccount { get; set; }
 
         public List<AddressViewModel> Addresses { get; set; } = new List<AddressViewModel>();
 

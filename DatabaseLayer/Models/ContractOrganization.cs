@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace DatabaseLayer.Models;
+﻿namespace DatabaseLayer.Models;
 
 /// <summary>
 /// Связь &quot;Организации&quot; и &quot;Контракта&quot;
@@ -10,7 +7,7 @@ public partial class ContractOrganization
 {
     public int OrganizationId { get; set; }
 
-    public int ContactId { get; set; }
+    public int ContractId { get; set; }
 
     /// <summary>
     /// ген.подрядчик?
@@ -22,7 +19,7 @@ public partial class ContractOrganization
     /// </summary>
     public bool? IsClient { get; set; }
 
-    public virtual Contract Contact { get; set; } = null!;
+    public virtual Contract Contract { get; set; } = null!;
 
     public virtual Organization Organization { get; set; } = null!;
 }

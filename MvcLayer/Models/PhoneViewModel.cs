@@ -1,5 +1,4 @@
-﻿using BusinessLayer.Models;
-
+﻿
 namespace MvcLayer.Models
 {
     public class PhoneViewModel

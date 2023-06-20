@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseLayer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,12 +13,18 @@ namespace BusinessLayer.Models
 
         public int ContactId { get; set; }
 
-        public int? TypeOrgId { get; set; }
+        /// <summary>
+        /// ген.подрядчик?
+        /// </summary>
+        public bool? IsGenContractor { get; set; }
 
-        public ContractDTO Contact { get; set; } = null!;
+        /// <summary>
+        /// Заказчик?
+        /// </summary>
+        public bool? IsClient { get; set; }
 
-        public OrganizationDTO Organization { get; set; } = null!;
+        public virtual ContractDTO Contact { get; set; }
 
-        public TypeOrganizationDTO? TypeOrg { get; set; }
+        public virtual OrganizationDTO Organization { get; set; }
     }
 }
