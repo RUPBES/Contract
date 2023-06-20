@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseLayer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -60,12 +61,7 @@ namespace BusinessLayer.Models
         /// <summary>
         /// Цена СМР
         /// </summary>
-        public string? NameObject { get; set; }
-
-        /// <summary>
-        /// Заказчик
-        /// </summary>
-        public string? Client { get; set; }
+        public string? NameObject { get; set; }       
 
         /// <summary>
         /// источник финансирования
@@ -87,6 +83,16 @@ namespace BusinessLayer.Models
         /// </summary>
         public bool? IsAgreementContract { get; set; }
 
+        /// <summary>
+        /// условия оплаты (авансы)
+        /// </summary>
+        public string? PaymentСonditionsAvans { get; set; }
+
+        /// <summary>
+        /// условия оплаты (расчеты за выполненные работы)
+        /// </summary>
+        public string? PaymentСonditionsRaschet { get; set; }
+
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
         public virtual ContractDTO? AgreementContract { get; set; }
@@ -97,7 +103,7 @@ namespace BusinessLayer.Models
 
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
 
-        public List<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();
+        public virtual ICollection<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
         //public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
 
