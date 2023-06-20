@@ -1,0 +1,43 @@
+﻿@model MvcLayer.Models.OrganizationViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Создать</h1>
+
+<h4>Организация</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Abbr" class="control-label"></label>
+                <input asp-for="Abbr" class="form-control" />
+                <span asp-validation-for="Abbr" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Unp" class="control-label"></label>
+                <input asp-for="Unp" class="form-control" />
+                <span asp-validation-for="Unp" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

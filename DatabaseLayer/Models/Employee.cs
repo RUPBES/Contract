@@ -18,9 +18,7 @@ public partial class Employee
 
     public string? Email { get; set; }
 
-    public int? ContractId { get; set; }
-
-    public virtual Contract? Contract { get; set; }
+    public virtual ICollection<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
 
     public virtual ICollection<Phone> Phones { get; set; } = new List<Phone>();
 

@@ -11,7 +11,7 @@ public partial class SelectionProcedure
     public int Id { get; set; }
 
     /// <summary>
-    /// Наименование закупки
+    /// Название
     /// </summary>
     public string? Name { get; set; }
 

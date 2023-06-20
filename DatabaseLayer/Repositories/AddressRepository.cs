@@ -71,8 +71,11 @@ namespace DatabaseLayer.Repositories
                 if (address is not null)
                 {
                     address.FullAddress = entity.FullAddress;
+                    address.FullAddressFact = entity.FullAddressFact;
                     address.PostIndex = entity.PostIndex;
                     address.OrganizationId = entity.OrganizationId;
+                    address.SiteAddress = entity.SiteAddress;
+
 
                     _context.Addresses.Update(address);
                 }

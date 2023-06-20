@@ -17,6 +17,9 @@ namespace DatabaseLayer.Interfaces
         IRepository<Organization> Organizations { get; }
         IRepository<Phone> Phones { get; }
 
+
+        IRepository<Log> Logs { get; }
+
         void Save();
     }
 }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseLayer
 {
-    internal class ContractUoW:IContractUoW
+    public class ContractUoW:IContractUoW
     {
         private readonly ContractsContext _context;
         private AddressRepository addressRepository;
@@ -20,6 +20,8 @@ namespace DatabaseLayer
         private EmployeeRepository employeeRepository;
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
+
+        private LogRepository logRepository;
 
         public ContractUoW()
         {
@@ -101,6 +103,18 @@ namespace DatabaseLayer
                     phoneRepository = new PhoneRepository(_context);
                 }
                 return phoneRepository;
+            }
+        }
+
+        public IRepository<Log> Logs
+        {
+            get
+            {
+                if (logRepository is null)
+                {
+                    logRepository = new LogRepository(_context);
+                }
+                return logRepository;
             }
         }
         public void Dispose()

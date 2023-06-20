@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using File = DatabaseLayer.Models.File;
 
 namespace DatabaseLayer.Data;
@@ -17,6 +18,7 @@ public partial class ContractsContext : DbContext
     {
     }
 
+    #region DbSet
     public virtual DbSet<Act> Acts { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }
@@ -31,11 +33,12 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<Department> Departments { get; set; }
 
-    //public virtual DbSet<DepartmentEmployee> DepartmentEmployees { get; set; }
-
     public virtual DbSet<Employee> Employees { get; set; }
 
+    public virtual DbSet<EmployeeContract> EmployeeContracts { get; set; }
+
     public virtual DbSet<EstimateDoc> EstimateDocs { get; set; }
+    public virtual DbSet<Log> Logs { get; set; }
 
     public virtual DbSet<File> Files { get; set; }
 
@@ -57,20 +60,34 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<ServiceGc> ServiceGcs { get; set; }
 
-    public virtual DbSet<TypeOrganization> TypeOrganizations { get; set; }
-
     public virtual DbSet<TypeWork> TypeWorks { get; set; }
 
     public virtual DbSet<TypeWorkContract> TypeWorkContracts { get; set; }
 
     public virtual DbSet<СommissionAct> СommissionActs { get; set; }
+    #endregion
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json")
+               .Build();
+            var connectionString = configuration.GetConnectionString("Data");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Log>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.ToTable("Log");           
+        });
+
         modelBuilder.Entity<Act>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK_SuspensionAct_Id");
@@ -122,9 +139,11 @@ public partial class ContractsContext : DbContext
             entity.ToTable("Address", tb => tb.HasComment("Юр. адрес"));
 
             entity.Property(e => e.FullAddress).HasComment("юр. адрес организации");
+            entity.Property(e => e.FullAddressFact).HasComment("фактический адрес");
             entity.Property(e => e.PostIndex)
                 .HasMaxLength(20)
                 .HasComment("Почтовый индекс");
+            entity.Property(e => e.SiteAddress).HasComment("сайт");
 
             entity.HasOne(d => d.Organization).WithMany(p => p.Addresses)
                 .HasForeignKey(d => d.OrganizationId)
@@ -188,7 +207,8 @@ public partial class ContractsContext : DbContext
 
             entity.ToTable("Contract", tb => tb.HasComment("Договор (субподряда)"));
 
-            entity.Property(e => e.Client).HasComment("Заказчик");
+            entity.HasIndex(e => e.Number, "UQ__Contract__78A1A19D0769BFAF").IsUnique();
+
             entity.Property(e => e.ContractPrice)
                 .HasComment("Цена контракта")
                 .HasColumnType("money");
@@ -212,7 +232,11 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.IsEngineering).HasComment("является ли договор инжиниринговыми услугами");
             entity.Property(e => e.IsSubContract).HasComment("Флаг, является ли договором субподряда");
             entity.Property(e => e.NameObject).HasComment("Цена СМР");
-            entity.Property(e => e.Number).HasComment("Номер договора");
+            entity.Property(e => e.Number)
+                .HasMaxLength(100)
+                .HasComment("Номер договора");
+            entity.Property(e => e.PaymentСonditionsAvans).HasComment("условия оплаты (авансы)");
+            entity.Property(e => e.PaymentСonditionsRaschet).HasComment("условия оплаты (расчеты за выполненные работы)");
             entity.Property(e => e.SubContractId).HasComment("Ссылка на договоро (если субподряд)");
             entity.Property(e => e.Сurrency)
                 .HasMaxLength(50)
@@ -233,22 +257,16 @@ public partial class ContractsContext : DbContext
 
             entity.ToTable("ContractOrganization", tb => tb.HasComment("Связь \"Организации\" и \"Контракта\""));
 
-            entity.Property(e => e.OrganizationId).HasDefaultValueSql("((1))");
-            entity.Property(e => e.TypeOrgId).HasColumnName("typeOrgId");
+            entity.Property(e => e.IsClient).HasComment("Заказчик?");
+            entity.Property(e => e.IsGenContractor).HasComment("ген.подрядчик?");
 
             entity.HasOne(d => d.Contact).WithMany(p => p.ContractOrganizations)
                 .HasForeignKey(d => d.ContactId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_LINK_Contract_Organization_Contract_Id");
 
             entity.HasOne(d => d.Organization).WithMany(p => p.ContractOrganizations)
                 .HasForeignKey(d => d.OrganizationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_LINK_Contract_Organization_Organization_Id");
-
-            entity.HasOne(d => d.TypeOrg).WithMany(p => p.ContractOrganizations)
-                .HasForeignKey(d => d.TypeOrgId)
-                .HasConstraintName("FK_LINK_Contract_Organization_Guide_TypeOrganization_Id");
         });
 
         modelBuilder.Entity<Correspondence>(entity =>
@@ -298,6 +316,7 @@ public partial class ContractsContext : DbContext
 
             entity.HasOne(d => d.Organization).WithMany(p => p.Departments)
                 .HasForeignKey(d => d.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Department_Organization_Id");
 
             entity.HasMany(d => d.Employees).WithMany(p => p.Departments)
@@ -326,10 +345,28 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.Email).HasMaxLength(50);
             entity.Property(e => e.Fio).HasColumnName("FIO");
+        });
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Employees)
+        modelBuilder.Entity<EmployeeContract>(entity =>
+        {
+            entity.HasKey(e => new { e.EmployeeId, e.ContractId });
+
+            entity.ToTable("EmployeeContract", tb => tb.HasComment("связь сотрудник - контракт"));
+
+            entity.Property(e => e.IsResponsible).HasComment("ответственный за ведение договора");
+            entity.Property(e => e.IsSignatory)
+                .HasComment("подписант договора")
+                .HasColumnName("IsSignatory ");
+
+            entity.HasOne(d => d.Contract).WithMany(p => p.EmployeeContracts)
                 .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK_Employee_Contract_Id");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EmployeeContract_Contract_Id");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.EmployeeContracts)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EmployeeContract_Employee_Id");
         });
 
         modelBuilder.Entity<EstimateDoc>(entity =>
@@ -483,7 +520,14 @@ public partial class ContractsContext : DbContext
             entity.ToTable("Organization", tb => tb.HasComment("Организация"));
 
             entity.Property(e => e.Abbr).HasComment("Аббревиатура");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .HasComment("электронная почта");
             entity.Property(e => e.Name).HasComment("Полное название");
+            entity.Property(e => e.PaymentAccount)
+                .HasMaxLength(100)
+                .HasComment("расчетный счет");
+            entity.Property(e => e.Unp).HasComment("УНП предприятия");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -667,7 +711,7 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.DateEnd)
                 .HasComment("Срок проведения окончание")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Name).HasComment("Наименование закупки");
+            entity.Property(e => e.Name).HasComment("Название");
             entity.Property(e => e.StartPrice)
                 .HasComment("Стартовая цена")
                 .HasColumnType("money");
@@ -722,13 +766,6 @@ public partial class ContractsContext : DbContext
                         j.HasKey("ServiceId", "AmendmentId");
                         j.ToTable("ServiceAmendment", tb => tb.HasComment("услуги генподрядчика - изменения"));
                     });
-        });
-
-        modelBuilder.Entity<TypeOrganization>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_Guide_TypeOrganization_Id");
-
-            entity.ToTable("TypeOrganization", tb => tb.HasComment("1 - заказчик, 2 - получатель контракта."));
         });
 
         modelBuilder.Entity<TypeWork>(entity =>
