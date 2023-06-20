@@ -21,6 +21,8 @@ namespace DatabaseLayer
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
 
+        private LogRepository logRepository;
+
         public ContractUoW()
         {
             _context = new ContractsContext();
@@ -104,6 +106,17 @@ namespace DatabaseLayer
             }
         }
 
+        public IRepository<Log> Logs
+        {
+            get
+            {
+                if (logRepository is null)
+                {
+                    logRepository = new LogRepository(_context);
+                }
+                return logRepository;
+            }
+        }
         public void Dispose()
         {
             
