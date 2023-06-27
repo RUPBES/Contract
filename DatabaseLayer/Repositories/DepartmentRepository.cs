@@ -70,9 +70,7 @@ namespace DatabaseLayer.Repositories
                 if(department is not null)
                 {
                     department.Name = dep.Name;
-                    department.OrganizationId = dep.OrganizationId;
-                    department.Employees.Clear();
-                    department.Employees.AddRange(dep.Employees);
+                    department.OrganizationId = dep.OrganizationId;                   
 
                     _context.Departments.Update(department);
                 }

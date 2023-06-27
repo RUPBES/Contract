@@ -1,132 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Договор (субподряда)
-/// </summary>
-public partial class Contract
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Contract
+    {
+        public int Id { get; set; }
+        public string Number { get; set; }
+        public int? SubContractId { get; set; }
+        public int? AgreementContractId { get; set; }
+        public DateTime? Date { get; set; }
+        public DateTime? EnteringTerm { get; set; }
+        public DateTime? ContractTerm { get; set; }
+        public DateTime? DateBeginWork { get; set; }
+        public DateTime? DateEndWork { get; set; }
+        public string Сurrency { get; set; }
+        public decimal? ContractPrice { get; set; }
+        public string NameObject { get; set; }
+        public string FundingSource { get; set; }
+        public bool? IsSubContract { get; set; }
+        public bool? IsEngineering { get; set; }
+        public bool? IsAgreementContract { get; set; }
+        public string PaymentСonditionsAvans { get; set; }
+        public string PaymentСonditionsRaschet { get; set; }
 
-    /// <summary>
-    /// Номер договора
-    /// </summary>
-    public string? Number { get; set; }
-
-    /// <summary>
-    /// Ссылка на договоро (если субподряд)
-    /// </summary>
-    public int? SubContractId { get; set; }
-
-    public int? AgreementContractId { get; set; }
-
-    /// <summary>
-    /// Дата договора
-    /// </summary>
-    public DateTime? Date { get; set; }
-
-    /// <summary>
-    /// Срок ввода
-    /// </summary>
-    public DateTime? EnteringTerm { get; set; }
-
-    /// <summary>
-    /// Срок действия договора
-    /// </summary>
-    public DateTime? ContractTerm { get; set; }
-
-    /// <summary>
-    /// Начало работ
-    /// </summary>
-    public DateTime? DateBeginWork { get; set; }
-
-    /// <summary>
-    /// Конец работ
-    /// </summary>
-    public DateTime? DateEndWork { get; set; }
-
-    /// <summary>
-    /// Валюта
-    /// </summary>
-    public string? Сurrency { get; set; }
-
-    /// <summary>
-    /// Цена контракта
-    /// </summary>
-    public decimal? ContractPrice { get; set; }
-
-    /// <summary>
-    /// Наименование Объекта
-    /// </summary>
-    public string? NameObject { get; set; }
-
-    /// <summary>
-    /// источник финансирования
-    /// </summary>
-    public string? FundingSource { get; set; }
-
-    /// <summary>
-    /// Флаг, является ли договором субподряда
-    /// </summary>
-    public bool? IsSubContract { get; set; }
-
-    /// <summary>
-    /// является ли договор инжиниринговыми услугами
-    /// </summary>
-    public bool? IsEngineering { get; set; }
-
-    /// <summary>
-    /// является ли соглашением с филиалом
-    /// </summary>
-    public bool? IsAgreementContract { get; set; }
-
-    /// <summary>
-    /// условия оплаты (авансы)
-    /// </summary>
-    public string? PaymentСonditionsAvans { get; set; }
-
-    /// <summary>
-    /// условия оплаты (расчеты за выполненные работы)
-    /// </summary>
-    public string? PaymentСonditionsRaschet { get; set; }
-
-    public virtual ICollection<Act> Acts { get; set; } = new List<Act>();
-
-    public virtual Contract? AgreementContract { get; set; }
-
-    public virtual ICollection<Amendment> Amendments { get; set; } = new List<Amendment>();
-
-    public virtual ICollection<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
-
-    public virtual ICollection<Correspondence> Correspondences { get; set; } = new List<Correspondence>();
-
-    public virtual ICollection<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
-
-    public virtual ICollection<EstimateDoc> EstimateDocs { get; set; } = new List<EstimateDoc>();
-
-    public virtual ICollection<FormC3a> FormC3as { get; set; } = new List<FormC3a>();
-
-    public virtual ICollection<Contract> InverseAgreementContract { get; set; } = new List<Contract>();
-
-    public virtual ICollection<Contract> InverseSubContract { get; set; } = new List<Contract>();
-
-    public virtual ICollection<MaterialGc> MaterialGcs { get; set; } = new List<MaterialGc>();
-
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
-
-    public virtual ICollection<Prepayment> Prepayments { get; set; } = new List<Prepayment>();
-
-    public virtual ICollection<ScopeWork> ScopeWorks { get; set; } = new List<ScopeWork>();
-
-    public virtual ICollection<SelectionProcedure> SelectionProcedures { get; set; } = new List<SelectionProcedure>();
-
-    public virtual ICollection<ServiceGc> ServiceGcs { get; set; } = new List<ServiceGc>();
-
-    public virtual Contract? SubContract { get; set; }
-
-    public virtual ICollection<TypeWorkContract> TypeWorkContracts { get; set; } = new List<TypeWorkContract>();
-
-    public virtual ICollection<СommissionAct> СommissionActs { get; set; } = new List<СommissionAct>();
+        public virtual Contract AgreementContract { get; set; }
+        public virtual Contract SubContract { get; set; }
+        public virtual List<Act> Acts { get; set; } = new List<Act>();
+        public virtual List<Amendment> Amendments { get; set; } = new List<Amendment>();
+        public virtual List<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
+        public virtual List<Correspondence> Correspondences { get; set; } = new List<Correspondence>();
+        public virtual List<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
+        public virtual List<EstimateDoc> EstimateDocs { get; set; } = new List<EstimateDoc>();
+        public virtual List<FormC3a> FormC3as { get; set; } = new List<FormC3a>();
+        public virtual List<Contract> InverseAgreementContract { get; set; } = new List<Contract>();
+        public virtual List<Contract> InverseSubContract { get; set; } = new List<Contract>();
+        public virtual List<MaterialGc> MaterialGcs { get; set; } = new List<MaterialGc>();
+        public virtual List<Payment> Payments { get; set; } = new List<Payment>();
+        public virtual List<Prepayment> Prepayments { get; set; } = new List<Prepayment>();
+        public virtual List<ScopeWork> ScopeWorks { get; set; } = new List<ScopeWork>();
+        public virtual List<SelectionProcedure> SelectionProcedures { get; set; } = new List<SelectionProcedure>();
+        public virtual List<ServiceGc> ServiceGcs { get; set; } = new List<ServiceGc>();
+        public virtual List<TypeWorkContract> TypeWorkContracts { get; set; } = new List<TypeWorkContract>();
+        public virtual List<СommissionAct> СommissionActs { get; set; } = new List<СommissionAct>();
+    }
 }

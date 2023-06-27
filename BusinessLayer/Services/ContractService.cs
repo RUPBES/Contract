@@ -17,7 +17,7 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public void Create(ContractDTO item)
+        public int? Create(ContractDTO item)
         {
             if (item is not null)
             {
@@ -27,11 +27,13 @@ namespace BusinessLayer.Services
 
                     _database.Contracts.Create(contract);
                     _database.Save();
+                    return contract.Id;
                 }
             }
+            return null;
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int? secondId = null)
         {
             _database.Contracts.Delete(id);
             _database.Save();
@@ -47,7 +49,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.GetAll());
         }
 
-        public ContractDTO GetById(int id)
+        public ContractDTO GetById(int id   , int? secondId = null)
         {
             var contract = _database.Contracts.GetById(id);
 

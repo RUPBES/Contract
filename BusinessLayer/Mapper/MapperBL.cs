@@ -16,10 +16,15 @@ namespace BusinessLayer.Mapper
             CreateMap<Correspondence, CorrespondenceDTO>().ReverseMap();
             CreateMap<Department, DepartmentDTO>().ReverseMap();
             CreateMap<Employee, EmployeeDTO>().ReverseMap();
+            CreateMap<EmployeeContract, EmployeeContractDTO>().ReverseMap();
             CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
+            CreateMap<Log, LogDTO>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
-            CreateMap<Phone, PhoneDTO>().ReverseMap();             
-
+            CreateMap<Phone, PhoneDTO>().ReverseMap();
+            CreateMap<SelectionProcedure, SelectionProcedureDTO>().ReverseMap();
+            
+           
+            
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))
             //    .ForMember(x => x.InverseDepartment, y => y.Ignore())

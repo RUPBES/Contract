@@ -76,14 +76,14 @@ namespace DatabaseLayer.Repositories
                     orgnization.Email = entity.Email;
                     orgnization.PaymentAccount = entity.PaymentAccount;
 
-                    orgnization.Departments.Clear();
-                    orgnization.Departments.AddRange(entity.Departments);
+                    //orgnization.Departments.Clear();
+                    //orgnization.Departments.AddRange(entity.Departments);
 
-                    orgnization.Addresses.Clear();
-                    orgnization.Addresses.AddRange(entity.Addresses);
+                    //orgnization.Addresses.Clear();
+                    //orgnization.Addresses.AddRange(entity.Addresses);
 
-                    orgnization.Phones.Clear();
-                    orgnization.Phones.AddRange(entity.Phones);
+                    //orgnization.Phones.Clear();
+                    //orgnization.Phones.AddRange(entity.Phones);
 
                     _context.Organizations.Update(orgnization);
                 }

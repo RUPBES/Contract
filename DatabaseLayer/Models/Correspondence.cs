@@ -1,41 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Переписка с заказчиком
-/// </summary>
-public partial class Correspondence
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Correspondence
+    {
+        public Correspondence()
+        {
+            CorrespondenceFiles = new HashSet<CorrespondenceFile>();
+        }
 
-    /// <summary>
-    /// Дата письма
-    /// </summary>
-    public DateTime? Date { get; set; }
+        public int Id { get; set; }
+        public DateTime? Date { get; set; }
+        public string Number { get; set; }
+        public string Summary { get; set; }
+        public bool? IsInBox { get; set; }
+        public int? ContractId { get; set; }
 
-    /// <summary>
-    /// Номер письма
-    /// </summary>
-    public string? Number { get; set; }
-
-    /// <summary>
-    /// Краткое содержание
-    /// </summary>
-    public string? Summary { get; set; }
-
-    /// <summary>
-    /// Входящее / Исходящее
-    /// </summary>
-    public bool? IsInBox { get; set; }
-
-    /// <summary>
-    /// Контракт
-    /// </summary>
-    public int? ContractId { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<File> Files { get; set; } = new List<File>();
+        public virtual Contract Contract { get; set; }
+        public virtual ICollection<CorrespondenceFile> CorrespondenceFiles { get; set; }
+    }
 }

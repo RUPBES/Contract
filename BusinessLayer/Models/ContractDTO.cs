@@ -110,7 +110,7 @@ namespace BusinessLayer.Models
         //public List<FormC3aDTO> FormC3as { get; set; } = new List<FormC3aDTO>();
 
         public List<ContractDTO> InverseAgreementContract { get; set; } = new List<ContractDTO>();
-
+        public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
         public List<ContractDTO> InverseSubContract { get; set; } = new List<ContractDTO>();
 
         //public List<MaterialGcDTO> MaterialGcs { get; set; } = new List<MaterialGcDTO>();

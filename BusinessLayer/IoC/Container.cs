@@ -6,6 +6,8 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Helpers;
 
 namespace BusinessLayer.IoC
 {
@@ -16,13 +18,15 @@ namespace BusinessLayer.IoC
             services.AddAutoMapper(typeof(MapperBL));
             services.AddDbContext<ContractsContext>(op => op.UseSqlServer(connectionString));
             services.AddScoped<IContractUoW, ContractUoW>();
+            services.AddScoped<IConverter, Converter>();
 
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IContractService, ContractService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
-            services.AddScoped<IPhoneService, PhoneService>();
+            services.AddScoped<IPhoneService, PhoneService>(); 
+            services.AddScoped<IContractOrganizationService, ContractOrganizationService>();
 
         }
     }

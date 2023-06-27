@@ -16,7 +16,7 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public void Create(OrganizationDTO item)
+        public int? Create(OrganizationDTO item)
         {
             if (item is not null)
             {
@@ -26,13 +26,15 @@ namespace BusinessLayer.Services
 
                     _database.Organizations.Create(organization);
                     _database.Save();
+                    return organization.Id;
                 }
             }
+            return null;
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int? secondId = null)
         {
-            _database.Contracts.Delete(id);
+            _database.Organizations.Delete(id);
             _database.Save();
         }
 
@@ -46,7 +48,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<OrganizationDTO>>(_database.Organizations.GetAll());
         }
 
-        public OrganizationDTO GetById(int id)
+        public OrganizationDTO GetById(int id, int? secondId = null)
         {
             var organization = _database.Organizations.GetById(id);
 

@@ -4,25 +4,23 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Список договоров</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create">Новый договор</a>
 </p>
 <table class="table">
     <thead>
         <tr>
             <th>
-
+                @Html.DisplayNameFor(model => model.FundingSource)
             </th>
             <th>
-                Номер и дата договора
-               @*  @Html.DisplayNameFor(model => model.Date) *@
+                Номер и дата договора              
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.NameObject)
-            </th>
-            
+            </th>           
             <th>
                 Генподрядчик
             </th>
@@ -36,7 +34,7 @@
                 Срок действия договора по взаиморасчетам
             </th>
             <th>
-                Акты приостоновки возобновления работ
+                Акты приостановки возобновления работ
             </th>
             <th>
                 Условия оплаты, без авансов тек. % цел.% отсрочка/в течение
@@ -58,22 +56,7 @@
             
             <th>
                 @Html.DisplayNameFor(model => model.FundingSource)
-            </th>
-            @*  <th>
-            @Html.DisplayNameFor(model => model.IsSubContract)
-            </th>
-            <th>
-            @Html.DisplayNameFor(model => model.IsEngineering)
-            </th>
-            <th>
-            @Html.DisplayNameFor(model => model.IsAgreementContract)
-            </th>
-            <th>
-            @Html.DisplayNameFor(model => model.AgreementContract)
-            </th>
-            <th>
-            @Html.DisplayNameFor(model => model.SubContract)
-            </th> *@
+            </th>            
             <th></th>
         </tr>
     </thead>
@@ -82,7 +65,7 @@
         {
             <tr>
                 <td>
-                    1
+                    @Html.DisplayFor(modelItem => item.FundingSource)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Number) от
@@ -97,8 +80,7 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.DateBeginWork)                
                     @Html.DisplayFor(modelItem => item.DateEndWork)
-                </td>
-
+                </td>                
                 <td>
                     @Html.DisplayFor(modelItem => item.EnteringTerm)
                 </td>
@@ -109,7 +91,11 @@
                    @Html.ActionLink("P4","","")
                 </td>
                 <td>
-                    @Html.ActionLink("P??","","")
+                    @Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)
+                    @Html.ActionLink("P11","","")
+
+                    @Html.DisplayFor(modelItem => item.PaymentСonditionsRaschet)
+                    @Html.ActionLink("P7","","")
                 </td>
                 <td>
                     @Html.ActionLink("P13","","")
@@ -122,27 +108,10 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.ContractPrice)
-                </td>
-
-                
+                </td>                
                 <td>
                     @Html.DisplayFor(modelItem => item.FundingSource)
-                </td>
-                @*  <td>
-            @Html.DisplayFor(modelItem => item.IsSubContract)
-            </td>
-            <td>
-            @Html.DisplayFor(modelItem => item.IsEngineering)
-            </td>
-            <td>
-            @Html.DisplayFor(modelItem => item.IsAgreementContract)
-            </td>
-            <td>
-            @Html.DisplayFor(modelItem => item.AgreementContract.Id)
-            </td>
-            <td>
-            @Html.DisplayFor(modelItem => item.SubContract.Id)
-            </td> *@
+                </td>               
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

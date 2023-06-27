@@ -16,21 +16,25 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public void Create(EmployeeDTO item)
+        public int? Create(EmployeeDTO item)
         {
             if (item is not null)
             {
                 if (_database.Employees.GetById(item.Id) is null)
                 {
-                    var employee = _mapper.Map<Employee>(item);
+                    item.FullName = $"{item?.LastName} {item?.FirstName} {item?.FatherName}";
+                    item.Fio = $"{item?.LastName} {item?.FirstName?[0]}.{item?.FatherName?[0]}.";
 
+                    var employee = _mapper.Map<Employee>(item);
                     _database.Employees.Create(employee);
                     _database.Save();
+                    return employee.Id;
                 }
             }
+            return null;
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int? secondId = null)
         {
             _database.Employees.Delete(id);
             _database.Save();
@@ -46,7 +50,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<EmployeeDTO>>(_database.Employees.GetAll());
         }
 
-        public EmployeeDTO GetById(int id)
+        public EmployeeDTO GetById(int id, int? secondId = null)
         {
             var employee = _database.Employees.GetById(id);
 

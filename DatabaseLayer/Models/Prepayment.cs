@@ -1,70 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Аванс
-/// </summary>
-public partial class Prepayment
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Prepayment
+    {
+        public Prepayment()
+        {
+            InverseChangePrepayment = new HashSet<Prepayment>();
+            PrepaymentAmendments = new HashSet<PrepaymentAmendment>();
+        }
 
-    /// <summary>
-    /// Текущие авансы
-    /// </summary>
-    public decimal? CurrentValue { get; set; }
+        public int Id { get; set; }
+        public decimal? CurrentValue { get; set; }
+        public decimal? CurrentValueFact { get; set; }
+        public decimal? TargetValue { get; set; }
+        public decimal? TargetValueFact { get; set; }
+        public decimal? WorkingOutValue { get; set; }
+        public decimal? WorkingOutValueFact { get; set; }
+        public DateTime? Period { get; set; }
+        public int? ContractId { get; set; }
+        public bool? IsChange { get; set; }
+        public int? ChangePrepaymentId { get; set; }
 
-    /// <summary>
-    /// Текущие авансы по факту
-    /// </summary>
-    public decimal? CurrentValueFact { get; set; }
-
-    /// <summary>
-    /// Целевые Авансы
-    /// </summary>
-    public decimal? TargetValue { get; set; }
-
-    /// <summary>
-    /// Целевые Авансы по факту
-    /// </summary>
-    public decimal? TargetValueFact { get; set; }
-
-    /// <summary>
-    /// Отработка целевых
-    /// </summary>
-    public decimal? WorkingOutValue { get; set; }
-
-    /// <summary>
-    /// Отработка целевых фактическое
-    /// </summary>
-    public decimal? WorkingOutValueFact { get; set; }
-
-    /// <summary>
-    /// Месяц за который получено
-    /// </summary>
-    public DateTime? Period { get; set; }
-
-    /// <summary>
-    /// Контракт
-    /// </summary>
-    public int? ContractId { get; set; }
-
-    /// <summary>
-    /// Изменено?
-    /// </summary>
-    public bool? IsChange { get; set; }
-
-    /// <summary>
-    /// ID измененного аванса
-    /// </summary>
-    public int? ChangePrepaymentId { get; set; }
-
-    public virtual Prepayment? ChangePrepayment { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<Prepayment> InverseChangePrepayment { get; set; } = new List<Prepayment>();
-
-    public virtual ICollection<Amendment> Amendments { get; set; } = new List<Amendment>();
+        public virtual Prepayment ChangePrepayment { get; set; }
+        public virtual Contract Contract { get; set; }
+        public virtual ICollection<Prepayment> InverseChangePrepayment { get; set; }
+        public virtual ICollection<PrepaymentAmendment> PrepaymentAmendments { get; set; }
+    }
 }

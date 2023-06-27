@@ -139,5 +139,15 @@ namespace MvcLayer.Controllers
             _organizationService.Delete(id);
             return RedirectToAction(nameof(Index));
         }
+
+        public JsonResult GetJsonOrganizations()
+        {           
+            return Json(_mapper.Map<OrganizationsJson>(_organizationService.GetAll()));
+        }
     }
+    class OrganizationsJson {
+        public int Id { get; set; }
+        public string Abbr { get; set; }
+    }
+
 }

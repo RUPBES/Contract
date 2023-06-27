@@ -10,21 +10,11 @@ namespace BusinessLayer.Models
     public class ContractOrganizationDTO
     {
         public int OrganizationId { get; set; }
-
-        public int ContactId { get; set; }
-
-        /// <summary>
-        /// ген.подрядчик?
-        /// </summary>
+        public int ContractId { get; set; }
         public bool? IsGenContractor { get; set; }
-
-        /// <summary>
-        /// Заказчик?
-        /// </summary>
         public bool? IsClient { get; set; }
 
-        public virtual ContractDTO Contact { get; set; }
-
+        public virtual ContractDTO Contract { get; set; }
         public virtual OrganizationDTO Organization { get; set; }
     }
 }

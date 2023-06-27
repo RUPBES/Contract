@@ -1,0 +1,78 @@
+﻿@model MvcLayer.Models.ContractViewModel
+@{
+    int index = 0;
+    int indexFS = 0;
+}
+<div data-bs-backdrop="static" id="staticBackdrop" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="false">
+    <div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Новый сотрудник</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="@Url.Action("AddNewEmployee","Contracts")" method="post" id="theFormEmp" style="padding-right: 20px; padding-left: 20px; width:350px;">
+                    <input asp-for="Date" type="datetime" hidden />
+                    <input asp-for="Number" hidden />
+                    <input asp-for="FundingSource" hidden />
+                    <input asp-for="NameObject" hidden />
+                    <input asp-for="EmployeeContracts[0].EmployeeId" hidden />
+                    <input asp-for="EmployeeContracts[1].EmployeeId" hidden />
+                    <input asp-for="ContractOrganizations[0].OrganizationId" type="number" hidden />
+                    <input asp-for="ContractOrganizations[1].OrganizationId" type="number" hidden />
+                    <input asp-for="DateBeginWork" type="date" class="form-control" hidden>
+
+                    <input asp-for="DateEndWork" type="date" hidden>
+                    <input asp-for="EnteringTerm" type="date" hidden>
+                    <input asp-for="ContractTerm" type="date" hidden>
+                    <input asp-for="ContractPrice" hidden />
+                    <input asp-for="Сurrency" hidden />
+                    <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />
+
+                    @foreach (var item in Model.PaymentCA)
+                    {
+                        <input asp-for="PaymentCA[index]" hidden />
+                        index++;
+                    }
+                    @foreach (var item in Model.FundingFS)
+                    {
+                        <input asp-for="FundingFS[indexFS]" hidden />
+                        indexFS++;
+                    }
+
+                    <input asp-for="PaymentСonditionsDaysRaschet" hidden />
+                    <input asp-for="PaymentСonditionsRaschet" hidden />
+
+                    <div class="form-group">
+                        <label asp-for="EmployeeContracts[2].Employee.LastName" class="control-label">Фамилия</label>
+                        <input asp-for="EmployeeContracts[2].Employee.LastName" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeContracts[2].Employee.FirstName" class="control-label">Имя</label>
+                        <input asp-for="EmployeeContracts[2].Employee.FirstName" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeContracts[2].Employee.FatherName" class="control-label">Отчество</label>
+                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeContracts[2].Employee.Position" class="control-label">Должность</label>
+                        <input asp-for="EmployeeContracts[2].Employee.Position" class="form-control" required/>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="EmployeeContracts[2].Employee.Email" class="control-label">Электронная почта</label>
+                        <input asp-for="EmployeeContracts[2].Employee.Email" class="form-control" required/>
+                    </div>                    
+                    <button class="btn btn-primary mt-3" type="submit" id="submitForm2">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('button.btn-close').click(function () {
+        $('#modDialog2').modal('hide');
+    });  
+</script> 

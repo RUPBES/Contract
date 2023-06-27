@@ -1,45 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Организация
-/// </summary>
-public partial class Organization
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Organization
+    {
+        public Organization()
+        {
+            Addresses = new HashSet<Address>();
+            ContractOrganizations = new HashSet<ContractOrganization>();
+            Departments = new HashSet<Department>();
+            Phones = new HashSet<Phone>();
+        }
 
-    /// <summary>
-    /// Полное название
-    /// </summary>
-    public string? Name { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Abbr { get; set; }
+        public string Unp { get; set; }
+        public string Email { get; set; }
+        public string PaymentAccount { get; set; }
 
-    /// <summary>
-    /// Аббревиатура
-    /// </summary>
-    public string? Abbr { get; set; }
-
-    /// <summary>
-    /// УНП предприятия
-    /// </summary>
-    public string? Unp { get; set; }
-
-    /// <summary>
-    /// электронная почта
-    /// </summary>
-    public string? Email { get; set; }
-
-    /// <summary>
-    /// расчетный счет
-    /// </summary>
-    public string? PaymentAccount { get; set; }
-
-    public virtual List<Address> Addresses { get; set; } = new List<Address>();
-
-    public virtual List<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
-
-    public virtual List<Department> Departments { get; set; } = new List<Department>();
-
-    public virtual List<Phone> Phones { get; set; } = new List<Phone>();
+        public virtual ICollection<Address> Addresses { get; set; }
+        public virtual ICollection<ContractOrganization> ContractOrganizations { get; set; }
+        public virtual ICollection<Department> Departments { get; set; }
+        public virtual ICollection<Phone> Phones { get; set; }
+    }
 }

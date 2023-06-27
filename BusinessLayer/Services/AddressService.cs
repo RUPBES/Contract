@@ -21,7 +21,7 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public void Create(AddressDTO item)
+        public int? Create(AddressDTO item)
         {
             if (item is not null)
             {
@@ -31,11 +31,13 @@ namespace BusinessLayer.Services
 
                     _database.Addresses.Create(address);
                     _database.Save();
+                    return address.Id;
                 }
             }
+            return null;
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int? secondId = null)
         {
             _database.Addresses.Delete(id);
             _database.Save();
@@ -51,7 +53,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<AddressDTO>>(_database.Addresses.GetAll());
         }
 
-        public AddressDTO GetById(int id)
+        public AddressDTO GetById(int id, int? secondId = null)
         {
             var address = _database.Addresses.GetById(id);
 

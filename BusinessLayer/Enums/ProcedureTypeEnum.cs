@@ -2,7 +2,7 @@
 {
     public enum ProcedureTypeEnum
     {
-        MarketingResearch=1,
+        MarketingResearch,
         Negotiations,
         ContractBidding,
         PurchasesSingleSource

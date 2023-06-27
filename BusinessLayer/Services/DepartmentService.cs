@@ -16,7 +16,7 @@ namespace BusinessLayer.Services
             _mapper = mapper;
         }
 
-        public void Create(DepartmentDTO item)
+        public int? Create(DepartmentDTO item)
         {
             if (item is not null)
             {
@@ -26,11 +26,13 @@ namespace BusinessLayer.Services
 
                     _database.Departments.Create(department);
                     _database.Save();
+                    return department.Id;
                 }
             }
+            return null;
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int? secondId = null)
         {
             _database.Departments.Delete(id);
             _database.Save();
@@ -46,7 +48,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<DepartmentDTO>>(_database.Departments.GetAll());
         }
 
-        public DepartmentDTO GetById(int id)
+        public DepartmentDTO GetById(int id, int? secondId = null)
         {
             var department = _database.Departments.GetById(id);
 

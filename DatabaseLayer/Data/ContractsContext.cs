@@ -82,268 +82,333 @@ public partial class ContractsContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Log>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.ToTable("Log");           
-        });
+        modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
 
         modelBuilder.Entity<Act>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_SuspensionAct_Id");
+            entity.ToTable("Act");
 
-            entity.ToTable("Act", tb => tb.HasComment("Акты приостановки/возобновления работ"));
+            entity.HasComment("Акты приостановки/возобновления работ");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+
             entity.Property(e => e.DateAct)
-                .HasComment("дата акта")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("дата акта");
+
             entity.Property(e => e.DateRenewal)
-                .HasComment("дата возобновления")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("дата возобновления");
+
             entity.Property(e => e.DateSuspendedFrom)
-                .HasComment("приостановлено с")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("приостановлено с");
+
             entity.Property(e => e.DateSuspendedUntil)
-                .HasComment("приостановлено по")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("приостановлено по");
+
             entity.Property(e => e.IsSuspension).HasComment("приостановлено?");
+
             entity.Property(e => e.Reason).HasComment("причина");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Acts)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Acts)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Act_Contract_Id");
+        });
 
-            entity.HasMany(d => d.Files).WithMany(p => p.Acts)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ActFile",
-                    r => r.HasOne<File>().WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_ActFile_File_Id"),
-                    l => l.HasOne<Act>().WithMany()
-                        .HasForeignKey("ActId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_ActFile_Act_Id"),
-                    j =>
-                    {
-                        j.HasKey("ActId", "FileId");
-                        j.ToTable("ActFile", tb => tb.HasComment("акты приостановки/возобновления - файлы"));
-                    });
+        modelBuilder.Entity<ActFile>(entity =>
+        {
+            entity.HasKey(e => new { e.ActId, e.FileId });
+
+            entity.ToTable("ActFile");
+
+            entity.HasComment("акты приостановки/возобновления - файлы");
+
+            entity.HasOne(d => d.Act)
+                .WithMany(p => p.ActFiles)
+                .HasForeignKey(d => d.ActId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActFile_Act_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.ActFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ActFile_File_Id");
         });
 
         modelBuilder.Entity<Address>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Address_Id");
+            entity.ToTable("Address");
 
-            entity.ToTable("Address", tb => tb.HasComment("Юр. адрес"));
+            entity.HasComment("Юр. адрес");
 
             entity.Property(e => e.FullAddress).HasComment("юр. адрес организации");
+
             entity.Property(e => e.FullAddressFact).HasComment("фактический адрес");
+
             entity.Property(e => e.PostIndex)
                 .HasMaxLength(20)
                 .HasComment("Почтовый индекс");
+
             entity.Property(e => e.SiteAddress).HasComment("сайт");
 
-            entity.HasOne(d => d.Organization).WithMany(p => p.Addresses)
+            entity.HasOne(d => d.Organization)
+                .WithMany(p => p.Addresses)
                 .HasForeignKey(d => d.OrganizationId)
                 .HasConstraintName("FK_Address_Organization_Id");
         });
 
         modelBuilder.Entity<Amendment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Amendments_Id");
+            entity.ToTable("Amendment");
 
-            entity.ToTable("Amendment", tb => tb.HasComment("Изменения к договору"));
+            entity.HasComment("Изменения к договору");
 
             entity.Property(e => e.Comment).HasComment("коментарии к изменениям");
+
             entity.Property(e => e.ContractChanges).HasComment("существенные изменения пунктов Договора");
+
             entity.Property(e => e.ContractId).HasComment("Договор");
+
             entity.Property(e => e.ContractPrice)
-                .HasComment("договорная (контрактная) цена, руб. с НДС")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("договорная (контрактная) цена, руб. с НДС");
+
             entity.Property(e => e.Date)
-                .HasComment("дата изменения")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("дата изменения");
+
             entity.Property(e => e.DateBeginWork)
-                .HasComment("срок выполнения работ (Начало)")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("срок выполнения работ (Начало)");
+
             entity.Property(e => e.DateEndWork)
-                .HasComment("срок выполнения работ (Окончание)")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("срок выполнения работ (Окончание)");
+
             entity.Property(e => e.DateEntryObject)
-                .HasComment("срок ввода объекта в эксплуатацию")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("срок ввода объекта в эксплуатацию");
+
             entity.Property(e => e.Number)
                 .HasMaxLength(50)
                 .HasComment("номер изменений");
+
             entity.Property(e => e.Reason).HasComment("Причина");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Amendments)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Amendments)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Amendment_Contract_Id");
+        });
 
-            entity.HasMany(d => d.Files).WithMany(p => p.Amendments)
-                .UsingEntity<Dictionary<string, object>>(
-                    "AmendmentFile",
-                    r => r.HasOne<File>().WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_AmendmentFile_File_Id"),
-                    l => l.HasOne<Amendment>().WithMany()
-                        .HasForeignKey("AmendmentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_AmendmentFile_Amendment_Id"),
-                    j =>
-                    {
-                        j.HasKey("AmendmentId", "FileId");
-                        j.ToTable("AmendmentFile", tb => tb.HasComment("изменения - файлы"));
-                    });
+        modelBuilder.Entity<AmendmentFile>(entity =>
+        {
+            entity.HasKey(e => new { e.AmendmentId, e.FileId });
+
+            entity.ToTable("AmendmentFile");
+
+            entity.HasComment("изменения - файлы");
+
+            entity.HasOne(d => d.Amendment)
+                .WithMany(p => p.AmendmentFiles)
+                .HasForeignKey(d => d.AmendmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AmendmentFile_Amendment_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.AmendmentFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AmendmentFile_File_Id");
         });
 
         modelBuilder.Entity<Contract>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Contract_Id");
+            entity.ToTable("Contract");
 
-            entity.ToTable("Contract", tb => tb.HasComment("Договор (субподряда)"));
+            entity.HasComment("Договор (субподряда)");
 
-            entity.HasIndex(e => e.Number, "UQ__Contract__78A1A19D0769BFAF").IsUnique();
+            entity.HasIndex(e => e.Number, "UQ__Contract__78A1A19D0769BFAF")
+                .IsUnique();
 
             entity.Property(e => e.ContractPrice)
-                .HasComment("Цена контракта")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("Цена контракта");
+
             entity.Property(e => e.ContractTerm)
-                .HasComment("Срок действия договора")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Срок действия договора");
+
             entity.Property(e => e.Date)
-                .HasComment("Дата договора")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Дата договора");
+
             entity.Property(e => e.DateBeginWork)
-                .HasComment("Начало работ")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Начало работ");
+
             entity.Property(e => e.DateEndWork)
-                .HasComment("Конец работ")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Конец работ");
+
             entity.Property(e => e.EnteringTerm)
-                .HasComment("Срок ввода")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Срок ввода");
+
             entity.Property(e => e.FundingSource).HasComment("источник финансирования");
+
             entity.Property(e => e.IsAgreementContract).HasComment("является ли соглашением с филиалом");
+
             entity.Property(e => e.IsEngineering).HasComment("является ли договор инжиниринговыми услугами");
+
             entity.Property(e => e.IsSubContract).HasComment("Флаг, является ли договором субподряда");
-            entity.Property(e => e.NameObject).HasComment("Цена СМР");
+
+            entity.Property(e => e.NameObject).HasComment("Название объекта");
+
             entity.Property(e => e.Number)
                 .HasMaxLength(100)
                 .HasComment("Номер договора");
+
             entity.Property(e => e.PaymentСonditionsAvans).HasComment("условия оплаты (авансы)");
+
             entity.Property(e => e.PaymentСonditionsRaschet).HasComment("условия оплаты (расчеты за выполненные работы)");
+
             entity.Property(e => e.SubContractId).HasComment("Ссылка на договоро (если субподряд)");
+
             entity.Property(e => e.Сurrency)
                 .HasMaxLength(50)
                 .HasComment("Валюта");
 
-            entity.HasOne(d => d.AgreementContract).WithMany(p => p.InverseAgreementContract)
+            entity.HasOne(d => d.AgreementContract)
+                .WithMany(p => p.InverseAgreementContract)
                 .HasForeignKey(d => d.AgreementContractId)
                 .HasConstraintName("FK_Agreement_Contract_Id");
 
-            entity.HasOne(d => d.SubContract).WithMany(p => p.InverseSubContract)
+            entity.HasOne(d => d.SubContract)
+                .WithMany(p => p.InverseSubContract)
                 .HasForeignKey(d => d.SubContractId)
                 .HasConstraintName("FK_Contract_Contract_Id");
         });
 
         modelBuilder.Entity<ContractOrganization>(entity =>
         {
-            entity.HasKey(e => new { e.OrganizationId, e.ContractId }).HasName("PK_LINK_Contract_Organization");
+            entity.HasKey(e => new { e.OrganizationId, e.ContractId })
+                .HasName("PK_LINK_Contract_Organization");
 
-            entity.ToTable("ContractOrganization", tb => tb.HasComment("Связь \"Организации\" и \"Контракта\""));
+            entity.ToTable("ContractOrganization");
+
+            entity.HasComment("Связь \"Организации\" и \"Контракта\"");
 
             entity.Property(e => e.IsClient).HasComment("Заказчик?");
+
             entity.Property(e => e.IsGenContractor).HasComment("ген.подрядчик?");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.ContractOrganizations)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.ContractOrganizations)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_LINK_Contract_Organization_Contract_Id");
 
-            entity.HasOne(d => d.Organization).WithMany(p => p.ContractOrganizations)
+            entity.HasOne(d => d.Organization)
+                .WithMany(p => p.ContractOrganizations)
                 .HasForeignKey(d => d.OrganizationId)
                 .HasConstraintName("FK_LINK_Contract_Organization_Organization_Id");
         });
 
         modelBuilder.Entity<Correspondence>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Correspondence_Id");
+            entity.ToTable("Correspondence");
 
-            entity.ToTable("Correspondence", tb => tb.HasComment("Переписка с заказчиком"));
+            entity.HasComment("Переписка с заказчиком");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+
             entity.Property(e => e.ContractId).HasComment("Контракт");
+
             entity.Property(e => e.Date)
-                .HasComment("Дата письма")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Дата письма");
+
             entity.Property(e => e.IsInBox).HasComment("Входящее / Исходящее");
+
             entity.Property(e => e.Number).HasComment("Номер письма");
+
             entity.Property(e => e.Summary).HasComment("Краткое содержание");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Correspondences)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Correspondences)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Correspondence_Contract_Id");
+        });
 
-            entity.HasMany(d => d.Files).WithMany(p => p.Correspondences)
-                .UsingEntity<Dictionary<string, object>>(
-                    "CorrespondenceFile",
-                    r => r.HasOne<File>().WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_CorrespondenceFile_File_Id"),
-                    l => l.HasOne<Correspondence>().WithMany()
-                        .HasForeignKey("CorrespondenceId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_CorrespondenceFile_Correspondence_Id"),
-                    j =>
-                    {
-                        j.HasKey("CorrespondenceId", "FileId");
-                        j.ToTable("CorrespondenceFile", tb => tb.HasComment("переписка -файлы"));
-                    });
+        modelBuilder.Entity<CorrespondenceFile>(entity =>
+        {
+            entity.HasKey(e => new { e.CorrespondenceId, e.FileId });
+
+            entity.ToTable("CorrespondenceFile");
+
+            entity.HasComment("переписка -файлы");
+
+            entity.HasOne(d => d.Correspondence)
+                .WithMany(p => p.CorrespondenceFiles)
+                .HasForeignKey(d => d.CorrespondenceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CorrespondenceFile_Correspondence_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.CorrespondenceFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CorrespondenceFile_File_Id");
         });
 
         modelBuilder.Entity<Department>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Department_Id");
+            entity.ToTable("Department");
 
-            entity.ToTable("Department", tb => tb.HasComment("Отдел/управление"));
+            entity.HasComment("Отдел/управление");
 
             entity.Property(e => e.Name).HasComment("Название");
 
-            entity.HasOne(d => d.Organization).WithMany(p => p.Departments)
+            entity.HasOne(d => d.Organization)
+                .WithMany(p => p.Departments)
                 .HasForeignKey(d => d.OrganizationId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Department_Organization_Id");
+        });
 
-            entity.HasMany(d => d.Employees).WithMany(p => p.Departments)
-                .UsingEntity<Dictionary<string, object>>(
-                    "DepartmentEmployee",
-                    r => r.HasOne<Employee>().WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_DepartmentEmployee_Employee_Id"),
-                    l => l.HasOne<Department>().WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_DepartmentEmployee_Department_Id"),
-                    j =>
-                    {
-                        j.HasKey("DepartmentId", "EmployeeId");
-                        j.ToTable("DepartmentEmployee", tb => tb.HasComment("Отдел-Сотрудник"));
-                    });
+        modelBuilder.Entity<DepartmentEmployee>(entity =>
+        {
+            entity.HasKey(e => new { e.DepartmentId, e.EmployeeId });
+
+            entity.ToTable("DepartmentEmployee");
+
+            entity.HasComment("Отдел-Сотрудник");
+
+            entity.HasOne(d => d.Department)
+                .WithMany(p => p.DepartmentEmployees)
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DepartmentEmployee_Department_Id");
+
+            entity.HasOne(d => d.Employee)
+                .WithMany(p => p.DepartmentEmployees)
+                .HasForeignKey(d => d.EmployeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_DepartmentEmployee_Employee_Id");
         });
 
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Employee_Id");
+            entity.ToTable("Employee");
 
-            entity.ToTable("Employee", tb => tb.HasComment("Сотрудники"));
+            entity.HasComment("Сотрудники");
 
             entity.Property(e => e.Email).HasMaxLength(50);
+
             entity.Property(e => e.Fio).HasColumnName("FIO");
         });
 
@@ -351,19 +416,24 @@ public partial class ContractsContext : DbContext
         {
             entity.HasKey(e => new { e.EmployeeId, e.ContractId });
 
-            entity.ToTable("EmployeeContract", tb => tb.HasComment("связь сотрудник - контракт"));
+            entity.ToTable("EmployeeContract");
+
+            entity.HasComment("связь сотрудник - контракт");
 
             entity.Property(e => e.IsResponsible).HasComment("ответственный за ведение договора");
-            entity.Property(e => e.IsSignatory)
-                .HasComment("подписант договора")
-                .HasColumnName("IsSignatory ");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.EmployeeContracts)
+            entity.Property(e => e.IsSignatory)
+                .HasColumnName("IsSignatory ")
+                .HasComment("подписант договора");
+
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.EmployeeContracts)
                 .HasForeignKey(d => d.ContractId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EmployeeContract_Contract_Id");
 
-            entity.HasOne(d => d.Employee).WithMany(p => p.EmployeeContracts)
+            entity.HasOne(d => d.Employee)
+                .WithMany(p => p.EmployeeContracts)
                 .HasForeignKey(d => d.EmployeeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EmployeeContract_Employee_Id");
@@ -371,198 +441,263 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<EstimateDoc>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_EstimateDoc_Id");
+            entity.ToTable("EstimateDoc");
 
-            entity.ToTable("EstimateDoc", tb => tb.HasComment("Проектно-сметная документация"));
+            entity.HasComment("Проектно-сметная документация");
 
             entity.Property(e => e.ContractId).HasComment("Контракт");
+
             entity.Property(e => e.DateChange)
-                .HasComment("Дата изменения в проектно-сметную документацию")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Дата изменения в проектно-сметную документацию");
+
             entity.Property(e => e.DateOutput)
-                .HasComment("Дата выхода смет")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Дата выхода смет");
+
             entity.Property(e => e.IsChange).HasComment("Проверка: изменения / оригинал");
+
             entity.Property(e => e.Number).HasComment("№ п/п");
+
             entity.Property(e => e.Reason).HasComment("Причины изменения проектно-сметной документации");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.EstimateDocs)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.EstimateDocs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_EstimateDoc_Contract_Id");
-
-            entity.HasMany(d => d.Files).WithMany(p => p.EstimateDocs)
-                .UsingEntity<Dictionary<string, object>>(
-                    "EstimateDocFile",
-                    r => r.HasOne<File>().WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_EstimateDocFile_File_Id"),
-                    l => l.HasOne<EstimateDoc>().WithMany()
-                        .HasForeignKey("EstimateDocId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_EstimateDocFile_EstimateDoc_Id"),
-                    j =>
-                    {
-                        j.HasKey("EstimateDocId", "FileId");
-                        j.ToTable("EstimateDocFile", tb => tb.HasComment("Псд - файлы"));
-                    });
         });
 
-        modelBuilder.Entity<File>(entity =>
+        modelBuilder.Entity<EstimateDocFile>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_File_Id");
+            entity.HasKey(e => new { e.EstimateDocId, e.FileId });
 
-            entity.ToTable("File", tb => tb.HasComment("Файл"));
+            entity.ToTable("EstimateDocFile");
+
+            entity.HasComment("Псд - файлы");
+
+            entity.HasOne(d => d.EstimateDoc)
+                .WithMany(p => p.EstimateDocFiles)
+                .HasForeignKey(d => d.EstimateDocId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstimateDocFile_EstimateDoc_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.EstimateDocFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_EstimateDocFile_File_Id");
+        });
+
+        modelBuilder.Entity<Models.File>(entity =>
+        {
+            entity.ToTable("File");
+
+            entity.HasComment("Файл");
 
             entity.Property(e => e.DateUploud)
+                .HasColumnType("datetime")
                 .HasDefaultValueSql("(getdate())")
-                .HasComment("Дата загрузки")
-                .HasColumnType("datetime");
+                .HasComment("Дата загрузки");
+
             entity.Property(e => e.FileName).HasComment("Имя файла");
+
             entity.Property(e => e.FilePath).HasComment("Путь к файлу");
+
             entity.Property(e => e.FileType).HasComment("Тип документа");
         });
 
         modelBuilder.Entity<FormC3a>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_WorkMonth_Id");
+            entity.ToTable("FormC3A");
 
-            entity.ToTable("FormC3A", tb => tb.HasComment("справки о стоимости выполненных  работ (С-3а)"));
+            entity.HasComment("справки о стоимости выполненных  работ (С-3а)");
 
             entity.Property(e => e.AdditionalCost)
-                .HasComment("стоимость доп. работ")
-                .HasColumnType("money");
-            entity.Property(e => e.ContractId).HasComment("Ссылка на договор");
-            entity.Property(e => e.DateSigning)
-                .HasComment("Дата документа")
-                .HasColumnType("datetime");
-            entity.Property(e => e.EquipmentCost)
-                .HasComment("стоимость оборудования")
-                .HasColumnType("money");
-            entity.Property(e => e.GenServiceCost)
-                .HasComment("стоимость ген.услуг")
-                .HasColumnType("money");
-            entity.Property(e => e.IsOwnForces).HasComment("работы проводятся собственными силами?");
-            entity.Property(e => e.MaterialCost)
-                .HasComment("стоимость материалов (заказчика)")
-                .HasColumnType("money");
-            entity.Property(e => e.Number).HasMaxLength(50);
-            entity.Property(e => e.OtherExpensesCost)
-                .HasComment("стоимость остальных работ")
-                .HasColumnType("money");
-            entity.Property(e => e.Period)
-                .HasComment("За какой месяц выполнены работы")
-                .HasColumnType("datetime");
-            entity.Property(e => e.PnrCost)
-                .HasComment("стоимость  ПНР")
-                .HasColumnType("money");
-            entity.Property(e => e.SmrCost)
-                .HasComment("стоимость СМР")
-                .HasColumnType("money");
-            entity.Property(e => e.TotalCost)
-                .HasComment("Объем выполненных работ")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("стоимость доп. работ");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.FormC3as)
+            entity.Property(e => e.ContractId).HasComment("Ссылка на договор");
+
+            entity.Property(e => e.DateSigning)
+                .HasColumnType("datetime")
+                .HasComment("Дата документа");
+
+            entity.Property(e => e.EquipmentCost)
+                .HasColumnType("money")
+                .HasComment("стоимость оборудования");
+
+            entity.Property(e => e.GenServiceCost)
+                .HasColumnType("money")
+                .HasComment("стоимость ген.услуг");
+
+            entity.Property(e => e.IsOwnForces).HasComment("работы проводятся собственными силами?");
+
+            entity.Property(e => e.MaterialCost)
+                .HasColumnType("money")
+                .HasComment("стоимость материалов (заказчика)");
+
+            entity.Property(e => e.Number).HasMaxLength(50);
+
+            entity.Property(e => e.OtherExpensesCost)
+                .HasColumnType("money")
+                .HasComment("стоимость остальных работ");
+
+            entity.Property(e => e.Period)
+                .HasColumnType("datetime")
+                .HasComment("За какой месяц выполнены работы");
+
+            entity.Property(e => e.PnrCost)
+                .HasColumnType("money")
+                .HasComment("стоимость  ПНР");
+
+            entity.Property(e => e.SmrCost)
+                .HasColumnType("money")
+                .HasComment("стоимость СМР");
+
+            entity.Property(e => e.TotalCost)
+                .HasColumnType("money")
+                .HasComment("Объем выполненных работ");
+
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.FormC3as)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_FormC3A_Contract_Id");
         });
 
+        modelBuilder.Entity<Log>(entity =>
+        {
+            entity.ToTable("Log");
+
+            entity.Property(e => e.DateTime).HasColumnType("datetime");
+
+            entity.Property(e => e.LogLevel)
+                .HasColumnName("LogLevel ")
+                .HasComment("уровень логирования");
+
+            entity.Property(e => e.Message).HasColumnName("Message ");
+
+            entity.Property(e => e.MethodName).HasColumnName("MethodName ");
+
+            entity.Property(e => e.NameSpace).HasColumnName("NameSpace ");
+
+            entity.Property(e => e.UserName).HasColumnName("UserName ");
+        });
+
+        modelBuilder.Entity<MaterialAmendment>(entity =>
+        {
+            entity.HasKey(e => new { e.MaterialId, e.AmendmentId });
+
+            entity.ToTable("MaterialAmendment");
+
+            entity.HasComment("материалы - изменения");
+
+            entity.HasOne(d => d.Amendment)
+                .WithMany(p => p.MaterialAmendments)
+                .HasForeignKey(d => d.AmendmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MaterialAmendment_Amendment_Id");
+
+            entity.HasOne(d => d.Material)
+                .WithMany(p => p.MaterialAmendments)
+                .HasForeignKey(d => d.MaterialId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MaterialAmendment_MaterialGC_Id");
+        });
+
         modelBuilder.Entity<MaterialGc>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_PriceMaterial_Id");
+            entity.ToTable("MaterialGC");
 
-            entity.ToTable("MaterialGC", tb => tb.HasComment("Материалы генподрядчика"));
+            entity.HasComment("Материалы генподрядчика");
 
             entity.Property(e => e.ChangeMaterialId).HasComment("ID измененных материалов");
-            entity.Property(e => e.ContractId).HasComment("Контракт");
-            entity.Property(e => e.FactPrice)
-                .HasComment("Цена фактическая")
-                .HasColumnType("money");
-            entity.Property(e => e.IsChange).HasComment("изменено?");
-            entity.Property(e => e.Period)
-                .HasComment("период отчета")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Price)
-                .HasComment("Цена по договору")
-                .HasColumnType("money");
 
-            entity.HasOne(d => d.ChangeMaterial).WithMany(p => p.InverseChangeMaterial)
+            entity.Property(e => e.ContractId).HasComment("Контракт");
+
+            entity.Property(e => e.FactPrice)
+                .HasColumnType("money")
+                .HasComment("Цена фактическая");
+
+            entity.Property(e => e.IsChange).HasComment("изменено?");
+
+            entity.Property(e => e.Period)
+                .HasColumnType("datetime")
+                .HasComment("период отчета");
+
+            entity.Property(e => e.Price)
+                .HasColumnType("money")
+                .HasComment("Цена по договору");
+
+            entity.HasOne(d => d.ChangeMaterial)
+                .WithMany(p => p.InverseChangeMaterial)
                 .HasForeignKey(d => d.ChangeMaterialId)
                 .HasConstraintName("FK_MaterialGC_MaterialGC_Id");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.MaterialGcs)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.MaterialGcs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_MaterialGC_Contract_Id");
-
-            entity.HasMany(d => d.Amendments).WithMany(p => p.Materials)
-                .UsingEntity<Dictionary<string, object>>(
-                    "MaterialAmendment",
-                    r => r.HasOne<Amendment>().WithMany()
-                        .HasForeignKey("AmendmentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_MaterialAmendment_Amendment_Id"),
-                    l => l.HasOne<MaterialGc>().WithMany()
-                        .HasForeignKey("MaterialId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_MaterialAmendment_MaterialGC_Id"),
-                    j =>
-                    {
-                        j.HasKey("MaterialId", "AmendmentId");
-                        j.ToTable("MaterialAmendment", tb => tb.HasComment("материалы - изменения"));
-                    });
         });
 
         modelBuilder.Entity<Organization>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Organization_Id");
+            entity.ToTable("Organization");
 
-            entity.ToTable("Organization", tb => tb.HasComment("Организация"));
+            entity.HasComment("Организация");
 
             entity.Property(e => e.Abbr).HasComment("Аббревиатура");
+
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasComment("электронная почта");
+
             entity.Property(e => e.Name).HasComment("Полное название");
+
             entity.Property(e => e.PaymentAccount)
                 .HasMaxLength(100)
                 .HasComment("расчетный счет");
+
             entity.Property(e => e.Unp).HasComment("УНП предприятия");
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Payment_Id");
+            entity.ToTable("Payment");
 
-            entity.ToTable("Payment", tb => tb.HasComment("денежные средства, подлежащие оплате"));
+            entity.HasComment("денежные средства, подлежащие оплате");
 
             entity.Property(e => e.PaySum)
-                .HasComment("всего к оплате")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("всего к оплате");
+
             entity.Property(e => e.PaySumForRupBes)
-                .HasComment("из них на счет РУП \"БЭС\"-УКХ\"")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("из них на счет РУП \"БЭС\"-УКХ\"");
+
             entity.Property(e => e.Period).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Payments)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Payments)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Payment_Contract_Id");
         });
 
         modelBuilder.Entity<Phone>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Phone_Id");
+            entity.ToTable("Phone");
 
-            entity.ToTable("Phone", tb => tb.HasComment("Телефон"));
+            entity.HasComment("Телефон");
 
             entity.Property(e => e.Number).HasMaxLength(50);
 
-            entity.HasOne(d => d.Employee).WithMany(p => p.Phones)
+            entity.HasOne(d => d.Employee)
+                .WithMany(p => p.Phones)
                 .HasForeignKey(d => d.EmployeeId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Phone_Employee_Id");
 
-            entity.HasOne(d => d.Organization).WithMany(p => p.Phones)
+            entity.HasOne(d => d.Organization)
+                .WithMany(p => p.Phones)
                 .HasForeignKey(d => d.OrganizationId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Phone_Organization_Id");
@@ -570,265 +705,333 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<Prepayment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Prepayment_Id");
+            entity.ToTable("Prepayment");
 
-            entity.ToTable("Prepayment", tb => tb.HasComment("Аванс"));
+            entity.HasComment("Аванс");
 
             entity.Property(e => e.ChangePrepaymentId).HasComment("ID измененного аванса");
-            entity.Property(e => e.ContractId).HasComment("Контракт");
-            entity.Property(e => e.CurrentValue)
-                .HasComment("Текущие авансы")
-                .HasColumnType("money");
-            entity.Property(e => e.CurrentValueFact)
-                .HasComment("Текущие авансы по факту")
-                .HasColumnType("money");
-            entity.Property(e => e.IsChange).HasComment("Изменено?");
-            entity.Property(e => e.Period)
-                .HasComment("Месяц за который получено")
-                .HasColumnType("datetime");
-            entity.Property(e => e.TargetValue)
-                .HasComment("Целевые Авансы")
-                .HasColumnType("money");
-            entity.Property(e => e.TargetValueFact)
-                .HasComment("Целевые Авансы по факту")
-                .HasColumnType("money");
-            entity.Property(e => e.WorkingOutValue)
-                .HasComment("Отработка целевых")
-                .HasColumnType("money");
-            entity.Property(e => e.WorkingOutValueFact)
-                .HasComment("Отработка целевых фактическое")
-                .HasColumnType("money");
 
-            entity.HasOne(d => d.ChangePrepayment).WithMany(p => p.InverseChangePrepayment)
+            entity.Property(e => e.ContractId).HasComment("Контракт");
+
+            entity.Property(e => e.CurrentValue)
+                .HasColumnType("money")
+                .HasComment("Текущие авансы");
+
+            entity.Property(e => e.CurrentValueFact)
+                .HasColumnType("money")
+                .HasComment("Текущие авансы по факту");
+
+            entity.Property(e => e.IsChange).HasComment("Изменено?");
+
+            entity.Property(e => e.Period)
+                .HasColumnType("datetime")
+                .HasComment("Месяц за который получено");
+
+            entity.Property(e => e.TargetValue)
+                .HasColumnType("money")
+                .HasComment("Целевые Авансы");
+
+            entity.Property(e => e.TargetValueFact)
+                .HasColumnType("money")
+                .HasComment("Целевые Авансы по факту");
+
+            entity.Property(e => e.WorkingOutValue)
+                .HasColumnType("money")
+                .HasComment("Отработка целевых");
+
+            entity.Property(e => e.WorkingOutValueFact)
+                .HasColumnType("money")
+                .HasComment("Отработка целевых фактическое");
+
+            entity.HasOne(d => d.ChangePrepayment)
+                .WithMany(p => p.InverseChangePrepayment)
                 .HasForeignKey(d => d.ChangePrepaymentId)
                 .HasConstraintName("FK_Prepayment_Prepayment_Id");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.Prepayments)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Prepayments)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Prepayment_Contract_Id");
+        });
 
-            entity.HasMany(d => d.Amendments).WithMany(p => p.Prepayments)
-                .UsingEntity<Dictionary<string, object>>(
-                    "PrepaymentAmendment",
-                    r => r.HasOne<Amendment>().WithMany()
-                        .HasForeignKey("AmendmentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_PrepaymentAmendment_Amendment_Id"),
-                    l => l.HasOne<Prepayment>().WithMany()
-                        .HasForeignKey("PrepaymentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_PrepaymentAmendment_Prepayment_Id"),
-                    j =>
-                    {
-                        j.HasKey("PrepaymentId", "AmendmentId");
-                        j.ToTable("PrepaymentAmendment", tb => tb.HasComment("аванс - изменения"));
-                    });
+        modelBuilder.Entity<PrepaymentAmendment>(entity =>
+        {
+            entity.HasKey(e => new { e.PrepaymentId, e.AmendmentId });
+
+            entity.ToTable("PrepaymentAmendment");
+
+            entity.HasComment("аванс - изменения");
+
+            entity.HasOne(d => d.Amendment)
+                .WithMany(p => p.PrepaymentAmendments)
+                .HasForeignKey(d => d.AmendmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PrepaymentAmendment_Amendment_Id");
+
+            entity.HasOne(d => d.Prepayment)
+                .WithMany(p => p.PrepaymentAmendments)
+                .HasForeignKey(d => d.PrepaymentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PrepaymentAmendment_Prepayment_Id");
         });
 
         modelBuilder.Entity<ScopeWork>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_ScopeWork_Id");
+            entity.ToTable("ScopeWork");
 
-            entity.ToTable("ScopeWork", tb => tb.HasComment("Объем работ"));
+            entity.HasComment("Объем работ");
 
             entity.Property(e => e.AdditionalCost)
-                .HasComment("Цена дополнительных работ")
-                .HasColumnType("money");
-            entity.Property(e => e.ChangeScopeWorkId).HasComment("ID измененного объема работ");
-            entity.Property(e => e.ContractId).HasComment("Контракт");
-            entity.Property(e => e.CostNds)
-                .HasComment("согласно графику производства работ по договору")
                 .HasColumnType("money")
-                .HasColumnName("CostNDS");
-            entity.Property(e => e.CostNoNds)
-                .HasComment("стоимость работ без НДС (согласно договору)")
-                .HasColumnType("money")
-                .HasColumnName("CostNoNDS");
-            entity.Property(e => e.EquipmentCost)
-                .HasComment("Цена оборудования")
-                .HasColumnType("money");
-            entity.Property(e => e.GenServiceCost).HasColumnType("money");
-            entity.Property(e => e.IsChange).HasComment("изменено?");
-            entity.Property(e => e.IsOwnForces).HasComment("работы проводятся собственными силами?");
-            entity.Property(e => e.MaterialCost)
-                .HasComment("Цена материалов ")
-                .HasColumnType("money");
-            entity.Property(e => e.OtherExpensesCost)
-                .HasComment("Цена остальных работ")
-                .HasColumnType("money");
-            entity.Property(e => e.Period)
-                .HasComment("Период отчета")
-                .HasColumnType("datetime");
-            entity.Property(e => e.PnrCost)
-                .HasComment("Цена ПНР")
-                .HasColumnType("money");
-            entity.Property(e => e.SmrCost)
-                .HasComment("стоимость СМР")
-                .HasColumnType("money");
+                .HasComment("Цена дополнительных работ");
 
-            entity.HasOne(d => d.ChangeScopeWork).WithMany(p => p.InverseChangeScopeWork)
+            entity.Property(e => e.ChangeScopeWorkId).HasComment("ID измененного объема работ");
+
+            entity.Property(e => e.ContractId).HasComment("Контракт");
+
+            entity.Property(e => e.CostNds)
+                .HasColumnType("money")
+                .HasColumnName("CostNDS")
+                .HasComment("согласно графику производства работ по договору");
+
+            entity.Property(e => e.CostNoNds)
+                .HasColumnType("money")
+                .HasColumnName("CostNoNDS")
+                .HasComment("стоимость работ без НДС (согласно договору)");
+
+            entity.Property(e => e.EquipmentCost)
+                .HasColumnType("money")
+                .HasComment("Цена оборудования");
+
+            entity.Property(e => e.GenServiceCost).HasColumnType("money");
+
+            entity.Property(e => e.IsChange).HasComment("изменено?");
+
+            entity.Property(e => e.IsOwnForces).HasComment("работы проводятся собственными силами?");
+
+            entity.Property(e => e.MaterialCost)
+                .HasColumnType("money")
+                .HasComment("Цена материалов ");
+
+            entity.Property(e => e.OtherExpensesCost)
+                .HasColumnType("money")
+                .HasComment("Цена остальных работ");
+
+            entity.Property(e => e.Period)
+                .HasColumnType("datetime")
+                .HasComment("Период отчета");
+
+            entity.Property(e => e.PnrCost)
+                .HasColumnType("money")
+                .HasComment("Цена ПНР");
+
+            entity.Property(e => e.SmrCost)
+                .HasColumnType("money")
+                .HasComment("стоимость СМР");
+
+            entity.HasOne(d => d.ChangeScopeWork)
+                .WithMany(p => p.InverseChangeScopeWork)
                 .HasForeignKey(d => d.ChangeScopeWorkId)
                 .HasConstraintName("FK_ScopeWork_ScopeWork_Id");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.ScopeWorks)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.ScopeWorks)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_ScopeWork_Contract_Id");
+        });
 
-            entity.HasMany(d => d.Amendments).WithMany(p => p.ScopeWorks)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ScopeWorkAmendment",
-                    r => r.HasOne<Amendment>().WithMany()
-                        .HasForeignKey("AmendmentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_ScopeWorkAmendment_Amendment_Id"),
-                    l => l.HasOne<ScopeWork>().WithMany()
-                        .HasForeignKey("ScopeWorkId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_ScopeWorkAmendment_ScopeWork_Id"),
-                    j =>
-                    {
-                        j.HasKey("ScopeWorkId", "AmendmentId");
-                        j.ToTable("ScopeWorkAmendment", tb => tb.HasComment("объем работ - изменения"));
-                    });
+        modelBuilder.Entity<ScopeWorkAmendment>(entity =>
+        {
+            entity.HasKey(e => new { e.ScopeWorkId, e.AmendmentId });
+
+            entity.ToTable("ScopeWorkAmendment");
+
+            entity.HasComment("объем работ - изменения");
+
+            entity.HasOne(d => d.Amendment)
+                .WithMany(p => p.ScopeWorkAmendments)
+                .HasForeignKey(d => d.AmendmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ScopeWorkAmendment_Amendment_Id");
+
+            entity.HasOne(d => d.ScopeWork)
+                .WithMany(p => p.ScopeWorkAmendments)
+                .HasForeignKey(d => d.ScopeWorkId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ScopeWorkAmendment_ScopeWork_Id");
         });
 
         modelBuilder.Entity<SelectionProcedure>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_SelectionProcedure_Id");
+            entity.ToTable("SelectionProcedure");
 
-            entity.ToTable("SelectionProcedure", tb => tb.HasComment("Процедура выбора"));
+            entity.HasComment("Процедура выбора");
 
             entity.Property(e => e.AcceptanceNumber).HasComment("Номер акцента");
+
             entity.Property(e => e.AcceptancePrice)
-                .HasComment("Цена акцента")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("Цена акцента");
+
             entity.Property(e => e.DateAcceptance)
-                .HasComment("Дата акцента")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Дата акцента");
+
             entity.Property(e => e.DateBegin)
-                .HasComment("Срок проведения начало")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Срок проведения начало");
+
             entity.Property(e => e.DateEnd)
-                .HasComment("Срок проведения окончание")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Срок проведения окончание");
+
             entity.Property(e => e.Name).HasComment("Название");
+
             entity.Property(e => e.StartPrice)
-                .HasComment("Стартовая цена")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("Стартовая цена");
+
             entity.Property(e => e.TypeProcedure).HasComment("Вид закупки");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.SelectionProcedures)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.SelectionProcedures)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_SelectionProcedure_Contract_Id");
         });
 
+        modelBuilder.Entity<ServiceAmendment>(entity =>
+        {
+            entity.HasKey(e => new { e.ServiceId, e.AmendmentId });
+
+            entity.ToTable("ServiceAmendment");
+
+            entity.HasComment("услуги генподрядчика - изменения");
+
+            entity.HasOne(d => d.Amendment)
+                .WithMany(p => p.ServiceAmendments)
+                .HasForeignKey(d => d.AmendmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServiceAmendment_Amendment_Id");
+
+            entity.HasOne(d => d.Service)
+                .WithMany(p => p.ServiceAmendments)
+                .HasForeignKey(d => d.ServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ServiceAmendment_ServiceGC_Id");
+        });
+
         modelBuilder.Entity<ServiceGc>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_GenContractorService_Id");
+            entity.ToTable("ServiceGC");
 
-            entity.ToTable("ServiceGC", tb => tb.HasComment("Услуги генподряда"));
+            entity.HasComment("Услуги генподряда");
 
             entity.Property(e => e.ChangeServiceId).HasComment("ID измененной услуги");
+
             entity.Property(e => e.ContractId).HasComment("Контракт");
+
             entity.Property(e => e.FactPrice)
-                .HasComment("Сумма фактическая")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("Сумма фактическая");
+
             entity.Property(e => e.IsChange).HasComment("изменено?");
+
             entity.Property(e => e.Period)
-                .HasComment("Месяц и год")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Месяц и год");
+
             entity.Property(e => e.Price)
-                .HasComment("Сумма по договору")
-                .HasColumnType("money");
+                .HasColumnType("money")
+                .HasComment("Сумма по договору");
+
             entity.Property(e => e.ServicePercent).HasComment("процент услуг");
 
-            entity.HasOne(d => d.ChangeService).WithMany(p => p.InverseChangeService)
+            entity.HasOne(d => d.ChangeService)
+                .WithMany(p => p.InverseChangeService)
                 .HasForeignKey(d => d.ChangeServiceId)
                 .HasConstraintName("FK_ServiceGC_ServiceGC_Id");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.ServiceGcs)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.ServiceGcs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_ServiceGC_Contract_Id");
-
-            entity.HasMany(d => d.Amendments).WithMany(p => p.Services)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ServiceAmendment",
-                    r => r.HasOne<Amendment>().WithMany()
-                        .HasForeignKey("AmendmentId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_ServiceAmendment_Amendment_Id"),
-                    l => l.HasOne<ServiceGc>().WithMany()
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_ServiceAmendment_ServiceGC_Id"),
-                    j =>
-                    {
-                        j.HasKey("ServiceId", "AmendmentId");
-                        j.ToTable("ServiceAmendment", tb => tb.HasComment("услуги генподрядчика - изменения"));
-                    });
         });
 
         modelBuilder.Entity<TypeWork>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_GuideTypeWork_Id");
+            entity.ToTable("TypeWork");
 
-            entity.ToTable("TypeWork", tb => tb.HasComment("Справочник стандартных работ"));
+            entity.HasComment("Справочник стандартных работ");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
+
             entity.Property(e => e.Name).HasComment("Название работ");
         });
 
         modelBuilder.Entity<TypeWorkContract>(entity =>
         {
-            entity.HasKey(e => new { e.TypeWorkId, e.ContractId }).HasName("PK_TypeWork");
+            entity.HasKey(e => new { e.TypeWorkId, e.ContractId })
+                .HasName("PK_TypeWork");
 
-            entity.ToTable("TypeWorkContract", tb => tb.HasComment("вид работ - договор"));
+            entity.ToTable("TypeWorkContract");
+
+            entity.HasComment("вид работ - договор");
 
             entity.Property(e => e.TypeWorkId).HasComment("Ссылка на типовые работы");
+
             entity.Property(e => e.ContractId).HasComment("Контракт");
+
             entity.Property(e => e.AdditionalName).HasComment("Название работ");
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.TypeWorkContracts)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.TypeWorkContracts)
                 .HasForeignKey(d => d.ContractId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_TypeWork_Contract_Id");
 
-            entity.HasOne(d => d.TypeWork).WithMany(p => p.TypeWorkContracts)
+            entity.HasOne(d => d.TypeWork)
+                .WithMany(p => p.TypeWorkContracts)
                 .HasForeignKey(d => d.TypeWorkId)
                 .HasConstraintName("FK_TypeWork_GuideTypeWork_Id");
         });
 
         modelBuilder.Entity<СommissionAct>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_СommissionAct_Id");
+            entity.ToTable("СommissionAct");
 
-            entity.ToTable("СommissionAct", tb => tb.HasComment("акт ввода"));
+            entity.HasComment("акт ввода");
 
             entity.Property(e => e.Date)
-                .HasComment("Дата акта ввода")
-                .HasColumnType("datetime");
+                .HasColumnType("datetime")
+                .HasComment("Дата акта ввода");
+
             entity.Property(e => e.Number).HasMaxLength(50);
 
-            entity.HasOne(d => d.Contract).WithMany(p => p.СommissionActs)
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.СommissionActs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_СommissionAct_Contract_Id");
+        });
 
-            entity.HasMany(d => d.Files).WithMany(p => p.СommissionActs)
-                .UsingEntity<Dictionary<string, object>>(
-                    "СommissionActFile",
-                    r => r.HasOne<File>().WithMany()
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_СommissionActFile_File_Id"),
-                    l => l.HasOne<СommissionAct>().WithMany()
-                        .HasForeignKey("СommissionActId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_СommissionActFile_СommissionAct_Id"),
-                    j =>
-                    {
-                        j.HasKey("СommissionActId", "FileId");
-                        j.ToTable("СommissionActFile", tb => tb.HasComment("акт ввода - файлы"));
-                    });
+        modelBuilder.Entity<СommissionActFile>(entity =>
+        {
+            entity.HasKey(e => new { e.СommissionActId, e.FileId });
+
+            entity.ToTable("СommissionActFile");
+
+            entity.HasComment("акт ввода - файлы");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.СommissionActFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_СommissionActFile_File_Id");
+
+            entity.HasOne(d => d.СommissionAct)
+                .WithMany(p => p.СommissionActFiles)
+                .HasForeignKey(d => d.СommissionActId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_СommissionActFile_СommissionAct_Id");
         });
 
         OnModelCreatingPartial(modelBuilder);

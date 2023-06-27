@@ -20,12 +20,15 @@ namespace MvcLayer.Models
         /// </summary>
         public int? SubContractId { get; set; }
 
+        /// <summary>
+        /// Ссылка на договоро (если соглашение с филиалом)
+        /// </summary>
         public int? AgreementContractId { get; set; }
 
         /// <summary>
         /// Дата договора
         /// </summary>
-          [DisplayName("Дата договора")]
+        [DisplayName("Дата договора")]
         public DateTime? Date { get; set; }
 
         /// <summary>
@@ -56,7 +59,6 @@ namespace MvcLayer.Models
         /// Валюта
         /// </summary>
         [DisplayName("Валюта")]
-
         public string? Сurrency { get; set; }
 
         /// <summary>
@@ -66,18 +68,20 @@ namespace MvcLayer.Models
         public decimal? ContractPrice { get; set; }
 
         /// <summary>
-        /// Цена СМР
+        /// Наименование объекта
         /// </summary>
         [DisplayName("Наименование объекта")]
         public string? NameObject { get; set; }
 
-       
+
         /// <summary>
         /// источник финансирования
         /// </summary>
         /// 
         [DisplayName("Источник финансирования")]
         public string? FundingSource { get; set; }
+
+        public List<string> FundingFS { get; set; } = new List<string>();
 
         /// <summary>
         /// Флаг, является ли договором субподряда
@@ -98,22 +102,35 @@ namespace MvcLayer.Models
         [DisplayName("Соглашением с филиалом?")]
         public bool? IsAgreementContract { get; set; }
 
+        public List<string> PaymentCA { get; set; } = new List<string>();
+
+        /// <summary>
+        /// условия оплаты (авансы)
+        /// </summary>
+        public string? PaymentСonditionsAvans { get; set; }
+
+        /// <summary>
+        /// условия оплаты (расчеты за выполненные работы)
+        /// </summary>
+        public string? PaymentСonditionsRaschet { get; set; }
+        public int? PaymentСonditionsDaysRaschet { get; set; }
+
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
         public ContractViewModel? AgreementContract { get; set; }
 
         public List<AmendmentDTO> Amendments { get; set; } = new List<AmendmentDTO>();
-
+        
         public List<ContractOrganizationDTO> ContractOrganizations { get; set; } = new List<ContractOrganizationDTO>();
 
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
 
-        public List<EmployeeViewModel> Employees { get; set; } = new List<EmployeeViewModel>();
+        public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
         //public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
 
         //public List<FormC3aDTO> FormC3as { get; set; } = new List<FormC3aDTO>();
-
+        public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
         public List<ContractViewModel> InverseAgreementContract { get; set; } = new List<ContractViewModel>();
 
         public List<ContractViewModel> InverseSubContract { get; set; } = new List<ContractViewModel>();

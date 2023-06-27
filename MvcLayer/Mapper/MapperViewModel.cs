@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using MvcLayer.Controllers;
 using MvcLayer.Models;
 
 namespace MvcLayer.Mapper
@@ -19,7 +20,10 @@ namespace MvcLayer.Mapper
             CreateMap<EmployeeViewModel, EmployeeDTO>().ReverseMap();
             //CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
-            CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap(); 
+            CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap();
+
+
+            CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))

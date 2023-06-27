@@ -2,11 +2,11 @@
 {
     public interface IService<T, K> where T : class where K : class
     {
-        void Create(T item);
+        int? Create(T item);
         IEnumerable<T> GetAll();
         IEnumerable<T> Find(Func<K, bool> predicate);
-        T GetById(int id);
+        T GetById(int id, int? secondId = null);
         void Update(T item);
-        void Delete(int id);
+        void Delete(int id, int? secondId = null);
     }
 }
