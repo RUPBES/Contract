@@ -15,6 +15,7 @@ namespace BusinessLayer.Mapper
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
             CreateMap<Correspondence, CorrespondenceDTO>().ReverseMap();
             CreateMap<Department, DepartmentDTO>().ReverseMap();
+            CreateMap<DepartmentEmployee, DepartmentEmployeeDTO>().ReverseMap();
             CreateMap<Employee, EmployeeDTO>().ReverseMap();
             CreateMap<EmployeeContract, EmployeeContractDTO>().ReverseMap();
             CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
@@ -22,14 +23,18 @@ namespace BusinessLayer.Mapper
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
             CreateMap<Phone, PhoneDTO>().ReverseMap();
             CreateMap<SelectionProcedure, SelectionProcedureDTO>().ReverseMap();
-            
-           
-            
+            CreateMap<TypeWork, TypeWorkDTO>().ReverseMap();
+            CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
+
+
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))
             //    .ForMember(x => x.InverseDepartment, y => y.Ignore())
             //    .ForMember(t => t.Name, o => o.MapFrom(s => s.Department))
             //    .ReverseMap();        
+
+            CreateMap<VContract, VContractDTO>().ReverseMap();
+
         }
     }
 }

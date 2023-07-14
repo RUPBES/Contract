@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using BusinessLayer.Models;
+using System.ComponentModel;
 
 namespace MvcLayer.Models
 {
@@ -11,6 +12,17 @@ namespace MvcLayer.Models
         /// </summary>
         [DisplayName("Юр.адрес организации")]
         public string? FullAddress { get; set; }
+        /// <summary>
+        /// фактический адрес
+        /// </summary>
+        public string? FullAddressFact { get; set; }       
+
+        /// <summary>
+        /// сайт
+        /// </summary>
+        public string? SiteAddress { get; set; }     
+
+       
 
         /// <summary>
         /// Почтовый индекс
@@ -20,6 +32,6 @@ namespace MvcLayer.Models
 
         public int? OrganizationId { get; set; }
 
-        public OrganizationViewModel? Organization { get; set; }
+        public OrganizationViewModel Organization { get; set; }
     }
 }

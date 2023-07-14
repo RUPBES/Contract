@@ -12,5 +12,6 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
         string? GetTypeOfProcedure(int number);
         string? GetTypeOfPrepaymentCondition(int number);
         string? GetTypeOfPaymentForWork(int number);
+        string? GetTypeOfContract(int number);
     }
 }

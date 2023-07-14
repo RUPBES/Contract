@@ -20,12 +20,43 @@ namespace DatabaseLayer
         private EmployeeRepository employeeRepository;
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
+        private TypeWorkRepository typeWorkRepository;
 
+        private VContractRepository vContractRepository;
         private LogRepository logRepository;
 
         public ContractUoW()
         {
             _context = new ContractsContext();
+        }
+
+        #region views
+
+        public IViewRepository<VContract> vContracts
+        {
+            get
+            {
+                if (vContractRepository is null)
+                {
+                    vContractRepository = new VContractRepository(_context);
+                }
+                return vContractRepository;
+            }
+        }
+
+        #endregion
+
+
+        public IRepository<TypeWork> TypeWorks
+        {
+            get
+            {
+                if (typeWorkRepository is null)
+                {
+                    typeWorkRepository = new TypeWorkRepository(_context);
+                }
+                return typeWorkRepository;
+            }
         }
 
         public IRepository<Address> Addresses

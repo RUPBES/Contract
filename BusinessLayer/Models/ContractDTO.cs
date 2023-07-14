@@ -127,7 +127,7 @@ namespace BusinessLayer.Models
 
         public virtual ContractDTO? SubContract { get; set; }
 
-        //public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
+        public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 
         //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
     }

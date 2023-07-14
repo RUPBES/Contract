@@ -24,6 +24,7 @@ namespace MvcLayer.Mapper
 
 
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
+            CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))

@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +48,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Organization> GetAll()
         {
-            return _context.Organizations.ToList();
+            return _context.Organizations.Include(x=>x.Addresses).Include(x=>x.Departments).ToList();
         }
 
         public Organization GetById(int id, int? secondId = null)

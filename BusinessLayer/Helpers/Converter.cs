@@ -54,5 +54,18 @@ namespace BusinessLayer.Helpers
             1 => "числа месяца следующего за отчетным",
             _ => null
         };
+
+        /// <summary>
+        /// Получить по номеру ENUM расчета за выполненые работы
+        /// </summary>
+        /// <param name="number">значение ENUM</param>
+        /// <returns>строка с названием типа условия оплаты</returns>
+        public string? GetTypeOfContract(int number) => number switch
+        {
+            0 => "Генподрядный договор",
+            1 => "Договор субподряда",
+            2 => "Соглашение с филиалом",
+            _ => null
+        };
     }
 }

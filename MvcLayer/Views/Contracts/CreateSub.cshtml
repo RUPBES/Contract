@@ -3,13 +3,10 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
-@{
-    ViewData["Title"] = "Create";
+@{   
     string? inputDays = null;
-
     @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
     {
         inputDays = $"<div class='col-1'><input type='number' name='PaymentСonditionsDaysRaschet' class='form-control' value='{@Model?.PaymentСonditionsDaysRaschet.Value}' min='1'></div>";
@@ -18,12 +15,9 @@
     {
         inputDays = $"<div class='col-1'><input type='number' name='PaymentСonditionsDaysRaschet' class='form-control' placeholder='0' min='1'></div>";
     }
-
 }
-
-<h4>Договор</h4>
+<h4>Договор субподряда</h4>
 <hr />
-
 <div id="modDialog" class="modal fade">
     <div id="dialogContent" class="modal-dialog modal-dialog-centered" role="document"></div>
 </div>
@@ -35,6 +29,9 @@
 </div>
 
 <form class="row align-content-start" asp-action=Create method="post" id="MainForm" enctype="multipart/form-data">
+    <input asp-for="IsSubContract" hidden />
+    <input asp-for="SubContractId" hidden />
+
     <div class="col-4">
         <div class="row">
             <div class="col-12">
@@ -43,6 +40,13 @@
                     <div class="input-group-text">№</div>
                     <input asp-for="Number" class="form-control" id="NumDC">
                     <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" alt="Проверить, существует ли договор с таким номером"></button>
+                </div>
+            </div>
+            <div class="col-12">
+                <label asp-for="Date" for="DateDC"></label>
+                <div class="input-group">
+                    <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
+                    <input asp-for="Date" type="date" class="form-control" id="DateDC">
                 </div>
             </div>
             @*Орагнизации *********@
@@ -55,12 +59,12 @@
                         </a>
                     </legend>
                     <div class="col-12">
-                        <label>Заказчик</label>
-                        <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
+                        <label>Субподрядчик</label>  
+                        <input name="ContractOrganizations[0].Organization" hidden />
                         <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
                             @if (Model?.ContractOrganizations[0] is not null)
                             {
-                                var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId);
+                                var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
                                 <option disabled selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.ContractOrganizations[0] is null)
@@ -73,30 +77,14 @@
                                 <option value="@item.Id">@item.Name</option>
                             }
                         </select>
-                    </div>
-                    <div class="col-12">
-                        <label>Генподрядчик</label>
-                        <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
-                        <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
-                            @if (Model?.ContractOrganizations[1] is not null)
-                            {
-                                var item = Organization.GetById((int)Model?.ContractOrganizations[1]?.OrganizationId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
-                            }
-                            @if (Model?.ContractOrganizations[1] is null)
-                            {
-                                <option selected>Выберите организацию</option>
-                            }
-                            @foreach (var item in Organization.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div>
+                    </div>  
+                    
+                    <input name="ContractOrganizations[1].Organization" hidden />
                     <input name="ContractOrganizations[2].Organization" hidden />
                 </fieldset>
-            </div>           
-            @*Сотрудники *********@
+            </div>  
+
+            @*Сотрудники *********@          
             <div class="col-12 mt-3">
                 <fieldset class="border rounded-3 p-3">
                     <legend class="float-none w-auto px-3">
@@ -107,6 +95,7 @@
                     </legend>
                     <div class="col-12">
                         <label>Подписант договора</label>
+                        @* <input name="EmployeeContracts[0].Employee" hidden /> *@
                         <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
                         <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
                             @if (Model?.EmployeeContracts[0] is not null)
@@ -127,6 +116,7 @@
                     </div>
                     <div class="col-12">
                         <label>Ответственный за ведение договора</label>
+                        @* <input name="EmployeeContracts[1].Employee" hidden /> *@
                         <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
                         <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
                             @if (Model?.EmployeeContracts[1] is not null)
@@ -147,6 +137,7 @@
                     <input name="EmployeeContracts[2].Employee" hidden />
                 </fieldset>
             </div>
+
             @*Виды работ*********@
             <div class="col-12 mt-3">
                 <fieldset class="border rounded-3 p-3">
@@ -183,13 +174,6 @@
         </div>
     </div>
     <div class="col-4">
-        <div class="col-12">
-            <label asp-for="Date" for="DateDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                <input asp-for="Date" type="date" class="form-control" id="DateDC">
-            </div>
-        </div>
         <div class="form-group">
             <label asp-for="ContractPrice" for="CDC"></label>
             <div class="input-group">
@@ -197,36 +181,18 @@
                 <input asp-for="ContractPrice" class="form-control" id="CDC">
             </div>
         </div>
-        <div class="col-12">
-            <label asp-for="NameObject" class="form-label"></label>
-            <textarea asp-for="NameObject" type="text" class="form-control" rows="2" required></textarea>
+        <div class="form-group">
+            <label asp-for="Сurrency" for="CurDC"></label>
+            <div class="input-group">
+                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
+                <input asp-for="Сurrency" class="form-control" id="CurDC">
+            </div>
         </div>
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Условия авансирования</legend>
-            @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
-            {
-                var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
-                var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
-                <div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text" style="display: block;">
-                                @if (valueArray is not null)
-                                {
-                                    <input type="checkbox" name="PaymentCA" value="@value" checked>
-                                }
-                                @if (valueArray is null)
-                                {
-                                    <input type="checkbox" name="PaymentCA" value="@value">
-                                }
-                            </div>
-                        </div>
-                        <input type="text" class="form-control" value="@value" disabled>
+        <div class="col-12">
+            <label>Наименование объекта</label>
+            <textarea asp-for="NameObject" class="form-control" rows="2" disabled></textarea>
+        </div>
 
-                    </div>
-                </div>
-            }
-        </fieldset>
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Источник финансирования</legend>
             @foreach (var item in Enum.GetValues<FundingSourceEnum>())
@@ -253,17 +219,38 @@
                 </div>
             }
         </fieldset>
-        
+
+        <fieldset class="border rounded-3 p-3">
+            <legend class="float-none w-auto px-3">Условия авансирования</legend>
+            @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+            {
+                var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
+                <div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text" style="display: block;">
+                                @if (valueArray is not null)
+                                {
+                                    <input type="checkbox" name="PaymentCA" value="@value" checked>
+                                }
+                                @if (valueArray is null)
+                                {
+                                    <input type="checkbox" name="PaymentCA" value="@value">
+                                }
+                            </div>
+                        </div>
+                        <input type="text" class="form-control" value="@value" disabled>
+
+                    </div>
+                </div>
+            }
+        </fieldset>
 
     </div>
     <div class="col-4">
-        <div class="form-group">
-            <label asp-for="Сurrency" for="CurDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
-                <input asp-for="Сurrency" class="form-control" id="CurDC">
-            </div>
-        </div>
+        
+        
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Сроки</legend>
             <label asp-for="DateBeginWork">Начало работ</label>
@@ -278,6 +265,8 @@
             <label asp-for="ContractTerm"></label>
             <input asp-for="ContractTerm" type="date" class="form-control">
         </fieldset>
+
+
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Процедура выбора</legend>
             @foreach (var item in Enum.GetValues<ProcedureTypeEnum>())
@@ -288,18 +277,18 @@
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <div class="input-group-text" style="display: block;">
-                                @if (@Model?.SelectionProcedures[0].TypeProcedure is not null && (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
+                                @if (@Model?.SelectionProcedures?[0].TypeProcedure is not null && (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
                                 {
                                     <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
                                 }
 
-                                @if ((@Model?.SelectionProcedures[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
+                                @if ((@Model?.SelectionProcedures?[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
                                 {
                                     <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
                                 }
 
 
-                                @if ((@Model?.SelectionProcedures[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
+                                @if ((@Model?.SelectionProcedures?[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
                                 {
                                     <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name">
                                 }
@@ -312,7 +301,6 @@
             }
         </fieldset>
         
-
 
     </div>
     <div class="col-8 mt-1">
@@ -347,6 +335,55 @@
             }
         </fieldset>
     </div>
+    @* <div class="col-8 mt-1">
+        <fieldset class="border rounded-3 p-3">
+            <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
+
+            <div class="col-1">
+                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
+                {
+                    <input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@Model?.PaymentСonditionsDaysRaschet.Value" min="1">
+                }
+                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == false || Model?.PaymentСonditionsDaysRaschet is null)
+                {
+                    <input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" placeholder="0" min="1">
+                }
+
+            </div>
+
+            @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
+            {
+                var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
+
+                bool? isValueValid = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase);
+                bool isDayValid = Model?.PaymentСonditionsDaysRaschet is null || isValueValid is null || isValueValid == false ? false : true;
+
+                <div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text" style="display: block;">
+                                @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
+                                {
+                                    <input type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
+                                }
+                                @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
+                                {
+                                    <input type="radio" name="PaymentСonditionsRaschet" value="@name">
+                                }
+
+                            </div>
+                        </div>
+
+
+                        <div class="col-10">
+                            <input type="text" class="form-control" value="@name" disabled>
+
+                        </div>
+                    </div>
+                </div>
+            }
+        </fieldset>
+    </div> *@
     <div class="col-8 mt-3">
         <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
     </div>
@@ -359,7 +396,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-             let styleName = "border:solid red 4px;";
+            let styleName = "border:solid red 4px;";
 
             checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
             checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
@@ -367,11 +404,11 @@
             // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
             $(".checkChoise").click(function (e) {
                 let elemNumber = $("#dayInput");
-                if (elemNumber !== null || elemNumber !== undefined){
+                if (elemNumber !== null || elemNumber !== undefined) {
                     //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
-                $("#dayInput").parent().remove();
+                    $("#dayInput").parent().remove();
                 }
-               
+
                 $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'></div>`);
             });
 
@@ -396,8 +433,7 @@
                     }
                 });
             });
-
-            ///// вызываем PARTIAL VIEW для создания новой организации
+            
             $("#addOrganization").click(function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -413,7 +449,7 @@
 
             });
 
-            ///// вызываем PARTIAL VIEW для добовления нового сотрудника
+            /////
 
             $("#addEmployee").click(function (e) {
                 e.preventDefault();
@@ -430,6 +466,8 @@
 
             });
 
+            ///
+
             $("#addTypeWork").click(function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -444,6 +482,8 @@
                 });
 
             });
-        });               
+
+            
+        });
     </script>
 }

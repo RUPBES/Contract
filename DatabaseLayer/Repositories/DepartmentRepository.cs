@@ -46,7 +46,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Department> GetAll()
         {
-            return _context.Departments.ToList();
+            return _context.Departments.Include(x=>x.Organization).Include(x=>x.DepartmentEmployees).ThenInclude(x=>x.Employee).ToList();
         }
 
         public Department GetById(int id, int? secondId = null)

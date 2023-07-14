@@ -5,32 +5,42 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
+using DatabaseLayer.Data;
+using DatabaseLayer.Models;
+using System.Diagnostics.Contracts;
+using System.Diagnostics;
 
 namespace MvcLayer.Controllers
 {
     public class ContractsController : Controller
     {
         private readonly IContractOrganizationService _contractOrganizationService;
+        private readonly IVContractService _vContractService;
         private readonly IContractService _contractService;
         private readonly IOrganizationService _organization;
         private readonly IEmployeeService _employee;
+
+        private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
 
-        public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization, 
-            IEmployeeService employee, IContractOrganizationService contractOrganizationService)
+        public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
+            IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork, IVContractService vContractService)
         {
             _contractService = contractService;
             _mapper = mapper;
             _organization = organization;
             _employee = employee;
             _contractOrganizationService = contractOrganizationService;
+            _typeWork = typeWork;
+            _vContractService = vContractService;
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNum = 1)
         {
-            var contractsContext = _contractService.GetAll();
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(contractsContext));
+            return View(_vContractService.GetPage(100, pageNum));
+            //var contractsContext = _contractService.GetAll();
+            //return View(_mapper.Map<IEnumerable<ContractViewModel>>(contractsContext));
         }
 
         // GET: Contracts/Details/5
@@ -50,23 +60,52 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
-        // GET: Contracts/Create
         public IActionResult Create()
         {
             return View();
         }
 
+        public IActionResult CreateSub(int? id, string? nameObject)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            ContractViewModel contract = new ContractViewModel();
+            contract.IsSubContract = true;
+            contract.SubContractId = id;
+            contract.NameObject = nameObject;
+
+            for (int i = 0; i < 3; i++)
+            {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                contract.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+
+            contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
+            contract.SelectionProcedures.Add(new SelectionProcedureDTO());
+
+            return View(contract);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ContractViewModel contract)
+        public IActionResult Create(ContractViewModel contract, string? message = null)
         {
+            var listExistContracts = _contractService.ExistContractAndReturnListSameContracts(contract.Number, contract.Date);
+            if (listExistContracts is not null && listExistContracts.Count > 0)
+            {
+                ViewBag.Message = message;
+                return View(contract);
+            }
+
             if (contract is not null)
             {
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
                 contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
 
-                //TODO: если null организация или сотрудник?
                 var orgContract1 = new ContractOrganizationDTO
                 {
                     IsClient = contract.ContractOrganizations[0].IsClient,
@@ -79,33 +118,53 @@ namespace MvcLayer.Controllers
                     IsGenContractor = contract.ContractOrganizations[1].IsGenContractor,
                     OrganizationId = contract.ContractOrganizations[1].OrganizationId,
                 };
-
                 var empContract1 = new EmployeeContractDTO
                 {
                     IsResponsible = contract.EmployeeContracts[0].IsResponsible,
                     IsSignatory = contract.EmployeeContracts[0].IsSignatory,
                     EmployeeId = contract.EmployeeContracts[0].EmployeeId,
                 };
-
                 var empContract2 = new EmployeeContractDTO
                 {
                     IsResponsible = contract.EmployeeContracts[1].IsResponsible,
                     IsSignatory = contract.EmployeeContracts[1].IsSignatory,
                     EmployeeId = contract.EmployeeContracts[1].EmployeeId,
                 };
-
-
+                var typeWork = new TypeWorkContractDTO
+                {
+                    TypeWorkId = contract.TypeWorkContracts[0].TypeWorkId
+                };
 
                 contract.ContractOrganizations.Clear();
                 contract.EmployeeContracts.Clear();
-                contract.ContractOrganizations.Add(orgContract1);
-                contract.ContractOrganizations.Add(orgContract2);
-                contract.EmployeeContracts.Add(empContract1);
-                contract.EmployeeContracts.Add(empContract2);
-                int? idContr = _contractService.Create(_mapper.Map<ContractDTO>(contract));
+                contract.TypeWorkContracts.Clear();
+
+                if (orgContract1.OrganizationId != 0)
+                {
+                    contract.ContractOrganizations.Add(orgContract1);
+                }
+                if (orgContract2.OrganizationId != 0)
+                {
+                    contract.ContractOrganizations.Add(orgContract2);
+                }
+
+                if (empContract1.EmployeeId != 0)
+                {
+                    contract.EmployeeContracts.Add(empContract1);
+                }
+                if (empContract2.EmployeeId != 0)
+                {
+                    contract.EmployeeContracts.Add(empContract2);
+                }
+                if (typeWork.TypeWorkId > 0)
+                {
+                    contract.TypeWorkContracts.Add(typeWork);
+                }
+
+                _contractService.Create(_mapper.Map<ContractDTO>(contract));
 
                 return RedirectToAction(nameof(Index));
-            }            
+            }
             return View(contract);
         }
 
@@ -194,7 +253,6 @@ namespace MvcLayer.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
         public async Task<ActionResult> AddOrganization(ContractViewModel model)
         {
             return PartialView("_PartialAddOrganization", model);
@@ -203,11 +261,25 @@ namespace MvcLayer.Controllers
         {
             return PartialView("_PartialAddEmployee", model);
         }
+        public async Task<ActionResult> AddTypeWork(ContractViewModel model)
+        {  
+            if (model.NameObject is null && model.IsSubContract == true)
+            {
+                model.NameObject = _contractService.GetById((int)model.SubContractId).NameObject;
+            }
+            return PartialView("_PartialAddTypeWork", model);
+        }
         public ActionResult AddNewOrganization(ContractViewModel organization)
         {
             if (organization is not null && organization.ContractOrganizations[2].Organization is not null)
             {
                 _organization.Create(organization.ContractOrganizations[2].Organization);
+
+                if (organization.IsSubContract == true)
+                {
+                    return View("CreateSub", organization);
+                }
+
                 return View("Create", organization);
             }
             return BadRequest();
@@ -217,14 +289,34 @@ namespace MvcLayer.Controllers
             if (organization is not null && organization.EmployeeContracts[2].Employee is not null)
             {
                 _employee.Create(organization.EmployeeContracts[2].Employee);
+
+                if (organization.IsSubContract == true)
+                {
+                    return View("CreateSub", organization);
+                }
+
                 return View("Create", organization);
             }
             return BadRequest();
         }
+        public ActionResult AddNewTypeWork(ContractViewModel organization)
+        {
+            if (organization is not null && organization.TypeWorkContracts[1].TypeWork is not null)
+            {
+                _typeWork.Create(organization.TypeWorkContracts[1].TypeWork);
 
+                if (organization.IsSubContract == true)
+                {
+                    return View("CreateSub", organization);
+                }
+
+                return View("Create", organization);
+            }
+            return BadRequest();
+        }
         private string? CreateStringOfRaschet(int? days, string payment)
         {
-            if (!string.IsNullOrWhiteSpace(payment) && days.HasValue) 
+            if (!string.IsNullOrWhiteSpace(payment) && days.HasValue)
             {
                 if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
                 {
@@ -236,6 +328,12 @@ namespace MvcLayer.Controllers
                 }
             }
             return null;
+        }
+
+        public ActionResult ExistContractByNumber(string contractNumber)
+        {
+            var result = _contractService.ExistContractByNumber(contractNumber);
+            return Json(result);
         }
     }
 }

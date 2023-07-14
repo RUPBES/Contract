@@ -13,6 +13,8 @@
             </div>
             <div class="modal-body">
                 <form action="@Url.Action("AddNewOrganization","Contracts")" method="post" id="theFormOrg" style="padding-right: 20px; padding-left: 20px; width:350px;">
+                    <input asp-for="IsSubContract" hidden />
+                    <input asp-for="SubContractId" type="number" hidden />
                     <input asp-for="Date" type="datetime" hidden/>
                     <input asp-for="Number" hidden />
                     <input asp-for="FundingSource"  hidden />
@@ -28,6 +30,7 @@
                     <input asp-for="ContractTerm" type="date" hidden>
                     <input asp-for="ContractPrice" hidden />
                     <input asp-for="Сurrency" hidden />
+                    <input asp-for="TypeWorkContracts[0].TypeWorkId" hidden />
                     
                     @foreach (var item in Model.PaymentCA)
                     {
@@ -43,6 +46,8 @@
                     <input asp-for="PaymentСonditionsDaysRaschet" hidden />
                     <input asp-for="PaymentСonditionsRaschet" hidden />
                     <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />
+
+
 
                     <div class="form-group">
                         <label asp-for="ContractOrganizations[2].Organization.Name" class="control-label">Полное название</label>
@@ -63,6 +68,14 @@
                     <div class="form-group">
                         <label asp-for="ContractOrganizations[2].Organization.PaymentAccount" class="control-label">Расчетный счет</label>
                         <input asp-for="ContractOrganizations[2].Organization.PaymentAccount" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ContractOrganizations[2].Organization.Addresses[0].FullAddress" class="control-label">Адрес</label>
+                        <input asp-for="ContractOrganizations[2].Organization.Addresses[0].FullAddress" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ContractOrganizations[2].Organization.Addresses[0].PostIndex" class="control-label">Почтовый индекс</label>
+                        <input asp-for="ContractOrganizations[2].Organization.Addresses[0].PostIndex" class="form-control" />
                     </div>
                     <button class="btn btn-primary mt-3" type="submit" id="submitForm">Добавить</button>
                 </form>

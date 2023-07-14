@@ -29,7 +29,6 @@ namespace BusinessLayer.Models
         public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
         public List<PhoneDTO> Phones { get; set; } = new List<PhoneDTO>();
-
-        public List<DepartmentDTO> Departments { get; set; } = new List<DepartmentDTO>();
+        public virtual List<DepartmentEmployeeDTO> DepartmentEmployees { get; set; } = new List<DepartmentEmployeeDTO>();
     }
 }

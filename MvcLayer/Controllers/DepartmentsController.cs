@@ -74,7 +74,7 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
-            ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Id", department.OrganizationId);
+            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name", department.OrganizationId);
             return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
@@ -142,5 +142,15 @@ namespace MvcLayer.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        public JsonResult GetJsonDepartments(int id)
+        {
+            return Json(_mapper.Map<IEnumerable<DepartmentsJson>>(_departmentService.Find(x=>x.OrganizationId == id)));
+        }
+    }
+    class DepartmentsJson
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }

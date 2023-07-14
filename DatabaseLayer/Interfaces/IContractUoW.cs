@@ -16,8 +16,9 @@ namespace DatabaseLayer.Interfaces
         IRepository<Employee> Employees { get; }
         IRepository<Organization> Organizations { get; }
         IRepository<Phone> Phones { get; }
+        IRepository<TypeWork> TypeWorks { get; }
 
-
+        IViewRepository<VContract> vContracts { get; }
         IRepository<Log> Logs { get; }
 
         void Save();

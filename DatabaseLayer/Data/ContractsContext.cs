@@ -18,6 +18,8 @@ public partial class ContractsContext : DbContext
     {
     }
 
+    public virtual DbSet<VContract> VContracts { get; set; }
+
     #region DbSet
     public virtual DbSet<Act> Acts { get; set; }
 
@@ -963,8 +965,6 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("Справочник стандартных работ");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
             entity.Property(e => e.Name).HasComment("Название работ");
         });
 
@@ -1033,6 +1033,26 @@ public partial class ContractsContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_СommissionActFile_СommissionAct_Id");
         });
+
+        #region views
+
+        modelBuilder.Entity<VContract>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vContracts");
+
+            entity.Property(e => e.ContractPrice).HasColumnType("money");
+            entity.Property(e => e.ContractTerm).HasColumnType("datetime");
+            entity.Property(e => e.Date).HasColumnType("datetime");
+            entity.Property(e => e.DateBeginWork).HasColumnType("datetime");
+            entity.Property(e => e.DateEndWork).HasColumnType("datetime");
+            entity.Property(e => e.EnteringTerm).HasColumnType("datetime");
+            entity.Property(e => e.Number).HasMaxLength(100);
+            entity.Property(e => e.Сurrency).HasMaxLength(50);
+        });
+
+        #endregion
 
         OnModelCreatingPartial(modelBuilder);
     }

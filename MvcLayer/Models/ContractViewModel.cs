@@ -64,7 +64,7 @@ namespace MvcLayer.Models
         /// <summary>
         /// Цена контракта
         /// </summary>
-        [DisplayName("Цена контракта")]
+        [DisplayName("Контрактная договорная цена")]
         public decimal? ContractPrice { get; set; }
 
         /// <summary>
@@ -114,6 +114,7 @@ namespace MvcLayer.Models
         /// </summary>
         public string? PaymentСonditionsRaschet { get; set; }
         public int? PaymentСonditionsDaysRaschet { get; set; }
+        public int? PaymentСonditionsDaysRaschet2 { get; set; }
 
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
@@ -149,7 +150,7 @@ namespace MvcLayer.Models
 
         public ContractViewModel? SubContract { get; set; }
 
-        //public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
+        public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 
         //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
     }

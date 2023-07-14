@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MvcLayer.Models.ContractViewModel>
+﻿@using BusinessLayer.Models;
+@model BusinessLayer.Models.IndexViewModel
 
 @{
     ViewData["Title"] = "Index";
@@ -9,33 +10,49 @@
 <p>
     <a asp-action="Create">Новый договор</a>
 </p>
-<table class="table">
+
+<table class="table table-striped table-bordered" id="contractTable">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.FundingSource)
+                Процедура выбора
             </th>
             <th>
-                Номер и дата договора              
+                Подписант договора, лицо ответственное за ведение договора
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.NameObject)
-            </th>           
+                Номер и дата договора
+            </th>
+            <th>
+                Наименование объекта
+            </th>
+            <th>
+                Источник финансирования
+            </th>
+            <th>
+                Заказчик
+            </th>
             <th>
                 Генподрядчик
             </th>
             <th>
-               Cроки выполнения работ
+                Субподрядчик
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.EnteringTerm)
+                Cроки
+            </th>
+            @*  <th>
+            Cроки выполнения работ
             </th>
             <th>
-                Срок действия договора по взаиморасчетам
+            Срок ввода
             </th>
             <th>
-                Акты приостановки возобновления работ
-            </th>
+            Срок действия договора по взаиморасчетам
+            </th> *@
+            @*  <th>
+            Акты приостановки возобновления работ
+            </th> *@
             <th>
                 Условия оплаты, без авансов тек. % цел.% отсрочка/в течение
             </th>
@@ -45,79 +62,126 @@
             <th>
                 Материалы по факту или сметной стоимости согласно договору
             </th>
-            
-            <th>
-                @Html.DisplayNameFor(model => model.Сurrency)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ContractPrice)
-            </th>
 
-            
             <th>
-                @Html.DisplayNameFor(model => model.FundingSource)
-            </th>            
+                Валюта расчетов
+            </th>
+            @*  <th>
+            Акт ввода
+            </th>
+            <th>
+            Переписка
+            </th>
+            <th>
+            ПСД
+            </th> *@
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (VContractDTO item in Model.Objects)
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.FundingSource)
+                    @item.ProcedureName
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Number) от
-                    @Html.DisplayFor(modelItem => item.Date)
+                    @item.SignatoryEmp
+                    <br>
+                    @item.ResponsibleEmp
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.NameObject)
-                </td>               
-                <td>
-                    @Html.DisplayFor(modelItem => item.ContractOrganizations.FirstOrDefault().Organization.Name)
+                    @item.Number от
+                    @item.Date?.ToShortDateString()
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.DateBeginWork)                
-                    @Html.DisplayFor(modelItem => item.DateEndWork)
-                </td>                
-                <td>
-                    @Html.DisplayFor(modelItem => item.EnteringTerm)
+                    @item.NameObject
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.ContractTerm)
+                    @item.FundingSource
                 </td>
                 <td>
-                   @Html.ActionLink("P4","","")
+                    @item.Client
                 </td>
+                <td>
+                    @item.GenContractor
+                </td>
+                <td>
+                    @*СУБПОДРЯДЧИК*@
+                </td>
+                <td>
+                    выполнения работ:<br>
+                    @item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()
+                    ввода:<br>
+                    @item.EnteringTerm?.ToShortDateString()
+                    действия договора по взаиморасчетам:<br>
+                    @item.ContractTerm?.ToShortDateString()
+                </td>
+                @* <td>
+            @item.DateBeginWork?.ToShortDateString()
+            @item.DateEndWork?.ToShortDateString()
+            </td>
+            <td>
+            @item.EnteringTerm?.ToShortDateString()
+            </td>
+            <td>
+            @item.ContractTerm?.ToShortDateString()
+            </td> *@
+                @*  <td>
+            @Html.ActionLink("Акты P4","","")
+            </td> *@
                 <td>
                     @Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)
-                    @Html.ActionLink("P11","","")
+                    @Html.ActionLink("Авансирование P11","","")
 
                     @Html.DisplayFor(modelItem => item.PaymentСonditionsRaschet)
-                    @Html.ActionLink("P7","","")
+                    @Html.ActionLink("Расчет P7","","")
                 </td>
                 <td>
-                    @Html.ActionLink("P13","","")
+                    @Html.ActionLink("Услуги генподрядчика P13","","")
                 </td>
                 <td>
-                    @Html.ActionLink("P15","","")
+                    @Html.ActionLink("Материалы P15","","")
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Сurrency)
+                    @item.Сurrency
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ContractPrice)
-                </td>                
-                <td>
-                    @Html.DisplayFor(modelItem => item.FundingSource)
-                </td>               
+                @* <td>
+            @Html.ActionLink("Акты ввода P**","","")
+            </td>
+            <td>
+            @Html.ActionLink("Переписка P16","","")
+            </td>
+            <td>
+            @Html.ActionLink("ПСД P17","","")
+            </td>    *@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
+                    <a asp-action="" asp-route-id="@item.Id">Акт ввода</a> |
+                    <a asp-action="" asp-route-id="@item.Id">Акты приостановки/возобновления</a> |
+                    <a asp-action="" asp-route-id="@item.Id">Переписка</a> |
+                    <a asp-action="" asp-route-id="@item.Id">ПСД</a> |
+                    <a asp-action="CreateSub" asp-route-id="@item.Id" asp-route-nameObject="@item.NameObject">Добавить субподрядный договор</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+<div class="pages">
+    <div class="npPage page-items">
+        <a class="@(!Model.PageViewModel.HasPreviousPage ? "disabled" : "")" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+    </div>
+    <div class="page-items">
+        Cтраница: @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages
+    </div>
+    <div class="npPage page-items">
+        <a class="@(!Model.PageViewModel.HasNextPage ? "disabled" : "")" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+    </div>
+</div>
+@section Scripts {
+<script type="text/javascript">
+    
+</script>
+}

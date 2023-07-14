@@ -12,20 +12,57 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+            @*Организация*@
+            <div class="col-5">
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Abbr" class="control-label"></label>
+                    <input asp-for="Abbr" class="form-control" />
+                    <span asp-validation-for="Abbr" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Unp" class="control-label"></label>
+                    <input asp-for="Unp" class="form-control" />
+                    <span asp-validation-for="Unp" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Phones[0].Number" class="control-label">Номер телефона</label>
+                    <input asp-for="Phones[0].Number" class="form-control" />
+                    <span asp-validation-for="Phones[0].Number" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Abbr" class="control-label"></label>
-                <input asp-for="Abbr" class="form-control" />
-                <span asp-validation-for="Abbr" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Unp" class="control-label"></label>
-                <input asp-for="Unp" class="form-control" />
-                <span asp-validation-for="Unp" class="text-danger"></span>
+            
+            <div class="col-7">
+                @*Адрес*@
+                <div>
+                    <div class="form-group">
+                        <label asp-for="Addresses[0].FullAddress" class="control-label">Юр.адрес</label>
+                        <input asp-for="Addresses[0].FullAddress" class="form-control" />
+                        <span asp-validation-for="Addresses[0].FullAddress" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Addresses[0].FullAddressFact" class="control-label">Адрес</label>
+                        <input asp-for="Addresses[0].FullAddressFact" class="form-control" />
+                        <span asp-validation-for="Addresses[0].FullAddressFact" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Addresses[0].PostIndex" class="control-label">Почтовый индекс</label>
+                        <input asp-for="Addresses[0].PostIndex" class="form-control" />
+                        <span asp-validation-for="Addresses[0].PostIndex" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Addresses[0].SiteAddress" class="control-label">Сайт организации</label>
+                        <input asp-for="Addresses[0].SiteAddress" class="form-control" />
+                        <span asp-validation-for="Addresses[0].SiteAddress" class="text-danger"></span>
+                    </div>
+                </div>
+                <div>
+
+                </div>
             </div>
             <div class="form-group">
                 <input type="submit" value="Сохранить" class="btn btn-primary" />

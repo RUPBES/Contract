@@ -27,6 +27,10 @@ namespace BusinessLayer.IoC
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IPhoneService, PhoneService>(); 
             services.AddScoped<IContractOrganizationService, ContractOrganizationService>();
+            services.AddScoped<ITypeWorkService, TypeWorkService>();
+
+
+            services.AddScoped<IVContractService, VContractService>();
 
         }
     }

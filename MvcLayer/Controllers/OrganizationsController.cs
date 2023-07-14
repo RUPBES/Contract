@@ -54,9 +54,9 @@ namespace MvcLayer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Abbr,Unp")] OrganizationViewModel organization)
+        public async Task<IActionResult> Create( OrganizationViewModel organization)
         {
-            if (ModelState.IsValid)
+            if (organization is not null)
             {
                 _organizationService.Create(_mapper.Map<OrganizationDTO>(organization));
                 return RedirectToAction(nameof(Index));
@@ -142,7 +142,7 @@ namespace MvcLayer.Controllers
 
         public JsonResult GetJsonOrganizations()
         {           
-            return Json(_mapper.Map<OrganizationsJson>(_organizationService.GetAll()));
+            return Json(_mapper.Map<IEnumerable<OrganizationsJson>>(_organizationService.GetAll()));
         }
     }
     class OrganizationsJson {

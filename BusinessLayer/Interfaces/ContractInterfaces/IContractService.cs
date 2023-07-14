@@ -6,5 +6,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IContractService : IService<ContractDTO, Contract>
     {
+        List<ContractDTO>? ExistContractAndReturnListSameContracts(string numberContract, DateTime? dateContract);
+        bool ExistContractByNumber(string numberContract);
     }
 }
