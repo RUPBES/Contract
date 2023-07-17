@@ -18,13 +18,13 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">                        
+                    <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Contracts" asp-action="Index">Договоры</a>
-                        </li>                        
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Departments" asp-action="Index">Отделы</a>
                         </li>
@@ -38,6 +38,26 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a>
                         </li>
                     </ul>
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (User?.Identity is { IsAuthenticated: true })
+                        {
+                            <li style="line-height:35px; margin-right:30px;">Пользователь - @User.Identity.Name</li>
+                            <li class="nav-item">
+                                <form asp-action="Logout" asp-controller="Authentication" method="post">
+                                    <button class="btn btn-danger" type="submit">Sign out</button>
+                                </form>
+                            </li>
+                        }
+                        @if (User?.Identity is { IsAuthenticated: false })
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white btn btn-sm btn-primary" asp-area="" asp-controller="Authentication" asp-action="Login">Войти</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    
                 </div>
             </div>
         </nav>
