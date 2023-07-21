@@ -28,12 +28,7 @@ namespace DatabaseLayer.Repositories
 
         public void Delete(int id, int? secondId = null)
         {
-            Address address = null;
-
-            if (id > 0)
-            {
-                address = _context.Addresses.Find(id);
-            }
+            Address address  = _context.Addresses.Find(id);
 
             if (address is not null)
             {

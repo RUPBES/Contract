@@ -44,6 +44,6 @@ namespace DatabaseLayer.Models
         public virtual List<SelectionProcedure> SelectionProcedures { get; set; } = new List<SelectionProcedure>();
         public virtual List<ServiceGc> ServiceGcs { get; set; } = new List<ServiceGc>();
         public virtual List<TypeWorkContract> TypeWorkContracts { get; set; } = new List<TypeWorkContract>();
-        public virtual List<СommissionAct> СommissionActs { get; set; } = new List<СommissionAct>();
+        public virtual List<CommissionAct> СommissionActs { get; set; } = new List<CommissionAct>();
     }
 }

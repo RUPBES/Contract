@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace BusinessLayer.Services
 {
@@ -10,10 +14,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
-        public OrganizationService(IContractUoW database, IMapper mapper)
+        private readonly ILoggerContract _logger;
+        private readonly IHttpContextAccessor _http;
+
+        public OrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
         {
             _database = database;
             _mapper = mapper;
+            _logger = logger;
+            _http = http;
         }
 
         public int? Create(OrganizationDTO item)
@@ -26,16 +35,34 @@ namespace BusinessLayer.Services
 
                     _database.Organizations.Create(organization);
                     _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create organization, ID={organization.Id}, Name={organization.Name}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
                     return organization.Id;
                 }
             }
+            _logger.WriteLog(LogLevel.Warning, $"not create organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            _database.Organizations.Delete(id);
-            _database.Save();
+            if (id > 0)
+            {
+                var organization = _database.Organizations.GetById(id);
+
+                if (organization is not null)
+                {
+                    _database.Organizations.Delete(id);
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"delete organization, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not delete organization, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+            }
         }
 
         public IEnumerable<OrganizationDTO> Find(Func<Organization, bool> predicate)
@@ -68,6 +95,11 @@ namespace BusinessLayer.Services
             {
                 _database.Organizations.Update(_mapper.Map<Organization>(item));
                 _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"update organization, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not update organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
     }

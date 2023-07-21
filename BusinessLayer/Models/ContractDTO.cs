@@ -103,33 +103,32 @@ namespace BusinessLayer.Models
 
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
 
-        public virtual ICollection<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
+        public virtual List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
-        //public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
+        public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
 
-        //public List<FormC3aDTO> FormC3as { get; set; } = new List<FormC3aDTO>();
+        public List<FormDTO> FormC3as { get; set; } = new List<FormDTO>();
 
         public List<ContractDTO> InverseAgreementContract { get; set; } = new List<ContractDTO>();
+
         public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
+
         public List<ContractDTO> InverseSubContract { get; set; } = new List<ContractDTO>();
 
-        //public List<MaterialGcDTO> MaterialGcs { get; set; } = new List<MaterialGcDTO>();
+        public List<MaterialDTO> Materials { get; set; } = new List<MaterialDTO>();
 
-        //public List<PaymentDTO> Payments { get; set; } = new List<PaymentDTO>();
+        public List<PaymentDTO> Payments { get; set; } = new List<PaymentDTO>();
 
-        //public List<PrepaymentDTO> Prepayments { get; set; } = new List<PrepaymentDTO>();
+        public List<PrepaymentDTO> Prepayments { get; set; } = new List<PrepaymentDTO>();
 
-        //public List<ScopeWorkDTO> ScopeWorks { get; set; } = new List<ScopeWorkDTO>();
+        public List<ScopeWorkDTO> ScopeWorks { get; set; } = new List<ScopeWorkDTO>();
 
-        //public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
-
-        //public List<ServiceGcDTO> ServiceGcs { get; set; } = new List<ServiceGcDTO>();
+        public List<ServiceGCDTO> ServiceGcs { get; set; } = new List<ServiceGCDTO>();
 
         public virtual ContractDTO? SubContract { get; set; }
 
         public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 
-        //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
+        public List<CommissionActDTO> CommissionActs { get; set; } = new List<CommissionActDTO>();
     }
-
 }

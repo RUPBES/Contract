@@ -42,7 +42,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<VContract> GetEntitySkipTake(int skip, int take)
         {
-            return _context.VContracts.OrderBy(x => x.Date).Skip(skip).Take(take).ToList();
+            return _context.VContracts.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 
         public IEnumerable<VContract> GetEntityWithSkipTake(int skip, int take, int legalPersonId)

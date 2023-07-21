@@ -1,12 +1,17 @@
 ﻿using AutoMapper;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,11 +21,17 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
-        public ContractOrganizationService(IContractUoW database, IMapper mapper)
+        private readonly ILoggerContract _logger;
+        private readonly IHttpContextAccessor _http;
+
+        public ContractOrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
         {
             _database = database;
             _mapper = mapper;
+            _logger = logger;
+            _http = http;
         }
+
 
         public int? Create(ContractOrganizationDTO item)
         {
@@ -31,17 +42,35 @@ namespace BusinessLayer.Services
                     var contract = _mapper.Map<ContractOrganization>(item);
 
                     _database.ContractOrganizations.Create(contract);
-                    _database.Save(); 
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create contract-organization, ContractID={item.ContractId}, OrganizationID=={item.OrganizationId}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
                     return contract.ContractId;
                 }
             }
+            _logger.WriteLog(LogLevel.Warning, $"not create contract-organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
             return null;
         }
 
         public void Delete(int id, int? contractId)
         {
-            _database.ContractOrganizations.Delete(id, contractId);
-            _database.Save();
+            if (id > 0 && contractId != null)
+            {
+                var contOrg = _database.ContractOrganizations.GetById(id, contractId);
+
+                if (contOrg is not null)
+                {
+                    _database.ContractOrganizations.Delete(id, contractId);
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"delete contract-organization, ContractID={contractId}, OrganizationID=={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not delete contract-organization, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+            }           
         }
 
         public void Dispose()
@@ -74,6 +103,12 @@ namespace BusinessLayer.Services
             {
                 _database.ContractOrganizations.Update(_mapper.Map<ContractOrganization>(item));
                 _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"update contract-organization, ContractID={item.ContractId}, OrganizationID=={item.OrganizationId}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not update contract-organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 

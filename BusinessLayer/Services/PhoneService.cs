@@ -1,8 +1,12 @@
 ﻿using AutoMapper;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace BusinessLayer.Services
 {
@@ -10,10 +14,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
-        public PhoneService(IContractUoW database, IMapper mapper)
+        private readonly ILoggerContract _logger;
+        private readonly IHttpContextAccessor _http;
+
+        public PhoneService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
         {
             _database = database;
             _mapper = mapper;
+            _logger = logger;
+            _http = http;
         }
 
         public int? Create(PhoneDTO item)
@@ -26,16 +35,41 @@ namespace BusinessLayer.Services
 
                     _database.Phones.Create(phone);
                     _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create phone, ID={phone.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
                     return phone.Id;
                 }
             }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create phone, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            _database.Phones.Delete(id);
-            _database.Save();
+            if (id > 0)
+            {
+                var phone = _database.Phones.GetById(id);
+
+                if (phone is not null)
+                {
+                    try
+                    {
+                        _database.Phones.Delete(id);
+                        _database.Save();
+                        _logger.WriteLog(LogLevel.Information, $"delete phone, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    }
+                }
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not delete phone, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
         }
 
         public IEnumerable<PhoneDTO> Find(Func<Phone, bool> predicate)
@@ -68,6 +102,11 @@ namespace BusinessLayer.Services
             {
                 _database.Phones.Update(_mapper.Map<Phone>(item));
                 _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"update phone, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not update phone, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
     }

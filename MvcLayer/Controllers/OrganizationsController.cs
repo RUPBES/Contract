@@ -4,6 +4,10 @@ using MvcLayer.Models;
 using AutoMapper;
 using BusinessLayer.Models;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using static System.Net.WebRequestMethods;
+using System.Reflection;
+using DatabaseLayer.Models;
+using BusinessLayer.Interfaces.CommonInterfaces;
 
 namespace MvcLayer.Controllers
 {
@@ -11,11 +15,13 @@ namespace MvcLayer.Controllers
     {
         private readonly IOrganizationService _organizationService;
         private readonly IMapper _mapper;
+        private readonly ILoggerContract _logger;
 
-        public OrganizationsController(IOrganizationService organizationService, IMapper mapper)
+        public OrganizationsController(IOrganizationService organizationService, IMapper mapper, ILoggerContract logger)
         {
             _organizationService = organizationService;
             _mapper = mapper;
+            _logger = logger;
         }
 
         // GET: Organizations
@@ -137,6 +143,7 @@ namespace MvcLayer.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             _organizationService.Delete(id);
+            _logger.WriteLog(LogLevel.Information, "delete organization", typeof(OrganizationsController).Name, this.ControllerContext.RouteData.Values["action"].ToString(), User.Identity.Name);
             return RedirectToAction(nameof(Index));
         }
 

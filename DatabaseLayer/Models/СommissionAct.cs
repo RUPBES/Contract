@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace DatabaseLayer.Models
 {
-    public partial class СommissionAct
+    public partial class CommissionAct
     {
-        public СommissionAct()
+        public CommissionAct()
         {
-            СommissionActFiles = new HashSet<СommissionActFile>();
+            СommissionActFiles = new HashSet<CommissionActFile>();
         }
 
         public int Id { get; set; }
@@ -18,6 +18,6 @@ namespace DatabaseLayer.Models
         public int? ContractId { get; set; }
 
         public virtual Contract Contract { get; set; }
-        public virtual ICollection<СommissionActFile> СommissionActFiles { get; set; }
+        public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
     }
 }

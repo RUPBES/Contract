@@ -66,7 +66,17 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<TypeWorkContract> TypeWorkContracts { get; set; }
 
-    public virtual DbSet<СommissionAct> СommissionActs { get; set; }
+    public virtual DbSet<CommissionAct> СommissionActs { get; set; }
+    public virtual DbSet<CommissionActFile> СommissionActFiles { get; set; }
+    public virtual DbSet<CorrespondenceFile> CorrespondenceFiles { get; set; }
+
+    public virtual DbSet<EstimateDocFile> EstimateDocFiles { get; set; }
+    public virtual DbSet<ActFile> ActFiles { get; set; }
+    public virtual DbSet<AmendmentFile> AmendmentFiles { get; set; }
+    public virtual DbSet<MaterialAmendment> MaterialAmendments { get; set; }
+    public virtual DbSet<ScopeWorkAmendment> ScopeWorkAmendments { get; set; }
+    public virtual DbSet<ServiceAmendment> ServiceAmendments { get; set; }
+    public virtual DbSet<PrepaymentAmendment> PrepaymentAmendments { get; set; }
     #endregion
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -995,7 +1005,7 @@ public partial class ContractsContext : DbContext
                 .HasConstraintName("FK_TypeWork_GuideTypeWork_Id");
         });
 
-        modelBuilder.Entity<СommissionAct>(entity =>
+        modelBuilder.Entity<CommissionAct>(entity =>
         {
             entity.ToTable("СommissionAct");
 
@@ -1013,7 +1023,7 @@ public partial class ContractsContext : DbContext
                 .HasConstraintName("FK_СommissionAct_Contract_Id");
         });
 
-        modelBuilder.Entity<СommissionActFile>(entity =>
+        modelBuilder.Entity<CommissionActFile>(entity =>
         {
             entity.HasKey(e => new { e.СommissionActId, e.FileId });
 

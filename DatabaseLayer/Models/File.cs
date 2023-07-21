@@ -13,7 +13,7 @@ namespace DatabaseLayer.Models
             AmendmentFiles = new HashSet<AmendmentFile>();
             CorrespondenceFiles = new HashSet<CorrespondenceFile>();
             EstimateDocFiles = new HashSet<EstimateDocFile>();
-            СommissionActFiles = new HashSet<СommissionActFile>();
+            СommissionActFiles = new HashSet<CommissionActFile>();
         }
 
         public int Id { get; set; }
@@ -26,6 +26,6 @@ namespace DatabaseLayer.Models
         public virtual ICollection<AmendmentFile> AmendmentFiles { get; set; }
         public virtual ICollection<CorrespondenceFile> CorrespondenceFiles { get; set; }
         public virtual ICollection<EstimateDocFile> EstimateDocFiles { get; set; }
-        public virtual ICollection<СommissionActFile> СommissionActFiles { get; set; }
+        public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
     }
 }

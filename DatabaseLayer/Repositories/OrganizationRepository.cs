@@ -28,13 +28,8 @@ namespace DatabaseLayer.Repositories
 
         public void Delete(int id, int? secondId = null)
         {
-            Organization organization = null;
-
-            if (id > 0)
-            {
-                organization = _context.Organizations.Find(id);
-            }
-
+            Organization organization = _context.Organizations.Find(id);
+            
             if (organization is not null)
             {
                 _context.Organizations.Remove(organization);
@@ -48,7 +43,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Organization> GetAll()
         {
-            return _context.Organizations.Include(x=>x.Addresses).Include(x=>x.Departments).ToList();
+            return _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).ToList();
         }
 
         public Organization GetById(int id, int? secondId = null)
@@ -76,15 +71,6 @@ namespace DatabaseLayer.Repositories
                     orgnization.Unp = entity.Unp;
                     orgnization.Email = entity.Email;
                     orgnization.PaymentAccount = entity.PaymentAccount;
-
-                    //orgnization.Departments.Clear();
-                    //orgnization.Departments.AddRange(entity.Departments);
-
-                    //orgnization.Addresses.Clear();
-                    //orgnization.Addresses.AddRange(entity.Addresses);
-
-                    //orgnization.Phones.Clear();
-                    //orgnization.Phones.AddRange(entity.Phones);
 
                     _context.Organizations.Update(orgnization);
                 }
