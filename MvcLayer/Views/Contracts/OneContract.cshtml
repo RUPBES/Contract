@@ -1,19 +1,13 @@
-﻿@model MvcLayer.Models.ContractViewModel
-
-@{
-    ViewData["Title"] = "Details";
-    Layout = "/Views/Shared/_LayoutTable.cshtml";
-}
+﻿@model MvcLayer.Models.ContractViewModel;
 
 <table class="table table-main table-striped table-bordered" id="contractTable" style="table-layout: fixed">
+    <caption>Список договоров</caption>
     <colgroup>
-        <col span="13" style="max-width:200px;">
+        <col span="13" style="max-width:200px; min-width:150px;">
+        <col style="width:250px">
     </colgroup>
     <thead>
         <tr class="tr-head-main-table">
-            <th>
-                #
-            </th>
             <th>
                 Процедура выбора
             </th>
@@ -33,20 +27,17 @@
                 Заказчик
             </th>
             <th>
-                Генподрядчик (филиал-испольнитель по приказу)
+                Генподрядчик
             </th>
             <th>
-                Субподрядчик (филиал-исполнитель по приказу)
+                Субподрядчик
             </th>
             <th>
                 Cроки
             </th>
             <th>
-                Акты приостановки и возобновления работ
-            </th>
-            <th>
                 Условия оплаты, без авансов тек. % цел.% отсрочка/в течение
-            </th> 
+            </th>
             <th>
                 Услуги генподряда (для договоров субподряда)
             </th>
@@ -56,9 +47,7 @@
             <th>
                 Валюта расчетов
             </th>
-            <th>
-
-            </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -82,8 +71,8 @@
                     {
                         @item.Employee.FullName
                     }
-                }
-                <br>
+                }                
+            <br>
                 Model.ResponsibleEmp
             </td>
             <td>
@@ -98,10 +87,10 @@
             </td>
             <td>
                 @foreach (var item in Model.ContractOrganizations)
-                    if (@item.IsClient == true)
-                    {
-                        @item.Organization.Abbr
-                    }
+                if (@item.IsClient == true)
+                {
+                @item.Organization.Abbr
+                }                
             </td>
             <td>
                 Model.GenContractor
@@ -131,7 +120,7 @@
                 Model.Сurrency
             </td>
             <td>
-                @* <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+               @* <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
                 <a asp-action="" asp-route-id="@item.Id">Акт ввода</a> |
@@ -145,7 +134,6 @@
     </tbody>
 </table>
 
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+
+
