@@ -1,0 +1,123 @@
+﻿@using MvcLayer.Models;
+@using BusinessLayer.Models;
+
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+
+@model IEnumerable<MvcLayer.Models.AmendmentViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+    bool isAdmin = true;
+}
+
+<h1>Изменения по договорам</h1>
+
+<p>
+    <a asp-action="Create">Добавить изменения к договору</a>
+</p>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>
+                Номер
+            </th>
+            <th>
+                Дата изменения
+            </th>
+            <th>
+                Причина
+            </th>
+            <th>
+                Договорная (контрактная) цена, руб. с НДС
+            </th>
+            <th>
+                Срок выполнения работ (Начало)
+            </th>
+            <th>
+                Срок выполнения работ (Окончание)
+            </th>
+            <th>
+                Срок ввода объекта в эксплуатацию
+            </th>
+            <th>
+                Существенные изменения пунктов Договора
+            </th>
+            <th>
+                Файлы ДС
+            </th>            
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (AmendmentViewModel item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Number
+                </td>
+                <td>
+                    @item.Date?.ToShortDateString()
+                </td>                
+                <td>
+                    @item.Reason
+                </td>
+                <td>
+                    @item.ContractPrice
+                </td>
+                <td>
+                    @item.DateBeginWork
+                </td>
+                <td>
+                    @item.DateEndWork
+                </td>
+                <td>
+                    @item.DateEntryObject
+                </td>
+                <td>
+                    @item.ContractChanges
+                </td>                
+                <td>
+                    @foreach (FileDTO item2 in Files.GetFilesByAmendmentId(item.Id))
+                    {
+                        <div>
+                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            @if (isAdmin)
+                            {
+                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                            }
+                        </div>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@* <div class="pages">
+    <div class="npPage page-items">
+        <a class="@(!Model.PageViewModel.HasPreviousPage ? "disabled" : "")" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+    </div>
+    <div class="page-items">
+        Cтраница: @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages
+    </div>
+    <div class="npPage page-items">
+        <a class="@(!Model.PageViewModel.HasNextPage ? "disabled" : "")" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+    </div>
+</div> *@
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
+}

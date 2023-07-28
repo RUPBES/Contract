@@ -6,6 +6,7 @@
         Amendment,
         CommissionActs,
         Correspondences,
-        EstimateDocumentations
+        EstimateDocumentations, 
+        Other
     }
 }

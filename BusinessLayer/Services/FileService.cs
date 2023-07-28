@@ -29,7 +29,7 @@ namespace BusinessLayer.Services
             _env = env;
         }
 
-        public int? Create(IFormFileCollection files, FolderEnum folder, FileDTO item)
+        public int? Create(IFormFileCollection files, FolderEnum folder)
         {
             int id = default;
             if (files != null /*&& item != null*/)
@@ -78,8 +78,11 @@ namespace BusinessLayer.Services
                     id = fileNew.Id;
                 }
             }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not create file, object or IFormFileCollection or name of folder is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create file, object or IFormFileCollection or name of folder is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return id;            
         }
@@ -159,6 +162,19 @@ namespace BusinessLayer.Services
             {
                 _logger.WriteLog(LogLevel.Warning, $"not update file, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
+        }
+
+        public IEnumerable<FileDTO> GetFilesByAmendmentId(int amendmentId)
+        {
+            List<File> result = new List<File>();
+            var files = _database.AmendmentFiles.Find(x=>x.AmendmentId == amendmentId);
+
+            foreach ( var file in files)
+            {
+                result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+            }
+
+            return _mapper.Map<IEnumerable<FileDTO>>(result);
         }
     }
 }

@@ -1,0 +1,266 @@
+﻿@model MvcLayer.Models.PeriodChooseViewModel
+@using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
+
+@{
+    ViewData["Title"] = "Create";
+    bool hasScope = false;
+    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.FirstOrDefault();
+    if (scopes is not null)
+    {
+        hasScope = true;
+    }
+}
+<style>
+    .title-warning {
+        display: flex;
+        justify-content: center;
+        font-family: Inter;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 22px;
+        letter-spacing: -0.34px;
+        border: solid #e83c14 1px;
+        border-radius: 5px;        
+    }
+
+    label {
+        margin: 10px auto;
+    }
+
+    #target {
+        margin: 100px auto;
+        width: 50%;
+    }
+
+    #chooseAmendment {
+        margin: 0 auto 30px auto;
+    }
+</style>
+@if (hasScope)
+{
+    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+        <div class="form-group col-12">
+            <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
+            <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+        </div>
+        <div id="chooseAmendment" class="row" hidden>
+            <div class="form-group">
+                <label class="control-label">Выбрать доп.соглашение</label>
+                <select name="AmendmentId" id="AmendId" class="form-control select">
+                    <option disabled selected>Выберите</option>
+                    @foreach (AmendmentDTO org in Amendment.GetAll())
+                    {
+                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                    }
+                </select>
+            </div>
+            <div class="row mt-3" id="date-box" hidden>
+                <div class="form-group col-6 mb-3">
+                    <label for="amendCheck1">Укажите начало периода</label>
+                    <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
+                </div>
+                <div class="form-group col-6 mb-3">
+                    <label for="amendCheck2">Укажите окончание периода</label>
+                    <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
+                </div>
+                <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
+
+            </div>
+        </div>
+    </form>
+}
+
+@if (!hasScope)
+{
+    
+    
+    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+        <h4>Выбор периода объема работ</h4>
+        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+        <div class="form-group col-12 mb-3">
+            <label for="ownForceId">Объем работ производится собственными силами?</label>
+            <input type="checkbox" id="ownForceId" name="IsOwnForces"value="false" />
+        </div>
+        <div class="form-group col-6 mb-3">
+            <label for="amendCheck1">Укажите начало периода</label>
+            <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
+        </div>
+        <div class="form-group col-6 mb-3">
+            <label for="amendCheck2">Укажите окончание периода</label>
+            <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
+        </div>
+        <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
+    </form>
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+        $("#AmendId").on("change", function () {
+            console.log("sdfgsd")
+
+            let divDates = document.querySelector("#date-box");
+
+            if (divDates.hidden != true) {
+                divDates.hidden = true;
+            }
+            else {
+                divDates.hidden = null;
+            }
+        });
+
+        $("#ownForceId").on("change", function () {
+
+            let isOwn = $(this).prop('checked');
+
+            if (isOwn === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+
+        });
+
+        $("#amendCheck").on("change", function () {
+
+            let isChange = $(this).prop('checked');
+            let besInput = document.querySelector("#chooseAmendment");
+
+            if (besInput.hidden != true) {
+                besInput.hidden = true;
+            }
+            else {
+                besInput.hidden = null;
+            }
+
+            if (isChange === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+        });
+        // $("input[type='checkbox']").click(function () {
+        //     let isChange = $(this).val();
+        //     let besInput = document.querySelector("#chooseAmendment");
+        //     console.log(isChange);
+        //     if (besInput.hidden != true) {
+        //         besInput.hidden = true;
+        //     }
+        //     else {
+        //         besInput.hidden = null;
+        //     }
+
+        //     if (isChange === false) {
+        //         console.log(isChange);
+        //         $(this).InputAttributes.Add("value", "true");
+        //     }
+        //     else {
+
+        //         $(this).InputAttributes.Add("value", "false");
+        //     }
+        // });
+
+
+
+
+        $(document).ready(function () {
+            // $('.js-chosen').chosen({
+            //     width: '100%',
+            //     no_results_text: 'Совпадений не найдено',
+            //     placeholder_text_single: 'Выберите'
+            // });
+
+            datepickerNull("input.datepickersNull");
+            dateTimepicker("input.datetimepickers");
+            datepicker("input.datepickers");
+        });
+    </script>
+}
+
+
+@*
+<h4>Объем работ</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input asp-for="@Model[i].ContractId" value="@Model?.ContractId" hidden />
+            <div class="form-group">
+                <label asp-for="@Model[i].Period" class="control-label"></label>
+                <input asp-for="@Model[i].Period" class="form-control" type="date" />
+                <span asp-validation-for="@Model[i].Period" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].SmrCost" class="control-label"></label>
+                <input asp-for="@Model[i].SmrCost" class="form-control" />
+                <span asp-validation-for="@Model[i].SmrCost" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].PnrCost" class="control-label"></label>
+                <input asp-for="@Model[i].PnrCost" class="form-control" />
+                <span asp-validation-for="@Model[i].PnrCost" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].EquipmentCost" class="control-label"></label>
+                <input asp-for="@Model[i].EquipmentCost" class="form-control" />
+                <span asp-validation-for="@Model[i].EquipmentCost" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].OtherExpensesCost" class="control-label"></label>
+                <input asp-for="@Model[i].OtherExpensesCost" class="form-control" />
+                <span asp-validation-for="@Model[i].OtherExpensesCost" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].AdditionalCost" class="control-label"></label>
+                <input asp-for="@Model[i].AdditionalCost" class="form-control" />
+                <span asp-validation-for="@Model[i].AdditionalCost" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].MaterialCost" class="control-label"></label>
+                <input asp-for="@Model[i].MaterialCost" class="form-control" />
+                <span asp-validation-for="@Model[i].MaterialCost" class="text-danger"></span>
+            </div>
+            @* <div class="form-group">
+            <label asp-for="GenServiceCost" class="control-label"></label>
+            <input asp-for="GenServiceCost" class="form-control" />
+            <span asp-validation-for="GenServiceCost" class="text-danger"></span>
+            </div>
+            @*  <div class="form-group">
+            <label asp-for="IsOwnForces" class="control-label"></label>
+            <input asp-for="IsOwnForces" class="form-control" />
+            <span asp-validation-for="IsOwnForces" class="text-danger"></span>
+            </div>
+            @* <div class="form-group">
+            <label asp-for="ContractId" class="control-label"></label>
+
+             </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].IsChange" class="control-label"></label>
+                <input asp-for="@Model[i].IsChange" class="form-control" />
+                <span asp-validation-for="@Model[i].IsChange" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model[i].ChangeScopeWorkId" class="control-label"></label>
+                <select asp-for="@Model[i].ChangeScopeWorkId" class="form-control" asp-items="ViewBag.ChangeScopeWorkId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+*@

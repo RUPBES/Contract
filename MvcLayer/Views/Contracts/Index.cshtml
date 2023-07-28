@@ -11,6 +11,16 @@
     <a asp-action="Create">Новый договор</a>
 </p>
 
+<div id="modDialog" class="modal fade">
+    <div id="dialogContent" class="modal-dialog modal-dialog-centered" role="document"></div>
+</div>
+@* <div id="modDialog2" class="modal fade">
+    <div id="dialogContent2" class="modal-dialog modal-dialog-centered" role="document"></div>
+</div>
+<div id="modDialog3" class="modal fade">
+    <div id="dialogContent3" class="modal-dialog modal-dialog-centered" role="document"></div>
+</div> *@
+
 <table class="table table-striped table-bordered" id="contractTable">
     <thead>
         <tr>
@@ -93,6 +103,7 @@
                 <td>
                     @item.Number от
                     @item.Date?.ToShortDateString()
+                    @Html.ActionLink("Изменения к договору","GetAmendments","Contracts",item.Id)
                 </td>
                 <td>
                     @item.NameObject
@@ -164,6 +175,7 @@
                     <a asp-action="" asp-route-id="@item.Id">Переписка</a> |
                     <a asp-action="" asp-route-id="@item.Id">ПСД</a> |
                     <a asp-action="CreateSub" asp-route-id="@item.Id" asp-route-nameObject="@item.NameObject">Добавить субподрядный договор</a>
+                    <a asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@item.Id">Добавить объем работ</a>
                 </td>
             </tr>
         }
@@ -182,6 +194,52 @@
 </div>
 @section Scripts {
 <script type="text/javascript">
-    
+        ///// вызываем PARTIAL VIEW для создания новой организации
+        $("#addOrganization").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddOrganization","Contracts")',
+                dataType: 'html',
+                data: $("#MainForm").serialize(),
+                success: (function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal('show');
+                })
+            });
+
+        });
+
+        ///// вызываем PARTIAL VIEW для добовления нового сотрудника
+
+        $("#addEmployee").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddEmployee","Contracts")',
+                dataType: 'html',
+                data: $("#MainForm").serialize(),
+                success: (function (result) {
+                    $('#dialogContent2').html(result);
+                    $('#modDialog2').modal('show');
+                })
+            });
+
+        });
+
+        $("#addTypeWork").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddTypeWork","Contracts")',
+                dataType: 'html',
+                data: $("#MainForm").serialize(),
+                success: (function (result) {
+                    $('#dialogContent3').html(result);
+                    $('#modDialog3').modal('show');
+                })
+            });
+
+        });
 </script>
 }

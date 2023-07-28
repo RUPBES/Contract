@@ -15,13 +15,14 @@ namespace MvcLayer.Mapper
             //CreateMap<Amendment, AmendmentDTO>().ReverseMap();
             CreateMap<ContractViewModel, ContractDTO>().ReverseMap();
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
-            //CreateMap<Correspondence, CorrespondenceDTO>().ReverseMap();
+            CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
+            CreateMap<AmendmentViewModel, AmendmentDTO>().ReverseMap();
             CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();
             CreateMap<EmployeeViewModel, EmployeeDTO>().ReverseMap();
             //CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
             CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap();
-
+            CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
 
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
             CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();
