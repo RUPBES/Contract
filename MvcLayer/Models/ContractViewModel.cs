@@ -16,12 +16,12 @@ namespace MvcLayer.Models
         public string? Number { get; set; }
 
         /// <summary>
-        /// Ссылка на договоро (если субподряд)
+        /// Ссылка на договор (если субподряд)
         /// </summary>
         public int? SubContractId { get; set; }
 
         /// <summary>
-        /// Ссылка на договоро (если соглашение с филиалом)
+        /// Ссылка на договор (если соглашение с филиалом)
         /// </summary>
         public int? AgreementContractId { get; set; }
 

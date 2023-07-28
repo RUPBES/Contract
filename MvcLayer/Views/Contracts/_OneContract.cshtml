@@ -1,0 +1,136 @@
+﻿@model MvcLayer.Models.ContractViewModel;
+
+<table class="table table-main table-striped table-bordered" id="contractTable" style="table-layout: fixed">
+    <caption>Список договоров</caption>
+    <colgroup>
+        <col span="13" style="max-width:200px; min-width:150px;">
+        <col style="width:250px">
+    </colgroup>
+    <thead>
+        <tr class="tr-head-main-table">
+            <th>
+                Процедура выбора
+            </th>
+            <th>
+                Подписант договора, лицо ответственное за ведение договора
+            </th>
+            <th>
+                Номер и дата договора
+            </th>
+            <th>
+                Наименование объекта
+            </th>
+            <th>
+                Источник финансирования
+            </th>
+            <th>
+                Заказчик
+            </th>
+            <th>
+                Генподрядчик
+            </th>
+            <th>
+                Субподрядчик
+            </th>
+            <th>
+                Cроки
+            </th>
+            <th>
+                Условия оплаты, без авансов тек. % цел.% отсрочка/в течение
+            </th>
+            <th>
+                Услуги генподряда (для договоров субподряда)
+            </th>
+            <th>
+                Материалы по факту или сметной стоимости согласно договору
+            </th>
+            <th>
+                Валюта расчетов
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                @foreach (var item in Model.SelectionProcedures)
+                {
+                    @item.Name
+                }
+
+            </td>
+            <td>
+                @foreach (var item in Model.EmployeeContracts)
+                {
+                    if (@item.IsSignatory == true)
+                    {
+                        @item.Employee.FullName
+                    }
+                    else
+                    if (@item.IsResponsible == true)
+                    {
+                        @item.Employee.FullName
+                    }
+                }
+                <br>
+                Model.ResponsibleEmp
+            </td>
+            <td>
+                @Model.Number от
+                @Model.Date?.ToShortDateString()
+            </td>
+            <td>
+                @Model.NameObject
+            </td>
+            <td>
+                @Model.FundingSource
+            </td>
+            <td>
+                @foreach (var item in Model.ContractOrganizations)
+                    if (@item.IsClient == true)
+                    {
+                        @item.Organization.Abbr
+                    }
+            </td>
+            <td>
+                Model.GenContractor
+            </td>
+            <td>
+                <b>выполнения работ:</b><br>
+                @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
+                <b>ввода:</b><br>
+                @Model.EnteringTerm?.ToShortDateString()<br>
+                <b>действия договора по взаиморасчетам:</b><br>
+                @Model.ContractTerm?.ToShortDateString()<br>
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
+                @Html.ActionLink("Авансирование P11","","")
+
+                @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
+                @Html.ActionLink("Расчет P7","","")
+            </td>
+            <td>
+                @Html.ActionLink("Услуги генподрядчика P13","","")
+            </td>
+            <td>
+                @Html.ActionLink("Материалы P15","","")
+            </td>
+            <td>
+                Model.Сurrency
+            </td>
+            <td>
+                @* <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
+                <a asp-action="" asp-route-id="@item.Id">Акт ввода</a> |
+                <a asp-action="" asp-route-id="@item.Id">Акты приостановки/возобновления</a> |
+                <a asp-action="" asp-route-id="@item.Id">Переписка</a> |
+                <a asp-action="" asp-route-id="@item.Id">ПСД</a> |
+                <a asp-action="CreateSub" asp-route-id="@item.Id" asp-route-nameObject="@item.NameObject">Добавить субподрядный договор</a>*@
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+

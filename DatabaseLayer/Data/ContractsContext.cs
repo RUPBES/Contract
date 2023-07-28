@@ -289,7 +289,7 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.PaymentСonditionsRaschet).HasComment("условия оплаты (расчеты за выполненные работы)");
 
-            entity.Property(e => e.SubContractId).HasComment("Ссылка на договоро (если субподряд)");
+            entity.Property(e => e.SubContractId).HasComment("Ссылка на договор (если субподряд)");
 
             entity.Property(e => e.Сurrency)
                 .HasMaxLength(50)
@@ -362,7 +362,7 @@ public partial class ContractsContext : DbContext
 
             entity.ToTable("CorrespondenceFile");
 
-            entity.HasComment("переписка -файлы");
+            entity.HasComment("переписка-файлы");
 
             entity.HasOne(d => d.Correspondence)
                 .WithMany(p => p.CorrespondenceFiles)

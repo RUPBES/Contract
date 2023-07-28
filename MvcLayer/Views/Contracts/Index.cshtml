@@ -1,12 +1,98 @@
 ﻿@using BusinessLayer.Models;
 @model BusinessLayer.Models.IndexViewModel
-
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
     ViewData["Title"] = "Index";
+    Layout = "/Views/Shared/_LayoutTable.cshtml";
 }
+<div id="DocBody" style="margin-left:30px">
+    <h1>Список договоров</h1>
 
-<h1>Список договоров</h1>
+    <p>
+        <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
+    </p>
+    <div style="overflow:scroll; max-height:640px;">
+        <table class="table table-main table-main-short table-striped table-bordered" id="contractTable">
+            <thead>
+                <tr class="tr-head-main-table">
+                    <th>
+                        №
+                    </th>
+                    <th>
+                        <span>Номер и дата договора</span>
+                    </th>
+                    <th>
+                        <span>Наименование объекта</span>
+                    </th>
+                    <th>
+                        <span>Заказчик</span>
+                    </th>
+                    <th>
+                        <span> Генподрядчик</span>
+                    </th>
+                    <th>
+                        <span>Cроки</span>
+                    </th>
+                    <th>
+                        <span>Условия оплаты</span>
+                    </th>
+                    <th>
+                        <span class='table_span-material'>Материалы по факту или сметной стоимости согласно договору</span>
+                    </th>
+                    <th>
+                        <span class="table_span-currency">Валюта расчетов</span>
+                    </th>                   
+                    <th><span>Виды работ по договору</span></th>
+                    <th><span>Контрактная договорная цена, с учетом НДС</span></th>
+                    <th><span>Выполнено на 01.01 текущего года</span></th>
+                    <th><span>Остаток по выполнению от стоимости контрактной цены</span></th>
+                    <th><span>Объем на текущий год</span></th>
+                    <th><span>Действия с договором</span></th>
+                </tr>
+            </thead>
+            <tbody class="table_tbody">
+                @foreach (VContractDTO item in Model.Objects)
+                {
+                    <tr>
+                        <td>
+                            ?
+                        </td>
+                        <td>
+                            @item.Number от
+                            @item.Date?.ToShortDateString()
+                        </td>
+                        <td>
+                            <span class="table_span-nameobject">
 
+                            @item.NameObject
+                            </span>
+
+                        </td>
+                        <td>
+                            <span class="table_span-customer">
+
+                            @item.Client
+                            </span>
+
+                        </td>
+                        <td>
+                            <span class="table_span-contractor">
+
+                            @item.GenContractor
+
+                            </span>
+
+                        </td>
+                        <td>
+                            <b>выполнения работ:</b><br>
+                            @item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()<br>
+                            <b>ввода:</b><br>
+                            @item.EnteringTerm?.ToShortDateString()<br>
+                        </td>
+                        <td>
+                            <span class="table_span-avans">
+                            @Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)
+                            @Html.ActionLink("Авансирование P11","","")
 <p>
     <a asp-action="Create">Новый договор</a>
 </p>
@@ -145,6 +231,77 @@
                     @Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)
                     @Html.ActionLink("Авансирование P11","","")
 
+                            @Html.DisplayFor(modelItem => item.PaymentСonditionsRaschet)
+                            @Html.ActionLink("Расчет P7","","")
+                            </span>
+                        </td>
+                        <td>
+                            <span class="table_span-material">
+                            @Html.ActionLink("Материалы P15","","")
+                            </span>
+                        </td>
+                        <td>
+                            <span class="table_span-currency">
+
+                            @item.Сurrency
+                            </span>
+
+                        </td>
+                        <td>
+                            <span class="table_span-work">
+
+                           ?
+                            </span>
+                        </td>
+                        <td>
+                            ?
+                        </td>
+                        <td>
+                            ?
+                        </td>
+                        <td>
+                           ?
+                        </td>
+                        <td>
+                            ?
+                        </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
+                            <a asp-action="" asp-route-id="@item.Id">Акт ввода</a> |
+                            <a asp-action="" asp-route-id="@item.Id">Акты приостановки/возобновления</a> |
+                            <a asp-action="" asp-route-id="@item.Id">Переписка</a> |
+                            <a asp-action="" asp-route-id="@item.Id">ПСД</a> |
+                            <a asp-action="CreateSub" asp-route-id="@item.Id" asp-route-nameObject="@item.NameObject">Добавить субподрядный договор</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="pages">
+        @{
+            if (Model.PageViewModel.HasPreviousPage)
+            {
+                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+            }
+            else
+            {
+                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+            }
+        }
+        <b> @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages</b>
+        @{
+            if (Model.PageViewModel.HasNextPage)
+            {
+                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+            }
+            else
+            {
+                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+            }
+        }
                     @Html.DisplayFor(modelItem => item.PaymentСonditionsRaschet)
                     @Html.ActionLink("Расчет P7","","")
                 </td>
