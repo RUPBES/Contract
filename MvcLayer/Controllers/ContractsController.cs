@@ -341,5 +341,10 @@ namespace MvcLayer.Controllers
             var doc = _contractService.GetById(id);
             return PartialView("_OneContract", _mapper.Map<ContractViewModel>(doc));
         }
+        
+        public async Task<IActionResult> FilterByProps(int pageNum = 1, string query)
+        {
+            return View(_vContractService.GetPageFilter(100, pageNum, query));         
+        }
     }
 }

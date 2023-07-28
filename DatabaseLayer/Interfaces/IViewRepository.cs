@@ -9,6 +9,7 @@
         IEnumerable<T> GetEntityWithSkipTake(int skip, int take, int legalPersonId);
         IEnumerable<T> Find(Func<T, bool> predicate);
         IEnumerable<T> FindLikeNameObj(string queryString);
+        IEnumerable<T> FindContract(string queryString);
 
     }
 }

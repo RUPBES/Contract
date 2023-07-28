@@ -6,5 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IVContractService: ILookupEntity<VContractDTO, VContract>
     {
+
     }
 }

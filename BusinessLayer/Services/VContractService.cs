@@ -3,6 +3,8 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace BusinessLayer.Services
 {
@@ -50,6 +52,35 @@ namespace BusinessLayer.Services
             int count = _database.vContracts.Count();
             int skipEntities = (pageNum - 1) * pageSize;
             var items = _database.vContracts.GetEntitySkipTake(skipEntities, pageSize);
+            var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
+
+            PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = t
+            };
+
+            return viewModel;
+        }
+
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request)
+        {
+            int count = _database.vContracts.Count();
+            int skipEntities = (pageNum - 1) * pageSize;
+            var it = _database.vContracts.GetAll();
+            var items = new List<VContract>();
+            foreach (var item in it)
+            {
+                string props="";
+                foreach(var prop in item.GetType().GetProperties())
+                {
+                    props+= (string)prop.GetValue(item) + " ";
+                }
+                if (props.Contains(request))
+                    items.Add(item);
+            }
+            items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
