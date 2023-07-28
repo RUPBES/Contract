@@ -23,6 +23,11 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.Find(predicate));
         }
 
+        public IEnumerable<VContractDTO> FindContract(Func<VContract, bool> predicate)
+        {
+            return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.FindContract(predicate));
+        }
+
         public IEnumerable<VContractDTO> FindLikeNameObj(string queryString)
         {
             return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.FindLikeNameObj(queryString));
