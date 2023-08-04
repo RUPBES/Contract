@@ -36,11 +36,23 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index(int pageNum = 1)
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
         {
-            return View(_vContractService.GetPage(100, pageNum));
-            //var contractsContext = _contractService.GetAll();
-            //return View(_mapper.Map<IEnumerable<ContractViewModel>>(contractsContext));
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
+            ViewBag.NameObjSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+            ViewBag.ClientSortParm = sortOrder == "client" ? "clientDesc" : "client";
+            ViewBag.GenSortParm = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+            ViewBag.EnterSortParm = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+            if (query != null)
+            { }
+            else
+            { query = currentFilter; }
+            ViewBag.CurrentFilter = query;
+
+            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
+                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder));
+            else return View(_vContractService.GetPage(100, pageNum));
         }
 
         // GET: Contracts/Details/5
@@ -336,15 +348,17 @@ namespace MvcLayer.Controllers
             return Json(result);
         }
 
+        public ActionResult ExistContractByNumberadnName(string query)
+        {
+            var result = _vContractService.FindContract(query);
+            return Json(result);
+        }
+
         public ActionResult ChooseDoc(int id)
         {
             var doc = _contractService.GetById(id);
             return PartialView("_OneContract", _mapper.Map<ContractViewModel>(doc));
-        }
-        
-        public async Task<IActionResult> FilterByProps(int pageNum = 1, string query)
-        {
-            return View(_vContractService.GetPageFilter(100, pageNum, query));         
-        }
+        }       
+
     }
 }

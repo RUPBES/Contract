@@ -57,7 +57,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<VContract> FindContract(string queryString)
         {
-            return _context.VContracts.Where(x => EF.Functions.Like(x.NameObject, $"%{queryString}%")).OrderBy(x => x.Date).ToList();
+            return _context.VContracts.Where(x => EF.Functions.Like(x.NameObject, $"%{queryString}%") || EF.Functions.Like(x.Number, $"%{queryString}%")).OrderBy(x => x.Date).ToList();
         }
     }
 }

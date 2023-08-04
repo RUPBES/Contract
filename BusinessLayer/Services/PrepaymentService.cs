@@ -109,5 +109,10 @@ namespace BusinessLayer.Services
         {
             return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(predicate));
         }
+
+        public IEnumerable<PrepaymentDTO> FindByIdContract(int id)
+        {
+            return _mapper.Map<IEnumerable<PrepaymentDTO>>(GetAll().Where(p => p.ContractId == id));
+        }
     }
 }

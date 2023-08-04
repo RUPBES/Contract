@@ -3,8 +3,11 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BusinessLayer.Services
 {
@@ -23,9 +26,9 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.Find(predicate));
         }
 
-        public IEnumerable<VContractDTO> FindContract(Func<VContract, bool> predicate)
+        public IEnumerable<VContractDTO> FindContract(string queryString)
         {
-            return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.FindContract(predicate));
+            return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.FindContract(queryString));
         }
 
         public IEnumerable<VContractDTO> FindLikeNameObj(string queryString)
@@ -69,21 +72,51 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request)
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
         {
             int count = _database.vContracts.Count();
             int skipEntities = (pageNum - 1) * pageSize;
-            var it = _database.vContracts.GetAll();
-            var items = new List<VContract>();
-            foreach (var item in it)
+            IEnumerable<VContract> items;
+            if (!String.IsNullOrEmpty(request))
+            {      items = _database.vContracts.FindContract(request); }
+            else { items = _database.vContracts.GetAll(); }
+
+
+            switch (sortOrder)
             {
-                string props="";
-                foreach(var prop in item.GetType().GetProperties())
-                {
-                    props+= (string)prop.GetValue(item) + " ";
-                }
-                if (props.Contains(request))
-                    items.Add(item);
+                case "date":
+                    items = items.OrderBy(s => s.Date).ThenBy(s => s.Number);
+                    break;
+                case "dateDesc":
+                    items = items.OrderByDescending(s => s.Date).ThenBy(s => s.Number);
+                    break;
+                case "nameObject":
+                    items = items.OrderBy(s => s.NameObject).ThenBy(s => s.Id);
+                    break;
+                case "nameObjectDesc":
+                    items = items.OrderByDescending(s => s.NameObject).ThenBy(s => s.Id);
+                    break;
+                case "client":
+                    items = items.OrderBy(s => s.Client).ThenBy(s => s.Id);
+                    break;
+                case "clientDesc":
+                    items = items.OrderByDescending(s => s.Client).ThenBy(s => s.Id);
+                    break;
+                case "genContractor":
+                    items = items.OrderBy(s => s.GenContractor).ThenBy(s => s.Id);
+                    break;
+                case "genContractorDesc":
+                    items = items.OrderByDescending(s => s.GenContractor).ThenBy(s => s.Id);
+                    break;
+                case "dateEnter":
+                    items = items.OrderBy(s => s.EnteringTerm).ThenBy(s => s.Id); 
+                    break;
+                case "dateEnterDesc":
+                    items = items.OrderByDescending(s => s.EnteringTerm).ThenBy(s => s.Id);
+                    break;
+                default:
+                    items = items.OrderBy(s => s.Id);
+                    break;
             }
             items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<VContractDTO>>(items);

@@ -1,0 +1,98 @@
+﻿@using MvcLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@model IEnumerable<MvcLayer.Models.PrepaymentViewModel>
+@{
+    ViewData["Title"] = "Index";
+    string s = Context.Request.Path.ToString();
+    s = s.Substring(s.LastIndexOf("/") + 1);
+}
+
+<h1>Список авансов</h1>
+
+<table class="table table-striped table-bordered" id="contractTable">
+    <thead>
+        <tr>
+            <th>
+                Период
+            </th>
+            <th>
+                Текущие авансы
+            </th>
+            <th>
+                Текущие авансы по факту
+            </th>
+            <th>
+                Целевые Авансы
+            </th>
+            <th>
+                Целевые Авансы по факту
+            </th>
+            <th>
+                Отработка целевых
+            </th>
+            <th>
+                Отработка целевых фактическое
+            </th>
+            <th>
+                Договор
+            </th>
+            <th>
+                Изменено?
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (PrepaymentViewModel item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Period?.ToString("MMM yyyy")
+                </td>
+                <td>
+                    @item.CurrentValue
+                </td>
+                <td>
+                    @item.CurrentValueFact
+                </td>
+                <td>
+                    @item.TargetValue
+                </td>
+                <td>
+                    @item.TargetValueFact
+                </td>
+                <td>
+                    @item.WorkingOutValue
+                </td>
+                <td>
+                    @item.WorkingOutValueFact
+                </td>
+                <td>
+                    @if (@item.ContractId is not null)
+                    {
+                        @item.Contract.Number
+                    }
+                </td>
+                <td>
+                    @if (@item.IsChange == true)
+                    {
+                        <span>Изменено: @item.ChangePrepaymentId</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+            @Context.Request.Path
+        }
+    </tbody>
+</table>
+<div>
+    <a class="button" asp-action="Details" asp-controller="Contracts" asp-route-id="@Int64.Parse(s)">Вернуться</a>
+</div>
+@section Scripts {
+    <script type="text/javascript">
+
+    </script>
+}
+
