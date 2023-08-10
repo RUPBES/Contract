@@ -1,10 +1,50 @@
-﻿@model MvcLayer.Models.PeriodChooseViewModel ///???????
+﻿@model MvcLayer.Models.PeriodChooseViewModel 
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
-@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentService Prepayment
 @{
     ViewData["Title"] = "ChoosePeriod";
+    bool hasPrepayment = false;
+    var prepayments  = Prepayment.Find(x => x.ContractId == Model.ContractId)?.FirstOrDefault();
+    if (prepayments is not null)
+    {
+        hasPrepayment = true;
+    }
 }
 
 <h1>ChoosePeriod</h1>
+@if (hasPrepayment)
+{
+    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+        <div class="form-group col-12">
+            <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
+            <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+        </div>
+        <div id="chooseAmendment" class="row" hidden>
+            <div class="form-group">
+                <label class="control-label">Выбрать доп.соглашение</label>
+                <select name="AmendmentId" id="AmendId" class="form-control select">
+                    <option disabled selected>Выберите</option>
+                    @foreach (AmendmentDTO org in Amendment.GetAll())
+                    {
+                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                    }
+                </select>
+            </div>
+            <div class="row mt-3" id="date-box" hidden>
+                <div class="form-group col-6 mb-3">
+                    <label for="amendCheck1">Укажите начало периода</label>
+                    <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
+                </div>
+                <div class="form-group col-6 mb-3">
+                    <label for="amendCheck2">Укажите окончание периода</label>
+                    <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
+                </div>
+                <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
 
+            </div>
+        </div>
+    </form>
+}
