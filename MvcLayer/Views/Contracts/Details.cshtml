@@ -1575,33 +1575,36 @@
     <a asp-action="Index">Вернуться</a>
 </div>
 
-<script>
-    let elementButton = document.getElementById("ActiveToggleId")
+    <script>
+        let elementButton = document.getElementById("ActiveToggleId")
 
-    elementButton.addEventListener("click", (event) => {
-        let elementTable = document.getElementById("ConstructionInstallationWorks")
-        elementTable.classList.remove('modal__visibility-close')
-        elementTable.classList.add('modal__visibility-active')
-        console.log('event', event)
-    });
+        elementButton.addEventListener("click", (event) => {
+            let elementTable = document.getElementById("ConstructionInstallationWorks")
+            elementTable.classList.remove('modal__visibility-close')
+            elementTable.classList.add('modal__visibility-active')
+            console.log('event', event)
+        });
 
-    let elementButtonTable = document.getElementById('buttonTable')
-    elementButtonTable.addEventListener("click", event => {
-        let elementTable = document.getElementById("ConstructionInstallationWorks")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
-        console.log('eventButton', event)
-    })
+        let elementButtonTable = document.getElementById('buttonTable')
+        elementButtonTable.addEventListener("click", event => {
+            let elementTable = document.getElementById("ConstructionInstallationWorks")
+            elementTable.classList.remove('modal__visibility-active')
+            elementTable.classList.add('modal__visibility-close')
+            console.log('eventButton', event)
+        })
 
-    $('.PartialTable').delegate(".ActiveToggle", "click", function () {
-        $(this).parents('table.PartialTable ').children('tbody.tbodyPartialTable').toggle();
-    });
-    $('.PartialTableInsade').delegate("th", "click", function () {
-        $(this).parents('table.PartialTableInsade').children('tbody.tbodyPartialTableInsade').toggle();
-    });
-
-
+        $('.PartialTable').delegate(".ActiveToggle", "click", function () {
+            $(this).parents('table.PartialTable ').children('tbody.tbodyPartialTable').toggle();
+        });
+        $('.PartialTableInsade').delegate("th", "click", function () {
+            $(this).parents('table.PartialTableInsade').children('tbody.tbodyPartialTableInsade').toggle();
+        });
 
 
 
-</script>
+
+
+    </script>
+}
+
+
