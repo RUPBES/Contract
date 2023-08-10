@@ -30,7 +30,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult Index(int id)
         {
-            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.FindByIdContract(id)));
+            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.FindListByIdContract(id)));
         }
 
         //public async Task<IActionResult> Details(int? id)
