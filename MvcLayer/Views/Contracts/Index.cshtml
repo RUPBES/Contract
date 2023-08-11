@@ -6,38 +6,50 @@
     <div>
         <h1>Список договоров</h1>
         <div class="contracts-list">
-        <p>
-            <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
-            @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
-            {
-            <form>
-                Название объекта/номер договора: @Html.TextBox("query", ViewBag.CurrentFilter as string)
-                <input type="submit" value="Search" />
-            </form>
-            }
-        </p>
+            <p>
+                <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
+                @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
+                {
+                    <form>
+                        Название объекта/номер договора: @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                        <input type="submit" value="Search" />
+                    </form>
+                }
+            </p>
         </div>
         <div class="full-width">
-            <table class="table table-main table-main-short table-striped table-bordered" id="contractTable">                                
+            <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
                 <thead>
                     <tr class="tr-head-main-table">
-                        <th class="table_num">
-                            №
-                        </th>
-                        <th class="table_span-numberanddate">
-                            @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayTag", @class="up"})
+                        <th>
+                            <div class="table_span-num">
+                                №
+                            </div>
                         </th>
                         <th>
-                            @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter })
+                            <div class="table_span-numberanddate">
+                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayTag", @class="up"})
+                            </div>
                         </th>
                         <th>
-                            @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter })
+                            <div class="table_span-nameobject">
+                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter })
+                            </div>
                         </th>
                         <th>
+                            <div class="table_span-customer">
+                                @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter })
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table_span-contractor">
                             @Html.ActionLink("Генподрядчик", "Index", new { sortOrder = ViewBag.GenSortParm, currentFilter=ViewBag.CurrentFilter })
+                            </div>
                         </th>
                         <th>
+                            <div class="table_span-deadlines">
                             @Html.ActionLink("Cроки", "Index", new { sortOrder = ViewBag.EnterSortParm, currentFilter=ViewBag.CurrentFilter })
+                            </div>
                         </th>
                         <th>
                             <span class="table_span-conditions">Условия оплаты</span>
@@ -45,15 +57,15 @@
                         <th>
                             <span class='table_span-material'>Материалы (факт или смета)</span>
                         </th>
-                        <th class="table_span-currency">
-                            <span>Валюта</span>
+                        <th>
+                            <span class="table_span-currency">Валюта</span>
                         </th>
                         <th><span>Виды работ по договору</span></th>
                         <th><span class="table_span-contractprice">Контрактная цена, с НДС</span></th>
                         <th><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
                         <th><span class="table_span-remains">Остаток</span></th>
                         <th><span class="table_span-volume">Объем на текущий год</span></th>
-                        @*<th><span>Действия с договором</span></th>*@
+                        <th><span class="table_span-action">Действия с договором</span></th>
                     </tr>
                 </thead>
                 <tbody class="table_tbody">
@@ -141,46 +153,42 @@
                             <td>
                                 <span>?</span>
                             </td>
-                            @*<td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
-                        <a asp-action="" asp-route-id="@item.Id">Акт ввода</a> |
-                        <a asp-action="" asp-route-id="@item.Id">Акты приостановки/возобновления</a> |
-                        <a asp-action="" asp-route-id="@item.Id">Переписка</a> |
-                        <a asp-action="" asp-route-id="@item.Id">ПСД</a> |
-                        <a asp-action="CreateSub" asp-route-id="@item.Id" asp-route-nameObject="@item.NameObject">Добавить субподрядный договор</a>
-                        </td>*@
+                            <td>
+                                <a asp-action="Details" asp-route-id="@item.Id">
+                                    <img src="~/images/Icon/details.png" width="50"
+                                         height="50" alt="Подробнее">
+                                </a>                     
+                    </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
     </div>
-        <div class="pages">
-            @{
-                if (Model.PageViewModel.HasPreviousPage)
-                {
-                    <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
-                }
-                else
-                {
-                    <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
-                }
+    <div class="pages">
+        @{
+            if (Model.PageViewModel.HasPreviousPage)
+            {
+                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
             }
-            <b> @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages</b>
-            @{
-                if (Model.PageViewModel.HasNextPage)
-                {
-                    <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
-                }
-                else
-                {
-                    <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
-                }
+            else
+            {
+                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
             }
-        </div>
-    
+        }
+        <b> @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages</b>
+        @{
+            if (Model.PageViewModel.HasNextPage)
+            {
+                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+            }
+            else
+            {
+                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+            }
+        }
+    </div>
+
 }
 
 @section Scripts {
