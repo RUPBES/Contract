@@ -4,14 +4,14 @@
 
 @section Table{
     <div>
-        <h1>Список договоров</h1>
+        <h1 style="text-align: center;">Список договоров</h1>
         <div class="contracts-list">
             <p>
                 <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
                 @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
                 {
-                    <form>
-                        Название объекта/номер договора: @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                    <form style="search-form">
+                        <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
                         <input type="submit" value="Search" />
                     </form>
                 }
@@ -28,12 +28,12 @@
                         </th>
                         <th>
                             <div class="table_span-numberanddate">
-                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayTag", @class="up"})
+                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNumberanddate", @class="up"})
                             </div>
                         </th>
                         <th>
                             <div class="table_span-nameobject">
-                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter })
+                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayNameobject", @class="up"})
                             </div>
                         </th>
                         <th>
@@ -194,21 +194,46 @@
 @section Scripts {
     <script type="text/javascript">
 
+        class ArrayFun {
 
+            constructor(url, element, urlDown, urlUp) {
+                this.url = url;
+                this.element = element;
+                this.urlDoun = urlDown;
+                this.urlUp = urlUp;
+            }
+
+            checkArray(url) {
+                console.log('test', url)
+            }
+
+        }
         window.onload = function () {
+
             let actualUrl = window.location.search;
-            elementTag = document.getElementById("arrayTag");
+            let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
+            let elementArrayNameobject = document.getElementById("arrayNameobject");
+            const arrayFun = new ArrayFun('a', 'b', 'c')
+            arrayFun.checkArray(actualUrl)
+
             if (actualUrl.includes('dateDesc')) {
-                elementTag.classList.remove("down")
-                elementTag.classList.add('up')
+                elementArrayNumberanddate.classList.remove("up")
+                elementArrayNumberanddate.classList.add('down')
 
             } else if (actualUrl.includes('date')) {
-                elementTag.classList.remove("up")
-                elementTag.classList.add('down')
-            }
+
+                elementArrayNumberanddate.classList.remove("down")
+                elementArrayNumberanddate.classList.add('up')
+            } else {
+  
+                elementArrayNumberanddate.classList.remove("down")
+                elementArrayNumberanddate.classList.remove("up")
+                    }
+
         };
 
 
+  
         ///// вызываем PARTIAL VIEW для создания новой организации
         $("#addOrganization").click(function (e) {
             e.preventDefault();
