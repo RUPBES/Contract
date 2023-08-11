@@ -205,19 +205,24 @@
 
         class ArrayFun {
 
-            constructor(url, element, urlDown, urlUp) {
-                this.url = url;
+            constructor(element) {
                 this.element = element;
-                this.urlDoun = urlDown;
-                this.urlUp = urlUp;
-            }
+               }
 
-            checkArray(url) {
-                console.log('test', url)
+            addArrayDown() { 
+            this.element.classList.remove("up")
+            this.element.classList.add('down')
             }
-
+            addArrayUp() {
+            this.element.classList.remove("down")
+            this.element.classList.add('up')
+                }
+            removeArray {
+            this.element.classList.remove("down")
+            this.element.classList.remove("up")
+                }
+            
         }
-        window.onload = function () {
 
             let actualUrl = window.location.search;
             let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
@@ -227,11 +232,11 @@
             let elementArrayTerms = document.getElementById("arrayTerms");
 
 
-            if (actualUrl.includes('dateDesc')) {
-                elementArrayNumberanddate.classList.remove("up")
-                elementArrayNumberanddate.classList.add('down')
+        //    if (actualUrl.includes('dateDesc')) {
+        //        elementArrayNumberanddate.classList.remove("up")
+        //        elementArrayNumberanddate.classList.add('down')
 
-            } else if (actualUrl.includes('date')) {
+        //    } else if (actualUrl.includes('date')) {
 
                 elementArrayNumberanddate.classList.remove("down")
                 elementArrayNumberanddate.classList.add('up')
