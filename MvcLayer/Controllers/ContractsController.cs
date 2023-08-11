@@ -40,7 +40,7 @@ namespace MvcLayer.Controllers
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
-            ViewBag.NameObjSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+            ViewBag.NameObjectSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
             ViewBag.ClientSortParm = sortOrder == "client" ? "clientDesc" : "client";
             ViewBag.GenSortParm = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewBag.EnterSortParm = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
