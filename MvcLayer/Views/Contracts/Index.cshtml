@@ -196,41 +196,56 @@
 
         class ArrayFun {
 
-            constructor(url, element, urlDown, urlUp) {
-                this.url = url;
+            constructor(element) {
                 this.element = element;
-                this.urlDoun = urlDown;
-                this.urlUp = urlUp;
-            }
+               }
 
-            checkArray(url) {
-                console.log('test', url)
+            addArrayDown() { 
+            this.element.classList.remove("up")
+            this.element.classList.add('down')
             }
+            addArrayUp() {
+            this.element.classList.remove("down")
+            this.element.classList.add('up')
+                }
+            removeArray {
+            this.element.classList.remove("down")
+            this.element.classList.remove("up")
+                }
+            
+        }
+
+
+
+
+        windows.onload = () => {
+                let actualUrl = window.location.search;
+                let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
+
 
         }
-        window.onload = function () {
 
-            let actualUrl = window.location.search;
-            let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
-            let elementArrayNameobject = document.getElementById("arrayNameobject");
-            const arrayFun = new ArrayFun('a', 'b', 'c')
-            arrayFun.checkArray(actualUrl)
+        //window.onload = function () {
 
-            if (actualUrl.includes('dateDesc')) {
-                elementArrayNumberanddate.classList.remove("up")
-                elementArrayNumberanddate.classList.add('down')
+        //    let actualUrl = window.location.search;
+        //    let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
 
-            } else if (actualUrl.includes('date')) {
 
-                elementArrayNumberanddate.classList.remove("down")
-                elementArrayNumberanddate.classList.add('up')
-            } else {
+        //    if (actualUrl.includes('dateDesc')) {
+        //        elementArrayNumberanddate.classList.remove("up")
+        //        elementArrayNumberanddate.classList.add('down')
+
+        //    } else if (actualUrl.includes('date')) {
+
+        //        elementArrayNumberanddate.classList.remove("down")
+        //        elementArrayNumberanddate.classList.add('up')
+        //    } else {
   
-                elementArrayNumberanddate.classList.remove("down")
-                elementArrayNumberanddate.classList.remove("up")
-                    }
+        //        elementArrayNumberanddate.classList.remove("down")
+        //        elementArrayNumberanddate.classList.remove("up")
+        //            }
 
-        };
+        //};
 
 
   
