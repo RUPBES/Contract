@@ -207,153 +207,179 @@
             <thead>
                 <tr class="tr-head-main-table">
                     @*№*@
-                    <th rowspan="2">
+                    <th>
                         <span>#</span>
                     </th>
                     @*Процедура выбора*@
-                    <th rowspan="2">
+                    <th>
                         <span>Процедура выбора</span>
                     </th>
                     @*Отвественное лицо*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-signer">Лицо отв. за договор</span>
                     </th>
                     @*Номер и дата договора*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-numberanddate">Номер и дата договора</span>
                     </th>
                     @*Наименование объекта*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-nameobject">Наименование объекта</span>
                     </th>
                     @*Источник финансирования*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-fin-source">Источник финансирования</span>
                     </th>
                     @*Заказчик*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-customer">Заказчик</span>
                     </th>
                     @*Генподрядчик*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-contractor">Генподрядчик (филиал-исп.)</span>
                     </th>
                     @*Субподрядчик (филиал-исполнитель по приказу)*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-subcontractor">Субподрядчик (филиал-исп.)</span>
                     </th>
                     @*Cроки*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-deadlines">Cроки</span>
                     </th>
                     @*Акты приостановки и возобновления работ*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-act-renewal">Акты приостан. и возобн. работ</span>
                     </th>
                     @*Условия оплаты, без авансов тек. % цел.% отсрочка/в течение*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-conditions">Условия оплаты, без авансов</span>
                     </th>
                     @*Услуги генподряда (для договоров субподряда)*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-gen-service">Услуги генподряда (субподряда)</span>
                     </th>
                     @*Материалы по факту или сметной стоимости согласно договору*@
-                    <th rowspan="2">
+                    <th>
                         <span class='table_span-material'>Материалы (факт или смета)</span>
                     </th>
                     @*Валюта расчетов*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-currency">Валюта расчетов</span>
                     </th>
                     @*Виды работ по договору*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-work">Виды работ по договору</span>
                     </th>
                     @*Контрактная договорная цена*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-contractprice">Контрактная цена, с НДС</span>
                     </th>
                     @*Выполнено на 01.01 текущего года*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-realization">Выполнено на 01.01 тек. года</span>
                     </th>
                     @*Остаток по выполнению от стоимости контрактной цены*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-remains">Остаток по выполнению</span>
                     </th>
                     @*Объем на текущий год*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-volume">Объем на текущий год</span>
-                    </th>                    
+                    </th>
+                    @*Информация по месецам*@
+                    <th>
+                        <span class="table_span-detail">Информация за год</span>
+                    </th>
                     @*Переписка*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-correspondence">Переписка</span>
                     </th>
                     @*Проектно-сметная документация*@
-                    <th rowspan="2">
+                    <th>
                         <span class="table_span-estimate-doc">Проектно-сметная документация</span>
                     </th>
-                </tr>                
+                    @*Действия по договору*@
+                    <th>
+                        <span class="table_span-action">Действия по договору</span>
+                    </th>
+                </tr>
             </thead>
             <tbody>
                 <tr id="firstrow">
                     <td rowspan="4">
-                        #-?
+                        <span>
+                            #-?
+                        </span>
                     </td>
                     <td rowspan="4">
-                        Процедура выбора -
-                        @foreach (var item in Model.SelectionProcedures)
-                        {
-                            @item.Name
-                        }
-                    </td>
-                    <td rowspan="4">
-                        Подписанты-
-                        @foreach (var item in Model.EmployeeContracts)
-                        {
-                            if (@item.IsSignatory == true)
+                        <span>
+                            Процедура выбора -
+                            @foreach (var item in Model.SelectionProcedures)
                             {
-                                @item.Employee.FullName
+                                @item.Name
                             }
-                            else
-                            if (@item.IsResponsible == true)
-                            {
-                                @item.Employee.FullName
-                            }
-                        }
-                        <br>
-                        Model.ResponsibleEmp
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-signer">
+                            Подписанты-
+                            @foreach (var item in Model.EmployeeContracts)
+                            {
+                                if (@item.IsSignatory == true)
+                                {
+                                    @item.Employee.FullName
+                                }
+                                else
+                                    if (@item.IsResponsible == true)
+                                {
+                                    @item.Employee.FullName
+                                }
+                            }
+                            <br>
+                            Model.ResponsibleEmp
+                        </span>
+                    </td>
+                    <td rowspan="4">
+                        <span class="table_span-numberanddate">
                         Номер и дата-
                         @Model.Number от
                         @Model.Date?.ToShortDateString()
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-nameobject">
                         Наименование объекта -
                         @Model.NameObject
+                        </span>
                     </td>
                     <td rowspan="4">
-                        <span style="width: 60px">Источник ФИНАНСИРОВАНИЯ -
-                        @Model.FundingSource</span>
+                        <span class="table_span-fin-source">                        
+                        @Model.FundingSource
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-customer">
                         Заказчик -
                         @foreach (var item in Model.ContractOrganizations)
                             if (@item.IsClient == true)
                             {
                                 @item.Organization.Abbr
                             }
+                            </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-contractor">
                         Генподрядчик -
                         Model.GenContractor
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-subcontractor">
                         Субподрядчик -
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-deadlines">
                         Сроки-
                         <b>выполнения работ:</b><br>
                         @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
@@ -361,105 +387,131 @@
                         @Model.EnteringTerm?.ToShortDateString()<br>
                         <b>действия договора по взаиморасчетам:</b><br>
                         @Model.ContractTerm?.ToShortDateString()<br>
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-act-renewal">
                         Акты приостановки
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-conditions">
                         Условия оплаты -
-                        @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
+                        @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)*@
                         <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
                             Аванс
                         </a>
                         @*Html.ActionLink("Аванс","Index","Prepayment", Model.Id)*@
 
-                        @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
+                        @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)*@
                         @Html.ActionLink("Расчет P7","","")
+                        </span>
                     </td>
-                      <td rowspan="4">
-                    Услуги генподрядчика -
-                    @Html.ActionLink("Услуги генподряда","GetByContractId","ServiceGC",new{ contractId = Model.Id})
-                </td>
                     <td rowspan="4">
+                        <span class="table_span-gen-service">
+                        Услуги генподрядчика -
+                        @Html.ActionLink("Авансирование","","");
+                        </span>
+                    </td>
+                    <td rowspan="4">
+                        <span class='table_span-material'>
                         Материалы -
                         @Html.ActionLink("Материалы P15","","")
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-currency">
                         Валюта -
                         Model.Сurrency
+                        </span>
                     </td>
-                    <td colspan="5">
+                    <td colspan="5" style="padding:0px;">
                         <table class="PartialTable">
-                            <colgroup>                                
+                            <colgroup>
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th class="ActiveToggle" id="ActiveToggleId" colspan="5">строительно-монтажные работы, всего с учетом НДС</th>                                    
+                                    <th class="ActiveToggle" id="ActiveToggleId" colspan="5">строительно-монтажные работы, всего с учетом НДС</th>
                                 </tr>
                             </thead>
-                            <tbody class="tbodyPartialTable" style="display:none;">
+                            <tbody class="tbodyPartialTable">
                                 <tr>
-                                    <td>СМР</td>
-                                    <td>СМР цена</td>
-                                    <td>СМР выполнено</td>
-                                    <td>СМР остаток</td>
-                                    <td>СМР объем</td>
+                                    <td><span class="table_span-work">СМР</span></td>
+                                    <td><span class="table_span-contractprice">СМР цена</span></td>
+                                    <td><span class="table_span-realization">СМР выполнено</span></td>
+                                    <td><span class="table_span-remains">СМР остаток</span></td>
+                                    <td><span class="table_span-volume">СМР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПНР</td>
-                                    <td>ПНР цена</td>
-                                    <td>ПНР выполнено</td>
-                                    <td>ПНР остаток</td>
-                                    <td>ПНР объем</td>                                    
+                                    <td><span class="table_span-work">ПНР</span></td>
+                                    <td><span class="table_span-contractprice">ПНР цена</span></td>
+                                    <td><span class="table_span-realization">ПНР выполнено</span></td>
+                                    <td><span class="table_span-remains">ПНР остаток</span></td>
+                                    <td><span class="table_span-volume">ПНР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Оборудование</td>
-                                    <td>Оборудование цена</td>
-                                    <td>Оборудование выполнено</td>
-                                    <td>Оборудование остаток</td>
-                                    <td>Оборудование объем</td>                                    
+                                    <td><span class="table_span-work">Оборудование</span></td>
+                                    <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                                    <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                                    <td><span class="table_span-remains">Оборудование остаток</span></td>
+                                    <td><span class="table_span-volume">Оборудование объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                    <td>ПРОЧИЕ РАБОТЫ объем</td>                                    
+                                    <td><span class="table_span-work">ПРОЧИЕ РАБОТЫ И УСЛУГИ</span></td>
+                                    <td><span class="table_span-contractprice">ПРОЧИЕ РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ПРОЧИЕ РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ПРОЧИЕ РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ПРОЧИЕ РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Всего по договору (контракту) без учета НДС</td>
-                                    <td>Всего по договору цена</td>
-                                    <td>Всего по договору выполнено</td>
-                                    <td>Всего по договору остаток</td>
-                                    <td>Всего по договору объем</td>
-                                   
+                                    <td><span class="table_span-work">Всего по договору (контракту) без учета НДС</span></td>
+                                    <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                                    <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                                    <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                                    <td><span class="table_span-volume">Всего по договору объем</span></td>
+
                                 </tr>
                                 <tr>
-                                    <td>ДОП.РАБОТЫ</td>
-                                    <td>ДОП.РАБОТЫ цена</td>
-                                    <td>ДОП.РАБОТЫ выполнено</td>
-                                    <td>ДОП.РАБОТЫ остаток</td>
-                                    <td>ДОП.РАБОТЫ объем</td>                                    
+                                    <td><span class="table_span-work">ДОП.РАБОТЫ</span></td>
+                                    <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                    <td>МАТЕРИАЛЫ цена</td>
-                                    <td>МАТЕРИАЛЫ выполнено</td>
-                                    <td>МАТЕРИАЛЫ остаток</td>
-                                    <td>МАТЕРИАЛЫ объем</td>                                    
+                                    <td><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                                    <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                                    <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                                    <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </td>
-                    <td rowspan="4">
-                        Переписка -
+                    <td>
+                        <span id="SMR-detail" class="table_span-detail">
+                            подробнее
+                        </span>
                     </td>
                     <td rowspan="4">
+                        <span class="table_span-correspondence">
+                        Переписка -
+                        </span>
+                    </td>
+                    <td rowspan="4">
+                        <span class="table_span-estimate-doc">
                         Проектно-сметная документация -
+                        </span>
+                    </td>
+                    <td rowspan="4">
+                        <span class="table_span-action">
+                            <img src="~/images/Icon/rofl.png" width="60"
+                                 height="60" alt="Подробнее">
+                        </span>
                     </td>
                 </tr>
                 <tr id="SMR fact 3-a">
-                    <td colspan="18">
+                    <td colspan="5" style="padding:0px;">
                         <table class="PartialTable">
                             <thead>
                                 <tr>
@@ -468,60 +520,65 @@
                             </thead>
                             <tbody class="tbodyPartialTable" style="display:none;">
                                 <tr>
-                                    <td>СМР</td>
-                                    <td>СМР цена</td>
-                                    <td>СМР выполнено</td>
-                                    <td>СМР остаток</td>
-                                    <td>СМР объем</td>                                    
+                                    <td><span class="table_span-work">СМР</span></td>
+                                    <td><span class="table_span-contractprice">СМР цена</span></td>
+                                    <td><span class="table_span-realization">СМР выполнено</span></td>
+                                    <td><span class="table_span-remains">СМР остаток</span></td>
+                                    <td><span class="table_span-volume">СМР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПНР</td>
-                                    <td>ПНР цена</td>
-                                    <td>ПНР выполнено</td>
-                                    <td>ПНР остаток</td>
-                                    <td>ПНР объем</td>
+                                    <td><span class="table_span-work">ПНР</span></td>
+                                    <td><span class="table_span-contractprice">ПНР цена</span></td>
+                                    <td><span class="table_span-realization">ПНР выполнено</span></td>
+                                    <td><span class="table_span-remains">ПНР остаток</span></td>
+                                    <td><span class="table_span-volume">ПНР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Оборудование</td>
-                                    <td>Оборудование цена</td>
-                                    <td>Оборудование выполнено</td>
-                                    <td>Оборудование остаток</td>
-                                    <td>Оборудование объем</td>
+                                    <td><span class="table_span-work">Оборудование</span></td>
+                                    <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                                    <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                                    <td><span class="table_span-remains">Оборудование остаток</span></td>
+                                    <td><span class="table_span-volume">Оборудование объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td><span class="table_span-work">ПРОЧИЕ РАБОТЫ И УСЛУГИ</span></td>
+                                    <td><span class="table_span-contractprice">ПРОЧИЕ РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ПРОЧИЕ РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ПРОЧИЕ РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ПРОЧИЕ РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Всего по договору (контракту) без учета НДС</td>
-                                    <td>Всего по договору цена</td>
-                                    <td>Всего по договору выполнено</td>
-                                    <td>Всего по договору остаток</td>
-                                    <td>Всего по договору объем</td>
+                                    <td><span class="table_span-work">Всего по договору (контракту) без учета НДС</span></td>
+                                    <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                                    <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                                    <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                                    <td><span class="table_span-volume">Всего по договору объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ДОП.РАБОТЫ</td>
-                                    <td>ДОП.РАБОТЫ цена</td>
-                                    <td>ДОП.РАБОТЫ выполнено</td>
-                                    <td>ДОП.РАБОТЫ остаток</td>
-                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td><span class="table_span-work">ДОП.РАБОТЫ</span></td>
+                                    <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                    <td>МАТЕРИАЛЫ цена</td>
-                                    <td>МАТЕРИАЛЫ выполнено</td>
-                                    <td>МАТЕРИАЛЫ остаток</td>
-                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                                    <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                                    <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                                    <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </td>
+                    <td>
+                        <span id="SMR-detail" class="table_span-detail">
+                            подробнее
+                        </span>
+                    </td>
                 </tr>
                 <tr id="SMR Plan we">
-                    <td colspan="5">
+                    <td colspan="5" style="padding:0px;">
                         <table class="PartialTable">
                             <thead>
                                 <tr>
@@ -544,60 +601,66 @@
                             </thead>
                             <tbody class="tbodyPartialTable" style="display:none;">
                                 <tr>
-                                    <td>СМР</td>
-                                    <td>СМР цена</td>
-                                    <td>СМР выполнено</td>
-                                    <td>СМР остаток</td>
-                                    <td>СМР объем</td>
+                                    <td><span class="table_span-work">СМР</span></td>
+                                    <td><span class="table_span-contractprice">СМР цена</span></td>
+                                    <td><span class="table_span-realization">СМР выполнено</span></td>
+                                    <td><span class="table_span-remains">СМР остаток</span></td>
+                                    <td><span class="table_span-volume">СМР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПНР</td>
-                                    <td>ПНР цена</td>
-                                    <td>ПНР выполнено</td>
-                                    <td>ПНР остаток</td>
-                                    <td>ПНР объем</td>
+                                    <td><span class="table_span-work">ПНР</span></td>
+                                    <td><span class="table_span-contractprice">ПНР цена</span></td>
+                                    <td><span class="table_span-realization">ПНР выполнено</span></td>
+                                    <td><span class="table_span-remains">ПНР остаток</span></td>
+                                    <td><span class="table_span-volume">ПНР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Оборудование</td>
-                                    <td>Оборудование цена</td>
-                                    <td>Оборудование выполнено</td>
-                                    <td>Оборудование остаток</td>
-                                    <td>Оборудование объем</td>
+                                    <td><span class="table_span-work">Оборудование</span></td>
+                                    <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                                    <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                                    <td><span class="table_span-remains">Оборудование остаток</span></td>
+                                    <td><span class="table_span-volume">Оборудование объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td><span class="table_span-work">ПРОЧИЕ РАБОТЫ И УСЛУГИ</span></td>
+                                    <td><span class="table_span-contractprice">ПРОЧИЕ РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ПРОЧИЕ РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ПРОЧИЕ РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ПРОЧИЕ РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Всего по договору (контракту) без учета НДС</td>
-                                    <td>Всего по договору цена</td>
-                                    <td>Всего по договору выполнено</td>
-                                    <td>Всего по договору остаток</td>
-                                    <td>Всего по договору объем</td>
+                                    <td><span class="table_span-work">Всего по договору (контракту) без учета НДС</span></td>
+                                    <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                                    <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                                    <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                                    <td><span class="table_span-volume">Всего по договору объем</span></td>
+
                                 </tr>
                                 <tr>
-                                    <td>ДОП.РАБОТЫ</td>
-                                    <td>ДОП.РАБОТЫ цена</td>
-                                    <td>ДОП.РАБОТЫ выполнено</td>
-                                    <td>ДОП.РАБОТЫ остаток</td>
-                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td><span class="table_span-work">ДОП.РАБОТЫ</span></td>
+                                    <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                    <td>МАТЕРИАЛЫ цена</td>
-                                    <td>МАТЕРИАЛЫ выполнено</td>
-                                    <td>МАТЕРИАЛЫ остаток</td>
-                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                                    <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                                    <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                                    <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </td>
+                    <td>
+                        <span id="SMR-detail" class="table_span-detail">
+                            подробнее
+                        </span>
+                    </td>
                 </tr>
                 <tr id="SMR fact we">
-                    <td colspan="5">
+                    <td colspan="5" style="padding:0px;">
                         <table class="PartialTable">
                             <thead>
                                 <tr>
@@ -606,60 +669,67 @@
                             </thead>
                             <tbody class="tbodyPartialTable" style="display:none;">
                                 <tr>
-                                    <td>СМР</td>
-                                    <td>СМР цена</td>
-                                    <td>СМР выполнено</td>
-                                    <td>СМР остаток</td>
-                                    <td>СМР объем</td>
+                                    <td><span class="table_span-work">СМР</span></td>
+                                    <td><span class="table_span-contractprice">СМР цена</span></td>
+                                    <td><span class="table_span-realization">СМР выполнено</span></td>
+                                    <td><span class="table_span-remains">СМР остаток</span></td>
+                                    <td><span class="table_span-volume">СМР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПНР</td>
-                                    <td>ПНР цена</td>
-                                    <td>ПНР выполнено</td>
-                                    <td>ПНР остаток</td>
-                                    <td>ПНР объем</td>
+                                    <td><span class="table_span-work">ПНР</span></td>
+                                    <td><span class="table_span-contractprice">ПНР цена</span></td>
+                                    <td><span class="table_span-realization">ПНР выполнено</span></td>
+                                    <td><span class="table_span-remains">ПНР остаток</span></td>
+                                    <td><span class="table_span-volume">ПНР объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Оборудование</td>
-                                    <td>Оборудование цена</td>
-                                    <td>Оборудование выполнено</td>
-                                    <td>Оборудование остаток</td>
-                                    <td>Оборудование объем</td>
+                                    <td><span class="table_span-work">Оборудование</span></td>
+                                    <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                                    <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                                    <td><span class="table_span-remains">Оборудование остаток</span></td>
+                                    <td><span class="table_span-volume">Оборудование объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td><span class="table_span-work">ПРОЧИЕ РАБОТЫ И УСЛУГИ</span></td>
+                                    <td><span class="table_span-contractprice">ПРОЧИЕ РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ПРОЧИЕ РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ПРОЧИЕ РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ПРОЧИЕ РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>Всего по договору (контракту) без учета НДС</td>
-                                    <td>Всего по договору цена</td>
-                                    <td>Всего по договору выполнено</td>
-                                    <td>Всего по договору остаток</td>
-                                    <td>Всего по договору объем</td>
+                                    <td><span class="table_span-work">Всего по договору (контракту) без учета НДС</span></td>
+                                    <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                                    <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                                    <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                                    <td><span class="table_span-volume">Всего по договору объем</span></td>
+
                                 </tr>
                                 <tr>
-                                    <td>ДОП.РАБОТЫ</td>
-                                    <td>ДОП.РАБОТЫ цена</td>
-                                    <td>ДОП.РАБОТЫ выполнено</td>
-                                    <td>ДОП.РАБОТЫ остаток</td>
-                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td><span class="table_span-work">ДОП.РАБОТЫ</span></td>
+                                    <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                                    <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                                    <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                                 </tr>
                                 <tr>
-                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                    <td>МАТЕРИАЛЫ цена</td>
-                                    <td>МАТЕРИАЛЫ выполнено</td>
-                                    <td>МАТЕРИАЛЫ остаток</td>
-                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                                    <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                                    <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                                    <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                                    <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </td>
+                    <td>
+                        <a >
+                            <img src="~/images/Icon/details.png" width="40"
+                                 height="40" alt="Подробнее">
+                        </a>
+                    </td>
                 </tr>
                 <tr id="subcontract1">
-                    <td colspan="35">
+                    <td colspan="35" style="padding:0px;">
                         <table class="PartialTable">
                             <colgroup>
                                 <col span="35" style="width:150px;">
@@ -1136,7 +1206,7 @@
 </div>
 
     @*Месяцы*@
-    <tr class="tr-head-main-table">
+    @*<tr class="tr-head-main-table">
         <th><span class="table_span-month">январь</span></th>
         <th><span class="table_span-month">февраль</span></th>
         <th><span class="table_span-month">март</span></th>
@@ -1149,10 +1219,10 @@
         <th><span class="table_span-month">октябрь</span></th>
         <th><span class="table_span-month">ноябрь</span></th>
         <th><span class="table_span-month">декабрь</span></th>
-    </tr>
+    </tr>*@
 
     <script>
-        let elementButton = document.getElementById("ActiveToggleId")
+        let elementButton = document.getElementById("SMR-detail")
 
         elementButton.addEventListener("click", (event) => {
             let elementTable = document.getElementById("ConstructionInstallationWorks")
