@@ -203,26 +203,8 @@
 @section Scripts {
     <script type="text/javascript">
 
-        class ArrayFun {
 
-            constructor(element) {
-                this.element = element;
-               }
-
-            addArrayDown() { 
-            this.element.classList.remove("up")
-            this.element.classList.add('down')
-            }
-            addArrayUp() {
-            this.element.classList.remove("down")
-            this.element.classList.add('up')
-                }
-            removeArray {
-            this.element.classList.remove("down")
-            this.element.classList.remove("up")
-                }
-            
-        }
+        window.onload = function () {
 
             let actualUrl = window.location.search;
             let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
@@ -232,11 +214,11 @@
             let elementArrayTerms = document.getElementById("arrayTerms");
 
 
-        //    if (actualUrl.includes('dateDesc')) {
-        //        elementArrayNumberanddate.classList.remove("up")
-        //        elementArrayNumberanddate.classList.add('down')
+            if (actualUrl.includes('dateDesc')) {
+                elementArrayNumberanddate.classList.remove("up")
+                elementArrayNumberanddate.classList.add('down')
 
-        //    } else if (actualUrl.includes('date')) {
+            } else if (actualUrl.includes('date')) {
 
                 elementArrayNumberanddate.classList.remove("down")
                 elementArrayNumberanddate.classList.add('up')
@@ -259,6 +241,29 @@
                 elementArrayNameObject.classList.remove("down")
                 elementArrayNameObject.classList.remove("up")
             }
+
+            if (actualUrl.includes('clientDesc')) {
+                elementArrayCustomer.classList.remove("up")
+                elementArrayCustomer.classList.add('down')
+
+            } else if (actualUrl.includes('client')) {
+
+                elementArrayCustomer.classList.remove("down")
+                elementArrayCustomer.classList.add('up')
+            } else {
+
+                elementArrayCustomer.classList.remove("down")
+                elementArrayCustomer.classList.remove("up")
+            }
+
+
+                elementArrayGeneralContractor.classList.remove("down")
+                elementArrayGeneralContractor.classList.remove("up")
+            }
+
+            if (actualUrl.includes('dateEnterDesc')) {
+                elementArrayTerms.classList.remove("up")
+                elementArrayTerms.classList.add('down')
 
             if (actualUrl.includes('clientDesc')) {
                 elementArrayCustomer.classList.remove("up")
