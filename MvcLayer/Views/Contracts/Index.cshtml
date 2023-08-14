@@ -12,7 +12,7 @@
                 {
                     <form style="search-form">
                         <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
-                        <input type="submit" value="Search" />
+                        <input type="submit" value="Найти" />
                     </form>
                 }
             </p>
@@ -21,51 +21,42 @@
             <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
                 <thead>
                     <tr class="tr-head-main-table">
+                        <th><span class="table_span-num">          №                            </span></th>
+
                         <th>
-                            <div class="table_span-num">
-                                №
-                            </div>
+                            <span class="table_span-numberanddate">
+                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayTag", @class="up"})
+                            </span>
                         </th>
                         <th>
-                            <div class="table_span-numberanddate">
-                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNumberanddate", @class="up"})
-                            </div>
+                            <span class="table_span-nameobject">
+                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter })
+                            </span>
                         </th>
                         <th>
-                            <div class="table_span-nameobject">
-                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayNameobject", @class="up"})
-                            </div>
-                        </th>
-                        <th>
-                            <div class="table_span-customer">
+                            <span class="table_span-customer">
                                 @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter })
-                            </div>
+                            </span>
                         </th>
                         <th>
-                            <div class="table_span-contractor">
+                            <span class="table_span-contractor">
                             @Html.ActionLink("Генподрядчик", "Index", new { sortOrder = ViewBag.GenSortParm, currentFilter=ViewBag.CurrentFilter })
-                            </div>
+                            </span>
                         </th>
                         <th>
-                            <div class="table_span-deadlines">
+                            <span class="table_span-deadlines">
                             @Html.ActionLink("Cроки", "Index", new { sortOrder = ViewBag.EnterSortParm, currentFilter=ViewBag.CurrentFilter })
-                            </div>
+                            </span>
                         </th>
-                        <th>
-                            <span class="table_span-conditions">Условия оплаты</span>
-                        </th>
-                        <th>
-                            <span class='table_span-material'>Материалы (факт или смета)</span>
-                        </th>
-                        <th>
-                            <span class="table_span-currency">Валюта</span>
-                        </th>
-                        <th><span class="table_span-work">Виды работ по договору</span></th>
-                        <th><span class="table_span-contractprice">Контрактная цена, с НДС</span></th>
-                        <th><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
-                        <th><span class="table_span-remains">Остаток</span></th>
-                        <th><span class="table_span-volume">Объем на текущий год</span></th>
-                        <th><span class="table_span-action">Действия с договором</span></th>
+                        <th><span class="table_span-conditions">    Условия оплаты              </span></th>
+                        <th><span class='table_span-material'>      Материалы (факт или смета)  </span></th>
+                        <th><span class="table_span-currency">      Валюта                      </span></th>
+                        <th><span class="table_span-work">          Виды работ по договору      </span></th>
+                        <th><span class="table_span-contractprice"> Контрактная цена, с НДС     </span></th>
+                        <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
+                        <th><span class="table_span-remains">       Остаток                     </span></th>
+                        <th><span class="table_span-volume">        Объем на текущий год        </span></th>
+                        <th><span class="table_span-action">        Действия с договором        </span></th>
                     </tr>
                 </thead>
                 <tbody class="table_tbody">
@@ -73,7 +64,9 @@
                     {
                         <tr>
                             <td>
+                                <span class="table_span-num">
                                 ?
+                                </span>
                             </td>
                             @*Номер и дата договора*@
                             <td>
@@ -104,14 +97,16 @@
                             </td>
                             @*Сроки: выполнения работ - ввода *@
                             <td>
+                                <span class="table_span-deadlines">
                                 <b>выполнения работ:</b><br>
                                 @item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()<br>
                                 <b>ввода:</b><br>
                                 @item.EnteringTerm?.ToShortDateString()<br>
+                                </span>
                             </td>
                             @*Условия оплаты: Аванс - Оплата*@
                             <td>
-                                <span class="table_span-avans">
+                                <span class="table_span-conditions">
                                     @*@Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)*@
                                     @Html.ActionLink("Авансирование P11","","")
 
@@ -139,26 +134,29 @@
                             </td>
                             @*Контрактная цена*@
                             <td>
-                                <span>?</span>
+                                <span class="table_span-contractprice">?</span>
                             </td>
                             @*Выполнено на начало года*@
                             <td>
-                                <span>?</span>
+                                <span class="table_span-realization">?</span>
                             </td>
                             @*Остаток*@
                             <td>
-                                <span>?</span>
+                                <span class="table_span-remains">?</span>
                             </td>
                             @*Объем*@
                             <td>
-                                <span>?</span>
+                                <span class="table_span-volume">?</span>
                             </td>
+                            @*Действия с договором*@
                             <td>
+                                <span class="table_span-action">
                                 <a asp-action="Details" asp-route-id="@item.Id">
                                     <img src="~/images/Icon/details.png" width="50"
                                          height="50" alt="Подробнее">
-                                </a>                     
-                    </td>
+                                </a>
+                                </span>
+                            </td>
                         </tr>
                     }
                 </tbody>
