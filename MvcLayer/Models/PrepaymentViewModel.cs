@@ -34,6 +34,9 @@ namespace MvcLayer.Models
         [DisplayName("ID Контракт")]
         public int? ContractId { get; set; }
 
+        [DisplayName("ID Изменений")]
+        public int? AmendmentId { get; set; }
+
         [DisplayName("ID измененного аванса")]
         public int? ChangePrepaymentId { get; set; }
 

@@ -1,0 +1,110 @@
+﻿@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
+
+@{
+    ViewData["Title"] = "GetByContractId";
+}
+
+<h1>Объем работ</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Period)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CostNoNds)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CostNds)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SmrCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PnrCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EquipmentCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OtherExpensesCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AdditionalCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GenServiceCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsOwnForces)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsChange)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ChangeScopeWork)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contract)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Period)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CostNoNds)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CostNds)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SmrCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PnrCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EquipmentCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OtherExpensesCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AdditionalCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaterialCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.GenServiceCost)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsOwnForces)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsChange)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ChangeScopeWork.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Contract.Id)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

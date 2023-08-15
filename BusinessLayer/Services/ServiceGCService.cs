@@ -109,5 +109,24 @@ namespace BusinessLayer.Services
         {
             return _mapper.Map<IEnumerable<ServiceGCDTO>>(_database.ServiceGCs.Find(predicate));
         }
+
+        public void AddAmendmentToService(int amendmentId, int serviceId)
+        {
+            if (amendmentId > 0 && serviceId > 0)
+            {
+                _database.ServiceAmendments.Create(new ServiceAmendment
+                {
+                    AmendmentId = amendmentId,
+                    ServiceId = serviceId
+                });
+
+                _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to service gencontractor (ID={serviceId})", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not add serviceAmendment", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+        }
     }
 }
