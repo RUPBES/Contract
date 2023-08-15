@@ -3,15 +3,12 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using MvcLayer.Models;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 
 namespace MvcLayer.Controllers
 {
-    public class PrepaymentController : Controller
+    public class PrepaymentsController : Controller
     {
 
         private readonly IContractService _contractService;
@@ -19,7 +16,7 @@ namespace MvcLayer.Controllers
         private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
 
-        public PrepaymentController(IContractService contractService, IMapper mapper, IOrganizationService organization,
+        public PrepaymentsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IPrepaymentService prepayment)
         {
             _contractService = contractService;
@@ -28,9 +25,14 @@ namespace MvcLayer.Controllers
             _prepayment = prepayment;
         }
 
-        public IActionResult Index(int id)
+        public IActionResult Index()
         {
-            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.FindByIdContract(id)));
+            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.GetAll()));
+        }
+
+        public IActionResult GetByContractId(int contractId)
+        {
+            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.Find(x=>x.ContractId == contractId)));
         }
 
         //public async Task<IActionResult> Details(int? id)
@@ -53,42 +55,40 @@ namespace MvcLayer.Controllers
         {
             if (contractId > 0)
             {
-                //PrepaymentViewModel prepayment = new PrepaymentViewModel { ContractId = contractId};
-
                 return View(new PeriodChooseViewModel { ContractId = contractId });
-
             }
             return View();
         }
 
-        public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork)
+        public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel)
         {
-            if (scopeWork is not null)
+            if (prepaymentViewModel is not null)
             {
                 List<PrepaymentViewModel> model = new List<PrepaymentViewModel>();
 
-                if (scopeWork.AmendmentId > 0)
+                if (prepaymentViewModel.AmendmentId > 0)
                 {
-                    scopeWork.IsChange = true;
+                    prepaymentViewModel.IsChange = true;
                 }
-                while (scopeWork.PeriodStart <= scopeWork.PeriodEnd)
+                while (prepaymentViewModel.PeriodStart <= prepaymentViewModel.PeriodEnd)
                 {
                     model.Add(new PrepaymentViewModel
                     {
-                        Period = scopeWork.PeriodStart,
-                        IsChange = scopeWork.IsChange,
-                        ContractId = scopeWork.ContractId,
+                        Period = prepaymentViewModel.PeriodStart,
+                        IsChange = prepaymentViewModel.IsChange,
+                        ContractId = prepaymentViewModel.ContractId,
+                        AmendmentId = prepaymentViewModel.AmendmentId,
                     });
 
-                    scopeWork.PeriodStart = scopeWork.PeriodStart.AddMonths(1);
+                    prepaymentViewModel.PeriodStart = prepaymentViewModel.PeriodStart.AddMonths(1);
                 }
 
-                var s = Newtonsoft.Json.JsonConvert.SerializeObject(model);
-                TempData["scopeW"] = s;
+                var prepayment = JsonConvert.SerializeObject(model);
+                TempData["prepayment"] = prepayment;
 
                 return RedirectToAction("Create");
             }
-            return View(scopeWork);
+            return View(prepaymentViewModel);
         }
 
         public IActionResult Create(int contractId)
@@ -116,7 +116,12 @@ namespace MvcLayer.Controllers
             {
                 foreach (var item in prepayment)
                 {
-                    _prepayment.Create(_mapper.Map<PrepaymentDTO>(item));
+                    var prepaymentId =(int) _prepayment.Create(_mapper.Map<PrepaymentDTO>(item));
+
+                    if (item?.AmendmentId is not null && item?.AmendmentId > 0)
+                    {
+                        _prepayment.AddAmendmentToPrepayment((int)item?.AmendmentId, prepaymentId);
+                    }                   
                 }
 
                 return RedirectToAction(nameof(Index));

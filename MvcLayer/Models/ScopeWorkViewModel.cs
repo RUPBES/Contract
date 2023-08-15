@@ -43,6 +43,9 @@ namespace MvcLayer.Models
         [DisplayName("ID Контракт")]
         public int? ContractId { get; set; }
 
+        [DisplayName("ID Изменений")]
+        public int? AmendmentId { get; set; }
+
         [DisplayName("Изменено?")]
         public bool? IsChange { get; set; }
 

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Details";
 }
 <div class="full-width">
-    <table class="table table-main table-main-full table-striped table-bordered" id="contractTable" >
+    <table class="table table-main table-main-full table-striped table-bordered" id="contractTable">
         <thead>
             <tr class="tr-head-main-table">
                 @*№*@
@@ -17,11 +17,11 @@
                 </th>
                 @*Отвественное лицо*@
                 <th rowspan="2">
-                    <span>Подписант договора, лицо ответственное за ведение договора</span>                    
+                    <span>Подписант договора, лицо ответственное за ведение договора</span>
                 </th>
                 @*Номер и дата договора*@
                 <th rowspan="2">
-                    <span>Номер и дата договора</span>                    
+                    <span>Номер и дата договора</span>
                 </th>
                 @*Наименование объекта*@
                 <th rowspan="2">
@@ -29,35 +29,35 @@
                 </th>
                 @*Источник финансирования*@
                 <th rowspan="2">
-                    <span>Источник финансирования</span>                    
-                </th>                
+                    <span>Источник финансирования</span>
+                </th>
                 @*Заказчик*@
                 <th rowspan="2">
-                    <span>Заказчик</span>                    
+                    <span>Заказчик</span>
                 </th>
                 @*Генподрядчик*@
                 <th rowspan="2">
-                    <span>Генподрядчик (филиал-испольнитель по приказу)</span>                  
+                    <span>Генподрядчик (филиал-испольнитель по приказу)</span>
                 </th>
                 @*Субподрядчик (филиал-исполнитель по приказу)*@
                 <th rowspan="2">
-                    <span>Субподрядчик (филиал-исполнитель по приказу)</span>                    
+                    <span>Субподрядчик (филиал-исполнитель по приказу)</span>
                 </th>
                 @*Cроки*@
                 <th rowspan="2">
-                    <span>Cроки</span>                    
+                    <span>Cроки</span>
                 </th>
                 @*Акты приостановки и возобновления работ*@
                 <th rowspan="2">
-                    <span>Акты приостановки и возобновления работ</span>                    
+                    <span>Акты приостановки и возобновления работ</span>
                 </th>
                 @*Условия оплаты*@
                 <th rowspan="2">
-                    <span>Условия оплаты, без авансов тек. % цел.% отсрочка/в течение</span>                   
+                    <span>Условия оплаты, без авансов тек. % цел.% отсрочка/в течение</span>
                 </th>
                 @*Услуги генподряда (для договоров субподряда)*@
                 <th rowspan="2">
-                    <span>Услуги генподряда (для договоров субподряда)</span>                    
+                    <span>Услуги генподряда (для договоров субподряда)</span>
                 </th>
                 @*Материалы по факту или сметной стоимости согласно договору*@
                 <th rowspan="2">
@@ -69,7 +69,7 @@
                 </th>
                 @*Виды работ по договору*@
                 <th rowspan="2">
-                    <span>Виды работ по договору</span>                    
+                    <span>Виды работ по договору</span>
                 </th>
                 @*Контрактная договорная цена*@
                 <th rowspan="2">
@@ -77,7 +77,7 @@
                 </th>
                 @*Выполнено на 01.01 текущего года*@
                 <th rowspan="2">
-                    <span class="table_span-realization">Выполнено на 01.01 текущего года</span>                    
+                    <span class="table_span-realization">Выполнено на 01.01 текущего года</span>
                 </th>
                 @*Остаток по выполнению от стоимости контрактной цены*@
                 <th rowspan="2">
@@ -89,19 +89,19 @@
                 </th>
                 @*В том числе:*@
                 <th colspan="12">
-                    <span>В том числе:</span>                    
+                    <span>В том числе:</span>
                 </th>
                 @*Акт ввода*@
                 <th rowspan="2">
-                    <span>Акт ввода</span>                    
+                    <span>Акт ввода</span>
                 </th>
                 @*Переписка*@
                 <th rowspan="2">
-                    <span>Переписка</span>                    
+                    <span>Переписка</span>
                 </th>
                 @*Проектно-сметная документация*@
                 <th rowspan="2">
-                    <span>Проектно-сметная документация</span>                    
+                    <span>Проектно-сметная документация</span>
                 </th>
             </tr>
             @*Месяцы*@
@@ -195,14 +195,14 @@
                     <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
                         Аванс
                     </a>
-                    @*Html.ActionLink("Аванс","Index","Prepayment", Model.Id)*@
+                    @Html.ActionLink("Аванс","Index","Prepayment", Model.Id)
 
                     @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
                     @Html.ActionLink("Расчет P7","","")
                 </td>
                 <td rowspan="4">
                     Услуги генподрядчика -
-                    @Html.ActionLink("Авансирование","","");
+                    @Html.ActionLink("Услуги генподряда","GetByContractId","ServiceGC",new{ contractId = Model.Id})
                 </td>
                 <td rowspan="4">
                     Материалы -
@@ -1367,8 +1367,12 @@
     </table>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Добавить объем работ</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Добавить авансы</a> |
+    <a asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
 </div>
 
 <script>

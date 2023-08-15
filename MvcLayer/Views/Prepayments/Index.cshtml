@@ -3,8 +3,6 @@
 @model IEnumerable<MvcLayer.Models.PrepaymentViewModel>
 @{
     ViewData["Title"] = "Index";
-    string s = Context.Request.Path.ToString();
-    s = s.Substring(s.LastIndexOf("/") + 1);
 }
 
 <h1>Список авансов</h1>
@@ -70,7 +68,7 @@
                 <td>
                     @if (@item.ContractId is not null)
                     {
-                        @item.Contract.Number
+                        @item.Contract?.Number
                     }
                 </td>
                 <td>
@@ -83,12 +81,12 @@
                     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
-            @Context.Request.Path
+           @*  @Context.Request.Path *@
         }
     </tbody>
 </table>
 <div>
-    <a class="button" asp-action="Details" asp-controller="Contracts" asp-route-id="@Int64.Parse(s)">Вернуться</a>
+    <a class="button" asp-action="Index" asp-controller="Home">Вернуться на главную</a>
 </div>
 @section Scripts {
     <script type="text/javascript">

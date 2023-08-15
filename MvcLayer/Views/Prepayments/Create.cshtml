@@ -7,10 +7,10 @@
     int index = 0;
 
     var d = new List<PrepaymentViewModel>();
-    //if (TempData["scopeW"] is string s)
-    //{
-    //    d.AddRange(JsonConvert.DeserializeObject<List<ScopeWorkViewModel>>(s));
-    //}
+    if (TempData["prepayment"] is string s)
+    {
+        d.AddRange(JsonConvert.DeserializeObject<List<PrepaymentViewModel>>(s));
+    }
 }
 <style>
     .cont-table {
@@ -22,10 +22,8 @@
         min-width: 250px;
     }
 </style>
-<h4>Авансы
-</h4>
+<h4>Авансы</h4>
 <hr />
-
 <form asp-action="Create" class="row">
     <div class="cont-table">
         <table class="table table-bordered table-striped">
@@ -54,7 +52,7 @@
                     index = 0;
                 }
             </tr>
-            <tr>
+            @* <tr>
                 <th>Текущие авансы по факту</th>
                 @foreach (var item in d)
                 {
@@ -64,9 +62,9 @@
                 @{
                     index = 0;
                 }
-            </tr>
+            </tr> *@
             <tr>
-                <th>Текущие авансы</th>
+                <th>Целевые авансы</th>
                 @foreach (var item in d)
                 {
                     <td><input asp-for="@Model[index].TargetValue" class="form-control" type="number" step="0.001" min="0" /></td>
@@ -76,7 +74,7 @@
                     index = 0;
                 }
             </tr>
-            <tr>
+           @*  <tr>
                 <th>Текущие авансы по факту</th>
                 @foreach (var item in d)
                 {
@@ -86,9 +84,9 @@
                 @{
                     index = 0;
                 }
-            </tr>
+            </tr> *@
             <tr>
-                <th>Отработка целевых</th>
+                <th>Отработка целевых авансов</th>
                 @foreach (var item in d)
                 {
                     <td><input asp-for="@Model[index].WorkingOutValue" class="form-control" type="number" step="0.001" min="0" /></td>
@@ -98,7 +96,7 @@
                     index = 0;
                 }
             </tr>
-            <tr>
+           @*  <tr>
                 <th>Отработка целевых по факту</th>
                 @foreach (var item in d)
                 {
@@ -108,10 +106,11 @@
                 @{
                     index = 0;
                 }
-            </tr>
+            </tr> *@
 
             @foreach (var item in d)
             {
+                <input asp-for="@Model[index].AmendmentId" hidden />
                 <input asp-for="@Model[index].ContractId" hidden />
                 <input asp-for="@Model[index].IsChange" hidden />
 
@@ -126,7 +125,7 @@
 </form>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Вернуться назад</a>
 </div>
 
 @section Scripts {
