@@ -22,7 +22,7 @@ namespace MvcLayer.Mapper
             CreateMap<EstimateDocDTO, EstimateDocViewModel>().ReverseMap();
             CreateMap<FormDTO, FormViewModel>().ReverseMap();
             CreateMap<EmployeeViewModel, EmployeeDTO>().ReverseMap();
-
+            //CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
             CreateMap<MaterialViewModel, MaterialDTO>().ReverseMap();
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
             CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap();
@@ -30,8 +30,6 @@ namespace MvcLayer.Mapper
 
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
             CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();
-            CreateMap<PrepaymentDTO, PrepaymentViewModel>().ReverseMap();
-            CreateMap<ServiceGCViewModel, ServiceGCDTO>().ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))
