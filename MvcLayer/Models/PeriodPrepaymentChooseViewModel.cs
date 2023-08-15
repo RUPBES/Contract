@@ -3,9 +3,8 @@ using System.ComponentModel;
 
 namespace MvcLayer.Models
 {
-    public class PeriodChooseViewModel
+    public class PeriodPrepaymentChooseViewModel
     {
-
         [DisplayName("Начало работ")]
         public DateTime PeriodStart { get; set; }
         [DisplayName("Окончание работ")]
@@ -15,15 +14,12 @@ namespace MvcLayer.Models
         public int? ContractId { get; set; }
 
         [DisplayName("Изменено?")]
-        public bool? IsChange { get; set; }
-
-        [DisplayName("Собственными силами?")]
-        public bool IsOwnForces { get; set; }
+        public bool? IsChange { get; set; }        
 
         [DisplayName("ID измененного объема работ")]
-        public int? ChangeScopeWorkId { get; set; }
+        public int? ChangePrepaymentId { get; set; }
 
-        [DisplayName("ID изменений к договору")]
+        [DisplayName("ID изменения к договору")]
         public int? AmendmentId { get; set; }
     }
 }

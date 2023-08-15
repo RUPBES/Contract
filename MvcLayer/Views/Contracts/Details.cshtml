@@ -1,1366 +1,1566 @@
 ﻿@model MvcLayer.Models.ContractViewModel
 
-@{
-    ViewData["Title"] = "Details";
-}
-<div class="full-width">
-    <table class="table table-main table-main-full table-striped table-bordered" id="contractTable">
-        <thead>
-            <tr class="tr-head-main-table">
-                @*№*@
-                <th rowspan="2">
-                    <span>#</span>
-                </th>
-                @*Процедура выбора*@
-                <th rowspan="2">
-                    <span>Процедура выбора</span>
-                </th>
-                @*Отвественное лицо*@
-                <th rowspan="2">
-                    <span>Подписант договора, лицо ответственное за ведение договора</span>
-                </th>
-                @*Номер и дата договора*@
-                <th rowspan="2">
-                    <span>Номер и дата договора</span>
-                </th>
-                @*Наименование объекта*@
-                <th rowspan="2">
-                    <span class="table_span-nameobject">Наименование объекта</span>
-                </th>
-                @*Источник финансирования*@
-                <th rowspan="2">
-                    <span>Источник финансирования</span>
-                </th>
-                @*Заказчик*@
-                <th rowspan="2">
-                    <span>Заказчик</span>
-                </th>
-                @*Генподрядчик*@
-                <th rowspan="2">
-                    <span>Генподрядчик (филиал-испольнитель по приказу)</span>
-                </th>
-                @*Субподрядчик (филиал-исполнитель по приказу)*@
-                <th rowspan="2">
-                    <span>Субподрядчик (филиал-исполнитель по приказу)</span>
-                </th>
-                @*Cроки*@
-                <th rowspan="2">
-                    <span>Cроки</span>
-                </th>
-                @*Акты приостановки и возобновления работ*@
-                <th rowspan="2">
-                    <span>Акты приостановки и возобновления работ</span>
-                </th>
-                @*Условия оплаты*@
-                <th rowspan="2">
-                    <span>Условия оплаты, без авансов тек. % цел.% отсрочка/в течение</span>
-                </th>
-                @*Услуги генподряда (для договоров субподряда)*@
-                <th rowspan="2">
-                    <span>Услуги генподряда (для договоров субподряда)</span>
-                </th>
-                @*Материалы по факту или сметной стоимости согласно договору*@
-                <th rowspan="2">
-                    <span class='table_span-material'>Материалы по факту или сметной стоимости согласно договору</span>
-                </th>
-                @*Валюта расчетов*@
-                <th rowspan="2">
-                    <span class="table_span-currency">Валюта расчетов</span>
-                </th>
-                @*Виды работ по договору*@
-                <th rowspan="2">
-                    <span>Виды работ по договору</span>
-                </th>
-                @*Контрактная договорная цена*@
-                <th rowspan="2">
-                    <span class="table_span-contractprice">Контрактная договорная цена, с НДС</span>
-                </th>
-                @*Выполнено на 01.01 текущего года*@
-                <th rowspan="2">
-                    <span class="table_span-realization">Выполнено на 01.01 текущего года</span>
-                </th>
-                @*Остаток по выполнению от стоимости контрактной цены*@
-                <th rowspan="2">
-                    <span class="table_span-remains">Остаток по выполнению от стоимости контрактной цены</span>
-                </th>
-                @*Объем на текущий год*@
-                <th rowspan="2">
-                    <span class="table_span-volume">Объем на текущий год</span>
-                </th>
-                @*В том числе:*@
-                <th colspan="12">
-                    <span>В том числе:</span>
-                </th>
-                @*Акт ввода*@
-                <th rowspan="2">
-                    <span>Акт ввода</span>
-                </th>
-                @*Переписка*@
-                <th rowspan="2">
-                    <span>Переписка</span>
-                </th>
-                @*Проектно-сметная документация*@
-                <th rowspan="2">
-                    <span>Проектно-сметная документация</span>
-                </th>
-            </tr>
-            @*Месяцы*@
-            <tr class="tr-head-main-table">
-                <th><span class="table_span-month">январь</span></th>
-                <th><span class="table_span-month">февраль</span></th>
-                <th><span class="table_span-month">март</span></th>
-                <th><span class="table_span-month">апрель</span></th>
-                <th><span class="table_span-month">май</span></th>
-                <th><span class="table_span-month">июнь</span></th>
-                <th><span class="table_span-month">июль</span></th>
-                <th><span class="table_span-month">август</span></th>
-                <th><span class="table_span-month">сентябрь</span></th>
-                <th><span class="table_span-month">октябрь</span></th>
-                <th><span class="table_span-month">ноябрь</span></th>
-                <th><span class="table_span-month">декабрь</span></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr id="firstrow">
-                <td rowspan="4">
-                    #-?
-                </td>
-                <td rowspan="4">
-                    Процедура выбора -
-                    @foreach (var item in Model.SelectionProcedures)
-                    {
-                        @item.Name
-                    }
-                </td>
-                <td rowspan="4">
-                    Подписанты-
-                    @foreach (var item in Model.EmployeeContracts)
-                    {
-                        if (@item.IsSignatory == true)
-                        {
-                            @item.Employee.FullName
-                        }
-                        else
-                            if (@item.IsResponsible == true)
-                        {
-                            @item.Employee.FullName
-                        }
-                    }
-                    <br>
-                    Model.ResponsibleEmp
-                </td>
-                <td rowspan="4">
-                    Номер и дата-
-                    @Model.Number от
-                    @Model.Date?.ToShortDateString()
-                </td>
-                <td rowspan="4">
-                    Наименование объекта -
-                    @Model.NameObject
-                </td>
-                <td rowspan="4">
-                    Источник ФИНАНСИРОВАНИЯ -
-                    @Model.FundingSource
-                </td>
-                <td rowspan="4">
-                    Заказчик -
-                    @foreach (var item in Model.ContractOrganizations)
-                        if (@item.IsClient == true)
-                        {
-                            @item.Organization.Abbr
-                        }
-                </td>
-                <td rowspan="4">
-                    Генподрядчик -
-                    Model.GenContractor
-                </td>
-                <td rowspan="4">
-                    Субподрядчик -
-                </td>
-                <td rowspan="4">
-                    Сроки-
-                    <b>выполнения работ:</b><br>
-                    @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
-                    <b>ввода:</b><br>
-                    @Model.EnteringTerm?.ToShortDateString()<br>
-                    <b>действия договора по взаиморасчетам:</b><br>
-                    @Model.ContractTerm?.ToShortDateString()<br>
-                </td>
-                <td rowspan="4">
-                    Акты приостановки
-                </td>
-                <td rowspan="4">
-                    Условия оплаты -
-                    @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
-                    <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
-                        Аванс
-                    </a>
-                    @Html.ActionLink("Аванс","Index","Prepayment", Model.Id)
 
-                    @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
-                    @Html.ActionLink("Расчет P7","","")
-                </td>
-                <td rowspan="4">
+@section Table{
+    <div id="ConstructionInstallationWorks" class="modal modal__visibility-close">
+        <div class="modal__back"></div>
+        <div class="modal__container">
+            <table class="PartialTable modal__table">
+
+                <thead>
+                    <tr class="tr-head-main-table">
+
+                        <td rowspan="2">
+                            <span>Виды работ по договору</span>
+                        </td>
+                        @*Контрактная договорная цена*@
+                        <td rowspan="2">
+                            <span class="table_span-contractprice">Контрактная договорная цена, с НДС</span>
+                        </td>
+                        @*Выполнено на 01.01 текущего года*@
+                        <td rowspan="2">
+                            <span class="table_span-realization">Выполнено на 01.01 текущего года</span>
+                        </td>
+                        @*Остаток по выполнению от стоимости контрактной цены*@
+                        <td rowspan="2">
+                            <span class="table_span-remains">Остаток по выполнению от стоимости контрактной цены</span>
+                        </td>
+                        @*Объем на текущий год*@
+                        <td rowspan="2">
+                            <span class="table_span-volume">Объем на текущий год</span>
+                        </td>
+                        @*В том числе:*@
+                        <td colspan="12">
+                            <span>В том числе:</span>
+                        </td>
+                        @*Акт ввода*@
+                        <td rowspan="2">
+                            <span>Акт ввода</span>
+                        </td>
+                    </tr>
+                    @*Месяцы*@
+                    <tr class="tr-head-main-table">
+                        <td><span class="table_span-month">январь</span></td>
+                        <td><span class="table_span-month">февраль</span></td>
+                        <td><span class="table_span-month">март</span></td>
+                        <td><span class="table_span-month">апрель</span></td>
+                        <td><span class="table_span-month">май</span></td>
+                        <td><span class="table_span-month">июнь</span></td>
+                        <td><span class="table_span-month">июль</span></td>
+                        <td><span class="table_span-month">август</span></td>
+                        <td><span class="table_span-month">сентябрь</span></td>
+                        <td><span class="table_span-month">октябрь</span></td>
+                        <td><span class="table_span-month">ноябрь</span></td>
+                        <td><span class="table_span-month">декабрь</span></td>
+                    </tr>
+                </thead>
+                <tbody class="tbodyPartialTable">
+                    <tr>
+                        <td>СМР</td>
+                        <td>СМР цена</td>
+                        <td>СМР выполнено</td>
+                        <td>СМР остаток</td>
+                        <td>СМР объем</td>
+                        <td>СМР январь</td>
+                        <td>СМР февраль</td>
+                        <td>СМР март</td>
+                        <td>СМР апрель</td>
+                        <td>СМР май</td>
+                        <td>СМР июнь</td>
+                        <td>СМР июль</td>
+                        <td>СМР август</td>
+                        <td>СМР сентябрь</td>
+                        <td>СМР октябрь</td>
+                        <td>СМР ноябрь</td>
+                        <td>СМР декабрь</td>
+                        <td>СМР акт</td>
+                    </tr>
+                    <tr>
+                        <td>ПНР</td>
+                        <td>ПНР цена</td>
+                        <td>ПНР выполнено</td>
+                        <td>ПНР остаток</td>
+                        <td>ПНР объем</td>
+                        <td>ПНР январь</td>
+                        <td>ПНР февраль</td>
+                        <td>ПНР март</td>
+                        <td>ПНР апрель</td>
+                        <td>ПНР май</td>
+                        <td>ПНР июнь</td>
+                        <td>ПНР июль</td>
+                        <td>ПНР август</td>
+                        <td>ПНР сентябрь</td>
+                        <td>ПНР октябрь</td>
+                        <td>ПНР ноябрь</td>
+                        <td>ПНР декабрь</td>
+                        <td>ПНР акт</td>
+                    </tr>
+                    <tr>
+                        <td>Оборудование</td>
+                        <td>Оборудование цена</td>
+                        <td>Оборудование выполнено</td>
+                        <td>Оборудование остаток</td>
+                        <td>Оборудование объем</td>
+                        <td>Оборудование январь</td>
+                        <td>Оборудование февраль</td>
+                        <td>Оборудование март</td>
+                        <td>Оборудование апрель</td>
+                        <td>Оборудование май</td>
+                        <td>Оборудование июнь</td>
+                        <td>Оборудование июль</td>
+                        <td>Оборудование август</td>
+                        <td>Оборудование сентябрь</td>
+                        <td>Оборудование октябрь</td>
+                        <td>Оборудование ноябрь</td>
+                        <td>Оборудование декабрь</td>
+                        <td>Оборудование акт</td>
+                    </tr>
+                    <tr>
+                        <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                        <td>ПРОЧИЕ РАБОТЫ цена</td>
+                        <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                        <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                        <td>ПРОЧИЕ РАБОТЫ объем</td>
+                        <td>ПРОЧИЕ РАБОТЫ январь</td>
+                        <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                        <td>ПРОЧИЕ РАБОТЫ март</td>
+                        <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                        <td>ПРОЧИЕ РАБОТЫ май</td>
+                        <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                        <td>ПРОЧИЕ РАБОТЫ июль</td>
+                        <td>ПРОЧИЕ РАБОТЫ август</td>
+                        <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                        <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                        <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                        <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                        <td>ПРОЧИЕ РАБОТЫ акт</td>
+                    </tr>
+                    <tr>
+                        <td>Всего по договору (контракту) без учета НДС</td>
+                        <td>Всего по договору цена</td>
+                        <td>Всего по договору выполнено</td>
+                        <td>Всего по договору остаток</td>
+                        <td>Всего по договору объем</td>
+                        <td>Всего по договору январь</td>
+                        <td>Всего по договору февраль</td>
+                        <td>Всего по договору март</td>
+                        <td>Всего по договору апрель</td>
+                        <td>Всего по договору май</td>
+                        <td>Всего по договору июнь</td>
+                        <td>Всего по договору июль</td>
+                        <td>Всего по договору август</td>
+                        <td>Всего по договору сентябрь</td>
+                        <td>Всего по договору октябрь</td>
+                        <td>Всего по договору ноябрь</td>
+                        <td>Всего по договору декабрь</td>
+                        <td>Всего по договору акт</td>
+                    </tr>
+                    <tr>
+                        <td>ДОП.РАБОТЫ</td>
+                        <td>ДОП.РАБОТЫ цена</td>
+                        <td>ДОП.РАБОТЫ выполнено</td>
+                        <td>ДОП.РАБОТЫ остаток</td>
+                        <td>ДОП.РАБОТЫ объем</td>
+                        <td>ДОП.РАБОТЫ январь</td>
+                        <td>ДОП.РАБОТЫ февраль</td>
+                        <td>ДОП.РАБОТЫ март</td>
+                        <td>ДОП.РАБОТЫ апрель</td>
+                        <td>ДОП.РАБОТЫ май</td>
+                        <td>ДОП.РАБОТЫ июнь</td>
+                        <td>ДОП.РАБОТЫ июль</td>
+                        <td>ДОП.РАБОТЫ август</td>
+                        <td>ДОП.РАБОТЫ сентябрь</td>
+                        <td>ДОП.РАБОТЫ октябрь</td>
+                        <td>ДОП.РАБОТЫ ноябрь</td>
+                        <td>ДОП.РАБОТЫ декабрь</td>
+                        <td>ДОП.РАБОТЫ акт</td>
+                    </tr>
+                    <tr>
+                        <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
+                        <td>МАТЕРИАЛЫ цена</td>
+                        <td>МАТЕРИАЛЫ выполнено</td>
+                        <td>МАТЕРИАЛЫ остаток</td>
+                        <td>МАТЕРИАЛЫ объем</td>
+                        <td>МАТЕРИАЛЫ январь</td>
+                        <td>МАТЕРИАЛЫ февраль</td>
+                        <td>МАТЕРИАЛЫ март</td>
+                        <td>МАТЕРИАЛЫ апрель</td>
+                        <td>МАТЕРИАЛЫ май</td>
+                        <td>МАТЕРИАЛЫ июнь</td>
+                        <td>МАТЕРИАЛЫ июль</td>
+                        <td>МАТЕРИАЛЫ август</td>
+                        <td>МАТЕРИАЛЫ сентябрь</td>
+                        <td>МАТЕРИАЛЫ октябрь</td>
+                        <td>МАТЕРИАЛЫ ноябрь</td>
+                        <td>МАТЕРИАЛЫ декабрь</td>
+                        <td>МАТЕРИАЛЫ акт</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button id="buttonTable" class="modal__container-button">Закрыть таблицу</button>
+        </div>
+    </div>
+
+
+
+    <div class="full-width">
+        <table class="table table-main table-main-full table-striped table-bordered" id="contractTable">
+            <thead>
+                <tr class="tr-head-main-table">
+                    @*№*@
+                    <th rowspan="2">
+                        <span>#</span>
+                    </th>
+                    @*Процедура выбора*@
+                    <th rowspan="2">
+                        <span>Процедура выбора</span>
+                    </th>
+                    @*Отвественное лицо*@
+                    <th rowspan="2">
+                        <span>Подписант договора, лицо ответственное за ведение договора</span>
+                    </th>
+                    @*Номер и дата договора*@
+                    <th rowspan="2">
+                        <span>Номер и дата договора</span>
+                    </th>
+                    @*Наименование объекта*@
+                    <th rowspan="2">
+                        <span class="table_span-nameobject">Наименование объекта</span>
+                    </th>
+                    @*Источник финансирования*@
+                    <th rowspan="2">
+                        <span>Источник финансирования</span>
+                    </th>
+                    @*Заказчик*@
+                    <th rowspan="2">
+                        <span>Заказчик</span>
+                    </th>
+                    @*Генподрядчик*@
+                    <th rowspan="2">
+                        <span>Генподрядчик (филиал-испольнитель по приказу)</span>
+                    </th>
+                    @*Субподрядчик (филиал-исполнитель по приказу)*@
+                    <th rowspan="2">
+                        <span>Субподрядчик (филиал-исполнитель по приказу)</span>
+                    </th>
+                    @*Cроки*@
+                    <th rowspan="2">
+                        <span>Cроки</span>
+                    </th>
+                    @*Акты приостановки и возобновления работ*@
+                    <th rowspan="2">
+                        <span>Акты приостановки и возобновления работ</span>
+                    </th>
+                    @*Условия оплаты*@
+                    <th rowspan="2">
+                        <span>Условия оплаты, без авансов тек. % цел.% отсрочка/в течение</span>
+                    </th>
+                    @*Услуги генподряда (для договоров субподряда)*@
+                    <th rowspan="2">
+                        <span>Услуги генподряда (для договоров субподряда)</span>
+                    </th>
+                    @*Материалы по факту или сметной стоимости согласно договору*@
+                    <th rowspan="2">
+                        <span class='table_span-material'>Материалы по факту или сметной стоимости согласно договору</span>
+                    </th>
+                    @*Валюта расчетов*@
+                    <th rowspan="2">
+                        <span class="table_span-currency">Валюта расчетов</span>
+                    </th>
+                    @*Виды работ по договору*@
+                    <th rowspan="2">
+                        <span>Виды работ по договору</span>
+                    </th>
+                    @*Контрактная договорная цена*@
+                    <th rowspan="2">
+                        <span class="table_span-contractprice">Контрактная договорная цена, с НДС</span>
+                    </th>
+                    @*Выполнено на 01.01 текущего года*@
+                    <th rowspan="2">
+                        <span class="table_span-realization">Выполнено на 01.01 текущего года</span>
+                    </th>
+                    @*Остаток по выполнению от стоимости контрактной цены*@
+                    <th rowspan="2">
+                        <span class="table_span-remains">Остаток по выполнению от стоимости контрактной цены</span>
+                    </th>
+                    @*Объем на текущий год*@
+                    <th rowspan="2">
+                        <span class="table_span-volume">Объем на текущий год</span>
+                    </th>
+                    @*В том числе:*@
+                    <th colspan="12">
+                        <span>В том числе:</span>
+                    </th>
+                    @*Акт ввода*@
+                    <th rowspan="2">
+                        <span>Акт ввода</span>
+                    </th>
+                    @*Переписка*@
+                    <th rowspan="2">
+                        <span>Переписка</span>
+                    </th>
+                    @*Проектно-сметная документация*@
+                    <th rowspan="2">
+                        <span>Проектно-сметная документация</span>
+                    </th>
+                </tr>
+                @*Месяцы*@
+                <tr class="tr-head-main-table">
+                    <th><span class="table_span-month">январь</span></th>
+                    <th><span class="table_span-month">февраль</span></th>
+                    <th><span class="table_span-month">март</span></th>
+                    <th><span class="table_span-month">апрель</span></th>
+                    <th><span class="table_span-month">май</span></th>
+                    <th><span class="table_span-month">июнь</span></th>
+                    <th><span class="table_span-month">июль</span></th>
+                    <th><span class="table_span-month">август</span></th>
+                    <th><span class="table_span-month">сентябрь</span></th>
+                    <th><span class="table_span-month">октябрь</span></th>
+                    <th><span class="table_span-month">ноябрь</span></th>
+                    <th><span class="table_span-month">декабрь</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="firstrow">
+                    <td rowspan="4">
+                        #-?
+                    </td>
+                    <td rowspan="4">
+                        Процедура выбора -
+                        @foreach (var item in Model.SelectionProcedures)
+                        {
+                            @item.Name
+                        }
+                    </td>
+                    <td rowspan="4">
+                        Подписанты-
+                        @foreach (var item in Model.EmployeeContracts)
+                        {
+                            if (@item.IsSignatory == true)
+                            {
+                                @item.Employee.FullName
+                            }
+                            else
+                            if (@item.IsResponsible == true)
+                            {
+                                @item.Employee.FullName
+                            }
+                        }
+                        <br>
+                        Model.ResponsibleEmp
+                    </td>
+                    <td rowspan="4">
+                        Номер и дата-
+                        @Model.Number от
+                        @Model.Date?.ToShortDateString()
+                    </td>
+                    <td rowspan="4">
+                        Наименование объекта -
+                        @Model.NameObject
+                    </td>
+                    <td rowspan="4">
+                        Источник ФИНАНСИРОВАНИЯ -
+                        @Model.FundingSource
+                    </td>
+                    <td rowspan="4">
+                        Заказчик -
+                        @foreach (var item in Model.ContractOrganizations)
+                            if (@item.IsClient == true)
+                            {
+                                @item.Organization.Abbr
+                            }
+                    </td>
+                    <td rowspan="4">
+                        Генподрядчик -
+                        Model.GenContractor
+                    </td>
+                    <td rowspan="4">
+                        Субподрядчик -
+                    </td>
+                    <td rowspan="4">
+                        Сроки-
+                        <b>выполнения работ:</b><br>
+                        @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
+                        <b>ввода:</b><br>
+                        @Model.EnteringTerm?.ToShortDateString()<br>
+                        <b>действия договора по взаиморасчетам:</b><br>
+                        @Model.ContractTerm?.ToShortDateString()<br>
+                    </td>
+                    <td rowspan="4">
+                        Акты приостановки
+                    </td>
+                    <td rowspan="4">
+                        Условия оплаты -
+                        @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
+                        <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
+                            Аванс
+                        </a>
+                        @*Html.ActionLink("Аванс","Index","Prepayment", Model.Id)*@
+
+                        @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
+                        @Html.ActionLink("Расчет P7","","")
+                    </td>
+                      <td rowspan="4">
                     Услуги генподрядчика -
                     @Html.ActionLink("Услуги генподряда","GetByContractId","ServiceGC",new{ contractId = Model.Id})
                 </td>
-                <td rowspan="4">
-                    Материалы -
-                    @Html.ActionLink("Материалы P15","","")
-                </td>
-                <td rowspan="4">
-                    Валюта -
-                    Model.Сurrency
-                </td>
-                <td colspan="18">
-                    <table class="PartialTable">
-                        <colgroup>
-                            <col span="18" style="width:150px;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="ActiveToggle" colspan="5">строительно-монтажные работы, всего с учетом НДС</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbodyPartialTable" style="display:none;">
-                            <tr>
-                                <td>СМР</td>
-                                <td>СМР цена</td>
-                                <td>СМР выполнено</td>
-                                <td>СМР остаток</td>
-                                <td>СМР объем</td>
-                                <td>СМР январь</td>
-                                <td>СМР февраль</td>
-                                <td>СМР март</td>
-                                <td>СМР апрель</td>
-                                <td>СМР май</td>
-                                <td>СМР июнь</td>
-                                <td>СМР июль</td>
-                                <td>СМР август</td>
-                                <td>СМР сентябрь</td>
-                                <td>СМР октябрь</td>
-                                <td>СМР ноябрь</td>
-                                <td>СМР декабрь</td>
-                                <td>СМР акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПНР</td>
-                                <td>ПНР цена</td>
-                                <td>ПНР выполнено</td>
-                                <td>ПНР остаток</td>
-                                <td>ПНР объем</td>
-                                <td>ПНР январь</td>
-                                <td>ПНР февраль</td>
-                                <td>ПНР март</td>
-                                <td>ПНР апрель</td>
-                                <td>ПНР май</td>
-                                <td>ПНР июнь</td>
-                                <td>ПНР июль</td>
-                                <td>ПНР август</td>
-                                <td>ПНР сентябрь</td>
-                                <td>ПНР октябрь</td>
-                                <td>ПНР ноябрь</td>
-                                <td>ПНР декабрь</td>
-                                <td>ПНР акт</td>
-                            </tr>
-                            <tr>
-                                <td>Оборудование</td>
-                                <td>Оборудование цена</td>
-                                <td>Оборудование выполнено</td>
-                                <td>Оборудование остаток</td>
-                                <td>Оборудование объем</td>
-                                <td>Оборудование январь</td>
-                                <td>Оборудование февраль</td>
-                                <td>Оборудование март</td>
-                                <td>Оборудование апрель</td>
-                                <td>Оборудование май</td>
-                                <td>Оборудование июнь</td>
-                                <td>Оборудование июль</td>
-                                <td>Оборудование август</td>
-                                <td>Оборудование сентябрь</td>
-                                <td>Оборудование октябрь</td>
-                                <td>Оборудование ноябрь</td>
-                                <td>Оборудование декабрь</td>
-                                <td>Оборудование акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                <td>ПРОЧИЕ РАБОТЫ объем</td>
-                                <td>ПРОЧИЕ РАБОТЫ январь</td>
-                                <td>ПРОЧИЕ РАБОТЫ февраль</td>
-                                <td>ПРОЧИЕ РАБОТЫ март</td>
-                                <td>ПРОЧИЕ РАБОТЫ апрель</td>
-                                <td>ПРОЧИЕ РАБОТЫ май</td>
-                                <td>ПРОЧИЕ РАБОТЫ июнь</td>
-                                <td>ПРОЧИЕ РАБОТЫ июль</td>
-                                <td>ПРОЧИЕ РАБОТЫ август</td>
-                                <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ октябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ декабрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>Всего по договору (контракту) без учета НДС</td>
-                                <td>Всего по договору цена</td>
-                                <td>Всего по договору выполнено</td>
-                                <td>Всего по договору остаток</td>
-                                <td>Всего по договору объем</td>
-                                <td>Всего по договору январь</td>
-                                <td>Всего по договору февраль</td>
-                                <td>Всего по договору март</td>
-                                <td>Всего по договору апрель</td>
-                                <td>Всего по договору май</td>
-                                <td>Всего по договору июнь</td>
-                                <td>Всего по договору июль</td>
-                                <td>Всего по договору август</td>
-                                <td>Всего по договору сентябрь</td>
-                                <td>Всего по договору октябрь</td>
-                                <td>Всего по договору ноябрь</td>
-                                <td>Всего по договору декабрь</td>
-                                <td>Всего по договору акт</td>
-                            </tr>
-                            <tr>
-                                <td>ДОП.РАБОТЫ</td>
-                                <td>ДОП.РАБОТЫ цена</td>
-                                <td>ДОП.РАБОТЫ выполнено</td>
-                                <td>ДОП.РАБОТЫ остаток</td>
-                                <td>ДОП.РАБОТЫ объем</td>
-                                <td>ДОП.РАБОТЫ январь</td>
-                                <td>ДОП.РАБОТЫ февраль</td>
-                                <td>ДОП.РАБОТЫ март</td>
-                                <td>ДОП.РАБОТЫ апрель</td>
-                                <td>ДОП.РАБОТЫ май</td>
-                                <td>ДОП.РАБОТЫ июнь</td>
-                                <td>ДОП.РАБОТЫ июль</td>
-                                <td>ДОП.РАБОТЫ август</td>
-                                <td>ДОП.РАБОТЫ сентябрь</td>
-                                <td>ДОП.РАБОТЫ октябрь</td>
-                                <td>ДОП.РАБОТЫ ноябрь</td>
-                                <td>ДОП.РАБОТЫ декабрь</td>
-                                <td>ДОП.РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                <td>МАТЕРИАЛЫ цена</td>
-                                <td>МАТЕРИАЛЫ выполнено</td>
-                                <td>МАТЕРИАЛЫ остаток</td>
-                                <td>МАТЕРИАЛЫ объем</td>
-                                <td>МАТЕРИАЛЫ январь</td>
-                                <td>МАТЕРИАЛЫ февраль</td>
-                                <td>МАТЕРИАЛЫ март</td>
-                                <td>МАТЕРИАЛЫ апрель</td>
-                                <td>МАТЕРИАЛЫ май</td>
-                                <td>МАТЕРИАЛЫ июнь</td>
-                                <td>МАТЕРИАЛЫ июль</td>
-                                <td>МАТЕРИАЛЫ август</td>
-                                <td>МАТЕРИАЛЫ сентябрь</td>
-                                <td>МАТЕРИАЛЫ октябрь</td>
-                                <td>МАТЕРИАЛЫ ноябрь</td>
-                                <td>МАТЕРИАЛЫ декабрь</td>
-                                <td>МАТЕРИАЛЫ акт</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-                <td rowspan="4">
-                    Переписка -
-                </td>
-                <td rowspan="4">
-                    Проектно-сметная документация -
-                </td>
-            </tr>
-            <tr id="SMR fact 3-a">
-                <td colspan="18">
-                    <table class="PartialTable">
-                        <colgroup>
-                            <col span="18" style="width:150px;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="ActiveToggle" colspan="5">ФАКТ ПО СПРАВКАМ С НДС, В ТОМ ЧИСЛЕ</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbodyPartialTable" style="display:none;">
-                            <tr>
-                                <td>СМР</td>
-                                <td>СМР цена</td>
-                                <td>СМР выполнено</td>
-                                <td>СМР цена</td>
-                                <td>СМР остаток</td>
-                                <td>СМР объем</td>
-                                <td>СМР январь</td>
-                                <td>СМР февраль</td>
-                                <td>СМР март</td>
-                                <td>СМР апрель</td>
-                                <td>СМР май</td>
-                                <td>СМР июнь</td>
-                                <td>СМР июль</td>
-                                <td>СМР август</td>
-                                <td>СМР сентябрь</td>
-                                <td>СМР октябрь</td>
-                                <td>СМР ноябрь</td>
-                                <td>СМР декабрь</td>
-                                <td>СМР акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПНР</td>
-                                <td>ПНР цена</td>
-                                <td>ПНР выполнено</td>
-                                <td>ПНР остаток</td>
-                                <td>ПНР объем</td>
-                                <td>ПНР январь</td>
-                                <td>ПНР февраль</td>
-                                <td>ПНР март</td>
-                                <td>ПНР апрель</td>
-                                <td>ПНР май</td>
-                                <td>ПНР июнь</td>
-                                <td>ПНР июль</td>
-                                <td>ПНР август</td>
-                                <td>ПНР сентябрь</td>
-                                <td>ПНР октябрь</td>
-                                <td>ПНР ноябрь</td>
-                                <td>ПНР декабрь</td>
-                                <td>ПНР акт</td>
-                            </tr>
-                            <tr>
-                                <td>Оборудование</td>
-                                <td>Оборудование цена</td>
-                                <td>Оборудование выполнено</td>
-                                <td>Оборудование остаток</td>
-                                <td>Оборудование объем</td>
-                                <td>Оборудование январь</td>
-                                <td>Оборудование февраль</td>
-                                <td>Оборудование март</td>
-                                <td>Оборудование апрель</td>
-                                <td>Оборудование май</td>
-                                <td>Оборудование июнь</td>
-                                <td>Оборудование июль</td>
-                                <td>Оборудование август</td>
-                                <td>Оборудование сентябрь</td>
-                                <td>Оборудование октябрь</td>
-                                <td>Оборудование ноябрь</td>
-                                <td>Оборудование декабрь</td>
-                                <td>Оборудование акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                <td>ПРОЧИЕ РАБОТЫ объем</td>
-                                <td>ПРОЧИЕ РАБОТЫ январь</td>
-                                <td>ПРОЧИЕ РАБОТЫ февраль</td>
-                                <td>ПРОЧИЕ РАБОТЫ март</td>
-                                <td>ПРОЧИЕ РАБОТЫ апрель</td>
-                                <td>ПРОЧИЕ РАБОТЫ май</td>
-                                <td>ПРОЧИЕ РАБОТЫ июнь</td>
-                                <td>ПРОЧИЕ РАБОТЫ июль</td>
-                                <td>ПРОЧИЕ РАБОТЫ август</td>
-                                <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ октябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ декабрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>Всего по договору (контракту) без учета НДС</td>
-                                <td>Всего по договору цена</td>
-                                <td>Всего по договору выполнено</td>
-                                <td>Всего по договору остаток</td>
-                                <td>Всего по договору объем</td>
-                                <td>Всего по договору январь</td>
-                                <td>Всего по договору февраль</td>
-                                <td>Всего по договору март</td>
-                                <td>Всего по договору апрель</td>
-                                <td>Всего по договору май</td>
-                                <td>Всего по договору июнь</td>
-                                <td>Всего по договору июль</td>
-                                <td>Всего по договору август</td>
-                                <td>Всего по договору сентябрь</td>
-                                <td>Всего по договору октябрь</td>
-                                <td>Всего по договору ноябрь</td>
-                                <td>Всего по договору декабрь</td>
-                                <td>Всего по договору акт</td>
-                            </tr>
-                            <tr>
-                                <td>ДОП.РАБОТЫ</td>
-                                <td>ДОП.РАБОТЫ цена</td>
-                                <td>ДОП.РАБОТЫ выполнено</td>
-                                <td>ДОП.РАБОТЫ остаток</td>
-                                <td>ДОП.РАБОТЫ объем</td>
-                                <td>ДОП.РАБОТЫ январь</td>
-                                <td>ДОП.РАБОТЫ февраль</td>
-                                <td>ДОП.РАБОТЫ март</td>
-                                <td>ДОП.РАБОТЫ апрель</td>
-                                <td>ДОП.РАБОТЫ май</td>
-                                <td>ДОП.РАБОТЫ июнь</td>
-                                <td>ДОП.РАБОТЫ июль</td>
-                                <td>ДОП.РАБОТЫ август</td>
-                                <td>ДОП.РАБОТЫ сентябрь</td>
-                                <td>ДОП.РАБОТЫ октябрь</td>
-                                <td>ДОП.РАБОТЫ ноябрь</td>
-                                <td>ДОП.РАБОТЫ декабрь</td>
-                                <td>ДОП.РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                <td>МАТЕРИАЛЫ цена</td>
-                                <td>МАТЕРИАЛЫ выполнено</td>
-                                <td>МАТЕРИАЛЫ остаток</td>
-                                <td>МАТЕРИАЛЫ объем</td>
-                                <td>МАТЕРИАЛЫ январь</td>
-                                <td>МАТЕРИАЛЫ февраль</td>
-                                <td>МАТЕРИАЛЫ март</td>
-                                <td>МАТЕРИАЛЫ апрель</td>
-                                <td>МАТЕРИАЛЫ май</td>
-                                <td>МАТЕРИАЛЫ июнь</td>
-                                <td>МАТЕРИАЛЫ июль</td>
-                                <td>МАТЕРИАЛЫ август</td>
-                                <td>МАТЕРИАЛЫ сентябрь</td>
-                                <td>МАТЕРИАЛЫ октябрь</td>
-                                <td>МАТЕРИАЛЫ ноябрь</td>
-                                <td>МАТЕРИАЛЫ декабрь</td>
-                                <td>МАТЕРИАЛЫ акт</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-            <tr id="SMR Plan we">
-                <td colspan="18">
-                    <table class="PartialTable">
-                        <colgroup>
-                            <col span="18" style="width:150px;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="ActiveToggle" colspan="5">ПЛАНИРУЕМОЕ ВЫПОЛНЕНИЕ СОБСТВЕННЫМИ СИЛАМИ С НДС</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbodyPartialTable" style="display:none;">
-                            <tr>
-                                <td>СМР</td>
-                                <td>СМР цена</td>
-                                <td>СМР выполнено</td>
-                                <td>СМР остаток</td>
-                                <td>СМР объем</td>
-                                <td>СМР январь</td>
-                                <td>СМР февраль</td>
-                                <td>СМР март</td>
-                                <td>СМР апрель</td>
-                                <td>СМР май</td>
-                                <td>СМР июнь</td>
-                                <td>СМР июль</td>
-                                <td>СМР август</td>
-                                <td>СМР сентябрь</td>
-                                <td>СМР октябрь</td>
-                                <td>СМР ноябрь</td>
-                                <td>СМР декабрь</td>
-                                <td>СМР акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПНР</td>
-                                <td>ПНР цена</td>
-                                <td>ПНР выполнено</td>
-                                <td>ПНР остаток</td>
-                                <td>ПНР объем</td>
-                                <td>ПНР январь</td>
-                                <td>ПНР февраль</td>
-                                <td>ПНР март</td>
-                                <td>ПНР апрель</td>
-                                <td>ПНР май</td>
-                                <td>ПНР июнь</td>
-                                <td>ПНР июль</td>
-                                <td>ПНР август</td>
-                                <td>ПНР сентябрь</td>
-                                <td>ПНР октябрь</td>
-                                <td>ПНР ноябрь</td>
-                                <td>ПНР декабрь</td>
-                                <td>ПНР акт</td>
-                            </tr>
-                            <tr>
-                                <td>Оборудование</td>
-                                <td>Оборудование цена</td>
-                                <td>Оборудование выполнено</td>
-                                <td>Оборудование остаток</td>
-                                <td>Оборудование объем</td>
-                                <td>Оборудование январь</td>
-                                <td>Оборудование февраль</td>
-                                <td>Оборудование март</td>
-                                <td>Оборудование апрель</td>
-                                <td>Оборудование май</td>
-                                <td>Оборудование июнь</td>
-                                <td>Оборудование июль</td>
-                                <td>Оборудование август</td>
-                                <td>Оборудование сентябрь</td>
-                                <td>Оборудование октябрь</td>
-                                <td>Оборудование ноябрь</td>
-                                <td>Оборудование декабрь</td>
-                                <td>Оборудование акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                <td>ПРОЧИЕ РАБОТЫ объем</td>
-                                <td>ПРОЧИЕ РАБОТЫ январь</td>
-                                <td>ПРОЧИЕ РАБОТЫ февраль</td>
-                                <td>ПРОЧИЕ РАБОТЫ март</td>
-                                <td>ПРОЧИЕ РАБОТЫ апрель</td>
-                                <td>ПРОЧИЕ РАБОТЫ май</td>
-                                <td>ПРОЧИЕ РАБОТЫ июнь</td>
-                                <td>ПРОЧИЕ РАБОТЫ июль</td>
-                                <td>ПРОЧИЕ РАБОТЫ август</td>
-                                <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ октябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ декабрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>Всего по договору (контракту) без учета НДС</td>
-                                <td>Всего по договору цена</td>
-                                <td>Всего по договору выполнено</td>
-                                <td>Всего по договору остаток</td>
-                                <td>Всего по договору объем</td>
-                                <td>Всего по договору январь</td>
-                                <td>Всего по договору февраль</td>
-                                <td>Всего по договору март</td>
-                                <td>Всего по договору апрель</td>
-                                <td>Всего по договору май</td>
-                                <td>Всего по договору июнь</td>
-                                <td>Всего по договору июль</td>
-                                <td>Всего по договору август</td>
-                                <td>Всего по договору сентябрь</td>
-                                <td>Всего по договору октябрь</td>
-                                <td>Всего по договору ноябрь</td>
-                                <td>Всего по договору декабрь</td>
-                                <td>Всего по договору акт</td>
-                            </tr>
-                            <tr>
-                                <td>ДОП.РАБОТЫ</td>
-                                <td>ДОП.РАБОТЫ цена</td>
-                                <td>ДОП.РАБОТЫ выполнено</td>
-                                <td>ДОП.РАБОТЫ остаток</td>
-                                <td>ДОП.РАБОТЫ объем</td>
-                                <td>ДОП.РАБОТЫ январь</td>
-                                <td>ДОП.РАБОТЫ февраль</td>
-                                <td>ДОП.РАБОТЫ март</td>
-                                <td>ДОП.РАБОТЫ апрель</td>
-                                <td>ДОП.РАБОТЫ май</td>
-                                <td>ДОП.РАБОТЫ июнь</td>
-                                <td>ДОП.РАБОТЫ июль</td>
-                                <td>ДОП.РАБОТЫ август</td>
-                                <td>ДОП.РАБОТЫ сентябрь</td>
-                                <td>ДОП.РАБОТЫ октябрь</td>
-                                <td>ДОП.РАБОТЫ ноябрь</td>
-                                <td>ДОП.РАБОТЫ декабрь</td>
-                                <td>ДОП.РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                <td>МАТЕРИАЛЫ цена</td>
-                                <td>МАТЕРИАЛЫ выполнено</td>
-                                <td>МАТЕРИАЛЫ остаток</td>
-                                <td>МАТЕРИАЛЫ объем</td>
-                                <td>МАТЕРИАЛЫ январь</td>
-                                <td>МАТЕРИАЛЫ февраль</td>
-                                <td>МАТЕРИАЛЫ март</td>
-                                <td>МАТЕРИАЛЫ апрель</td>
-                                <td>МАТЕРИАЛЫ май</td>
-                                <td>МАТЕРИАЛЫ июнь</td>
-                                <td>МАТЕРИАЛЫ июль</td>
-                                <td>МАТЕРИАЛЫ август</td>
-                                <td>МАТЕРИАЛЫ сентябрь</td>
-                                <td>МАТЕРИАЛЫ октябрь</td>
-                                <td>МАТЕРИАЛЫ ноябрь</td>
-                                <td>МАТЕРИАЛЫ декабрь</td>
-                                <td>МАТЕРИАЛЫ акт</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-            <tr id="SMR fact we">
-                <td colspan="18">
-                    <table class="PartialTable">
-                        <colgroup>
-                            <col span="18" style="width:150px;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="ActiveToggle" colspan="5">ФАКТИЧЕСКОЕ ВЫПОЛНЕНИЕ СОБСТВЕННЫМИ СИЛАМИ С НДС</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbodyPartialTable" style="display:none;">
-                            <tr>
-                                <td>СМР</td>
-                                <td>СМР цена</td>
-                                <td>СМР выполнено</td>
-                                <td>СМР остаток</td>
-                                <td>СМР объем</td>
-                                <td>СМР январь</td>
-                                <td>СМР февраль</td>
-                                <td>СМР март</td>
-                                <td>СМР апрель</td>
-                                <td>СМР май</td>
-                                <td>СМР июнь</td>
-                                <td>СМР июль</td>
-                                <td>СМР август</td>
-                                <td>СМР сентябрь</td>
-                                <td>СМР октябрь</td>
-                                <td>СМР ноябрь</td>
-                                <td>СМР декабрь</td>
-                                <td>СМР акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПНР</td>
-                                <td>ПНР цена</td>
-                                <td>ПНР выполнено</td>
-                                <td>ПНР остаток</td>
-                                <td>ПНР объем</td>
-                                <td>ПНР январь</td>
-                                <td>ПНР февраль</td>
-                                <td>ПНР март</td>
-                                <td>ПНР апрель</td>
-                                <td>ПНР май</td>
-                                <td>ПНР июнь</td>
-                                <td>ПНР июль</td>
-                                <td>ПНР август</td>
-                                <td>ПНР сентябрь</td>
-                                <td>ПНР октябрь</td>
-                                <td>ПНР ноябрь</td>
-                                <td>ПНР декабрь</td>
-                                <td>ПНР акт</td>
-                            </tr>
-                            <tr>
-                                <td>Оборудование</td>
-                                <td>Оборудование цена</td>
-                                <td>Оборудование выполнено</td>
-                                <td>Оборудование остаток</td>
-                                <td>Оборудование объем</td>
-                                <td>Оборудование январь</td>
-                                <td>Оборудование февраль</td>
-                                <td>Оборудование март</td>
-                                <td>Оборудование апрель</td>
-                                <td>Оборудование май</td>
-                                <td>Оборудование июнь</td>
-                                <td>Оборудование июль</td>
-                                <td>Оборудование август</td>
-                                <td>Оборудование сентябрь</td>
-                                <td>Оборудование октябрь</td>
-                                <td>Оборудование ноябрь</td>
-                                <td>Оборудование декабрь</td>
-                                <td>Оборудование акт</td>
-                            </tr>
-                            <tr>
-                                <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                <td>ПРОЧИЕ РАБОТЫ объем</td>
-                                <td>ПРОЧИЕ РАБОТЫ январь</td>
-                                <td>ПРОЧИЕ РАБОТЫ февраль</td>
-                                <td>ПРОЧИЕ РАБОТЫ март</td>
-                                <td>ПРОЧИЕ РАБОТЫ апрель</td>
-                                <td>ПРОЧИЕ РАБОТЫ май</td>
-                                <td>ПРОЧИЕ РАБОТЫ июнь</td>
-                                <td>ПРОЧИЕ РАБОТЫ июль</td>
-                                <td>ПРОЧИЕ РАБОТЫ август</td>
-                                <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ октябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ декабрь</td>
-                                <td>ПРОЧИЕ РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>Всего по договору (контракту) без учета НДС</td>
-                                <td>Всего по договору цена</td>
-                                <td>Всего по договору выполнено</td>
-                                <td>Всего по договору остаток</td>
-                                <td>Всего по договору объем</td>
-                                <td>Всего по договору январь</td>
-                                <td>Всего по договору февраль</td>
-                                <td>Всего по договору март</td>
-                                <td>Всего по договору апрель</td>
-                                <td>Всего по договору май</td>
-                                <td>Всего по договору июнь</td>
-                                <td>Всего по договору июль</td>
-                                <td>Всего по договору август</td>
-                                <td>Всего по договору сентябрь</td>
-                                <td>Всего по договору октябрь</td>
-                                <td>Всего по договору ноябрь</td>
-                                <td>Всего по договору декабрь</td>
-                                <td>Всего по договору акт</td>
-                            </tr>
-                            <tr>
-                                <td>ДОП.РАБОТЫ</td>
-                                <td>ДОП.РАБОТЫ цена</td>
-                                <td>ДОП.РАБОТЫ выполнено</td>
-                                <td>ДОП.РАБОТЫ остаток</td>
-                                <td>ДОП.РАБОТЫ объем</td>
-                                <td>ДОП.РАБОТЫ январь</td>
-                                <td>ДОП.РАБОТЫ февраль</td>
-                                <td>ДОП.РАБОТЫ март</td>
-                                <td>ДОП.РАБОТЫ апрель</td>
-                                <td>ДОП.РАБОТЫ май</td>
-                                <td>ДОП.РАБОТЫ июнь</td>
-                                <td>ДОП.РАБОТЫ июль</td>
-                                <td>ДОП.РАБОТЫ август</td>
-                                <td>ДОП.РАБОТЫ сентябрь</td>
-                                <td>ДОП.РАБОТЫ октябрь</td>
-                                <td>ДОП.РАБОТЫ ноябрь</td>
-                                <td>ДОП.РАБОТЫ декабрь</td>
-                                <td>ДОП.РАБОТЫ акт</td>
-                            </tr>
-                            <tr>
-                                <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                <td>МАТЕРИАЛЫ цена</td>
-                                <td>МАТЕРИАЛЫ выполнено</td>
-                                <td>МАТЕРИАЛЫ остаток</td>
-                                <td>МАТЕРИАЛЫ объем</td>
-                                <td>МАТЕРИАЛЫ январь</td>
-                                <td>МАТЕРИАЛЫ февраль</td>
-                                <td>МАТЕРИАЛЫ март</td>
-                                <td>МАТЕРИАЛЫ апрель</td>
-                                <td>МАТЕРИАЛЫ май</td>
-                                <td>МАТЕРИАЛЫ июнь</td>
-                                <td>МАТЕРИАЛЫ июль</td>
-                                <td>МАТЕРИАЛЫ август</td>
-                                <td>МАТЕРИАЛЫ сентябрь</td>
-                                <td>МАТЕРИАЛЫ октябрь</td>
-                                <td>МАТЕРИАЛЫ ноябрь</td>
-                                <td>МАТЕРИАЛЫ декабрь</td>
-                                <td>МАТЕРИАЛЫ акт</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-            <tr id="subcontract1">
-                <td colspan="35">
-                    <table class="PartialTable">
-                        <colgroup>
-                            <col span="35" style="width:150px;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th class="ActiveToggle">Субподрядчик</th>
-                            </tr>
-                        </thead>
-                        <tbody class="tbodyPartialTable" style="display:none;">
-                            <tr>
-                                <td rowspan="2">
-                                    #-?
-                                </td>
-                                <td rowspan="2">
-                                    Процедура выбора -
-                                    @foreach (var item in Model.SelectionProcedures)
-                                    {
-                                        @item.Name
-                                    }
-                                </td>
-                                <td rowspan="2">
-                                    Подписанты-
-                                    @foreach (var item in Model.EmployeeContracts)
-                                    {
-                                        if (@item.IsSignatory == true)
+                    <td rowspan="4">
+                        Материалы -
+                        @Html.ActionLink("Материалы P15","","")
+                    </td>
+                    <td rowspan="4">
+                        Валюта -
+                        Model.Сurrency
+                    </td>
+                    <td colspan="18">
+                        <table class="PartialTable">
+                            <colgroup>
+                                <col span="18" style="width:150px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="ActiveToggle" id="ActiveToggleId" colspan="5">строительно-монтажные работы, всего с учетом НДС</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbodyPartialTable" style="display:none;">
+                                <tr>
+                                    <td>СМР</td>
+                                    <td>СМР цена</td>
+                                    <td>СМР выполнено</td>
+                                    <td>СМР остаток</td>
+                                    <td>СМР объем</td>
+                                    <td>СМР январь</td>
+                                    <td>СМР февраль</td>
+                                    <td>СМР март</td>
+                                    <td>СМР апрель</td>
+                                    <td>СМР май</td>
+                                    <td>СМР июнь</td>
+                                    <td>СМР июль</td>
+                                    <td>СМР август</td>
+                                    <td>СМР сентябрь</td>
+                                    <td>СМР октябрь</td>
+                                    <td>СМР ноябрь</td>
+                                    <td>СМР декабрь</td>
+                                    <td>СМР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПНР</td>
+                                    <td>ПНР цена</td>
+                                    <td>ПНР выполнено</td>
+                                    <td>ПНР остаток</td>
+                                    <td>ПНР объем</td>
+                                    <td>ПНР январь</td>
+                                    <td>ПНР февраль</td>
+                                    <td>ПНР март</td>
+                                    <td>ПНР апрель</td>
+                                    <td>ПНР май</td>
+                                    <td>ПНР июнь</td>
+                                    <td>ПНР июль</td>
+                                    <td>ПНР август</td>
+                                    <td>ПНР сентябрь</td>
+                                    <td>ПНР октябрь</td>
+                                    <td>ПНР ноябрь</td>
+                                    <td>ПНР декабрь</td>
+                                    <td>ПНР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Оборудование</td>
+                                    <td>Оборудование цена</td>
+                                    <td>Оборудование выполнено</td>
+                                    <td>Оборудование остаток</td>
+                                    <td>Оборудование объем</td>
+                                    <td>Оборудование январь</td>
+                                    <td>Оборудование февраль</td>
+                                    <td>Оборудование март</td>
+                                    <td>Оборудование апрель</td>
+                                    <td>Оборудование май</td>
+                                    <td>Оборудование июнь</td>
+                                    <td>Оборудование июль</td>
+                                    <td>Оборудование август</td>
+                                    <td>Оборудование сентябрь</td>
+                                    <td>Оборудование октябрь</td>
+                                    <td>Оборудование ноябрь</td>
+                                    <td>Оборудование декабрь</td>
+                                    <td>Оборудование акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td>ПРОЧИЕ РАБОТЫ январь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ март</td>
+                                    <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                                    <td>ПРОЧИЕ РАБОТЫ май</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ август</td>
+                                    <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Всего по договору (контракту) без учета НДС</td>
+                                    <td>Всего по договору цена</td>
+                                    <td>Всего по договору выполнено</td>
+                                    <td>Всего по договору остаток</td>
+                                    <td>Всего по договору объем</td>
+                                    <td>Всего по договору январь</td>
+                                    <td>Всего по договору февраль</td>
+                                    <td>Всего по договору март</td>
+                                    <td>Всего по договору апрель</td>
+                                    <td>Всего по договору май</td>
+                                    <td>Всего по договору июнь</td>
+                                    <td>Всего по договору июль</td>
+                                    <td>Всего по договору август</td>
+                                    <td>Всего по договору сентябрь</td>
+                                    <td>Всего по договору октябрь</td>
+                                    <td>Всего по договору ноябрь</td>
+                                    <td>Всего по договору декабрь</td>
+                                    <td>Всего по договору акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ДОП.РАБОТЫ</td>
+                                    <td>ДОП.РАБОТЫ цена</td>
+                                    <td>ДОП.РАБОТЫ выполнено</td>
+                                    <td>ДОП.РАБОТЫ остаток</td>
+                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td>ДОП.РАБОТЫ январь</td>
+                                    <td>ДОП.РАБОТЫ февраль</td>
+                                    <td>ДОП.РАБОТЫ март</td>
+                                    <td>ДОП.РАБОТЫ апрель</td>
+                                    <td>ДОП.РАБОТЫ май</td>
+                                    <td>ДОП.РАБОТЫ июнь</td>
+                                    <td>ДОП.РАБОТЫ июль</td>
+                                    <td>ДОП.РАБОТЫ август</td>
+                                    <td>ДОП.РАБОТЫ сентябрь</td>
+                                    <td>ДОП.РАБОТЫ октябрь</td>
+                                    <td>ДОП.РАБОТЫ ноябрь</td>
+                                    <td>ДОП.РАБОТЫ декабрь</td>
+                                    <td>ДОП.РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
+                                    <td>МАТЕРИАЛЫ цена</td>
+                                    <td>МАТЕРИАЛЫ выполнено</td>
+                                    <td>МАТЕРИАЛЫ остаток</td>
+                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td>МАТЕРИАЛЫ январь</td>
+                                    <td>МАТЕРИАЛЫ февраль</td>
+                                    <td>МАТЕРИАЛЫ март</td>
+                                    <td>МАТЕРИАЛЫ апрель</td>
+                                    <td>МАТЕРИАЛЫ май</td>
+                                    <td>МАТЕРИАЛЫ июнь</td>
+                                    <td>МАТЕРИАЛЫ июль</td>
+                                    <td>МАТЕРИАЛЫ август</td>
+                                    <td>МАТЕРИАЛЫ сентябрь</td>
+                                    <td>МАТЕРИАЛЫ октябрь</td>
+                                    <td>МАТЕРИАЛЫ ноябрь</td>
+                                    <td>МАТЕРИАЛЫ декабрь</td>
+                                    <td>МАТЕРИАЛЫ акт</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td rowspan="4">
+                        Переписка -
+                    </td>
+                    <td rowspan="4">
+                        Проектно-сметная документация -
+                    </td>
+                </tr>
+                <tr id="SMR fact 3-a">
+                    <td colspan="18">
+                        <table class="PartialTable">
+                            <colgroup>
+                                <col span="18" style="width:150px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="ActiveToggle" colspan="5">ФАКТ ПО СПРАВКАМ С НДС, В ТОМ ЧИСЛЕ</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbodyPartialTable" style="display:none;">
+                                <tr>
+                                    <td>СМР</td>
+                                    <td>СМР цена</td>
+                                    <td>СМР выполнено</td>
+                                    <td>СМР цена</td>
+                                    <td>СМР остаток</td>
+                                    <td>СМР объем</td>
+                                    <td>СМР январь</td>
+                                    <td>СМР февраль</td>
+                                    <td>СМР март</td>
+                                    <td>СМР апрель</td>
+                                    <td>СМР май</td>
+                                    <td>СМР июнь</td>
+                                    <td>СМР июль</td>
+                                    <td>СМР август</td>
+                                    <td>СМР сентябрь</td>
+                                    <td>СМР октябрь</td>
+                                    <td>СМР ноябрь</td>
+                                    <td>СМР декабрь</td>
+                                    <td>СМР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПНР</td>
+                                    <td>ПНР цена</td>
+                                    <td>ПНР выполнено</td>
+                                    <td>ПНР остаток</td>
+                                    <td>ПНР объем</td>
+                                    <td>ПНР январь</td>
+                                    <td>ПНР февраль</td>
+                                    <td>ПНР март</td>
+                                    <td>ПНР апрель</td>
+                                    <td>ПНР май</td>
+                                    <td>ПНР июнь</td>
+                                    <td>ПНР июль</td>
+                                    <td>ПНР август</td>
+                                    <td>ПНР сентябрь</td>
+                                    <td>ПНР октябрь</td>
+                                    <td>ПНР ноябрь</td>
+                                    <td>ПНР декабрь</td>
+                                    <td>ПНР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Оборудование</td>
+                                    <td>Оборудование цена</td>
+                                    <td>Оборудование выполнено</td>
+                                    <td>Оборудование остаток</td>
+                                    <td>Оборудование объем</td>
+                                    <td>Оборудование январь</td>
+                                    <td>Оборудование февраль</td>
+                                    <td>Оборудование март</td>
+                                    <td>Оборудование апрель</td>
+                                    <td>Оборудование май</td>
+                                    <td>Оборудование июнь</td>
+                                    <td>Оборудование июль</td>
+                                    <td>Оборудование август</td>
+                                    <td>Оборудование сентябрь</td>
+                                    <td>Оборудование октябрь</td>
+                                    <td>Оборудование ноябрь</td>
+                                    <td>Оборудование декабрь</td>
+                                    <td>Оборудование акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td>ПРОЧИЕ РАБОТЫ январь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ март</td>
+                                    <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                                    <td>ПРОЧИЕ РАБОТЫ май</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ август</td>
+                                    <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Всего по договору (контракту) без учета НДС</td>
+                                    <td>Всего по договору цена</td>
+                                    <td>Всего по договору выполнено</td>
+                                    <td>Всего по договору остаток</td>
+                                    <td>Всего по договору объем</td>
+                                    <td>Всего по договору январь</td>
+                                    <td>Всего по договору февраль</td>
+                                    <td>Всего по договору март</td>
+                                    <td>Всего по договору апрель</td>
+                                    <td>Всего по договору май</td>
+                                    <td>Всего по договору июнь</td>
+                                    <td>Всего по договору июль</td>
+                                    <td>Всего по договору август</td>
+                                    <td>Всего по договору сентябрь</td>
+                                    <td>Всего по договору октябрь</td>
+                                    <td>Всего по договору ноябрь</td>
+                                    <td>Всего по договору декабрь</td>
+                                    <td>Всего по договору акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ДОП.РАБОТЫ</td>
+                                    <td>ДОП.РАБОТЫ цена</td>
+                                    <td>ДОП.РАБОТЫ выполнено</td>
+                                    <td>ДОП.РАБОТЫ остаток</td>
+                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td>ДОП.РАБОТЫ январь</td>
+                                    <td>ДОП.РАБОТЫ февраль</td>
+                                    <td>ДОП.РАБОТЫ март</td>
+                                    <td>ДОП.РАБОТЫ апрель</td>
+                                    <td>ДОП.РАБОТЫ май</td>
+                                    <td>ДОП.РАБОТЫ июнь</td>
+                                    <td>ДОП.РАБОТЫ июль</td>
+                                    <td>ДОП.РАБОТЫ август</td>
+                                    <td>ДОП.РАБОТЫ сентябрь</td>
+                                    <td>ДОП.РАБОТЫ октябрь</td>
+                                    <td>ДОП.РАБОТЫ ноябрь</td>
+                                    <td>ДОП.РАБОТЫ декабрь</td>
+                                    <td>ДОП.РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
+                                    <td>МАТЕРИАЛЫ цена</td>
+                                    <td>МАТЕРИАЛЫ выполнено</td>
+                                    <td>МАТЕРИАЛЫ остаток</td>
+                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td>МАТЕРИАЛЫ январь</td>
+                                    <td>МАТЕРИАЛЫ февраль</td>
+                                    <td>МАТЕРИАЛЫ март</td>
+                                    <td>МАТЕРИАЛЫ апрель</td>
+                                    <td>МАТЕРИАЛЫ май</td>
+                                    <td>МАТЕРИАЛЫ июнь</td>
+                                    <td>МАТЕРИАЛЫ июль</td>
+                                    <td>МАТЕРИАЛЫ август</td>
+                                    <td>МАТЕРИАЛЫ сентябрь</td>
+                                    <td>МАТЕРИАЛЫ октябрь</td>
+                                    <td>МАТЕРИАЛЫ ноябрь</td>
+                                    <td>МАТЕРИАЛЫ декабрь</td>
+                                    <td>МАТЕРИАЛЫ акт</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr id="SMR Plan we">
+                    <td colspan="18">
+                        <table class="PartialTable">
+                            <colgroup>
+                                <col span="18" style="width:150px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="ActiveToggle" colspan="5">ПЛАНИРУЕМОЕ ВЫПОЛНЕНИЕ СОБСТВЕННЫМИ СИЛАМИ С НДС</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbodyPartialTable" style="display:none;">
+                                <tr>
+                                    <td>СМР</td>
+                                    <td>СМР цена</td>
+                                    <td>СМР выполнено</td>
+                                    <td>СМР остаток</td>
+                                    <td>СМР объем</td>
+                                    <td>СМР январь</td>
+                                    <td>СМР февраль</td>
+                                    <td>СМР март</td>
+                                    <td>СМР апрель</td>
+                                    <td>СМР май</td>
+                                    <td>СМР июнь</td>
+                                    <td>СМР июль</td>
+                                    <td>СМР август</td>
+                                    <td>СМР сентябрь</td>
+                                    <td>СМР октябрь</td>
+                                    <td>СМР ноябрь</td>
+                                    <td>СМР декабрь</td>
+                                    <td>СМР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПНР</td>
+                                    <td>ПНР цена</td>
+                                    <td>ПНР выполнено</td>
+                                    <td>ПНР остаток</td>
+                                    <td>ПНР объем</td>
+                                    <td>ПНР январь</td>
+                                    <td>ПНР февраль</td>
+                                    <td>ПНР март</td>
+                                    <td>ПНР апрель</td>
+                                    <td>ПНР май</td>
+                                    <td>ПНР июнь</td>
+                                    <td>ПНР июль</td>
+                                    <td>ПНР август</td>
+                                    <td>ПНР сентябрь</td>
+                                    <td>ПНР октябрь</td>
+                                    <td>ПНР ноябрь</td>
+                                    <td>ПНР декабрь</td>
+                                    <td>ПНР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Оборудование</td>
+                                    <td>Оборудование цена</td>
+                                    <td>Оборудование выполнено</td>
+                                    <td>Оборудование остаток</td>
+                                    <td>Оборудование объем</td>
+                                    <td>Оборудование январь</td>
+                                    <td>Оборудование февраль</td>
+                                    <td>Оборудование март</td>
+                                    <td>Оборудование апрель</td>
+                                    <td>Оборудование май</td>
+                                    <td>Оборудование июнь</td>
+                                    <td>Оборудование июль</td>
+                                    <td>Оборудование август</td>
+                                    <td>Оборудование сентябрь</td>
+                                    <td>Оборудование октябрь</td>
+                                    <td>Оборудование ноябрь</td>
+                                    <td>Оборудование декабрь</td>
+                                    <td>Оборудование акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td>ПРОЧИЕ РАБОТЫ январь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ март</td>
+                                    <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                                    <td>ПРОЧИЕ РАБОТЫ май</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ август</td>
+                                    <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Всего по договору (контракту) без учета НДС</td>
+                                    <td>Всего по договору цена</td>
+                                    <td>Всего по договору выполнено</td>
+                                    <td>Всего по договору остаток</td>
+                                    <td>Всего по договору объем</td>
+                                    <td>Всего по договору январь</td>
+                                    <td>Всего по договору февраль</td>
+                                    <td>Всего по договору март</td>
+                                    <td>Всего по договору апрель</td>
+                                    <td>Всего по договору май</td>
+                                    <td>Всего по договору июнь</td>
+                                    <td>Всего по договору июль</td>
+                                    <td>Всего по договору август</td>
+                                    <td>Всего по договору сентябрь</td>
+                                    <td>Всего по договору октябрь</td>
+                                    <td>Всего по договору ноябрь</td>
+                                    <td>Всего по договору декабрь</td>
+                                    <td>Всего по договору акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ДОП.РАБОТЫ</td>
+                                    <td>ДОП.РАБОТЫ цена</td>
+                                    <td>ДОП.РАБОТЫ выполнено</td>
+                                    <td>ДОП.РАБОТЫ остаток</td>
+                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td>ДОП.РАБОТЫ январь</td>
+                                    <td>ДОП.РАБОТЫ февраль</td>
+                                    <td>ДОП.РАБОТЫ март</td>
+                                    <td>ДОП.РАБОТЫ апрель</td>
+                                    <td>ДОП.РАБОТЫ май</td>
+                                    <td>ДОП.РАБОТЫ июнь</td>
+                                    <td>ДОП.РАБОТЫ июль</td>
+                                    <td>ДОП.РАБОТЫ август</td>
+                                    <td>ДОП.РАБОТЫ сентябрь</td>
+                                    <td>ДОП.РАБОТЫ октябрь</td>
+                                    <td>ДОП.РАБОТЫ ноябрь</td>
+                                    <td>ДОП.РАБОТЫ декабрь</td>
+                                    <td>ДОП.РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
+                                    <td>МАТЕРИАЛЫ цена</td>
+                                    <td>МАТЕРИАЛЫ выполнено</td>
+                                    <td>МАТЕРИАЛЫ остаток</td>
+                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td>МАТЕРИАЛЫ январь</td>
+                                    <td>МАТЕРИАЛЫ февраль</td>
+                                    <td>МАТЕРИАЛЫ март</td>
+                                    <td>МАТЕРИАЛЫ апрель</td>
+                                    <td>МАТЕРИАЛЫ май</td>
+                                    <td>МАТЕРИАЛЫ июнь</td>
+                                    <td>МАТЕРИАЛЫ июль</td>
+                                    <td>МАТЕРИАЛЫ август</td>
+                                    <td>МАТЕРИАЛЫ сентябрь</td>
+                                    <td>МАТЕРИАЛЫ октябрь</td>
+                                    <td>МАТЕРИАЛЫ ноябрь</td>
+                                    <td>МАТЕРИАЛЫ декабрь</td>
+                                    <td>МАТЕРИАЛЫ акт</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr id="SMR fact we">
+                    <td colspan="18">
+                        <table class="PartialTable">
+                            <colgroup>
+                                <col span="18" style="width:150px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="ActiveToggle" colspan="5">ФАКТИЧЕСКОЕ ВЫПОЛНЕНИЕ СОБСТВЕННЫМИ СИЛАМИ С НДС</th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbodyPartialTable" style="display:none;">
+                                <tr>
+                                    <td>СМР</td>
+                                    <td>СМР цена</td>
+                                    <td>СМР выполнено</td>
+                                    <td>СМР остаток</td>
+                                    <td>СМР объем</td>
+                                    <td>СМР январь</td>
+                                    <td>СМР февраль</td>
+                                    <td>СМР март</td>
+                                    <td>СМР апрель</td>
+                                    <td>СМР май</td>
+                                    <td>СМР июнь</td>
+                                    <td>СМР июль</td>
+                                    <td>СМР август</td>
+                                    <td>СМР сентябрь</td>
+                                    <td>СМР октябрь</td>
+                                    <td>СМР ноябрь</td>
+                                    <td>СМР декабрь</td>
+                                    <td>СМР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПНР</td>
+                                    <td>ПНР цена</td>
+                                    <td>ПНР выполнено</td>
+                                    <td>ПНР остаток</td>
+                                    <td>ПНР объем</td>
+                                    <td>ПНР январь</td>
+                                    <td>ПНР февраль</td>
+                                    <td>ПНР март</td>
+                                    <td>ПНР апрель</td>
+                                    <td>ПНР май</td>
+                                    <td>ПНР июнь</td>
+                                    <td>ПНР июль</td>
+                                    <td>ПНР август</td>
+                                    <td>ПНР сентябрь</td>
+                                    <td>ПНР октябрь</td>
+                                    <td>ПНР ноябрь</td>
+                                    <td>ПНР декабрь</td>
+                                    <td>ПНР акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Оборудование</td>
+                                    <td>Оборудование цена</td>
+                                    <td>Оборудование выполнено</td>
+                                    <td>Оборудование остаток</td>
+                                    <td>Оборудование объем</td>
+                                    <td>Оборудование январь</td>
+                                    <td>Оборудование февраль</td>
+                                    <td>Оборудование март</td>
+                                    <td>Оборудование апрель</td>
+                                    <td>Оборудование май</td>
+                                    <td>Оборудование июнь</td>
+                                    <td>Оборудование июль</td>
+                                    <td>Оборудование август</td>
+                                    <td>Оборудование сентябрь</td>
+                                    <td>Оборудование октябрь</td>
+                                    <td>Оборудование ноябрь</td>
+                                    <td>Оборудование декабрь</td>
+                                    <td>Оборудование акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                    <td>ПРОЧИЕ РАБОТЫ январь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ март</td>
+                                    <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                                    <td>ПРОЧИЕ РАБОТЫ май</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ июль</td>
+                                    <td>ПРОЧИЕ РАБОТЫ август</td>
+                                    <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                                    <td>ПРОЧИЕ РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>Всего по договору (контракту) без учета НДС</td>
+                                    <td>Всего по договору цена</td>
+                                    <td>Всего по договору выполнено</td>
+                                    <td>Всего по договору остаток</td>
+                                    <td>Всего по договору объем</td>
+                                    <td>Всего по договору январь</td>
+                                    <td>Всего по договору февраль</td>
+                                    <td>Всего по договору март</td>
+                                    <td>Всего по договору апрель</td>
+                                    <td>Всего по договору май</td>
+                                    <td>Всего по договору июнь</td>
+                                    <td>Всего по договору июль</td>
+                                    <td>Всего по договору август</td>
+                                    <td>Всего по договору сентябрь</td>
+                                    <td>Всего по договору октябрь</td>
+                                    <td>Всего по договору ноябрь</td>
+                                    <td>Всего по договору декабрь</td>
+                                    <td>Всего по договору акт</td>
+                                </tr>
+                                <tr>
+                                    <td>ДОП.РАБОТЫ</td>
+                                    <td>ДОП.РАБОТЫ цена</td>
+                                    <td>ДОП.РАБОТЫ выполнено</td>
+                                    <td>ДОП.РАБОТЫ остаток</td>
+                                    <td>ДОП.РАБОТЫ объем</td>
+                                    <td>ДОП.РАБОТЫ январь</td>
+                                    <td>ДОП.РАБОТЫ февраль</td>
+                                    <td>ДОП.РАБОТЫ март</td>
+                                    <td>ДОП.РАБОТЫ апрель</td>
+                                    <td>ДОП.РАБОТЫ май</td>
+                                    <td>ДОП.РАБОТЫ июнь</td>
+                                    <td>ДОП.РАБОТЫ июль</td>
+                                    <td>ДОП.РАБОТЫ август</td>
+                                    <td>ДОП.РАБОТЫ сентябрь</td>
+                                    <td>ДОП.РАБОТЫ октябрь</td>
+                                    <td>ДОП.РАБОТЫ ноябрь</td>
+                                    <td>ДОП.РАБОТЫ декабрь</td>
+                                    <td>ДОП.РАБОТЫ акт</td>
+                                </tr>
+                                <tr>
+                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
+                                    <td>МАТЕРИАЛЫ цена</td>
+                                    <td>МАТЕРИАЛЫ выполнено</td>
+                                    <td>МАТЕРИАЛЫ остаток</td>
+                                    <td>МАТЕРИАЛЫ объем</td>
+                                    <td>МАТЕРИАЛЫ январь</td>
+                                    <td>МАТЕРИАЛЫ февраль</td>
+                                    <td>МАТЕРИАЛЫ март</td>
+                                    <td>МАТЕРИАЛЫ апрель</td>
+                                    <td>МАТЕРИАЛЫ май</td>
+                                    <td>МАТЕРИАЛЫ июнь</td>
+                                    <td>МАТЕРИАЛЫ июль</td>
+                                    <td>МАТЕРИАЛЫ август</td>
+                                    <td>МАТЕРИАЛЫ сентябрь</td>
+                                    <td>МАТЕРИАЛЫ октябрь</td>
+                                    <td>МАТЕРИАЛЫ ноябрь</td>
+                                    <td>МАТЕРИАЛЫ декабрь</td>
+                                    <td>МАТЕРИАЛЫ акт</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr id="subcontract1">
+                    <td colspan="35">
+                        <table class="PartialTable">
+                            <colgroup>
+                                <col span="35" style="width:150px;">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="ActiveToggle">Субподрядчик</th>
+                                </tr>
+                            </thead>
+                            <tbody class="tbodyPartialTable" style="display:none;">
+                                <tr>
+                                    <td rowspan="2">
+                                        #-?
+                                    </td>
+                                    <td rowspan="2">
+                                        Процедура выбора -
+                                        @foreach (var item in Model.SelectionProcedures)
                                         {
-                                            @item.Employee.FullName
+                                            @item.Name
                                         }
-                                        else
+                                    </td>
+                                    <td rowspan="2">
+                                        Подписанты-
+                                        @foreach (var item in Model.EmployeeContracts)
+                                        {
+                                            if (@item.IsSignatory == true)
+                                            {
+                                                @item.Employee.FullName
+                                            }
+                                            else
                                                             if (@item.IsResponsible == true)
-                                        {
-                                            @item.Employee.FullName
+                                            {
+                                                @item.Employee.FullName
+                                            }
                                         }
-                                    }
-                                    <br>
-                                    Model.ResponsibleEmp
-                                </td>
-                                <td rowspan="2">
-                                    Номер и дата-
-                                    @Model.Number от
-                                    @Model.Date?.ToShortDateString()
-                                </td>
-                                <td rowspan="2">
-                                    Наименование объекта -
-                                    @Model.NameObject
-                                </td>
-                                <td rowspan="2">
-                                    Источник ФИНАНСИРОВАНИЯ -
-                                    @Model.FundingSource
-                                </td>
-                                <td rowspan="2">
-                                    Заказчик -
-                                    @foreach (var item in Model.ContractOrganizations)
-                                        if (@item.IsClient == true)
-                                        {
-                                            @item.Organization.Abbr
-                                        }
-                                </td>
-                                <td rowspan="2">
-                                    Генподрядчик -
-                                    Model.GenContractor
-                                </td>
-                                <td rowspan="2">
-                                    Субподрядчик -
-                                </td>
-                                <td rowspan="2">
-                                    Сроки-
-                                    <b>выполнения работ:</b><br>
-                                    @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
-                                    <b>ввода:</b><br>
-                                    @Model.EnteringTerm?.ToShortDateString()<br>
-                                    <b>действия договора по взаиморасчетам:</b><br>
-                                    @Model.ContractTerm?.ToShortDateString()<br>
-                                </td>
-                                <td rowspan="2">
-                                    Акты
-                                </td>
-                                <td rowspan="2">
-                                    Условия оплаты -
-                                    @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
-                                    @Html.ActionLink("Авансирование P11","","")
+                                        <br>
+                                        Model.ResponsibleEmp
+                                    </td>
+                                    <td rowspan="2">
+                                        Номер и дата-
+                                        @Model.Number от
+                                        @Model.Date?.ToShortDateString()
+                                    </td>
+                                    <td rowspan="2">
+                                        Наименование объекта -
+                                        @Model.NameObject
+                                    </td>
+                                    <td rowspan="2">
+                                        Источник ФИНАНСИРОВАНИЯ -
+                                        @Model.FundingSource
+                                    </td>
+                                    <td rowspan="2">
+                                        Заказчик -
+                                        @foreach (var item in Model.ContractOrganizations)
+                                            if (@item.IsClient == true)
+                                            {
+                                                @item.Organization.Abbr
+                                            }
+                                    </td>
+                                    <td rowspan="2">
+                                        Генподрядчик -
+                                        Model.GenContractor
+                                    </td>
+                                    <td rowspan="2">
+                                        Субподрядчик -
+                                    </td>
+                                    <td rowspan="2">
+                                        Сроки-
+                                        <b>выполнения работ:</b><br>
+                                        @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
+                                        <b>ввода:</b><br>
+                                        @Model.EnteringTerm?.ToShortDateString()<br>
+                                        <b>действия договора по взаиморасчетам:</b><br>
+                                        @Model.ContractTerm?.ToShortDateString()<br>
+                                    </td>
+                                    <td rowspan="2">
+                                        Акты
+                                    </td>
+                                    <td rowspan="2">
+                                        Условия оплаты -
+                                        @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
+                                        @Html.ActionLink("Авансирование P11","","")
 
-                                    @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
-                                    @Html.ActionLink("Расчет P7","","")
-                                </td>
-                                <td rowspan="2">
-                                    Услуги генподрядчика -
-                                    @Html.ActionLink("Услуги генподрядчика P13","","")
-                                </td>
-                                <td rowspan="2">
-                                    Материалы -
-                                    @Html.ActionLink("Материалы P15","","")
-                                </td>
-                                <td rowspan="2">
-                                    Валюта -
-                                    Model.Сurrency
-                                </td>
-                                <td colspan="19" id="subcontract SMR">
-                                    <table class="PartialTableInsade">
-                                        <colgroup>
-                                            <col span="19" style="width:150px;">
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th class="ActiveToggleInside" colspan="5">строительно-монтажные работы, всего с учетом НДС</th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="tbodyPartialTableInsade" style="display:none;">
-                                            <tr>
-                                                <td>СМР</td>
-                                                <td>СМР цена</td>
-                                                <td>СМР выполнено</td>
-                                                <td>СМР цена</td>
-                                                <td>СМР остаток</td>
-                                                <td>СМР объем</td>
-                                                <td>СМР январь</td>
-                                                <td>СМР февраль</td>
-                                                <td>СМР март</td>
-                                                <td>СМР апрель</td>
-                                                <td>СМР май</td>
-                                                <td>СМР июнь</td>
-                                                <td>СМР июль</td>
-                                                <td>СМР август</td>
-                                                <td>СМР сентябрь</td>
-                                                <td>СМР октябрь</td>
-                                                <td>СМР ноябрь</td>
-                                                <td>СМР декабрь</td>
-                                                <td>СМР акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>ПНР</td>
-                                                <td>ПНР цена</td>
-                                                <td>ПНР выполнено</td>
-                                                <td>ПНР цена</td>
-                                                <td>ПНР остаток</td>
-                                                <td>ПНР объем</td>
-                                                <td>ПНР январь</td>
-                                                <td>ПНР февраль</td>
-                                                <td>ПНР март</td>
-                                                <td>ПНР апрель</td>
-                                                <td>ПНР май</td>
-                                                <td>ПНР июнь</td>
-                                                <td>ПНР июль</td>
-                                                <td>ПНР август</td>
-                                                <td>ПНР сентябрь</td>
-                                                <td>ПНР октябрь</td>
-                                                <td>ПНР ноябрь</td>
-                                                <td>ПНР декабрь</td>
-                                                <td>ПНР акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Оборудование</td>
-                                                <td>Оборудование цена</td>
-                                                <td>Оборудование выполнено</td>
-                                                <td>Оборудование цена</td>
-                                                <td>Оборудование остаток</td>
-                                                <td>Оборудование объем</td>
-                                                <td>Оборудование январь</td>
-                                                <td>Оборудование февраль</td>
-                                                <td>Оборудование март</td>
-                                                <td>Оборудование апрель</td>
-                                                <td>Оборудование май</td>
-                                                <td>Оборудование июнь</td>
-                                                <td>Оборудование июль</td>
-                                                <td>Оборудование август</td>
-                                                <td>Оборудование сентябрь</td>
-                                                <td>Оборудование октябрь</td>
-                                                <td>Оборудование ноябрь</td>
-                                                <td>Оборудование декабрь</td>
-                                                <td>Оборудование акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                                <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                                <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                                <td>ПРОЧИЕ РАБОТЫ объем</td>
-                                                <td>ПРОЧИЕ РАБОТЫ январь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ февраль</td>
-                                                <td>ПРОЧИЕ РАБОТЫ март</td>
-                                                <td>ПРОЧИЕ РАБОТЫ апрель</td>
-                                                <td>ПРОЧИЕ РАБОТЫ май</td>
-                                                <td>ПРОЧИЕ РАБОТЫ июнь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ июль</td>
-                                                <td>ПРОЧИЕ РАБОТЫ август</td>
-                                                <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ октябрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ декабрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Всего по договору (контракту) без учета НДС</td>
-                                                <td>Всего по договору цена</td>
-                                                <td>Всего по договору выполнено</td>
-                                                <td>Всего по договору цена</td>
-                                                <td>Всего по договору остаток</td>
-                                                <td>Всего по договору объем</td>
-                                                <td>Всего по договору январь</td>
-                                                <td>Всего по договору февраль</td>
-                                                <td>Всего по договору март</td>
-                                                <td>Всего по договору апрель</td>
-                                                <td>Всего по договору май</td>
-                                                <td>Всего по договору июнь</td>
-                                                <td>Всего по договору июль</td>
-                                                <td>Всего по договору август</td>
-                                                <td>Всего по договору сентябрь</td>
-                                                <td>Всего по договору октябрь</td>
-                                                <td>Всего по договору ноябрь</td>
-                                                <td>Всего по договору декабрь</td>
-                                                <td>Всего по договору акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>ДОП.РАБОТЫ</td>
-                                                <td>ДОП.РАБОТЫ цена</td>
-                                                <td>ДОП.РАБОТЫ выполнено</td>
-                                                <td>ДОП.РАБОТЫ цена</td>
-                                                <td>ДОП.РАБОТЫ остаток</td>
-                                                <td>ДОП.РАБОТЫ объем</td>
-                                                <td>ДОП.РАБОТЫ январь</td>
-                                                <td>ДОП.РАБОТЫ февраль</td>
-                                                <td>ДОП.РАБОТЫ март</td>
-                                                <td>ДОП.РАБОТЫ апрель</td>
-                                                <td>ДОП.РАБОТЫ май</td>
-                                                <td>ДОП.РАБОТЫ июнь</td>
-                                                <td>ДОП.РАБОТЫ июль</td>
-                                                <td>ДОП.РАБОТЫ август</td>
-                                                <td>ДОП.РАБОТЫ сентябрь</td>
-                                                <td>ДОП.РАБОТЫ октябрь</td>
-                                                <td>ДОП.РАБОТЫ ноябрь</td>
-                                                <td>ДОП.РАБОТЫ декабрь</td>
-                                                <td>ДОП.РАБОТЫ акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
-                                                <td>МАТЕРИАЛЫ цена</td>
-                                                <td>МАТЕРИАЛЫ выполнено</td>
-                                                <td>МАТЕРИАЛЫ цена</td>
-                                                <td>МАТЕРИАЛЫ остаток</td>
-                                                <td>МАТЕРИАЛЫ объем</td>
-                                                <td>МАТЕРИАЛЫ январь</td>
-                                                <td>МАТЕРИАЛЫ февраль</td>
-                                                <td>МАТЕРИАЛЫ март</td>
-                                                <td>МАТЕРИАЛЫ апрель</td>
-                                                <td>МАТЕРИАЛЫ май</td>
-                                                <td>МАТЕРИАЛЫ июнь</td>
-                                                <td>МАТЕРИАЛЫ июль</td>
-                                                <td>МАТЕРИАЛЫ август</td>
-                                                <td>МАТЕРИАЛЫ сентябрь</td>
-                                                <td>МАТЕРИАЛЫ октябрь</td>
-                                                <td>МАТЕРИАЛЫ ноябрь</td>
-                                                <td>МАТЕРИАЛЫ декабрь</td>
-                                                <td>МАТЕРИАЛЫ акт</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                                <td rowspan="2">
-                                    Переписка -
-                                </td>
-                                <td rowspan="2">
-                                    Проектно-сметная документация -
-                                </td>
-                            </tr>
-                            <tr id="subcontract fact">
-                                <td colspan="19">
-                                    <table class="PartialTableInsade">
-                                        <colgroup>
-                                            <col span="19" style="width:150px;">
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th class="ActiveToggleInside" colspan="5">ФАКТ ПО СПРАВКАМ С НДС, В ТОМ ЧИСЛЕ</th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="tbodyPartialTableInsade" style="display:none;">
-                                            <tr>
-                                                <td>СМР</td>
-                                                <td>СМР цена</td>
-                                                <td>СМР выполнено</td>
-                                                <td>СМР цена</td>
-                                                <td>СМР остаток</td>
-                                                <td>СМР объем</td>
-                                                <td>СМР январь</td>
-                                                <td>СМР февраль</td>
-                                                <td>СМР март</td>
-                                                <td>СМР апрель</td>
-                                                <td>СМР май</td>
-                                                <td>СМР июнь</td>
-                                                <td>СМР июль</td>
-                                                <td>СМР август</td>
-                                                <td>СМР сентябрь</td>
-                                                <td>СМР октябрь</td>
-                                                <td>СМР ноябрь</td>
-                                                <td>СМР декабрь</td>
-                                                <td>СМР акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>ПНР</td>
-                                                <td>ПНР цена</td>
-                                                <td>ПНР выполнено</td>
-                                                <td>ПНР цена</td>
-                                                <td>ПНР остаток</td>
-                                                <td>ПНР объем</td>
-                                                <td>ПНР январь</td>
-                                                <td>ПНР февраль</td>
-                                                <td>ПНР март</td>
-                                                <td>ПНР апрель</td>
-                                                <td>ПНР май</td>
-                                                <td>ПНР июнь</td>
-                                                <td>ПНР июль</td>
-                                                <td>ПНР август</td>
-                                                <td>ПНР сентябрь</td>
-                                                <td>ПНР октябрь</td>
-                                                <td>ПНР ноябрь</td>
-                                                <td>ПНР декабрь</td>
-                                                <td>ПНР акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Оборудование</td>
-                                                <td>Оборудование цена</td>
-                                                <td>Оборудование выполнено</td>
-                                                <td>Оборудование цена</td>
-                                                <td>Оборудование остаток</td>
-                                                <td>Оборудование объем</td>
-                                                <td>Оборудование январь</td>
-                                                <td>Оборудование февраль</td>
-                                                <td>Оборудование март</td>
-                                                <td>Оборудование апрель</td>
-                                                <td>Оборудование май</td>
-                                                <td>Оборудование июнь</td>
-                                                <td>Оборудование июль</td>
-                                                <td>Оборудование август</td>
-                                                <td>Оборудование сентябрь</td>
-                                                <td>Оборудование октябрь</td>
-                                                <td>Оборудование ноябрь</td>
-                                                <td>Оборудование декабрь</td>
-                                                <td>Оборудование акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
-                                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                                <td>ПРОЧИЕ РАБОТЫ выполнено</td>
-                                                <td>ПРОЧИЕ РАБОТЫ цена</td>
-                                                <td>ПРОЧИЕ РАБОТЫ остаток</td>
-                                                <td>ПРОЧИЕ РАБОТЫ объем</td>
-                                                <td>ПРОЧИЕ РАБОТЫ январь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ февраль</td>
-                                                <td>ПРОЧИЕ РАБОТЫ март</td>
-                                                <td>ПРОЧИЕ РАБОТЫ апрель</td>
-                                                <td>ПРОЧИЕ РАБОТЫ май</td>
-                                                <td>ПРОЧИЕ РАБОТЫ июнь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ июль</td>
-                                                <td>ПРОЧИЕ РАБОТЫ август</td>
-                                                <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ октябрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ декабрь</td>
-                                                <td>ПРОЧИЕ РАБОТЫ акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Всего по договору (контракту) без учета НДС</td>
-                                                <td>Всего по договору цена</td>
-                                                <td>Всего по договору выполнено</td>
-                                                <td>Всего по договору цена</td>
-                                                <td>Всего по договору остаток</td>
-                                                <td>Всего по договору объем</td>
-                                                <td>Всего по договору январь</td>
-                                                <td>Всего по договору февраль</td>
-                                                <td>Всего по договору март</td>
-                                                <td>Всего по договору апрель</td>
-                                                <td>Всего по договору май</td>
-                                                <td>Всего по договору июнь</td>
-                                                <td>Всего по договору июль</td>
-                                                <td>Всего по договору август</td>
-                                                <td>Всего по договору сентябрь</td>
-                                                <td>Всего по договору октябрь</td>
-                                                <td>Всего по договору ноябрь</td>
-                                                <td>Всего по договору декабрь</td>
-                                                <td>Всего по договору акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Всего без учета НДС</td>
-                                                <td>Всего цена</td>
-                                                <td>Всего выполнено</td>
-                                                <td>Всего цена</td>
-                                                <td>Всего остаток</td>
-                                                <td>Всего объем</td>
-                                                <td>Всего январь</td>
-                                                <td>Всего февраль</td>
-                                                <td>Всего март</td>
-                                                <td>Всего апрель</td>
-                                                <td>Всего май</td>
-                                                <td>Всего июнь</td>
-                                                <td>Всего июль</td>
-                                                <td>Всего август</td>
-                                                <td>Всего сентябрь</td>
-                                                <td>Всего октябрь</td>
-                                                <td>Всего ноябрь</td>
-                                                <td>Всего декабрь</td>
-                                                <td>Всего акт</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Сумма генуслуг</td>
-                                                <td>Сумма генуслуг цена</td>
-                                                <td>Сумма генуслуг выполнено</td>
-                                                <td>Сумма генуслуг цена</td>
-                                                <td>Сумма генуслуг остаток</td>
-                                                <td>Сумма генуслуг объем</td>
-                                                <td>Сумма генуслуг январь</td>
-                                                <td>Сумма генуслуг февраль</td>
-                                                <td>Сумма генуслуг март</td>
-                                                <td>Сумма генуслуг апрель</td>
-                                                <td>Сумма генуслуг май</td>
-                                                <td>Сумма генуслуг июнь</td>
-                                                <td>Сумма генуслуг июль</td>
-                                                <td>Сумма генуслуг август</td>
-                                                <td>Сумма генуслуг сентябрь</td>
-                                                <td>Сумма генуслуг октябрь</td>
-                                                <td>Сумма генуслуг ноябрь</td>
-                                                <td>Сумма генуслуг декабрь</td>
-                                                <td>Сумма генуслуг акт</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
+                                        @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
+                                        @Html.ActionLink("Расчет P7","","")
+                                    </td>
+                                    <td rowspan="2">
+                                        Услуги генподрядчика -
+                                        @Html.ActionLink("Услуги генподрядчика P13","","")
+                                    </td>
+                                    <td rowspan="2">
+                                        Материалы -
+                                        @Html.ActionLink("Материалы P15","","")
+                                    </td>
+                                    <td rowspan="2">
+                                        Валюта -
+                                        Model.Сurrency
+                                    </td>
+                                    <td colspan="19" id="subcontract SMR">
+                                        <table class="PartialTableInsade">
+                                            <colgroup>
+                                                <col span="19" style="width:150px;">
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th class="ActiveToggleInside" colspan="5">строительно-монтажные работы, всего с учетом НДС</th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tbodyPartialTableInsade" style="display:none;">
+                                                <tr>
+                                                    <td>СМР</td>
+                                                    <td>СМР цена</td>
+                                                    <td>СМР выполнено</td>
+                                                    <td>СМР цена</td>
+                                                    <td>СМР остаток</td>
+                                                    <td>СМР объем</td>
+                                                    <td>СМР январь</td>
+                                                    <td>СМР февраль</td>
+                                                    <td>СМР март</td>
+                                                    <td>СМР апрель</td>
+                                                    <td>СМР май</td>
+                                                    <td>СМР июнь</td>
+                                                    <td>СМР июль</td>
+                                                    <td>СМР август</td>
+                                                    <td>СМР сентябрь</td>
+                                                    <td>СМР октябрь</td>
+                                                    <td>СМР ноябрь</td>
+                                                    <td>СМР декабрь</td>
+                                                    <td>СМР акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>ПНР</td>
+                                                    <td>ПНР цена</td>
+                                                    <td>ПНР выполнено</td>
+                                                    <td>ПНР цена</td>
+                                                    <td>ПНР остаток</td>
+                                                    <td>ПНР объем</td>
+                                                    <td>ПНР январь</td>
+                                                    <td>ПНР февраль</td>
+                                                    <td>ПНР март</td>
+                                                    <td>ПНР апрель</td>
+                                                    <td>ПНР май</td>
+                                                    <td>ПНР июнь</td>
+                                                    <td>ПНР июль</td>
+                                                    <td>ПНР август</td>
+                                                    <td>ПНР сентябрь</td>
+                                                    <td>ПНР октябрь</td>
+                                                    <td>ПНР ноябрь</td>
+                                                    <td>ПНР декабрь</td>
+                                                    <td>ПНР акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Оборудование</td>
+                                                    <td>Оборудование цена</td>
+                                                    <td>Оборудование выполнено</td>
+                                                    <td>Оборудование цена</td>
+                                                    <td>Оборудование остаток</td>
+                                                    <td>Оборудование объем</td>
+                                                    <td>Оборудование январь</td>
+                                                    <td>Оборудование февраль</td>
+                                                    <td>Оборудование март</td>
+                                                    <td>Оборудование апрель</td>
+                                                    <td>Оборудование май</td>
+                                                    <td>Оборудование июнь</td>
+                                                    <td>Оборудование июль</td>
+                                                    <td>Оборудование август</td>
+                                                    <td>Оборудование сентябрь</td>
+                                                    <td>Оборудование октябрь</td>
+                                                    <td>Оборудование ноябрь</td>
+                                                    <td>Оборудование декабрь</td>
+                                                    <td>Оборудование акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ январь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ март</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ май</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ июль</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ август</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Всего по договору (контракту) без учета НДС</td>
+                                                    <td>Всего по договору цена</td>
+                                                    <td>Всего по договору выполнено</td>
+                                                    <td>Всего по договору цена</td>
+                                                    <td>Всего по договору остаток</td>
+                                                    <td>Всего по договору объем</td>
+                                                    <td>Всего по договору январь</td>
+                                                    <td>Всего по договору февраль</td>
+                                                    <td>Всего по договору март</td>
+                                                    <td>Всего по договору апрель</td>
+                                                    <td>Всего по договору май</td>
+                                                    <td>Всего по договору июнь</td>
+                                                    <td>Всего по договору июль</td>
+                                                    <td>Всего по договору август</td>
+                                                    <td>Всего по договору сентябрь</td>
+                                                    <td>Всего по договору октябрь</td>
+                                                    <td>Всего по договору ноябрь</td>
+                                                    <td>Всего по договору декабрь</td>
+                                                    <td>Всего по договору акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>ДОП.РАБОТЫ</td>
+                                                    <td>ДОП.РАБОТЫ цена</td>
+                                                    <td>ДОП.РАБОТЫ выполнено</td>
+                                                    <td>ДОП.РАБОТЫ цена</td>
+                                                    <td>ДОП.РАБОТЫ остаток</td>
+                                                    <td>ДОП.РАБОТЫ объем</td>
+                                                    <td>ДОП.РАБОТЫ январь</td>
+                                                    <td>ДОП.РАБОТЫ февраль</td>
+                                                    <td>ДОП.РАБОТЫ март</td>
+                                                    <td>ДОП.РАБОТЫ апрель</td>
+                                                    <td>ДОП.РАБОТЫ май</td>
+                                                    <td>ДОП.РАБОТЫ июнь</td>
+                                                    <td>ДОП.РАБОТЫ июль</td>
+                                                    <td>ДОП.РАБОТЫ август</td>
+                                                    <td>ДОП.РАБОТЫ сентябрь</td>
+                                                    <td>ДОП.РАБОТЫ октябрь</td>
+                                                    <td>ДОП.РАБОТЫ ноябрь</td>
+                                                    <td>ДОП.РАБОТЫ декабрь</td>
+                                                    <td>ДОП.РАБОТЫ акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</td>
+                                                    <td>МАТЕРИАЛЫ цена</td>
+                                                    <td>МАТЕРИАЛЫ выполнено</td>
+                                                    <td>МАТЕРИАЛЫ цена</td>
+                                                    <td>МАТЕРИАЛЫ остаток</td>
+                                                    <td>МАТЕРИАЛЫ объем</td>
+                                                    <td>МАТЕРИАЛЫ январь</td>
+                                                    <td>МАТЕРИАЛЫ февраль</td>
+                                                    <td>МАТЕРИАЛЫ март</td>
+                                                    <td>МАТЕРИАЛЫ апрель</td>
+                                                    <td>МАТЕРИАЛЫ май</td>
+                                                    <td>МАТЕРИАЛЫ июнь</td>
+                                                    <td>МАТЕРИАЛЫ июль</td>
+                                                    <td>МАТЕРИАЛЫ август</td>
+                                                    <td>МАТЕРИАЛЫ сентябрь</td>
+                                                    <td>МАТЕРИАЛЫ октябрь</td>
+                                                    <td>МАТЕРИАЛЫ ноябрь</td>
+                                                    <td>МАТЕРИАЛЫ декабрь</td>
+                                                    <td>МАТЕРИАЛЫ акт</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    <td rowspan="2">
+                                        Переписка -
+                                    </td>
+                                    <td rowspan="2">
+                                        Проектно-сметная документация -
+                                    </td>
+                                </tr>
+                                <tr id="subcontract fact">
+                                    <td colspan="19">
+                                        <table class="PartialTableInsade">
+                                            <colgroup>
+                                                <col span="19" style="width:150px;">
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th class="ActiveToggleInside" colspan="5">ФАКТ ПО СПРАВКАМ С НДС, В ТОМ ЧИСЛЕ</th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="tbodyPartialTableInsade" style="display:none;">
+                                                <tr>
+                                                    <td>СМР</td>
+                                                    <td>СМР цена</td>
+                                                    <td>СМР выполнено</td>
+                                                    <td>СМР цена</td>
+                                                    <td>СМР остаток</td>
+                                                    <td>СМР объем</td>
+                                                    <td>СМР январь</td>
+                                                    <td>СМР февраль</td>
+                                                    <td>СМР март</td>
+                                                    <td>СМР апрель</td>
+                                                    <td>СМР май</td>
+                                                    <td>СМР июнь</td>
+                                                    <td>СМР июль</td>
+                                                    <td>СМР август</td>
+                                                    <td>СМР сентябрь</td>
+                                                    <td>СМР октябрь</td>
+                                                    <td>СМР ноябрь</td>
+                                                    <td>СМР декабрь</td>
+                                                    <td>СМР акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>ПНР</td>
+                                                    <td>ПНР цена</td>
+                                                    <td>ПНР выполнено</td>
+                                                    <td>ПНР цена</td>
+                                                    <td>ПНР остаток</td>
+                                                    <td>ПНР объем</td>
+                                                    <td>ПНР январь</td>
+                                                    <td>ПНР февраль</td>
+                                                    <td>ПНР март</td>
+                                                    <td>ПНР апрель</td>
+                                                    <td>ПНР май</td>
+                                                    <td>ПНР июнь</td>
+                                                    <td>ПНР июль</td>
+                                                    <td>ПНР август</td>
+                                                    <td>ПНР сентябрь</td>
+                                                    <td>ПНР октябрь</td>
+                                                    <td>ПНР ноябрь</td>
+                                                    <td>ПНР декабрь</td>
+                                                    <td>ПНР акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Оборудование</td>
+                                                    <td>Оборудование цена</td>
+                                                    <td>Оборудование выполнено</td>
+                                                    <td>Оборудование цена</td>
+                                                    <td>Оборудование остаток</td>
+                                                    <td>Оборудование объем</td>
+                                                    <td>Оборудование январь</td>
+                                                    <td>Оборудование февраль</td>
+                                                    <td>Оборудование март</td>
+                                                    <td>Оборудование апрель</td>
+                                                    <td>Оборудование май</td>
+                                                    <td>Оборудование июнь</td>
+                                                    <td>Оборудование июль</td>
+                                                    <td>Оборудование август</td>
+                                                    <td>Оборудование сентябрь</td>
+                                                    <td>Оборудование октябрь</td>
+                                                    <td>Оборудование ноябрь</td>
+                                                    <td>Оборудование декабрь</td>
+                                                    <td>Оборудование акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>ПРОЧИЕ РАБОТЫ И УСЛУГИ</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ выполнено</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ цена</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ остаток</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ объем</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ январь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ февраль</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ март</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ апрель</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ май</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ июнь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ июль</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ август</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ сентябрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ октябрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ ноябрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ декабрь</td>
+                                                    <td>ПРОЧИЕ РАБОТЫ акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Всего по договору (контракту) без учета НДС</td>
+                                                    <td>Всего по договору цена</td>
+                                                    <td>Всего по договору выполнено</td>
+                                                    <td>Всего по договору цена</td>
+                                                    <td>Всего по договору остаток</td>
+                                                    <td>Всего по договору объем</td>
+                                                    <td>Всего по договору январь</td>
+                                                    <td>Всего по договору февраль</td>
+                                                    <td>Всего по договору март</td>
+                                                    <td>Всего по договору апрель</td>
+                                                    <td>Всего по договору май</td>
+                                                    <td>Всего по договору июнь</td>
+                                                    <td>Всего по договору июль</td>
+                                                    <td>Всего по договору август</td>
+                                                    <td>Всего по договору сентябрь</td>
+                                                    <td>Всего по договору октябрь</td>
+                                                    <td>Всего по договору ноябрь</td>
+                                                    <td>Всего по договору декабрь</td>
+                                                    <td>Всего по договору акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Всего без учета НДС</td>
+                                                    <td>Всего цена</td>
+                                                    <td>Всего выполнено</td>
+                                                    <td>Всего цена</td>
+                                                    <td>Всего остаток</td>
+                                                    <td>Всего объем</td>
+                                                    <td>Всего январь</td>
+                                                    <td>Всего февраль</td>
+                                                    <td>Всего март</td>
+                                                    <td>Всего апрель</td>
+                                                    <td>Всего май</td>
+                                                    <td>Всего июнь</td>
+                                                    <td>Всего июль</td>
+                                                    <td>Всего август</td>
+                                                    <td>Всего сентябрь</td>
+                                                    <td>Всего октябрь</td>
+                                                    <td>Всего ноябрь</td>
+                                                    <td>Всего декабрь</td>
+                                                    <td>Всего акт</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Сумма генуслуг</td>
+                                                    <td>Сумма генуслуг цена</td>
+                                                    <td>Сумма генуслуг выполнено</td>
+                                                    <td>Сумма генуслуг цена</td>
+                                                    <td>Сумма генуслуг остаток</td>
+                                                    <td>Сумма генуслуг объем</td>
+                                                    <td>Сумма генуслуг январь</td>
+                                                    <td>Сумма генуслуг февраль</td>
+                                                    <td>Сумма генуслуг март</td>
+                                                    <td>Сумма генуслуг апрель</td>
+                                                    <td>Сумма генуслуг май</td>
+                                                    <td>Сумма генуслуг июнь</td>
+                                                    <td>Сумма генуслуг июль</td>
+                                                    <td>Сумма генуслуг август</td>
+                                                    <td>Сумма генуслуг сентябрь</td>
+                                                    <td>Сумма генуслуг октябрь</td>
+                                                    <td>Сумма генуслуг ноябрь</td>
+                                                    <td>Сумма генуслуг декабрь</td>
+                                                    <td>Сумма генуслуг акт</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
 
 
         </tbody>
@@ -1376,6 +1576,22 @@
 </div>
 
 <script>
+    let elementButton = document.getElementById("ActiveToggleId")
+
+    elementButton.addEventListener("click", (event) => {
+        let elementTable = document.getElementById("ConstructionInstallationWorks")
+        elementTable.classList.remove('modal__visibility-close')
+        elementTable.classList.add('modal__visibility-active')
+        console.log('event', event)
+    });
+
+    let elementButtonTable = document.getElementById('buttonTable')
+    elementButtonTable.addEventListener("click", event => {
+        let elementTable = document.getElementById("ConstructionInstallationWorks")
+        elementTable.classList.remove('modal__visibility-active')
+        elementTable.classList.add('modal__visibility-close')
+        console.log('eventButton', event)
+    })
 
     $('.PartialTable').delegate(".ActiveToggle", "click", function () {
         $(this).parents('table.PartialTable ').children('tbody.tbodyPartialTable').toggle();
@@ -1383,5 +1599,9 @@
     $('.PartialTableInsade').delegate("th", "click", function () {
         $(this).parents('table.PartialTableInsade').children('tbody.tbodyPartialTableInsade').toggle();
     });
+
+
+
+
 
 </script>
