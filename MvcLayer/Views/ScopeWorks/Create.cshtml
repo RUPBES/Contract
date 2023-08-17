@@ -27,110 +27,111 @@
 <hr />
 <form asp-action="Create" class="row">
     <div class="cont-table">
-    <table class="table table-bordered table-striped">
-        <tr>
-            <th>Период</th>
-            @foreach (var item in d)
-            {
-                <td>
-                    @item.Period?.ToString("MMM yyyy")
-                    <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                </td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Cтоимость работ с НДС</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].CostNds" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Стоимость СМР</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].SmrCost" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Цена ПНР</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].PnrCost" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Цена оборудования</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].EquipmentCost" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Цена остальных работ</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].OtherExpensesCost" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Цена доп. работ</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].AdditionalCost" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
-        <tr>
-            <th>Цена материалов</th>
-            @foreach (var item in d)
-            {
-                <td><input asp-for="@Model[index].MaterialCost" class="form-control" type="number" step="0.001" min="0" /></td>
-                index++;
-            }
-            @{
-                index = 0;
-            }
-        </tr>
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Период</th>
+                @foreach (var item in d)
+                {
+                    <td>
+                        @item.Period?.ToString("MMM yyyy")
+                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                    </td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Cтоимость работ с НДС</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].CostNds" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Стоимость СМР</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].SmrCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Цена ПНР</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].PnrCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Цена оборудования</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].EquipmentCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Цена остальных работ</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].OtherExpensesCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Цена доп. работ</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].AdditionalCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Цена материалов</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].MaterialCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
 
-        @foreach (var item in d)
-        {
-            <input asp-for="@Model[index].GenServiceCost" hidden />
-            <input asp-for="@Model[index].IsOwnForces" hidden />
-            <input asp-for="@Model[index].ContractId" hidden />
-            <input asp-for="@Model[index].IsChange" hidden />
+            @foreach (var item in d)
+            {
+                <input asp-for="@Model[index].GenServiceCost" hidden />
+                <input asp-for="@Model[index].IsOwnForces" hidden />
+                <input asp-for="@Model[index].ContractId" hidden />
+                <input asp-for="@Model[index].IsChange" hidden />
+                <input asp-for="@Model[index].AmendmentId" hidden />
 
-            index++;
-        }
+                index++;
+            }
 
-    </table>
+        </table>
     </div>
     <div class="form-group">
         <input type="submit" value="Create" class="btn btn-primary" />

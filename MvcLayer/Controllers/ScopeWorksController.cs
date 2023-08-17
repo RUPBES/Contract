@@ -32,6 +32,11 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.GetAll()));
         }
 
+        public IActionResult GetByContractId(int contractId)
+        {
+            return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId)));
+        }
+
         //public async Task<IActionResult> Details(int? id)
         //{
         //    if (id == null || _scopeWork.GetAll() == null)
@@ -79,7 +84,8 @@ namespace MvcLayer.Controllers
                         IsChange = scopeWork.IsChange,
                         IsOwnForces = scopeWork.IsOwnForces,
                         ContractId = scopeWork.ContractId,
-                        ChangeScopeWorkId = scopeWork.ChangeScopeWorkId
+                        ChangeScopeWorkId = scopeWork.ChangeScopeWorkId,
+                        AmendmentId = scopeWork.AmendmentId,
                     });
 
                     scopeWork.PeriodStart = scopeWork.PeriodStart.AddMonths(1);
@@ -118,7 +124,12 @@ namespace MvcLayer.Controllers
             {
                 foreach (var item in scopeWork)
                 {
-                    _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(item));
+                    var scopeWorkId = (int)_scopeWork.Create(_mapper.Map<ScopeWorkDTO>(item));
+                    
+                    if (item?.AmendmentId is not null && item?.AmendmentId > 0)
+                    {
+                        _scopeWork.AddAmendmentToScopeWork((int)item?.AmendmentId, scopeWorkId);
+                    }                    
                 }
 
                 return RedirectToAction(nameof(Index));

@@ -110,9 +110,28 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(predicate));
         }
 
-        public IEnumerable<PrepaymentDTO> FindListByIdContract(int id)
+        public IEnumerable<PrepaymentDTO> FindByContractId(int id)
         {
             return _mapper.Map<IEnumerable<PrepaymentDTO>>(GetAll().Where(p => p.ContractId == id));
+        }
+
+        public void AddAmendmentToPrepayment(int amendmentId, int prepaymentId)
+        {
+            if (amendmentId > 0 && prepaymentId > 0)
+            {
+                _database.PrepaymentAmendments.Create(new PrepaymentAmendment 
+                { 
+                    AmendmentId = amendmentId, 
+                    PrepaymentId = prepaymentId
+                });
+
+                _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to prepayment (ID={prepaymentId})", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not add prepaymentAmendments", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
         }
     }
 }

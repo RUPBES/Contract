@@ -400,10 +400,10 @@
                         @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
                         @Html.ActionLink("Расчет P7","","")
                     </td>
-                    <td rowspan="4">
-                        Услуги генподрядчика -
-                        @Html.ActionLink("Авансирование","","");
-                    </td>
+                      <td rowspan="4">
+                    Услуги генподрядчика -
+                    @Html.ActionLink("Услуги генподряда","GetByContractId","ServiceGC",new{ contractId = Model.Id})
+                </td>
                     <td rowspan="4">
                         Материалы -
                         @Html.ActionLink("Материалы P15","","")
@@ -1563,14 +1563,17 @@
                 </tr>
 
 
-            </tbody>
-        </table>
-    </div>
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-        <a asp-action="Index">Back to List</a>
-    </div>
-}
+        </tbody>
+    </table>
+</div>
+<div>
+    <a asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Добавить объем работ</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Добавить авансы</a> |
+    <a asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
+</div>
 
 <script>
     let elementButton = document.getElementById("ActiveToggleId")

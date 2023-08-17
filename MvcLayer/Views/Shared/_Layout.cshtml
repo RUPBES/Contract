@@ -34,6 +34,75 @@
         </div>
     }
 
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Учет договоров</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Contracts" asp-action="Index">Договоры</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Departments" asp-action="Index">Отделы</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Phones" asp-action="Index">Телефоны</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Addresses" asp-action="Index">Адреса</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="ScopeWorks" asp-action="Index">Объем работ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Amendments" asp-action="Index">Изменения</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Prepayments" asp-action="Index">Авансы</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="ServiceGC" asp-action="Index">Услуги генподряда</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (User?.Identity is { IsAuthenticated: true })
+                        {
+                            <li style="line-height:35px; margin-right:30px;">Пользователь - @User.Identity.Name</li>
+                            <li class="nav-item">
+                                <form asp-action="Logout" asp-controller="Authentication" method="post">
+                                    <button class="btn btn-danger" type="submit">Sign out</button>
+                                </form>
+                            </li>
+                        }
+                        @if (User?.Identity is { IsAuthenticated: false })
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white btn btn-sm btn-primary" asp-area="" asp-controller="Authentication" asp-action="Login">Войти</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    
+                </div> 
+            </div>
+        </nav>
+    </header>
+    <div @*class="container"*@>
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
 
     <footer>
         @Html.Partial("_Footer")
