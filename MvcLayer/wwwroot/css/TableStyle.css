@@ -1,48 +1,63 @@
-﻿body {
-    height: 100%;
-}
-
-.flex-container {
+﻿.flex-container {
     min-height: 100%;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
-
 
 .contracts-list{
     display:flex;
     padding-left: 0.5%;
 }
 
-.table-container {
-    margin-top: auto;
-    margin-bottom: 5%;
-    flex: 1 1 auto;
+.contracts-list p{
+    margin-right: 1%;
 }
+
+.search-form__text {
+    border-radius: 5px;
+    background-color: #198754;
+    color: #fff;
+    padding: 7px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.table-container {
+/*    margin-top: auto;
+*/    margin-bottom: 1%;
+/*    flex: 1 1 auto;
+*/}
 
 .full-width {
     width: 99vw;
     padding-left: 10px;
     padding-right: 10px;
-    overflow: scroll;
-    max-height: 750px;
+    /*overflow-x: scroll;*/
+    overflow-y: scroll;
+    max-height: 630px;
+    box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
 }
 
 .table-main-short {
-    max-width: 2850px;
-    font-family: "Gill Sans", sans-serif;
+    width: 100%;
+    min-width: 1500px;
+    font-family: 'Times New Roman';
+    font-size: 16px;
     table-layout: auto;
-    font-size: 0.9em;
-    font-style: normal;
-    line-height: 1.25em;
+    border-color: olivedrab;
+    background-color: honeydew;
 }
 
 .table-main-full {
-    font-family: "Gill Sans", sans-serif;
+    width: 100%;
+    min-width: 1500px;
+    max-width: 2500px;
+    font-family: 'Times New Roman';
+    font-size: 16px;
     table-layout: auto;
-    font-size: 0.9em;
-    font-style: normal;
-    line-height: 1.25em;
+    border-color: olivedrab;
+    background-color: honeydew;
 }
 
 table-main thead tr {
@@ -63,7 +78,8 @@ table-main tbody {
     position: sticky;
     top: -3px;
     z-index: 2;
-    background-color: lightgreen;
+    background-color: #a1f7fb;
+    opacity: 0.9;
     text-align: center;
     vertical-align: middle;
 }
@@ -73,12 +89,20 @@ table-main tbody {
     word-wrap: break-word;
 }
 
+.table-main td, th {
+    padding: 0.125em 0.5em 0.25em 0.5em;
+    line-height: 1;
+}
 
 .table_span-numberanddate {
-    width: 200px;
+    width: 100px !important;
     display: inline-block;
 }
 
+.table_span-num {
+    width: 20px !important;
+    display: inline-block;
+}
 
 .table_span-nameobject {
     width: 250px;
@@ -91,6 +115,8 @@ table-main tbody {
     display: inline-block;
 }
 
+.table_span-subcontractor,
+.table_span-deadlines,
 .table_span-contractor {
     width: 100px;
     display: inline-block;
@@ -98,12 +124,25 @@ table-main tbody {
 
 table a {
     text-decoration: none;
-    
 }
 
+.table_span-estimate-doc,
+.table_span-correspondence,
+.table_span-act-renewal,
+.table_span-avans,
+.table_span-material,
+.table_span-month,
+.table_span-act-entering {
+    width: 100px !important;
+    display: inline-block;
+}
 
-.table_span-avans, .table_span-material, .table_span-month {
-    width: 100px;
+.table_span-gen-service,
+.table_span-fin-source,
+.table_span-signer,
+.table_span-conditions,
+.table_span-action {
+    width: 60px;
     display: inline-block;
 }
 
@@ -113,26 +152,44 @@ table a {
 }
 
 .table_span-work {
-    width: 200px;
+    width: 150px;
     display: inline-block;
 }
 
-.table_span-contractprice, .table_span-realization, .table_span-remains, .table_span-volume {
+.table_span-contractprice,
+.table_span-realization,
+.table_span-remains,
+.table_span-volume {
     width: 85px;
     display: inline-block;
 }
 
+
+
+
+/*td .table_span-volume, .table_span-realization, .table_span-remains, .table_span-contractprice {
+    text-align: right;
+}*/
+
+
+
+
 .PartialTable {
     height: 100%;
+    width: 100%;
 }
+
 .PartialTable th {
-    background-color: #d8f5b1;
+    background-color: #fac9ed;
     border: 0.14rem solid;
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     opacity: 0.9;
     position: inherit;
     display:none;
 }
+
+
+
 
 .PartialTable td {
     background-color: #a3fefb;
@@ -144,6 +201,12 @@ table a {
     
 }
 
+
+.tbodyPartialTable td:nth-child(n+2) {
+    text-align: right;
+}
+
+
 th.ActiveToggle {
     display: table-cell;
 }
@@ -152,9 +215,19 @@ th.ActiveToggleInside {
     display: table-cell;
 }
 
-/* классы для стилей 
-*/
 
+
+
+
+
+
+
+/*@media screen and (max-height: 400px) {
+    .full-width {
+        max-height: 300px
+    }
+}
+*/
 i {
     border: solid black;
     border-width: 0 3px 3px 0;
@@ -162,18 +235,19 @@ i {
     padding: 3px;
 }
 
-
-
 .up::after {
     content: " ▲"
 }
 
-.down::after {
-    content: " ▼"
+
+@media (min-width: 1400px) {
+    .full-width {
+        max-height: 450px
+    }
 }
 
 
-.search-wrapper {
+
     position: absolute;
     transform: translate(-50%, -50%);
     top: 9%;
@@ -249,6 +323,23 @@ i {
     position:relative;
     transform: rotate(45deg);
     transition: all .4s cubic-bezier(0.650, -0.600, 0.240, 1.650);
+
+
+
+
+@media screen and (max-height: 800px) {
+    .full-width {
+        max-height: 420px
+    }
+}
+
+
+
+@media screen and (max-height: 600px) {
+    .full-width {
+        max-height: 300px
+    }
+}
 }
 .search-wrapper.active .input-holder .search-icon span {
     transform: rotate(-45deg);
@@ -309,13 +400,12 @@ i {
     left: 10px;
     top: 0px;
 }
-
-.search-wrapper .close::after {
-    width: 25px;
-    height: 5px;
-    left: 0px;
-    top: 10px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 9%;
+    left:50%;
 }
+.search-wrapper.active {}
 
 /*стили для модального окна*/
 .modal {
@@ -353,7 +443,6 @@ i {
     position: relative;
 }
 
-
 .modal__table {
     box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px;
     border: solid;
@@ -378,7 +467,7 @@ i {
     box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
 }
 
-    .modal__container-button:hover {
+.modal__container-button:hover {
         color: #fff;
         background-color: #0a58ca;
         border-color: #0a53be;
