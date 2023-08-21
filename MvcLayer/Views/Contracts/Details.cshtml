@@ -200,7 +200,7 @@
             <button id="buttonTable" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
-
+    
 
 
     <div class="full-width">
@@ -392,10 +392,10 @@
                     <td rowspan="4">
                         Условия оплаты -
                         @Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)
-                        <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
+                       @*  <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
                             Аванс
-                        </a>
-                        @*Html.ActionLink("Аванс","Index","Prepayment", Model.Id)*@
+                        </a> *@
+                        @Html.ActionLink("Аванс","GetByContractId","Prepayments",new{ contractId = @Model.Id})
 
                         @Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)
                         @Html.ActionLink("Расчет P7","","")
@@ -406,7 +406,7 @@
                 </td>
                     <td rowspan="4">
                         Материалы -
-                        @Html.ActionLink("Материалы P15","","")
+                        @Html.ActionLink("Материалы","GetByContractId","Material",new{ contractId = Model.Id})
                     </td>
                     <td rowspan="4">
                         Валюта -
@@ -1605,3 +1605,4 @@
 
 
 </script>
+}

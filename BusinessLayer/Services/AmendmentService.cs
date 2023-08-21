@@ -35,13 +35,13 @@ namespace BusinessLayer.Services
 
                     _database.Amendments.Create(amend);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create amendment, ID={amend.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create amendment, ID={amend.Id}", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return amend.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create amendment, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -58,17 +58,17 @@ namespace BusinessLayer.Services
                     {
                         _database.Amendments.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete amendment, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete amendment, ID={id}", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete amendment, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete amendment, ID is not more than zero", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -98,17 +98,37 @@ namespace BusinessLayer.Services
             {
                 _database.Amendments.Update(_mapper.Map<Amendment>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update amendment, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update amendment, ID={item.Id}", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update amendment, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
         public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> predicate)
         {
             return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(predicate));
+        }
+
+        public void AddFile(int amendId, int fileId)
+        {
+            if (fileId > 0 && amendId > 0)
+            {
+                if (_database.AmendmentFiles.GetById(amendId, fileId) is null)
+                {                    
+                    _database.AmendmentFiles.Create(new AmendmentFile
+                    {
+                        AmendmentId = amendId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of amendment", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create file of amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
     }
 }

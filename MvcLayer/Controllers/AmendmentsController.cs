@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 
@@ -8,13 +10,15 @@ namespace MvcLayer.Controllers
 {
     public class AmendmentsController : Controller
     {
-        private readonly IAmendmentService _amendment;        
+        private readonly IAmendmentService _amendment;
+        private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public AmendmentsController(IAmendmentService amendment, IMapper mapper)
+        public AmendmentsController(IAmendmentService amendment, IMapper mapper, IFileService fileService)
         {
            _amendment = amendment;
-            _mapper = mapper;           
+            _mapper = mapper;
+            _fileService = fileService;
         }
                
         public ActionResult Index()
@@ -27,14 +31,16 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        // POST: AmendmentsController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(AmendmentViewModel amendment)
         {
             try
             {
-                _amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
+                int fileId = (int) _fileService.Create(amendment.FilesEntity, BusinessLayer.Enums.FolderEnum.Amendment);                
+                int amendId = (int) _amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
+                _amendment.AddFile(amendId, fileId);
+                
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -43,40 +49,40 @@ namespace MvcLayer.Controllers
             }
         }
 
-        // GET: AmendmentsController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            return View(_mapper.Map<AmendmentViewModel>(_amendment.GetById(id)));
         }
 
-        // POST: AmendmentsController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(AmendmentViewModel amendment)
         {
-            try
+            if (amendment is not null)
             {
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _amendment.Update(_mapper.Map<AmendmentDTO>(amendment));
+                }
+                catch
+                {
+                    return View();
+                }
             }
-            catch
-            {
-                return View();
-            }
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: AmendmentsController/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
-        }
-
-        // POST: AmendmentsController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
             try
             {
+                foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Amendment))
+                {
+                    _fileService.Delete(item.Id);
+                }
+
+                _amendment.Delete(id);
                 return RedirectToAction(nameof(Index));
             }
             catch

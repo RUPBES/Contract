@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
 using Microsoft.AspNetCore.Mvc;
-using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -24,18 +22,38 @@ namespace MvcLayer.Controllers
         {
             return View(_file.GetAll());
         }
-   
+
+        public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null)
+        {
+            ViewBag.redirectAction = redirectAction;
+            ViewBag.redirectController = redirectController;
+            ViewBag.fileCategory = fileCategory;
+            ViewBag.entityId = entityId;
+
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null)
+        {
+
+            int fileId = (int)_file.Create(collection.Files, fileCategory);
+            _file.AttachFileToEntity(fileId, entityId, fileCategory);
+
+            return RedirectToAction(redirectAction, redirectController);
+        }
+
         public ActionResult Create()
         {
             return View();
         }
 
-        [HttpPost]       
+        [HttpPost]
         public ActionResult Create(IFormCollection collection)
         {
             try
             {
-                _file.Create(collection.Files, FolderEnum.Other);
+                _file.Create(collection.Files, folder: FolderEnum.Other);
 
                 return Redirect($"/Home/Index");
             }
@@ -45,11 +63,16 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int id, string redirectAction = null, string redirectController = null)
         {
             try
             {
                 _file.Delete(id);
+
+                if (redirectController is not null && redirectAction is not null)
+                {
+                    return RedirectToAction(redirectAction, redirectController);
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -57,7 +80,7 @@ namespace MvcLayer.Controllers
                 return View();
             }
         }
-               
+
         public ActionResult GetFile(int id)
         {
             if (id != 0)
@@ -69,6 +92,6 @@ namespace MvcLayer.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-        }
+        }       
     }
 }

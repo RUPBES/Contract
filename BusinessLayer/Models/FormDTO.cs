@@ -1,7 +1,8 @@
 ﻿namespace BusinessLayer.Models
 {
     public class FormDTO
-    {        public int Id { get; set; }
+    {
+        public int Id { get; set; }
         public DateTime? Period { get; set; }
         public DateTime? DateSigning { get; set; }
         public decimal? TotalCost { get; set; }

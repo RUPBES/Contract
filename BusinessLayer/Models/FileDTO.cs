@@ -30,8 +30,8 @@
 
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
 
-        //public virtual ICollection<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
+        public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
 
-        //public virtual ICollection<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
+        //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
     }
 }

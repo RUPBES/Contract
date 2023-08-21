@@ -40,6 +40,7 @@ namespace DatabaseLayer
         private AmendmentFileRepository amendmentFileRepository;
         private AmendmentRepository amendmentRepository;
         private MaterialAmendmentRepository materialAmendmentRepository;
+        private FormFileRepository formFileRepository;
 
         private MaterialRepository materialRepository;
         private ServiceAmendmentRepository serviceAmendmentRepository;
@@ -74,6 +75,17 @@ namespace DatabaseLayer
 
         #region tables
 
+        public IRepository<FormFile> FormFiles
+        {
+            get
+            {
+                if (formFileRepository is null)
+                {
+                    formFileRepository = new FormFileRepository(_context);
+                }
+                return formFileRepository;
+            }
+        }
         public IRepository<ActFile> ActFiles
         {
             get

@@ -31,6 +31,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<EstimateDocFile> EstimateDocFiles { get; }
         IRepository<Models.File> Files { get; }
         IRepository<ActFile> ActFiles { get; }
+        IRepository<FormFile> FormFiles { get; }
         IRepository<AmendmentFile> AmendmentFiles { get; }
         IRepository<Amendment> Amendments { get; }
         IRepository<MaterialAmendment> MaterialAmendments { get; }

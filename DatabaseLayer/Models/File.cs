@@ -23,6 +23,7 @@ namespace DatabaseLayer.Models
         public DateTime? DateUploud { get; set; }
 
         public virtual ICollection<ActFile> ActFiles { get; set; }
+        public virtual ICollection<FormFile> FormFiles { get; set; }
         public virtual ICollection<AmendmentFile> AmendmentFiles { get; set; }
         public virtual ICollection<CorrespondenceFile> CorrespondenceFiles { get; set; }
         public virtual ICollection<EstimateDocFile> EstimateDocFiles { get; set; }

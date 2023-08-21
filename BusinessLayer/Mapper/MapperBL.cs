@@ -11,6 +11,8 @@ namespace BusinessLayer.Mapper
             CreateMap<Act, ActDTO>().ReverseMap();
             CreateMap<Address, AddressDTO>().ReverseMap();
             CreateMap<Amendment, AmendmentDTO>().ReverseMap();
+            CreateMap<AmendmentFile, AmendmentFileDTO>().ReverseMap();
+
             CreateMap<Contract, ContractDTO>().ReverseMap();
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
             CreateMap<CommissionActDTO, CommissionAct>().ReverseMap();

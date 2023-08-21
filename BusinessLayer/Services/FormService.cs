@@ -35,13 +35,13 @@ namespace BusinessLayer.Services
 
                     _database.Forms.Create(form);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create form C3a, ID={form.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create form C3a, ID={form.Id}", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return form.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create form C3a, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create form C3a, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -58,17 +58,17 @@ namespace BusinessLayer.Services
                     {
                         _database.Forms.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete form C3a, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete form C3a, ID={id}", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete form C3a, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete form C3a, ID is not more than zero", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -102,12 +102,32 @@ namespace BusinessLayer.Services
             {
                 _database.Forms.Update(_mapper.Map<FormC3a>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update form C3a, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update form C3a, ID={item.Id}", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update form C3a, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update form C3a, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
+        }
+
+        public void AddFile(int formId, int fileId)
+        {
+            if (fileId > 0 && formId > 0)
+            {
+                if (_database.FormFiles.GetById(formId, fileId) is null)
+                {
+                    _database.FormFiles.Create(new FormFile
+                    {
+                        FormId = formId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of form", typeof(FormService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create file of form, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
     }
 }

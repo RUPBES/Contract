@@ -6,5 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface ICorrespondenceService : IService<CorrespondenceDTO, Correspondence>
     {
+        void AddFile(int correspondenceId, int fileId);
     }
 }

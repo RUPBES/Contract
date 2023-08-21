@@ -40,13 +40,13 @@ namespace BusinessLayer.Services
 
                     _database.Acts.Create(act);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create act, ID={act.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create act, ID={act.Id}", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return act.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create act, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create act, object is null", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -63,11 +63,11 @@ namespace BusinessLayer.Services
                     {
                         _database.Acts.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete act, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete act, ID={id}", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     }
                 }
@@ -104,17 +104,37 @@ namespace BusinessLayer.Services
             {
                 _database.Acts.Update(_mapper.Map<Act>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update act, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update act, ID={item.Id}", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update act, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update act, object is null", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
         public IEnumerable<ActDTO> Find(Func<Act, bool> predicate)
         {
             return _mapper.Map<IEnumerable<ActDTO>>(_database.Acts.Find(predicate));
+        }
+
+        public void AddFile(int actId, int fileId)
+        {
+            if (fileId > 0 && actId > 0)
+            {
+                if (_database.ActFiles.GetById(actId, fileId) is null)
+                {
+                    _database.ActFiles.Create(new ActFile
+                    {
+                        ActId = actId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of act", typeof(ActService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create file of act, object is null", typeof(ActService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
     }
 }

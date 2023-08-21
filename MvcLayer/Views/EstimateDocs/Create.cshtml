@@ -1,0 +1,62 @@
+﻿@model MvcLayer.Models.EstimateDocViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@{
+    ViewData["Title"] = "Создать";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Проектно-сметная документация</h4>
+<hr />
+<div class="row">
+    <form asp-action="Create" class="row" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group col-6">
+            <label asp-for="Number" class="control-label"></label>
+            <input asp-for="Number" class="form-control" />
+            <span asp-validation-for="Number" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="DateChange" class="control-label"></label>
+            <input asp-for="DateChange" type="date" class="form-control" />
+            <span asp-validation-for="DateChange" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="DateOutput" class="control-label"></label>
+            <input asp-for="DateOutput" type="date" class="form-control" />
+            <span asp-validation-for="DateOutput" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="Reason" class="control-label"></label>
+            <input asp-for="Reason" class="form-control" />
+            <span asp-validation-for="Reason" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="IsChange" class="control-label"></label>
+            <input asp-for="IsChange" class="form-control" />
+            <span asp-validation-for="IsChange" class="text-danger"></span>
+        </div><div class="form-group col-6">
+            <label asp-for="ContractId" class="control-label">Договор</label>
+            <select asp-for="ContractId" class="form-control">
+                <option selected></option>
+                @foreach (var item in Contract.GetAll())
+                {
+                    <option value="@item.Id">@item.Number</option>
+                }
+            </select>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="FilesEntity" class="control-label"></label>
+            <input asp-for="FilesEntity" type="file" class="form-control" />
+            <span asp-validation-for="FilesEntity" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
+<div>
+    <a asp-action="Index">Вернуться назад</a>
+</div>
+

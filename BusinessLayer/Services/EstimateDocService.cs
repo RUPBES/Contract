@@ -35,13 +35,13 @@ namespace BusinessLayer.Services
 
                     _database.EstimateDocs.Create(estimate);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create estimate documentation, ID={estimate.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create estimate documentation, ID={estimate.Id}", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return estimate.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create estimate documentation, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create estimate documentation, object is null", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -58,18 +58,18 @@ namespace BusinessLayer.Services
                     {
                         _database.EstimateDocs.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete estimate documentation, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete estimate documentation, ID={id}", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete estimate documentation, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete estimate documentation, ID is not more than zero", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -99,17 +99,37 @@ namespace BusinessLayer.Services
             {
                 _database.EstimateDocs.Update(_mapper.Map<EstimateDoc>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update estimate documentation, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update estimate documentation, ID={item.Id}", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update estimate documentation, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update estimate documentation, object is null", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
         public IEnumerable<EstimateDocDTO> Find(Func<EstimateDoc, bool> predicate)
         {
             return _mapper.Map<IEnumerable<EstimateDocDTO>>(_database.EstimateDocs.Find(predicate));
+        }
+
+        public void AddFile(int estimateDocId, int fileId)
+        {
+            if (fileId > 0 && estimateDocId > 0)
+            {
+                if (_database.EstimateDocFiles.GetById(estimateDocId, fileId) is null)
+                {
+                    _database.EstimateDocFiles.Create(new EstimateDocFile
+                    {
+                        EstimateDocId = estimateDocId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of an estimate documentation", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create file of an estimate documentation, object is null", typeof(EstimateDocService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
     }
 }

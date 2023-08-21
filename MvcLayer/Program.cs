@@ -97,8 +97,8 @@ builder.Services.AddOpenIddict()
             Issuer = new Uri("https://authsrv.rupbes.by:8011/", UriKind.Absolute),
             ClientId = "contract-mvc",
             ClientSecret = "771994A5-E7FE-52CB-B11D-61EF6A8F8984",
-            //ClientId = "mvc",
-            //ClientSecret = "901564A5-E7FE-42CB-B10D-61EF6A8F3654",
+            //ClientId = "ogm-mvc-2",
+            //ClientSecret = "568764A5-E7FE-42DC-A10D-77FD6A8F3622",
             Scopes = { Scopes.Email, Scopes.Profile },
 
             // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint

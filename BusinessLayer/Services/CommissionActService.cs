@@ -35,13 +35,13 @@ namespace BusinessLayer.Services
 
                     _database.CommissionActs.Create(comAct);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create commission act, ID={comAct.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create commission act, ID={comAct.Id}", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return comAct.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create commission act, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create commission act, object is null", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -58,18 +58,18 @@ namespace BusinessLayer.Services
                     {
                         _database.CommissionActs.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete commission act, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete commission act, ID={id}", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete commission act, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete commission act, ID is not more than zero", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -99,17 +99,37 @@ namespace BusinessLayer.Services
             {
                 _database.CommissionActs.Update(_mapper.Map<CommissionAct>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update commission act, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update commission act, ID={item.Id}", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update commission act, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update commission act, object is null", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
         public IEnumerable<CommissionActDTO> Find(Func<CommissionAct, bool> predicate)
         {
             return _mapper.Map<IEnumerable<CommissionActDTO>>(_database.CommissionActs.Find(predicate));
+        }
+
+        public void AddFile(int commissionActId, int fileId)
+        {
+            if (fileId > 0 && commissionActId > 0)
+            {
+                if (_database.CommissionActFiles.GetById(commissionActId, fileId) is null)
+                {
+                    _database.CommissionActFiles.Create(new CommissionActFile
+                    {
+                        СommissionActId = commissionActId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of a commission act", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create file of a commission act, object is null", typeof(CommissionActService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
     }
 }

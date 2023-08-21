@@ -72,6 +72,7 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<EstimateDocFile> EstimateDocFiles { get; set; }
     public virtual DbSet<ActFile> ActFiles { get; set; }
+    public virtual DbSet<FormFile> FormFiles { get; set; }
     public virtual DbSet<AmendmentFile> AmendmentFiles { get; set; }
     public virtual DbSet<MaterialAmendment> MaterialAmendments { get; set; }
     public virtual DbSet<ScopeWorkAmendment> ScopeWorkAmendments { get; set; }
@@ -101,9 +102,7 @@ public partial class ContractsContext : DbContext
             entity.ToTable("Act");
 
             entity.HasComment("Акты приостановки/возобновления работ");
-
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
+                        
             entity.Property(e => e.DateAct)
                 .HasColumnType("datetime")
                 .HasComment("дата акта");
@@ -141,13 +140,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Act)
                 .WithMany(p => p.ActFiles)
                 .HasForeignKey(d => d.ActId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_ActFile_Act_Id");
 
             entity.HasOne(d => d.File)
                 .WithMany(p => p.ActFiles)
                 .HasForeignKey(d => d.FileId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_ActFile_File_Id");
         });
 
@@ -228,13 +227,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Amendment)
                 .WithMany(p => p.AmendmentFiles)
                 .HasForeignKey(d => d.AmendmentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_AmendmentFile_Amendment_Id");
 
             entity.HasOne(d => d.File)
                 .WithMany(p => p.AmendmentFiles)
                 .HasForeignKey(d => d.FileId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_AmendmentFile_File_Id");
         });
 
@@ -336,8 +335,6 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("Переписка с заказчиком");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
-
             entity.Property(e => e.ContractId).HasComment("Контракт");
 
             entity.Property(e => e.Date)
@@ -367,13 +364,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Correspondence)
                 .WithMany(p => p.CorrespondenceFiles)
                 .HasForeignKey(d => d.CorrespondenceId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_CorrespondenceFile_Correspondence_Id");
 
             entity.HasOne(d => d.File)
                 .WithMany(p => p.CorrespondenceFiles)
                 .HasForeignKey(d => d.FileId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_CorrespondenceFile_File_Id");
         });
 
@@ -490,13 +487,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.EstimateDoc)
                 .WithMany(p => p.EstimateDocFiles)
                 .HasForeignKey(d => d.EstimateDocId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_EstimateDocFile_EstimateDoc_Id");
 
             entity.HasOne(d => d.File)
                 .WithMany(p => p.EstimateDocFiles)
                 .HasForeignKey(d => d.FileId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_EstimateDocFile_File_Id");
         });
 
@@ -574,6 +571,23 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.FormC3as)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_FormC3A_Contract_Id");
+        });
+
+        modelBuilder.Entity<FormFile>(entity =>
+        {
+            entity.HasKey(e => new { e.FormId, e.FileId });
+
+            entity.ToTable("FormFile");
+
+            entity.HasOne(d => d.FormC3)
+                .WithMany(p => p.FormFiles)
+                .HasForeignKey(d => d.FormId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.FormFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Log>(entity =>
@@ -1034,13 +1048,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.File)
                 .WithMany(p => p.СommissionActFiles)
                 .HasForeignKey(d => d.FileId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_СommissionActFile_File_Id");
 
             entity.HasOne(d => d.СommissionAct)
                 .WithMany(p => p.СommissionActFiles)
                 .HasForeignKey(d => d.СommissionActId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_СommissionActFile_СommissionAct_Id");
         });
 
