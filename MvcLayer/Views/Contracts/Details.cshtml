@@ -6,7 +6,7 @@
         <div class="modal__back"></div>
         <div class="modal__container">
             <div class="full-width">
-
+            <button id="ChangeToCategories">Сменить вид</button>
             <table class="PartialTable modal__table">
                 <thead>
                     <tr class="tr-head-main-table">
@@ -456,7 +456,7 @@
                 </tbody>
             </table>
             </div>
-            <button id="buttonTable" class="modal__container-button">Закрыть таблицу</button>
+            <button id="buttonTableType" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
 
@@ -464,7 +464,7 @@
         <div class="modal__back"></div>
         <div class="modal__container">
             <div class="full-width">
-
+                <button id="ChangeToType">Сменить вид</button>
                 <table class="PartialTable modal__table table table-striped table-hover">
                     <thead>
                         <tr class="tr-head-main-table">
@@ -1333,16 +1333,43 @@
         elementButton.addEventListener("click", (event) => {
             let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
             elementTable.classList.remove('modal__visibility-close')
-            elementTable.classList.add('modal__visibility-active')
-            console.log('event', event)
+            elementTable.classList.add('modal__visibility-active')            
         });
 
-        let elementButtonTable = document.getElementById('buttonTableCategories')
-        elementButtonTable.addEventListener("click", event => {
+        let elementChangeTableCategories = document.getElementById('ChangeToCategories')
+        elementChangeTableCategories.addEventListener("click", event => {
+            let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
+            elementTable.classList.remove('modal__visibility-active')
+            elementTable.classList.add('modal__visibility-close')
+
+            let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
+            elementTable1.classList.remove('modal__visibility-close')
+            elementTable1.classList.add('modal__visibility-active')
+        })
+
+        let elementChangeTableTypes = document.getElementById('ChangeToType')
+        elementChangeTableTypes.addEventListener("click", event => {
             let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
             elementTable.classList.remove('modal__visibility-active')
             elementTable.classList.add('modal__visibility-close')
-            console.log('eventButton', event)
+
+            let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
+            elementTable1.classList.remove('modal__visibility-close')
+            elementTable1.classList.add('modal__visibility-active')
+        })
+
+        let elementButtonTableCategories = document.getElementById('buttonTableCategories')
+        elementButtonTableCategories.addEventListener("click", event => {
+            let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
+            elementTable.classList.remove('modal__visibility-active')
+            elementTable.classList.add('modal__visibility-close')            
+        })
+
+        let elementButtonTableType = document.getElementById('buttonTableType')
+        elementButtonTableType.addEventListener("click", event => {
+            let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
+            elementTable.classList.remove('modal__visibility-active')
+            elementTable.classList.add('modal__visibility-close')
         })
 
         $('.PartialTable').delegate(".ActiveToggle", "click", function () {
@@ -1351,10 +1378,5 @@
         $('.PartialTableInsade').delegate("th", "click", function () {
             $(this).parents('table.PartialTableInsade').children('tbody.tbodyPartialTableInsade').toggle();
         });
-
-
-
-
-
-</script>
+    </script>
 }
