@@ -47,6 +47,10 @@ namespace MvcLayer.Controllers
             {
                 List<PaymentViewModel> model = new List<PaymentViewModel>();
 
+                if (paymentViewModel.AmendmentId > 0)
+                {
+                    paymentViewModel.IsChange = true;
+                }
                 while (paymentViewModel.PeriodStart <= paymentViewModel.PeriodEnd)
                 {
                     model.Add(new PaymentViewModel
@@ -54,6 +58,7 @@ namespace MvcLayer.Controllers
                         Period = paymentViewModel.PeriodStart,                        
                         ContractId = paymentViewModel.ContractId,                        
                     });
+
                     paymentViewModel.PeriodStart = paymentViewModel.PeriodStart.AddMonths(1);
                 }
 
