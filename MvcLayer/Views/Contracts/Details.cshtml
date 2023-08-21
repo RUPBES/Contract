@@ -910,7 +910,7 @@
                     </tbody>
                 </table>
             </div>
-            <button id="buttonTable" class="modal__container-button">Закрыть таблицу</button>
+            <button id="buttonTableCategories" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
     
@@ -1160,7 +1160,164 @@
                         </span>
                     </td>
                 </tr>
-                
+                @{
+                    for(int i = 0; i<3; i++)
+                    {
+                        <tr style="background-color: lightgoldenrodyellow">
+                            <td>
+                                <span>
+                                    #-?
+                                </span>
+                            </td>
+                            <td>
+                                <span>
+                                    Процедура выбора -
+                                    @foreach (var item in Model.SelectionProcedures)
+                                    {
+                                        @item.Name
+                                    }
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-signer">
+                                    Подписанты-
+                                    @foreach (var item in Model.EmployeeContracts)
+                                    {
+                                        if (@item.IsSignatory == true)
+                                        {
+                                            @item.Employee.FullName
+                                        }
+                                        else
+                                        if (@item.IsResponsible == true)
+                                        {
+                                            @item.Employee.FullName
+                                        }
+                                    }
+                                    <br>
+                                    Model.ResponsibleEmp
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-numberanddate">
+                                    Номер и дата-
+                                    @Model.Number от
+                                    @Model.Date?.ToShortDateString()
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-nameobject">
+                                    Наименование объекта -
+                                    @Model.NameObject
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-fin-source">
+                                    @Model.FundingSource
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-customer">
+                                    Заказчик -
+                                    @foreach (var item in Model.ContractOrganizations)
+                                        if (@item.IsClient == true)
+                                        {
+                                            @item.Organization.Abbr
+                                        }
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-contractor">
+                                    Генподрядчик -
+                                    Model.GenContractor
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-subcontractor">
+                                    Субподрядчик -
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-deadlines">
+                                    Сроки-
+                                    <b>выполнения работ:</b><br>
+                                    @Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()<br>
+                                    <b>ввода:</b><br>
+                                    @Model.EnteringTerm?.ToShortDateString()<br>
+                                    <b>действия договора по взаиморасчетам:</b><br>
+                                    @Model.ContractTerm?.ToShortDateString()<br>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-act-renewal">
+                                    Акты приостановки
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-conditions">
+                                    Условия оплаты -
+                                    @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)*@
+                                    <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
+                                        Аванс
+                                    </a>
+                                    @*Html.ActionLink("Аванс","Index","Prepayment", Model.Id)*@
+
+                                    @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)*@
+                                    @Html.ActionLink("Расчет P7","","")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-gen-service">
+                                    Услуги генподрядчика -
+                                    @Html.ActionLink("Авансирование","","");
+                                </span>
+                            </td>
+                            <td>
+                                <span class='table_span-material'>
+                                    Материалы -
+                                    @Html.ActionLink("Материалы P15","","")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-currency">
+                                    Валюта -
+                                    Model.Сurrency
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-remains">
+                                    <a>Остаток</a>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-act-entering">
+                                    <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
+                                     height="60" alt="Подробнее">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-act-entering">
+                                    <a>Акт ввода</a>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-correspondence">
+                                    Переписка -
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-estimate-doc">
+                                    Проектно-сметная документация -
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table_span-action">
+                                    <img src="~/images/Icon/rofl.png" width="60"
+                                     height="60" alt="Подробнее">
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
 
@@ -1180,7 +1337,7 @@
             console.log('event', event)
         });
 
-        let elementButtonTable = document.getElementById('buttonTable')
+        let elementButtonTable = document.getElementById('buttonTableCategories')
         elementButtonTable.addEventListener("click", event => {
             let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
             elementTable.classList.remove('modal__visibility-active')
