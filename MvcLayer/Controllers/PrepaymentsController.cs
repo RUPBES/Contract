@@ -123,7 +123,6 @@ namespace MvcLayer.Controllers
                         _prepayment.AddAmendmentToPrepayment((int)item?.AmendmentId, prepaymentId);
                     }                   
                 }
-
                 return RedirectToAction(nameof(Index));
             }
             return View(prepayment);
