@@ -1,4 +1,5 @@
-﻿@using MvcLayer.Models;
+﻿@using BusinessLayer.Enums;
+@using MvcLayer.Models;
 @using BusinessLayer.Models;
 
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
@@ -8,6 +9,8 @@
 @{
     ViewData["Title"] = "Index";
     bool isAdmin = true;
+    string redirectAction = "Index";
+    string redirectController = "Amendments";
 }
 
 <h1>Изменения по договорам</h1>
@@ -78,21 +81,22 @@
                     @item.ContractChanges
                 </td>                
                 <td>
-                    @foreach (FileDTO item2 in Files.GetFilesByAmendmentId(item.Id))
+                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
                     {
                         <div>
                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                             @if (isAdmin)
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
                             }
                         </div>
                     }
                 </td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>|
-
+                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
+                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
                 </td>
             </tr>
         }

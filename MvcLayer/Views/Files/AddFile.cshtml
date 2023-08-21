@@ -1,0 +1,71 @@
+﻿@model BusinessLayer.Models.FileDTO
+
+<link href="~/kendoui/upload_style.css" rel="stylesheet" />
+
+<form method="post" enctype="multipart/form-data">
+    <input name=redirectAction value=@ViewBag.redirectAction hidden />
+    <input name=redirectController value=@ViewBag.redirectController hidden />
+    <input name=fileCategory value=@ViewBag.fileCategory hidden />
+    <input name=entityId value=@ViewBag.entityId hidden />
+
+
+    <div id="example" style="min-width:400px; max-width: 800px;">
+        <div class="demo-section">
+            <input name="files" id="files" type="file" aria-label="files" />
+            <p style="padding-top: 1em; text-align: right">
+                <button type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md">Загрузить</button>
+            </p>
+        </div>
+    </div>
+
+</form>
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#files").kendoUpload({
+                multiple: false,
+                template: kendo.template($('#fileTemplate').html())
+            });
+
+            $("#files").closest(".k-upload").find("span").text("Выберите файл..");
+        });
+
+        function addExtensionClass(extension) {
+            switch (extension) {
+                case '.jpg':
+                case '.img':
+                case '.png':
+                case '.gif':
+                    return "img-file";
+                case '.doc':
+                case '.docx':
+                    return "doc-file";
+                case '.xls':
+                case '.xlsx':
+                    return "xls-file";
+                case '.pdf':
+                    return "pdf-file";
+                case '.zip':
+                case '.rar':
+                    return "zip-file";
+                default:
+                    return "default-file";
+            }
+        }
+    </script>
+    <script id="fileTemplate" type="text/x-kendo-template">
+
+        <div class='file-wrapper'>
+            <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
+            <h4 class='file-heading file-name-heading'>Название: #=name#</h4>
+            <h4 class='file-heading file-size-heading'>Размер: #=size# bytes</h4>
+            <strong class="k-upload-status">
+                <button type='button' class='k-upload-action'></button>
+                <button type='button' class='k-upload-action'></button>
+            </strong>
+        </div>
+    </script>
+}

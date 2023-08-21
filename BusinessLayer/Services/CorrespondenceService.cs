@@ -40,13 +40,13 @@ namespace BusinessLayer.Services
 
                     _database.Correspondences.Create(corr);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create correspondence, ID={corr.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create correspondence, ID={corr.Id}", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return corr.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create correspondence, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create correspondence, object is null", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -63,18 +63,18 @@ namespace BusinessLayer.Services
                     {
                         _database.Correspondences.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete correspondence, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete correspondence, ID={id}", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete correspondence, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete correspondence, ID is not more than zero", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -104,17 +104,37 @@ namespace BusinessLayer.Services
             {
                 _database.Correspondences.Update(_mapper.Map<Correspondence>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update correspondence, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update correspondence, ID={item.Id}", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update correspondence, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update correspondence, object is null", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
         public IEnumerable<CorrespondenceDTO> Find(Func<Correspondence, bool> predicate)
         {
             return _mapper.Map<IEnumerable<CorrespondenceDTO>>(_database.Correspondences.Find(predicate));
+        }
+
+        public void AddFile(int correspondenceId, int fileId)
+        {
+            if (fileId > 0 && correspondenceId > 0)
+            {
+                if (_database.CorrespondenceFiles.GetById(correspondenceId, fileId) is null)
+                {
+                    _database.CorrespondenceFiles.Create(new CorrespondenceFile
+                    {
+                        CorrespondenceId = correspondenceId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of correspondence", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+
+            _logger.WriteLog(LogLevel.Warning, $"not create file of correspondence, object is null", typeof(CorrespondenceService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
     }
 }

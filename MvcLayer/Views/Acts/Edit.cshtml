@@ -1,0 +1,60 @@
+﻿@model MvcLayer.Models.ActViewModel
+
+@{
+    ViewData["Title"] = "Редактирование";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Акт</h4>
+<hr />
+<div class="row">    
+        <form asp-action="Edit" class="row">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+        <div class="form-group col-6">
+                <label asp-for="Reason" class="control-label"></label>
+                <input asp-for="Reason" class="form-control" />
+                <span asp-validation-for="Reason" class="text-danger"></span>
+            </div>
+        <div class="form-group col-6">
+                <label asp-for="DateAct" class="control-label"></label>
+                <input asp-for="DateAct" type="date" class="form-control" />
+                <span asp-validation-for="DateAct" class="text-danger"></span>
+            </div>
+        <div class="form-group col-6">
+                <label asp-for="DateSuspendedFrom" class="control-label"></label>
+            <input asp-for="DateSuspendedFrom" type="date" class="form-control" />
+                <span asp-validation-for="DateSuspendedFrom" class="text-danger"></span>
+            </div>
+        <div class="form-group col-6">
+                <label asp-for="DateSuspendedUntil" class="control-label"></label>
+            <input asp-for="DateSuspendedUntil" type="date" class="form-control" />
+                <span asp-validation-for="DateSuspendedUntil" class="text-danger"></span>
+            </div>
+        <div class="form-group col-6">
+                <label asp-for="DateRenewal" class="control-label"></label>
+            <input asp-for="DateRenewal" type="date" class="form-control" />
+                <span asp-validation-for="DateRenewal" class="text-danger"></span>
+            </div>
+        <div class="form-group col-6">
+                <label asp-for="IsSuspension" class="control-label"></label>
+                <input asp-for="IsSuspension" class="form-control" />
+                <span asp-validation-for="IsSuspension" class="text-danger"></span>
+            </div>
+       @*  <div class="form-group col-6">
+                <label asp-for="ContractId" class="control-label"></label>
+                <select asp-for="ContractId" class="form-control" asp-items="ViewBag.ContractId"></select>
+                <span asp-validation-for="ContractId" class="text-danger"></span>
+            </div> *@
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+   
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

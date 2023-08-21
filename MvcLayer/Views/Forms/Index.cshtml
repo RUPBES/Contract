@@ -1,0 +1,136 @@
+﻿@model IEnumerable<MvcLayer.Models.FormViewModel>
+@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+
+
+@{
+    ViewData["Title"] = "Фактическое выполнение работ согласно справкам С-3а";
+    bool isAdmin = true;
+    string redirectAction = "Index";
+    string redirectController = "Forms";
+}
+<h2>@ViewData["Title"]</h2>
+<p>
+    <a asp-action="Create">Добавить</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Period)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateSigning)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TotalCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SmrCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PnrCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EquipmentCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.OtherExpensesCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AdditionalCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.MaterialCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GenServiceCost)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsOwnForces)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contract)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Period)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateSigning)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TotalCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SmrCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PnrCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EquipmentCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OtherExpensesCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AdditionalCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MaterialCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GenServiceCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Number)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsOwnForces)
+                </td>
+                <td>
+                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
+                    {
+                        <div>
+                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            @if (isAdmin)
+                            {
+                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                            }
+                        </div>
+                    }
+                </td>
+                <td>
+                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
+                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
+}

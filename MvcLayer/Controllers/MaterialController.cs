@@ -31,7 +31,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId)
         {
-            return View(_mapper.Map<IEnumerable<ServiceGCViewModel>>(_materialService.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.Find(x => x.ContractId == contractId)));
         }
 
         //public async Task<IActionResult> Details(int? id)

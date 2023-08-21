@@ -23,5 +23,6 @@ namespace DatabaseLayer.Models
         public int? ContractId { get; set; }
 
         public virtual Contract Contract { get; set; }
+        public virtual ICollection<FormFile> FormFiles { get; set; }
     }
 }

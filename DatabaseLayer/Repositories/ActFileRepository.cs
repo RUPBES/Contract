@@ -20,14 +20,14 @@ namespace DatabaseLayer.Repositories
             }
         }
 
-        public void Delete(int id, int? contractId)
+        public void Delete(int id, int? fileId)
         {
             ActFile contractOrg = null;
 
-            if (id > 0 && contractId != null)
+            if (id > 0 && fileId != null)
             {
                 contractOrg = _context.ActFiles
-                    .FirstOrDefault(x => x.ActId == id && x.FileId == contractId);
+                    .FirstOrDefault(x => x.ActId == id && x.FileId == fileId);
             }
 
             if (contractOrg is not null)
