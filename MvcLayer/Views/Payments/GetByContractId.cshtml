@@ -1,0 +1,57 @@
+﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+    ViewData["Title"] = string.Empty;
+    var id = Model.FirstOrDefault()?.ContractId;
+    if (id is not null)
+    {
+        var number = Contract.GetById((int)id).Number;
+        ViewData["Title"] = $"Оплата по договору № {number}";
+    }
+}
+
+<h1> @ViewData["Title"]</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.PaySum)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PaySumForRupBes)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Period)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contract)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PaySum)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PaySumForRupBes)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Period)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Contract.Number)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |                    
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
