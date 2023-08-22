@@ -47,10 +47,6 @@ namespace MvcLayer.Controllers
             {
                 List<PaymentViewModel> model = new List<PaymentViewModel>();
 
-                if (paymentViewModel.AmendmentId > 0)
-                {
-                    paymentViewModel.IsChange = true;
-                }
                 while (paymentViewModel.PeriodStart <= paymentViewModel.PeriodEnd)
                 {
                     model.Add(new PaymentViewModel
@@ -58,16 +54,31 @@ namespace MvcLayer.Controllers
                         Period = paymentViewModel.PeriodStart,                        
                         ContractId = paymentViewModel.ContractId,                        
                     });
-
                     paymentViewModel.PeriodStart = paymentViewModel.PeriodStart.AddMonths(1);
                 }
 
-                var prepayment = JsonConvert.SerializeObject(model);
-                TempData["prepayment"] = prepayment;
+                var payment = JsonConvert.SerializeObject(model);
+                TempData["payment"] = payment;
 
                 return RedirectToAction("Create");
             }
             return View(paymentViewModel);
+        }
+
+        public IActionResult Create(int contractId)
+        {
+            if (TempData["payment"] is string s)
+            {
+                return View(JsonConvert.DeserializeObject<List<PaymentViewModel>>(s));
+            }
+
+            if (contractId > 0)
+            {               
+
+                return View(new PrepaymentViewModel { ContractId = contractId });
+
+            }
+            return View();
         }
     }
 }

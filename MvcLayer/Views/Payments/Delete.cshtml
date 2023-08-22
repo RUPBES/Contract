@@ -1,0 +1,45 @@
+﻿@model MvcLayer.Models.PaymentViewModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>Оплата</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Contract.Number)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Contract.Number)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PaySum)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PaySum)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.PaySumForRupBes)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.PaySumForRupBes)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Period)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Period)
+        </dd>
+    </dl>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Index">Вернуться к списку</a>
+    </form>
+</div>
