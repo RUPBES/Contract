@@ -1,0 +1,89 @@
+﻿@using MvcLayer.Models;
+@using Newtonsoft.Json;
+@model List<MvcLayer.Models.PaymentViewModel>
+
+@{
+    ViewData["Title"] = "CreatePayment";
+    int index = 0;
+
+    var d = new List<PaymentViewModel>();
+    if (TempData["payment"] is string s)
+    {
+        d.AddRange(JsonConvert.DeserializeObject<List<PaymentViewModel>>(s));
+    }
+}
+<style>
+    .cont-table {
+        overflow-x: scroll;
+    }
+
+    th,
+    td {
+        min-width: 250px;
+    }
+</style>
+<h4>Оплата</h4>
+<hr />
+<form asp-action="Create" class="row">
+    <div class="cont-table">
+        <table class="table table-bordered table-striped">
+            <tr>
+                <th>Период</th>
+                @foreach (var item in d)
+                {
+                    <td>
+                        @item.Period?.ToString("MMM yyyy")
+                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                    </td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>Всего к оплате</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].PaySum" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            <tr>
+                <th>из них на счет РУП "БЭС"-УКХ"</th>
+                @foreach (var item in d)
+                {
+                    <td><input asp-for="@Model[index].PaySumForRupBes" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+
+            @foreach (var item in d)
+            {
+                <input asp-for="@Model[index].ContractId" hidden />
+
+                index++;
+            }
+
+        </table>
+    </div>
+    <div class="form-group">
+        <input type="submit" value="Create" class="btn btn-primary" />
+    </div>
+</form>
+
+<div>
+    <a asp-action="Index">Вернуться назад</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

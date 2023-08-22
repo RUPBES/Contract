@@ -15,9 +15,6 @@ namespace MvcLayer.Models
         [DisplayName("Месяц за который получено")]
         public DateTime? Period { get; set; }
 
-        [DisplayName("Изменено?")]
-        public bool? IsChange { get; set; }
-
         [DisplayName("ID Контракт")]
         public int? ContractId { get; set; }
 
