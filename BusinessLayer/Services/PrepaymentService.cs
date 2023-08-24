@@ -133,10 +133,5 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(LogLevel.Warning, $"not add prepaymentAmendments", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
-
-        public IEnumerable<PrepaymentDTO> FindByContractId(int id)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
