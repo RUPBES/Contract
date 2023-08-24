@@ -128,5 +128,12 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(LogLevel.Warning, $"not add scopeWorkAmendments", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
+
+        public IEnumerable<ScopeWorkDTO> GetByContractId (int? contractId)
+        {
+            if (contractId != null)
+            return _mapper.Map<IEnumerable<ScopeWorkDTO>>(_database.ScopeWorks.GetAll().Where(s => s.ContractId == contractId));
+            else return _mapper.Map<IEnumerable<ScopeWorkDTO>>(new ScopeWorkDTO());
+        }
     }
 }

@@ -1,13 +1,16 @@
 ﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 
 @{
     ViewData["Title"] = string.Empty;
     var id = Model.FirstOrDefault()?.ContractId;
+    var scopeWork = Scope.GetByContractId(id);
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = $"Оплата по договору № {number}";
+        ViewData["Title"] = $"Денежные средства по договору № {number}";
     }
 }
 
