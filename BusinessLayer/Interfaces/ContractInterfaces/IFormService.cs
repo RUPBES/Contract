@@ -6,5 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IFormService : IService<FormDTO, FormC3a>
     {
+        void AddFile(int formId, int fileId);
     }
 }

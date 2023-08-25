@@ -1,0 +1,88 @@
+﻿@model MvcLayer.Models.PeriodChooseViewModel
+@using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
+
+@{
+    ViewData["Title"] = "Create";
+}
+<style>
+    .title-warning {
+        display: flex;
+        justify-content: center;
+        font-family: Inter;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 22px;
+        letter-spacing: -0.34px;
+        border: solid #e83c14 1px;
+        border-radius: 5px;
+    }
+
+    label {
+        margin: 10px auto;
+    }
+
+    #target {
+        margin: 100px auto;
+        width: 50%;
+    }
+
+    #chooseAmendment {
+        margin: 0 auto 30px auto;
+    }
+</style>
+
+<form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace">
+    <h4>Выбор периода оплат, предусмотренных договором</h4>
+    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+    <div class="form-group col-6 mb-3">
+        <label for="amendCheck1">Укажите начало периода</label>
+        <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
+    </div>
+    <div class="form-group col-6 mb-3">
+        <label for="amendCheck2">Укажите окончание периода</label>
+        <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
+    </div>
+    <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+
+        $("#amendCheck").on("change", function () {
+
+            let isChange = $(this).prop('checked');
+            let besInput = document.querySelector("#chooseAmendment");
+
+            if (besInput.hidden != true) {
+                besInput.hidden = true;
+            }
+            else {
+                besInput.hidden = null;
+            }
+
+            if (isChange === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+        });
+
+        $(document).ready(function () {
+            // $('.js-chosen').chosen({
+            //     width: '100%',
+            //     no_results_text: 'Совпадений не найдено',
+            //     placeholder_text_single: 'Выберите'
+            // });
+
+            datepickerNull("input.datepickersNull");
+            dateTimepicker("input.datetimepickers");
+            datepicker("input.datepickers");
+        });
+    </script>
+}

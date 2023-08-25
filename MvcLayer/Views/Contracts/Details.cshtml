@@ -2,11 +2,11 @@
 
 
 @section Table{
-    <div id="ConstructionInstallationWorksByTypes" class="modal modal__visibility-close">
+    <div id="ConstructionInstallationWorksByTypes" class="modal modal-in-detail-view modal__visibility-close">
         <div class="modal__back"></div>
         <div class="modal__container">
-            <div class="full-width">
             <button id="ChangeToCategories">Сменить вид</button>
+            <div class="full-width">            
             <table class="PartialTable modal__table">
                 <thead>
                     <tr class="tr-head-main-table">
@@ -460,11 +460,11 @@
         </div>
     </div>
 
-    <div id="ConstructionInstallationWorksByCategories" class="modal modal__visibility-close">
+    <div id="ConstructionInstallationWorksByCategories" class="modal modal-in-detail-view modal__visibility-close">
         <div class="modal__back"></div>
         <div class="modal__container">
-            <div class="full-width">
-                <button id="ChangeToType">Сменить вид</button>
+            <button id="ChangeToType">Сменить вид</button>
+            <div class="full-width">                
                 <table class="PartialTable modal__table table table-striped table-hover">
                     <thead>
                         <tr class="tr-head-main-table">
@@ -920,9 +920,9 @@
         <table class="table table-main table-main-full table-bordered table-hover table-condensed" id="contractTable">
             <thead>
                 <tr class="tr-head-main-table">
-                    @*№*@
+                    @*Действия по договору*@
                     <th>
-                        <span class="table_span-num">#</span>
+                        <span class="table_span-action">Действия по договору</span>
                     </th>
                     @*Процедура выбора*@
                     <th>
@@ -992,6 +992,10 @@
                     <th>
                         <span class="table_span-act-entering">Акт ввода</span>
                     </th>
+                    @*Акт ввода*@
+                    <th>
+                        <span class="table_span-act-entering">Акт ввода</span>
+                    </th>
                     @*Переписка*@
                     <th>
                         <span class="table_span-correspondence">Переписка</span>
@@ -1000,17 +1004,14 @@
                     <th>
                         <span class="table_span-estimate-doc">Проектно-сметная документация</span>
                     </th>
-                    @*Действия по договору*@
-                    <th>
-                        <span class="table_span-action">Действия по договору</span>
-                    </th>
                 </tr>
             </thead>
             <tbody>
                 <tr id="firstrow">
                     <td>
-                        <span>
-                            #-?
+                        <span class="table_span-action">
+                            <img src="~/images/Icon/rofl.png" width="60"
+                                 height="60" alt="Подробнее">
                         </span>
                     </td>
                     <td>
@@ -1100,10 +1101,10 @@
                         <span class="table_span-conditions">
                         Условия оплаты -
                         @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)*@
-                        <a asp-action="Index" asp-controller="Prepayment" asp-route-id="@Model.Id">
+                        <a asp-action="GetByContractId" asp-controller="Prepayment" asp-route-id="@Model.Id">
                             Аванс
-                        </a>
-                        @*Html.ActionLink("Аванс","Index","Prepayment", Model.Id)*@
+                        </a> 
+                        @Html.ActionLink("Аванс","GetByContractId","Prepayments",new{ contractId = @Model.Id})
 
                         @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)*@
                         @Html.ActionLink("Расчет P7","","")
@@ -1144,7 +1145,7 @@
                         </span>
                     </td>                    
                     <td>
-                        <span class="table_span-correspondence">
+                        <span class="table_span-correspondence">                        
                         Переписка -
                         </span>
                     </td>
@@ -1152,21 +1153,16 @@
                         <span class="table_span-estimate-doc">
                         Проектно-сметная документация -
                         </span>
-                    </td>
-                    <td>
-                        <span class="table_span-action">
-                            <img src="~/images/Icon/rofl.png" width="60"
-                                 height="60" alt="Подробнее">
-                        </span>
-                    </td>
+                    </td>                    
                 </tr>
                 @{
                     for(int i = 0; i<3; i++)
                     {
                         <tr style="background-color: lightgoldenrodyellow">
                             <td>
-                                <span>
-                                    #-?
+                                <span class="table_span-action">
+                                    <img src="~/images/Icon/rofl.png" width="60"
+                                     height="60" alt="Подробнее">
                                 </span>
                             </td>
                             <td>
@@ -1308,29 +1304,30 @@
                                 <span class="table_span-estimate-doc">
                                     Проектно-сметная документация -
                                 </span>
-                            </td>
-                            <td>
-                                <span class="table_span-action">
-                                    <img src="~/images/Icon/rofl.png" width="60"
-                                     height="60" alt="Подробнее">
-                                </span>
-                            </td>
+                            </td>                            
                         </tr>
                     }
                 }
             </tbody>
         </table>
 
+</div>
+<div>
+    <a asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Добавить объем работ</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Добавить авансы</a> |
+    <a asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
+    <a asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">Добавить оплату договора</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
+    <a asp-action="Index">Вернуться</a>
+</div>
 
-    </div>
-    <div style="display: flex; justify-content: center;">
-        <a  class="btn btn-info" asp-action="Index">Назад</a>
-    </div>
-    
+  
     <script>
         let elementButton = document.getElementById("SMR-detail")
 
         elementButton.addEventListener("click", (event) => {
+            console.log("bobob")
             let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
             elementTable.classList.remove('modal__visibility-close')
             elementTable.classList.add('modal__visibility-active')            
@@ -1372,12 +1369,6 @@
             elementTable.classList.add('modal__visibility-close')
         })
 
-        $('.PartialTable').delegate(".ActiveToggle", "click", function () {
-            $(this).parents('table.PartialTable ').children('tbody.tbodyPartialTable').toggle();
-        });
-        $('.PartialTableInsade').delegate("th", "click", function () {
-            $(this).parents('table.PartialTableInsade').children('tbody.tbodyPartialTableInsade').toggle();
-        });
     </script>
 }
 

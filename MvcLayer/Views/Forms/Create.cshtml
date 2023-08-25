@@ -1,0 +1,98 @@
+﻿@model MvcLayer.Models.FormViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@{
+    ViewData["Title"] = "Создать справку о стоимости выполненных работ формы С-3а";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Справка формы С-3а</h4>
+<hr />
+<div class="row">
+    <form asp-action="Create" class="row" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group col-6">
+            <label asp-for="Period" class="control-label"></label>
+            <input asp-for="Period" type="date" class="form-control" />
+            <span asp-validation-for="Period" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="DateSigning" class="control-label"></label>
+            <input asp-for="DateSigning" type="date" class="form-control" />
+            <span asp-validation-for="DateSigning" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="TotalCost" class="control-label"></label>
+            <input asp-for="TotalCost" class="form-control" />
+            <span asp-validation-for="TotalCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="SmrCost" class="control-label"></label>
+            <input asp-for="SmrCost" class="form-control" />
+            <span asp-validation-for="SmrCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="PnrCost" class="control-label"></label>
+            <input asp-for="PnrCost" class="form-control" />
+            <span asp-validation-for="PnrCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="EquipmentCost" class="control-label"></label>
+            <input asp-for="EquipmentCost" class="form-control" />
+            <span asp-validation-for="EquipmentCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="OtherExpensesCost" class="control-label"></label>
+            <input asp-for="OtherExpensesCost" class="form-control" />
+            <span asp-validation-for="OtherExpensesCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="AdditionalCost" class="control-label"></label>
+            <input asp-for="AdditionalCost" class="form-control" />
+            <span asp-validation-for="AdditionalCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="MaterialCost" class="control-label"></label>
+            <input asp-for="MaterialCost" class="form-control" />
+            <span asp-validation-for="MaterialCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="GenServiceCost" class="control-label"></label>
+            <input asp-for="GenServiceCost" class="form-control" />
+            <span asp-validation-for="GenServiceCost" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="Number" class="control-label"></label>
+            <input asp-for="Number" class="form-control" />
+            <span asp-validation-for="Number" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="IsOwnForces" class="control-label"></label>
+            <input asp-for="IsOwnForces" class="form-control" />
+            <span asp-validation-for="IsOwnForces" class="text-danger"></span>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="ContractId" class="control-label">Договор</label>
+            <select asp-for="ContractId" class="form-control">
+                <option selected></option>
+                @foreach (var item in Contract.GetAll())
+                {
+                    <option value="@item.Id">@item.Number</option>
+                }
+            </select>
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="FilesEntity" class="control-label"></label>
+            <input asp-for="FilesEntity" type="file" class="form-control" />
+            <span asp-validation-for="FilesEntity" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
+<div>
+    <a asp-action="Index">Вернуться назад</a>
+</div>
+

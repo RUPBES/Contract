@@ -109,5 +109,24 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(LogLevel.Warning, $"not update scope works, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
+
+        public void AddAmendmentToScopeWork(int amendmentId, int scopeworkId)
+        {
+            if (amendmentId > 0 && scopeworkId > 0)
+            {
+                _database.ScopeWorkAmendments.Create(new ScopeWorkAmendment
+                {
+                    AmendmentId = amendmentId,
+                    ScopeWorkId = scopeworkId
+                });
+
+                _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to scope work (ID={scopeworkId})", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not add scopeWorkAmendments", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+        }
     }
 }
