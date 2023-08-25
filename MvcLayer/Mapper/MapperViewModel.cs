@@ -31,6 +31,7 @@ namespace MvcLayer.Mapper
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
             CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();
             CreateMap<PrepaymentDTO, PrepaymentViewModel>().ReverseMap();
+            CreateMap<PaymentDTO, PaymentViewModel>().ReverseMap();
             CreateMap<ServiceGCViewModel, ServiceGCDTO>().ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()

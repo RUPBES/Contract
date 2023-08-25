@@ -992,10 +992,6 @@
                     <th>
                         <span class="table_span-act-entering">Акт ввода</span>
                     </th>
-                    @*Акт ввода*@
-                    <th>
-                        <span class="table_span-act-entering">Акт ввода</span>
-                    </th>
                     @*Переписка*@
                     <th>
                         <span class="table_span-correspondence">Переписка</span>
@@ -1099,15 +1095,13 @@
                     </td>
                     <td>
                         <span class="table_span-conditions">
-                        Условия оплаты -
-                        @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)*@
-                        <a asp-action="GetByContractId" asp-controller="Prepayment" asp-route-id="@Model.Id">
+                        Условия оплаты -                        
+                        <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model.Id">
                             Аванс
-                        </a> 
-                        @Html.ActionLink("Аванс","GetByContractId","Prepayments",new{ contractId = @Model.Id})
-
-                        @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)*@
-                        @Html.ActionLink("Расчет P7","","")
+                        </a>                      
+                            <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model.Id">
+                            Оплата
+                        </a>                                                
                         </span>
                     </td>
                     <td>
@@ -1318,6 +1312,7 @@
     <a asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
     <a asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
     <a asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">Добавить оплату договора</a> |
+    <a asp-action="Create" asp-controller="Forms" asp-route-contractId="@Model?.Id">Добавить Форму С-3а</a> |
     <a asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
     <a asp-action="Index">Вернуться</a>
 </div>

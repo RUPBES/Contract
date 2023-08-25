@@ -29,7 +29,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId)
         {
-            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
         }
 
         public IActionResult ChoosePeriod(int contractId)
@@ -51,8 +51,8 @@ namespace MvcLayer.Controllers
                 {
                     model.Add(new PaymentViewModel
                     {
-                        Period = paymentViewModel.PeriodStart,                        
-                        ContractId = paymentViewModel.ContractId,                        
+                        Period = paymentViewModel.PeriodStart,
+                        ContractId = paymentViewModel.ContractId,
                     });
                     paymentViewModel.PeriodStart = paymentViewModel.PeriodStart.AddMonths(1);
                 }
@@ -73,12 +73,26 @@ namespace MvcLayer.Controllers
             }
 
             if (contractId > 0)
-            {               
-
+            {
                 return View(new PrepaymentViewModel { ContractId = contractId });
-
             }
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(List<PaymentViewModel> payment)
+        {
+            if (payment is not null)
+            {
+                foreach (var item in payment)
+                {
+                    var prepaymentId = (int)_payment.Create(_mapper.Map<PaymentDTO>(item));
+
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(payment);
         }
     }
 }

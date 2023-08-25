@@ -1,0 +1,60 @@
+﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
+
+@{
+    ViewData["Title"] = string.Empty;
+    var id = Model.FirstOrDefault()?.ContractId;
+    if (id is not null)
+    {
+        var number = Contract.GetById((int)id).Number;
+        ViewData["Title"] = $"Денежные средства по договору № {number}";
+    }
+}
+
+<h1> @ViewData["Title"]</h1>
+<div class="table-responsive">
+    <table class="table">
+        <thead class="k-text-align-center k-vertical-align-center table-bordered table-sm">
+            <tr>
+                <th rowspan="2"><span class="table_span-contractprice"> Контрактная цена, с НДС </span></th>
+                <th rowspan="2"><span class="table_span-remains">Остаток по выполнению</span></th>
+                <th rowspan="2"><span class="table_span-volume">Объем на текущий год</span></th>
+                <th rowspan="2"><span class="table_span-volume">Выполнено с-3а</span></th>
+                @{
+                    foreach (var item in Model)
+                    {
+                        <th colspan="2"><span class="span-month-double">@item.Period.Value.ToShortDateString()</span></th>
+                    }
+                }
+            </tr>
+            <tr>
+                @{
+                    for (int i = 0; i < Model.Count(); i++)
+                    {
+                        <th><span class="span-50-per">к оплате </span></th>
+                        <th><span class="span-50-per">на счет РУП "БЭС" - УКХ"</span></th>
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="k-text-align-right">
+                <td><span class="table_span-contractprice"></span></td>
+                <td><span class="table_span-remains">???</span></td>
+                <td><span class="table_span-volume"></span></td>
+                <td><span class="table_span-volume"></span></td>
+                @foreach (var item in Model)
+                {
+                    <td><span class="span-50-per">@item.PaySum</span></td>
+                    <td><span class="span-50-per">@item.PaySumForRupBes</span></td>
+                }
+                <td>
+                    @*<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>*@
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
