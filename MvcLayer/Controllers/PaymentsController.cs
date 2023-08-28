@@ -29,7 +29,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId)
         {
-            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
         }
 
         public IActionResult ChoosePeriod(int contractId)

@@ -6,21 +6,10 @@
 @{
     ViewData["Title"] = string.Empty;
     var id = Model.FirstOrDefault()?.ContractId;
-    decimal? form = 0;
-    decimal? scopeWork = 0;
-    decimal? price = 0;
     if (id is not null)
     {
-        price = Contract.GetById((int)id).ContractPrice;
-        scopeWork = Scope.Find(x => x.ContractId == id).Select(x => x.CostNds).LastOrDefault();
-        form = Form.Find(x => x.ContractId == id).Select(x => x.TotalCost).LastOrDefault();
         var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = $"Денежные средства по договору № {number}";        
-    }
-    else
-    {
-        string url = Context.Request.HttpContext.Request.QueryString.Value;
-        id = Int16.Parse(url.Substring(url.LastIndexOf("=") + 1));
+        ViewData["Title"] = $"Денежные средства по договору № {number}";
     }
 }
 
@@ -54,10 +43,10 @@
             <tr class="k-text-align-right">
                 @if (Model.Count() > 0)
                 {
-                    <td><span class="table_span-contractprice">@price</span></td>
+                    <td><span class="table_span-contractprice"></span></td>
                     <td><span class="table_span-remains">???</span></td>
-                    <td><span class="table_span-volume">@scopeWork</span></td>
-                    <td><span class="table_span-volume">@form</span></td>
+                    <td><span class="table_span-volume"></span></td>
+                    <td><span class="table_span-volume"></span></td>
                     @foreach (var item in Model)
                     {
                         <td><span class="span-50-per">@item.PaySum</span></td>
@@ -71,7 +60,5 @@
             </tr>
         </tbody>
     </table>
-    <div>
-        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
-    </div>
+
 </div>

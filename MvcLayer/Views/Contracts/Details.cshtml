@@ -913,10 +913,10 @@
             <button id="buttonTableCategories" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
-    
 
 
-    <div class="full-width">
+
+    <div class="full-width-details">
         <table class="table table-main table-main-full table-bordered table-hover table-condensed" id="contractTable">
             <thead>
                 <tr class="tr-head-main-table">
@@ -987,10 +987,6 @@
                     @*Акт ввода*@
                     <th>
                         <span class="table_span-action">Объем работ(план/факт)</span>
-                    </th>
-                    @*Акт ввода*@
-                    <th>
-                        <span class="table_span-act-entering">Акт ввода</span>
                     </th>
                     @*Акт ввода*@
                     <th>
@@ -1100,13 +1096,12 @@
                     <td>
                         <span class="table_span-conditions">
                         Условия оплаты -
-                        @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsAvans)*@
-                        <a asp-action="GetByContractId" asp-controller="Prepayment" asp-route-id="@Model.Id">
+                        <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model.Id">
                             Аванс
-                        </a> 
-                        @Html.ActionLink("Аванс","GetByContractId","Prepayments",new{ contractId = @Model.Id})
-
-                        @*@Html.DisplayFor(modelItem => Model.PaymentСonditionsRaschet)*@
+                        </a>  
+                            <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model.Id">
+                                Оплата
+                            </a>
                         @Html.ActionLink("Расчет P7","","")
                         </span>
                     </td>
@@ -1313,13 +1308,13 @@
 </div>
 
 <div>
-    <a asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Добавить объем работ</a> |
-    <a asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Добавить авансы</a> |
-    <a asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
-    <a asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
-    <a asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">Добавить оплату договора</a> |
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
-    <a asp-action="Index">Вернуться</a>
+    <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Добавить объем работ</a> |
+    <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Добавить авансы</a> |
+    <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
+    <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
+    <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">Добавить оплату договора</a> |
+    <a class="btn btn-success" asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
+        <a class="btn btn-success" asp-action="Index">Вернуться</a>
 </div>
   
     <script>
