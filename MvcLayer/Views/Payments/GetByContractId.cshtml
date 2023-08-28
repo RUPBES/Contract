@@ -19,12 +19,11 @@
     }
     else
     {
-        string url = HttpContext.Request.QueryString
-        //id = Int16.Parse(url.Substring(url.LastIndexOf("=") + 1));
+        string url = Context.Request.HttpContext.Request.QueryString.Value;
+        id = Int16.Parse(url.Substring(url.LastIndexOf("=") + 1));
     }
     Console.WriteLine(id);
 }
-<div>@id</div>
 
 <h1> @ViewData["Title"]</h1>
 <div class="table-responsive">
