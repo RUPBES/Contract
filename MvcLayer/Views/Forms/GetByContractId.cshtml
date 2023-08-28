@@ -1,7 +1,5 @@
-﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+﻿@model IEnumerable<MvcLayer.Models.FormViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
-@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 
 @{
     ViewData["Title"] = string.Empty;
@@ -9,7 +7,12 @@
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = $"Денежные средства по договору № {number}";
+        ViewData["Title"] = $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договора № {number}";
+    }
+    else
+    {
+        string url = Context.Request.HttpContext.Request.QueryString.Value;
+        id = int.Parse(url.Substring(url.LastIndexOf("=") + 1));
     }
 }
 
@@ -18,47 +21,38 @@
     <table class="table">
         <thead class="k-text-align-center k-vertical-align-center table-bordered table-sm">
             <tr>
-                <th rowspan="2"><span class="table_span-contractprice"> Контрактная цена, с НДС </span></th>
-                <th rowspan="2"><span class="table_span-remains">Остаток по выполнению</span></th>
-                <th rowspan="2"><span class="table_span-volume">Объем на текущий год</span></th>
-                <th rowspan="2"><span class="table_span-volume">Выполнено с-3а</span></th>
-                @{
-                    foreach (var item in Model)
-                    {
-                        <th colspan="2"><span class="span-month-double">@item.Period.Value.ToShortDateString()</span></th>
-                    }
-                }
-            </tr>
-            <tr>
-                @{
-                    for (int i = 0; i < Model.Count(); i++)
-                    {
-                        <th><span class="span-50-per">к оплате </span></th>
-                        <th><span class="span-50-per">на счет РУП "БЭС" - УКХ"</span></th>
-                    }
-                }
+                <th><span class="table_span-contractprice">Период</span></th>
+                <th><span class="table_span-remains">Дата подписания</span></th>
+                <th><span class="table_span-volume">Общая стоимость выполненных работ</span></th>
+                <th><span class="table_span-volume">Стоимость СМР</span></th>
+                <th><span class="table_span-volume">Стоимость ПНР</span></th>
+                <th><span class="table_span-volume">Стоимость оборудования</span></th>
+                <th><span class="table_span-volume">Стоимость прочих работ</span></th>
+                <th><span class="table_span-volume">Файл</span></th>
             </tr>
         </thead>
         <tbody>
             <tr class="k-text-align-right">
-                @if (Model.Count() > 0)
+                @foreach (var item in Model)
                 {
-                    <td><span class="table_span-contractprice"></span></td>
-                    <td><span class="table_span-remains">???</span></td>
-                    <td><span class="table_span-volume"></span></td>
-                    <td><span class="table_span-volume"></span></td>
-                    @foreach (var item in Model)
-                    {
-                        <td><span class="span-50-per">@item.PaySum</span></td>
-                        <td><span class="span-50-per">@item.PaySumForRupBes</span></td>
-                    }
+                    <td><span class="table_span-contractprice">@item.Period</span></td>
+                    <td><span class="table_span-remains">@item.DateSigning</span></td>
+                    <td><span class="table_span-volume">@item.TotalCost</span></td>
+                    <td><span class="table_span-volume">@item.SmrCost</span></td>
+                    <td><span class="table_span-volume">@item.PnrCost</span></td>
+                    <td><span class="table_span-volume">@item.EquipmentCost</span></td>
+                    <td><span class="table_span-volume">@item.AdditionalCost</span></td>
                     <td>
-                        @*<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>*@
+                        <span class="table_span-volume">
+                            <img src="~/images/Icon/rofl.png" width="20"
+                                 height="20" alt="Подробнее">
+                        </span>
                     </td>
                 }
             </tr>
         </tbody>
     </table>
-
+    <div>
+        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
+    </div>
 </div>

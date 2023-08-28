@@ -106,11 +106,13 @@
                             @*Условия оплаты: Аванс - Оплата*@
                             <td>
                                 <span class="table_span-conditions">
-                                    @*@Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)*@
-                                    @Html.ActionLink("Авансирование P11","","")
+                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
+                                        Аванс
+                                    </a>
 
-                                    @*@Html.DisplayFor(modelItem => item.PaymentСonditionsRaschet)*@
-                                    @Html.ActionLink("Расчет P7","","")
+                                    <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
+                                        Оплата
+                                    </a>
                                 </span>
                             </td>
                             @*Материалы*@

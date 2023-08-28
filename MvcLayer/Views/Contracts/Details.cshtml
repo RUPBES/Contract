@@ -1007,7 +1007,10 @@
                     <td>
                         <span class="table_span-action">
                             <img src="~/images/Icon/rofl.png" width="60"
-                                 height="60" alt="Подробнее">
+                                 height="60" alt="Подробнее">|
+                            <a asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@Model.Id">
+                                С-3а
+                            </a>
                         </span>
                     </td>
                     <td>
@@ -1099,9 +1102,9 @@
                         <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model.Id">
                             Аванс
                         </a>  
-                            <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model.Id">
-                                Оплата
-                            </a>
+                        <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model.Id">
+                            Оплата
+                        </a>
                         @Html.ActionLink("Расчет P7","","")
                         </span>
                     </td>
@@ -1313,6 +1316,7 @@
     <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Добавить услуги генподряда</a> |
     <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">Добавить стоимость материалов</a> |
     <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">Добавить оплату договора</a> |
+        <a class="btn btn-success" asp-action="Create" asp-controller="Forms" asp-route-Id="@Model?.Id">Добавить форму С-3а</a> |
     <a class="btn btn-success" asp-action="Edit" asp-route-id="@Model?.Id">Изменить</a> |
         <a class="btn btn-success" asp-action="Index">Вернуться</a>
 </div>
