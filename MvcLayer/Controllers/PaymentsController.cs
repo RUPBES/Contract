@@ -80,5 +80,22 @@ namespace MvcLayer.Controllers
             }
             return View();
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(List<PaymentViewModel> payment)
+        {
+            if (payment is not null)
+            {
+                foreach (var item in payment)
+                {
+                    var prepaymentId = (int)_payment.Create(_mapper.Map<PaymentDTO>(item));
+
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(payment);
+        }
     }
 }
