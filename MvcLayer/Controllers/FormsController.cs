@@ -25,8 +25,9 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
         }
 
-        public ActionResult Create()
+        public ActionResult Create(int id)
         {
+            ViewData["Id"] = id;
             return View();
         }
 

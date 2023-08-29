@@ -22,7 +22,6 @@
                 <thead>
                     <tr class="tr-head-main-table">
                         <th><span class="table_span-num">          №                            </span></th>
-
                         <th>
                             <span class="table_span-numberanddate">
                                 @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNumberanddate", @class=""})
@@ -36,12 +35,12 @@
                         <th>
                             <span class="table_span-customer">
                                 @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayCustomer", @class=""})
-                            </span>
+                            </span>                            
                         </th>
                         <th>
                             <span class="table_span-contractor">
                                 @Html.ActionLink("Генподрядчик", "Index", new { sortOrder = ViewBag.GenSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayGeneralContractor", @class=""})
-                            </span>
+                            </span>                           
                         </th>
                         <th>
                             <span class="table_span-deadlines">
@@ -107,11 +106,13 @@
                             @*Условия оплаты: Аванс - Оплата*@
                             <td>
                                 <span class="table_span-conditions">
-                                    @*@Html.DisplayFor(modelItem => item.PaymentСonditionsAvans)*@
-                                    @Html.ActionLink("Авансирование P11","","")
+                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
+                                        Аванс
+                                    </a>
 
-                                    @*@Html.DisplayFor(modelItem => item.PaymentСonditionsRaschet)*@
-                                    @Html.ActionLink("Расчет P7","","")
+                                    <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
+                                        Оплата
+                                    </a>
                                 </span>
                             </td>
                             @*Материалы*@
@@ -150,12 +151,6 @@
                             </td>
                             @*Действия с договором*@
                             <td>
-                                @* <span class="table_span-action">
-                                    <a asp-action="Details" asp-route-id="@item.Id">
-                                        <img src="~/images/Icon/details.png" width="50"
-                                             height="50" alt="Подробнее">
-                                    </a>
-                                </span> *@
                                 <div class="icon view">
                                     <a asp-action="Details" asp-route-id="@item.Id"></a>
                                 </div>
@@ -224,103 +219,59 @@
             let elementArrayGeneralContractor = document.getElementById("arrayGeneralContractor");
             let elementArrayTerms = document.getElementById("arrayTerms");
 
-
             if (actualUrl.includes('dateDesc')) {
                 elementArrayNumberanddate.classList.remove("up")
                 elementArrayNumberanddate.classList.add('down')
-
             } else if (actualUrl.includes('date')) {
-
                 elementArrayNumberanddate.classList.remove("down")
                 elementArrayNumberanddate.classList.add('up')
             } else {
-
                 elementArrayNumberanddate.classList.remove("down")
                 elementArrayNumberanddate.classList.remove("up")
             }
-
             if (actualUrl.includes('nameObjectDesc')) {
                 elementArrayNameObject.classList.remove("up")
                 elementArrayNameObject.classList.add('down')
 
             } else if (actualUrl.includes('nameObject')) {
-
                 elementArrayNameObject.classList.remove("down")
                 elementArrayNameObject.classList.add('up')
             } else {
-
                 elementArrayNameObject.classList.remove("down")
                 elementArrayNameObject.classList.remove("up")
             }
-
             if (actualUrl.includes('clientDesc')) {
                 elementArrayCustomer.classList.remove("up")
                 elementArrayCustomer.classList.add('down')
-
             } else if (actualUrl.includes('client')) {
-
                 elementArrayCustomer.classList.remove("down")
                 elementArrayCustomer.classList.add('up')
             } else {
-
                 elementArrayCustomer.classList.remove("down")
                 elementArrayCustomer.classList.remove("up")
             }
-
             if (actualUrl.includes('genContractorDesc')) {
                 elementArrayGeneralContractor.classList.remove("up")
                 elementArrayGeneralContractor.classList.add('down')
-
             } else if (actualUrl.includes('genContractor')) {
-
                 elementArrayGeneralContractor.classList.remove("down")
                 elementArrayGeneralContractor.classList.add('up')
             } else {
-
                 elementArrayGeneralContractor.classList.remove("down")
                 elementArrayGeneralContractor.classList.remove("up")
             }
-
             if (actualUrl.includes('dateEnterDesc')) {
                 elementArrayTerms.classList.remove("up")
                 elementArrayTerms.classList.add('down')
-
             } else if (actualUrl.includes('dateEnter')) {
-
                 elementArrayTerms.classList.remove("down")
                 elementArrayTerms.classList.add('up')
             } else {
-
                 elementArrayTerms.classList.remove("down")
                 elementArrayTerms.classList.remove("up")
             }
 
-
         };
-
-        //window.onload = function () {
-
-        //    let actualUrl = window.location.search;
-        //    let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
-
-
-        //    if (actualUrl.includes('dateDesc')) {
-        //        elementArrayNumberanddate.classList.remove("up")
-        //        elementArrayNumberanddate.classList.add('down')
-
-        //    } else if (actualUrl.includes('date')) {
-
-        //        elementArrayNumberanddate.classList.remove("down")
-        //        elementArrayNumberanddate.classList.add('up')
-        //    } else {
-
-        //        elementArrayNumberanddate.classList.remove("down")
-        //        elementArrayNumberanddate.classList.remove("up")
-        //            }
-
-        //};
-
-
 
         ///// вызываем PARTIAL VIEW для создания новой организации
         $("#addOrganization").click(function (e) {
@@ -368,25 +319,6 @@
                 })
             });
 
-        });
-
-        function searchToggle(obj, evt) {
-            var container = $(obj).closest('.search-wrapper');
-            if (!container.hasClass('active')) {
-                container.addClass('active');
-                evt.preventDefault();
-            }
-            else if (container.hasClass('active') && $(obj).closest('.input-holder').length == 0) {
-                container.removeClass('active');
-                // clear input
-                container.find('.search-input').val('');
-            }
-        }
-
-
-
-
-
-
+        });   
     </script>
 }

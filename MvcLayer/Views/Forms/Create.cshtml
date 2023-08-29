@@ -74,7 +74,7 @@
         <div class="form-group col-6">
             <label asp-for="ContractId" class="control-label">Договор</label>
             <select asp-for="ContractId" class="form-control">
-                <option selected></option>
+                <option value="@ViewData["Id"]" selected>@Contract.GetById((int)ViewData["Id"]).Number</option>
                 @foreach (var item in Contract.GetAll())
                 {
                     <option value="@item.Id">@item.Number</option>
@@ -93,6 +93,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Вернуться назад</a>
+    <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewData["Id"]
+    ">Вернуться назад</a>
 </div>
 
