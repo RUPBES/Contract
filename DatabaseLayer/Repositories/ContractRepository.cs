@@ -47,6 +47,12 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.AgreementContract)
                 .Include(c => c.SubContract)
                 .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
+                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x=>x.Phones)
+                .Include(c => c.SelectionProcedures)
+                .Include(c => c.Acts)
+                .Include(c => c.CommissionActs)
+                .Include(c => c.ScopeWorks)
+                .Include(c => c.FormC3as)
                 .ToList();
         }
 

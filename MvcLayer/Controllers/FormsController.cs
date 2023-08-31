@@ -2,6 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 
@@ -25,9 +26,14 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
         }
 
+        public IActionResult GetByContractId(int contractId)
+        {
+            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == contractId)));
+        }
+
         public ActionResult Create(int id)
         {
-            ViewData["Id"] = id;
+            //ViewData["Id"] = id;
             return View();
         }
 

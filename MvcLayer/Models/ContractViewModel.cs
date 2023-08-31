@@ -128,30 +128,28 @@ namespace MvcLayer.Models
 
         public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
-        //public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
+        public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
 
-        //public List<FormC3aDTO> FormC3as { get; set; } = new List<FormC3aDTO>();
+        public List<FormDTO> FormC3as { get; set; } = new List<FormDTO>();
         public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
         public List<ContractViewModel> InverseAgreementContract { get; set; } = new List<ContractViewModel>();
 
         public List<ContractViewModel> InverseSubContract { get; set; } = new List<ContractViewModel>();
 
-        //public List<MaterialGcDTO> MaterialGcs { get; set; } = new List<MaterialGcDTO>();
+        public List<MaterialDTO> MaterialGcs { get; set; } = new List<MaterialDTO>();
 
-        //public List<PaymentDTO> Payments { get; set; } = new List<PaymentDTO>();
+        public List<PaymentDTO> Payments { get; set; } = new List<PaymentDTO>();
 
-        //public List<PrepaymentDTO> Prepayments { get; set; } = new List<PrepaymentDTO>();
+        public List<PrepaymentDTO> Prepayments { get; set; } = new List<PrepaymentDTO>();
 
-        //public List<ScopeWorkDTO> ScopeWorks { get; set; } = new List<ScopeWorkDTO>();
+        public List<ScopeWorkDTO> ScopeWorks { get; set; } = new List<ScopeWorkDTO>();
 
-        //public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
-
-        //public List<ServiceGcDTO> ServiceGcs { get; set; } = new List<ServiceGcDTO>();
+        public List<ServiceGCDTO> ServiceGcs { get; set; } = new List<ServiceGCDTO>();
 
         public ContractViewModel? SubContract { get; set; }
 
         public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 
-        //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
+        public List<CommissionActDTO> СommissionActs { get; set; } = new List<CommissionActDTO>();
     }
 }

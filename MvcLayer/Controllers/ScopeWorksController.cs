@@ -91,7 +91,7 @@ namespace MvcLayer.Controllers
                     scopeWork.PeriodStart = scopeWork.PeriodStart.AddMonths(1);
                 }
 
-                var s = Newtonsoft.Json.JsonConvert.SerializeObject(model);
+                var s = JsonConvert.SerializeObject(model);
                 TempData["scopeW"] = s;
 
                 return RedirectToAction("Create");
@@ -132,7 +132,14 @@ namespace MvcLayer.Controllers
                     }                    
                 }
 
-                return RedirectToAction(nameof(Index));
+                if(scopeWork.FirstOrDefault().ContractId is not null)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new { contractId = scopeWork.FirstOrDefault().ContractId });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return View(scopeWork);
         }

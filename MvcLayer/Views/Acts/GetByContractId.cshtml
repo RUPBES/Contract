@@ -1,0 +1,102 @@
+﻿@model IEnumerable<MvcLayer.Models.ActViewModel>
+@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+
+
+@{
+    ViewData["Title"] = "Акты приостановления (возобновления) работ (услуг)";
+    bool isAdmin = true;
+    string redirectAction = "Index";
+    string redirectController = "Acts";
+}
+<h2>@ViewData["Title"]</h2>
+@* <p>
+    <a asp-action="Create">Добавить</a>
+</p> *@
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Reason)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateAct)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateSuspendedFrom)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateSuspendedUntil)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateRenewal)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsSuspension)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contract)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Reason)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateAct)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateSuspendedFrom)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateSuspendedUntil)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateRenewal)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsSuspension)
+                </td>
+                @*             <td>
+            @Html.DisplayFor(modelItem => item.Contract.Id)
+            </td> *@
+                <td>
+                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Acts))
+                    {
+                        <div>
+                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            @if (isAdmin)
+                            {
+                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                            }
+                        </div>
+                    }
+                </td>
+                <td>
+                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Acts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
+                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
+}

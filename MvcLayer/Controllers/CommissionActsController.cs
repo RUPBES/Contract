@@ -25,6 +25,11 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<CommissionActViewModel>>(_commissionActService.GetAll()));
         }
 
+        public IActionResult GetByContractId(int contractId)
+        {
+            return View(_mapper.Map<IEnumerable<CommissionActViewModel>>(_commissionActService.Find(x => x.ContractId == contractId)));
+        }
+
         public ActionResult Create()
         {
             return View();

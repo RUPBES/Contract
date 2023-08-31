@@ -1032,7 +1032,7 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.Number).HasMaxLength(50);
 
             entity.HasOne(d => d.Contract)
-                .WithMany(p => p.СommissionActs)
+                .WithMany(p => p.CommissionActs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_СommissionAct_Contract_Id");
         });

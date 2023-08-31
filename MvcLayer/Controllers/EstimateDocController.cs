@@ -25,6 +25,11 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.GetAll()));
         }
 
+        public IActionResult GetByContractId(int contractId)
+        {
+            return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == contractId)));
+        }
+
         public ActionResult Create()
         {
             return View();

@@ -5,7 +5,7 @@
 }
 
 <h1>Объем работ</h1>
-
+<a asp-action="Details" asp-controller="Contracts" asp-route-id="@Model.FirstOrDefault()?.ContractId">Вернуться к договору</a>
 <table class="table">
     <thead>
         <tr>
@@ -55,56 +55,57 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Period)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CostNoNds)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CostNds)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SmrCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PnrCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EquipmentCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.OtherExpensesCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AdditionalCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MaterialCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.GenServiceCost)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsOwnForces)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsChange)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ChangeScopeWork.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Contract.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Period)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CostNoNds)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CostNds)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SmrCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PnrCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EquipmentCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.OtherExpensesCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AdditionalCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MaterialCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GenServiceCost)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsOwnForces)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsChange)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ChangeScopeWork.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Contract.Id)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
