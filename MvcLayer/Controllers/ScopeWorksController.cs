@@ -16,15 +16,17 @@ namespace MvcLayer.Controllers
         private readonly IContractService _contractService;
         private readonly IOrganizationService _organization;
         private readonly IScopeWorkService _scopeWork;
+        private readonly IFormService _formService;
         private readonly IMapper _mapper;
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IScopeWorkService scopeWork)
+            IScopeWorkService scopeWork, IFormService formService)
         {
             _contractService = contractService;
             _mapper = mapper;
             _organization = organization;
             _scopeWork = scopeWork;
+            _formService = formService;
         }
 
         public IActionResult Index()
@@ -53,13 +55,60 @@ namespace MvcLayer.Controllers
         //    return View(_mapper.Map<ScopeWorkViewModel>(scopeWork));
         //}
 
-        public IActionResult ChoosePeriod(int contractId)
+        public IActionResult ChoosePeriod(int contractId, bool isOwnForces)
         {
             if (contractId > 0)
-            {
-                //ScopeWorkViewModel scopeWork = new ScopeWorkViewModel { ContractId = contractId};
+            {     
+                //если запрос для объема работ собственными силами, по объему работ, берем начало и окончание периода,
+                //чтобы избежать выбора периода на view
+                if (isOwnForces)
+                {
+                    var period = _scopeWork.GetDatePeriodLastOrMainScopeWork(contractId);
 
-                return View(new PeriodChooseViewModel { ContractId = contractId });
+                    if (period is null)
+                    {
+                        return RedirectToAction("Details", "Contracts", new { id = contractId });
+                    }
+
+                    // определяем, есть уже объемы работ собственными силами (флаг - IsChange = true, IsOwnForces = true)
+
+                    var scopeChangeOwnForce = _scopeWork
+                        .Find(x => x.ContractId == contractId && x.IsOwnForces == true && x.IsChange == true);
+
+                    var scopeOwnForce = _scopeWork
+                        .Find(x => x.ContractId == contractId && x.IsOwnForces == true && x.IsChange == false);
+
+                    //для последующего поиска всех измененных объем.работ соб.силами, через таблицу Изменений по договору, устанавливаем ID одного из объема работ
+                    var сhangeScopeWorkOwnForceId = scopeChangeOwnForce?.LastOrDefault()?.Id is null ?
+                        scopeOwnForce?.LastOrDefault()?.Id : scopeChangeOwnForce?.LastOrDefault()?.Id;
+                    
+
+                    var periodChoose = new PeriodChooseViewModel
+                    {
+                        ContractId = contractId,
+                        IsOwnForces = isOwnForces,
+                        PeriodStart = period.Value.Item1,
+                        PeriodEnd = period.Value.Item2,
+                        ChangeScopeWorkId = сhangeScopeWorkOwnForceId
+                    };
+
+                    //если изменений нет в объеме работ собственными силами, перенаправляем для заполнения данных
+                    //если есть - отправляем на VIEW для выбора Изменений по договору
+                    if (scopeOwnForce.Count() > 0)
+                    {
+                        periodChoose.IsChange = true;
+                        return View(periodChoose); 
+                    }
+                    else 
+                    {                        
+                        return RedirectToAction(nameof(CreatePeriods), periodChoose);
+                    }
+                }
+                else
+                {
+                    return View(new PeriodChooseViewModel { ContractId = contractId, IsOwnForces = isOwnForces });
+                }
+                
 
             }
             return View();
@@ -71,7 +120,7 @@ namespace MvcLayer.Controllers
             if (scopeWork is not null)
             {
                 List<ScopeWorkViewModel> model = new List<ScopeWorkViewModel>();
-
+                
                 if (scopeWork.AmendmentId > 0)
                 {
                     scopeWork.IsChange = true;
@@ -108,10 +157,7 @@ namespace MvcLayer.Controllers
 
             if (contractId > 0)
             {
-                //ScopeWorkViewModel scopeWork = new ScopeWorkViewModel { ContractId = contractId};
-
                 return View(new ScopeWorkViewModel { ContractId = contractId });
-
             }
             return View();
         }
@@ -124,14 +170,17 @@ namespace MvcLayer.Controllers
             {
                 foreach (var item in scopeWork)
                 {
+                    //создаем объем (основные/собственными силами) работ
                     var scopeWorkId = (int)_scopeWork.Create(_mapper.Map<ScopeWorkDTO>(item));
-                    
+
+                    //проверка создается объем (основные/собственными силами) работ с изменениями или нет, если да - добавляем к объему изменения
                     if (item?.AmendmentId is not null && item?.AmendmentId > 0)
                     {
                         _scopeWork.AddAmendmentToScopeWork((int)item?.AmendmentId, scopeWorkId);
                     }                    
                 }
 
+                //если запрос пришел с детальной инфы по договору, тогда редиректим туда же, если нет - на список всех объемов работ
                 if(scopeWork.FirstOrDefault().ContractId is not null)
                 {
                     return RedirectToAction(nameof(GetByContractId), new { contractId = scopeWork.FirstOrDefault().ContractId });
@@ -143,6 +192,7 @@ namespace MvcLayer.Controllers
             }
             return View(scopeWork);
         }
+
         //public async Task<IActionResult> Edit(int? id)
         //{
         //    if (id == null || _scopeWork.GetAll() == null)

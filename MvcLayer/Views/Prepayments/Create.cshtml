@@ -11,6 +11,9 @@
     {
         d.AddRange(JsonConvert.DeserializeObject<List<PrepaymentViewModel>>(s));
     }
+    bool isFact = d.FirstOrDefault().IsFact == true ? true : false;
+
+    string actionName = isFact ? "EditPrepayments" : "Create";
 }
 <style>
     .cont-table {
@@ -24,9 +27,10 @@
 </style>
 <h4>Авансы</h4>
 <hr />
-<form asp-action="Create" class="row">
+<form asp-action=@actionName class="row">
     <div class="cont-table">
         <table class="table table-bordered table-striped">
+
             <tr>
                 <th>Период</th>
                 @foreach (var item in d)
@@ -41,82 +45,114 @@
                     index = 0;
                 }
             </tr>
-            <tr>
-                <th>Текущие авансы</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].CurrentValue" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-            @* <tr>
-                <th>Текущие авансы по факту</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].CurrentValueFact" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr> *@
-            <tr>
-                <th>Целевые авансы</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].TargetValue" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-           @*  <tr>
-                <th>Текущие авансы по факту</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].TargetValueFact" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr> *@
-            <tr>
-                <th>Отработка целевых авансов</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].WorkingOutValue" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-           @*  <tr>
-                <th>Отработка целевых по факту</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].WorkingOutValueFact" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr> *@
+
+            @if (!isFact)
+            {
+                <tr>
+                    <th>Текущие авансы</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].CurrentValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
+            @if (isFact)
+            {
+                <tr>
+                    <th>Текущие авансы по факту</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].CurrentValueFact" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+
+            }
+
+            @if (!isFact)
+            {
+                <tr>
+                    <th>Целевые авансы</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].TargetValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
+
+            @if (isFact)
+            {
+                <tr>
+                    <th>Текущие авансы по факту</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].TargetValueFact" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
+
+            @if (!isFact)
+            {
+                <tr>
+                    <th>Отработка целевых авансов</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].WorkingOutValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
+
+            @if (isFact)
+            {
+                <tr>
+                    <th>Отработка целевых по факту</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].WorkingOutValueFact" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>               
+            }
 
             @foreach (var item in d)
             {
+                @if (isFact)
+                {
+                    <input asp-for="@Model[index].Id" hidden />
+                    <input asp-for="@Model[index].WorkingOutValue" hidden />
+                    <input asp-for="@Model[index].TargetValue" hidden />
+                    <input asp-for="@Model[index].CurrentValue" hidden />
+                }
                 <input asp-for="@Model[index].AmendmentId" hidden />
                 <input asp-for="@Model[index].ContractId" hidden />
                 <input asp-for="@Model[index].IsChange" hidden />
+                <input asp-for="@Model[index].ChangePrepaymentId" hidden />
 
                 index++;
             }
-             
+
         </table>
     </div>
     <div class="form-group">

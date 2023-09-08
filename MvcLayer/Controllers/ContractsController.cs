@@ -77,6 +77,63 @@ namespace MvcLayer.Controllers
             return View();
         }
 
+
+        /// <summary>
+        /// Создание соглашения с филиалом
+        /// </summary>
+        /// <param name="id">Договора к которому добавляем субкдоговор</param>
+        /// <param name="nameObject">название объекта</param>
+        /// <returns></returns>
+        public IActionResult CreateAgr(int? id, string? nameObject)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            ContractViewModel contract = new ContractViewModel();
+            contract.IsAgreementContract = true;
+            contract.AgreementContractId = id;
+            contract.NameObject = nameObject;
+
+            for (int i = 0; i < 3; i++)
+            {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                contract.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+
+            contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
+            contract.SelectionProcedures.Add(new SelectionProcedureDTO());
+
+            return View(contract);
+        }
+
+        /// <summary>
+        /// Создание  договора на оказание инжиниринговых услуг
+        /// </summary> 
+        public IActionResult CreateEngin()
+        {
+            ContractViewModel contract = new ContractViewModel();
+            contract.IsEngineering = true;
+
+            for (int i = 0; i < 3; i++)
+            {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                contract.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+
+            contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
+            contract.SelectionProcedures.Add(new SelectionProcedureDTO());
+
+            return View(contract);
+        }
+
+        /// <summary>
+        /// Создание субподрядного договора
+        /// </summary>
+        /// <param name="id">Договора к которому добавляем субкдоговор</param>
+        /// <param name="nameObject">название объекта</param>
+        /// <returns></returns>
         public IActionResult CreateSub(int? id, string? nameObject)
         {
             if (id == null)
@@ -265,14 +322,17 @@ namespace MvcLayer.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
         public async Task<ActionResult> AddOrganization(ContractViewModel model)
         {
             return PartialView("_PartialAddOrganization", model);
         }
+
         public async Task<ActionResult> AddEmployee(ContractViewModel model)
         {
             return PartialView("_PartialAddEmployee", model);
         }
+
         public async Task<ActionResult> AddTypeWork(ContractViewModel model)
         {  
             if (model.NameObject is null && model.IsSubContract == true)
@@ -281,6 +341,7 @@ namespace MvcLayer.Controllers
             }
             return PartialView("_PartialAddTypeWork", model);
         }
+
         public ActionResult AddNewOrganization(ContractViewModel organization)
         {
             if (organization is not null && organization.ContractOrganizations[2].Organization is not null)
@@ -291,11 +352,20 @@ namespace MvcLayer.Controllers
                 {
                     return View("CreateSub", organization);
                 }
+                if (organization.IsAgreementContract == true)
+                {
+                    return View("CreateAgr", organization);
+                }
+                if (organization.IsEngineering == true)
+                {
+                    return View("CreateEngin", organization);
+                }
 
                 return View("Create", organization);
             }
             return BadRequest();
         }
+
         public ActionResult AddNewEmployee(ContractViewModel organization)
         {
             if (organization is not null && organization.EmployeeContracts[2].Employee is not null)
@@ -306,11 +376,20 @@ namespace MvcLayer.Controllers
                 {
                     return View("CreateSub", organization);
                 }
+                if (organization.IsAgreementContract == true)
+                {
+                    return View("CreateAgr", organization);
+                }
+                if (organization.IsEngineering == true)
+                {
+                    return View("CreateEngin", organization);
+                }
 
                 return View("Create", organization);
             }
             return BadRequest();
         }
+
         public ActionResult AddNewTypeWork(ContractViewModel organization)
         {
             if (organization is not null && organization.TypeWorkContracts[1].TypeWork is not null)
@@ -321,11 +400,20 @@ namespace MvcLayer.Controllers
                 {
                     return View("CreateSub", organization);
                 }
+                if (organization.IsAgreementContract == true)
+                {
+                    return View("CreateAgr", organization);
+                }
+                if (organization.IsEngineering == true)
+                {
+                    return View("CreateEngin", organization);
+                }
 
                 return View("Create", organization);
             }
             return BadRequest();
         }
+
         private string? CreateStringOfRaschet(int? days, string payment)
         {
             if (!string.IsNullOrWhiteSpace(payment) && days.HasValue)

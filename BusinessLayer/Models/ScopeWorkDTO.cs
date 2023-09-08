@@ -20,9 +20,9 @@ namespace BusinessLayer.Models
         public bool? IsChange { get; set; }
         public int? ChangeScopeWorkId { get; set; }
 
-        public virtual ScopeWork ChangeScopeWork { get; set; }
-        public virtual Contract Contract { get; set; }
-        public virtual List<ScopeWork> InverseChangeScopeWork { get; set; } = new List<ScopeWork>();
-        public virtual List<ScopeWorkAmendment> ScopeWorkAmendments { get; set; } = new List<ScopeWorkAmendment>();
+        public virtual ScopeWorkDTO ChangeScopeWork { get; set; }
+        public virtual ContractDTO Contract { get; set; }
+        public virtual List<ScopeWorkDTO> InverseChangeScopeWork { get; set; } = new List<ScopeWorkDTO>();
+        public virtual List<ScopeWorkAmendmentDTO> ScopeWorkAmendments { get; set; } = new List<ScopeWorkAmendmentDTO>();
     }
 }

@@ -10,6 +10,9 @@
     {
         d.AddRange(JsonConvert.DeserializeObject<List<MaterialViewModel>>(s));
     }
+    bool isFact = d.FirstOrDefault().IsFact == true ? true : false;
+
+    string actionName = isFact ? "EditMaterial" : "Create";
 }
 <style>
     .cont-table {
@@ -23,7 +26,7 @@
 </style>
 <h4>Стоимость материалов</h4>
 <hr />
-<form asp-action="Create" class="row">
+<form asp-action=@actionName class="row">
     <div class="cont-table">
         <table class="table table-bordered table-striped">
             <tr>
@@ -40,25 +43,48 @@
                 @{
                     index = 0;
                 }
-            </tr>            
-            <tr>
-                <th>Планируемая стоимость материалов</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-
+            </tr>   
+            @if (!isFact)
+            {
+                <tr>
+                    <th>Планируемая стоимость материалов</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
+            @if (isFact)
+            {
+                <tr>
+                    <th>Цена материалов фактическая</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].FactPrice" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
 
             @foreach (var item in d)
             {
-                @* <input asp-for="@Model[index].AmendmentId" hidden /> *@
+                @if (isFact)
+                {
+                    <input asp-for="@Model[index].Id" hidden />
+                    <input asp-for="@Model[index].Price" hidden />
+                }
+
+                <input asp-for="@Model[index].AmendmentId" hidden />
                 <input asp-for="@Model[index].ContractId" hidden />
                 <input asp-for="@Model[index].IsChange" hidden />
+                <input asp-for="@Model[index].ChangeMaterialId" hidden />
 
                 index++;
             }

@@ -1,0 +1,61 @@
+﻿@model MvcLayer.Models.SelectionProcedureViewModel
+
+@{
+    ViewData["Title"] = "Создать";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<h4>Процедура выбора</h4>
+<hr />
+<div class="row">
+    <form asp-action="Create" class="row">
+        <input asp-for="Id" value="@Model.Id" hidden />
+         <input asp-for="ContractId" value="@Model.ContractId" hidden/>
+        <input asp-for="TypeProcedure" value="@Model.TypeProcedure" hidden />
+        <div class="form-group col-6">
+            <label asp-for="Name" class="control-label"></label>
+            <input asp-for="Name" class="form-control" />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="TypeProcedure" class="control-label"></label>
+            <input type="text" value="@Model.TypeProcedure" class="form-control" disabled />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="DateBegin" class="control-label"></label>
+            <input asp-for="DateBegin" type="date" class="form-control" />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="DateEnd" class="control-label"></label>
+            <input asp-for="DateEnd" type="date" class="form-control" />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="StartPrice" class="control-label"></label>
+            <input asp-for="StartPrice" class="form-control" />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="AcceptancePrice" class="control-label"></label>
+            <input asp-for="AcceptancePrice" class="form-control" />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="AcceptanceNumber" class="control-label"></label>
+            <input asp-for="AcceptanceNumber" class="form-control" />
+        </div>
+        <div class="form-group col-6">
+            <label asp-for="DateAcceptance" class="control-label"></label>
+            <input asp-for="DateAcceptance" type="date" class="form-control" />
+        </div>
+        @* <div class="form-group col-6">
+            <label asp-for="ContractId" class="control-label"></label>
+            <select asp-for="ContractId" class="form-control" asp-items="ViewBag.ContractId"></select>
+        </div> *@
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
+@* <div>
+    <a asp-action="Index">Back to List</a>
+</div>
+ *@

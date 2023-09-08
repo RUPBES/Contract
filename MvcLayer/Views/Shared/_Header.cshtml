@@ -7,13 +7,39 @@
         </button>
         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
             <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a>
+                <li class="nav-item">                
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-prizrac dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Справочники
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">                           
+                            @* <li>
+                                <a class="dropdown-item" href="#">
+                                    Наряд-допуск &raquo;
+                                </a>
+                                <ul class="dropdown-menu dropdown-submenu">
+                                    <li>@Html.ActionLink("производство работ повышенной опасности", "AddPermitOfDangerWork", "Workpermit", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("проведение огневых работ", "AddPermitOfFireWorks", "Workpermit", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("производство работ подъемником вблизи воздушной линии электропередачи", "AddPermitOfTheLift", "Workpermit", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("производство работ грузоподъемным краном вблизи воздушной линии электропередачи (электросвязи)", "AddPermitOfLiftingСrane", "Workpermit", null, new { @class = "dropdown-item" })</li>
+                                    <li>@Html.ActionLink("работы в электроустановках", "AddPermitOfElectricalInstallation", "Workpermit", null, new { @class = "dropdown-item" })</li>
+                                </ul>
+                            </li> *@
+                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a>
+                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Departments" asp-action="Index">Отделы</a>
+                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Phones" asp-action="Index">Телефоны</a>
+                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Addresses" asp-action="Index">Адреса</a>
+                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a>                            
+                        </ul>
+                    </div> 
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" asp-area="" asp-controller="Contracts" asp-action="Index">Договоры</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-dark" asp-action="CreateEngin" asp-controller="Contracts">Добавить инжиниринговые услуги</a>
+                </li>
+                @* <li class="nav-item">
                     <a class="nav-link text-dark" asp-area="" asp-controller="Departments" asp-action="Index">Отделы</a>
                 </li>
                 <li class="nav-item">
@@ -24,7 +50,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a>
-                </li>
+                </li> 
                 <li class="nav-item">
                     <a class="nav-link text-dark" asp-area="" asp-controller="ScopeWorks" asp-action="Index">Объем работ</a>
                 </li>
@@ -54,7 +80,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" asp-area="" asp-controller="Forms" asp-action="Index">Формы С-3</a>
-                </li>
+                </li>*@
             </ul>
             <ul class="navbar-nav flex-grow-1">
                 @if (User?.Identity is { IsAuthenticated: true })

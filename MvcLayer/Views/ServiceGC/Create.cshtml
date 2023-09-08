@@ -10,6 +10,10 @@
     {
         d.AddRange(JsonConvert.DeserializeObject<List<ServiceGCViewModel>>(s));
     }
+
+    bool isFact = d.FirstOrDefault().IsFact == true ? true : false;
+
+    string actionName = isFact ? "EditService" : "Create";
 }
 <style>
     .cont-table {
@@ -23,7 +27,7 @@
 </style>
 <h4>Услуги генподрядчика</h4>
 <hr />
-<form asp-action="Create" class="row">
+<form asp-action=@actionName class="row">
     <div class="cont-table">
         <table class="table table-bordered table-striped">
             <tr>
@@ -41,38 +45,62 @@
                     index = 0;
                 }
             </tr>
-            <tr>
-                <th>Процент генуслуг</th>
-                @foreach (var item in d)
-                {
-                    <td>
-                        @item.ServicePercent
-                        <input asp-for="@Model[index].ServicePercent" class="form-control" type="number" step="0.01" min="0" max="100" value="@item.ServicePercent" />
-                    </td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-            <tr>
-                <th>Сумма генуслуг</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.001" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-
+            @if (!isFact)
+            {
+                <tr>
+                    <th>Процент генуслуг</th>
+                    @foreach (var item in d)
+                    {
+                        <td>
+                            @item.ServicePercent
+                            <input asp-for="@Model[index].ServicePercent" class="form-control" type="number" step="0.01" min="0" max="100" value="@item.ServicePercent" />
+                        </td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+                <tr>
+                    <th>Сумма генуслуг</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
+            @if (isFact)
+            {
+                <tr>
+                    <th>Сумма генуслуг фактическая</th>
+                    @foreach (var item in d)
+                    {
+                        <td><input asp-for="@Model[index].FactPrice" class="form-control" type="number" step="0.01" min="0" /></td>
+                        index++;
+                    }
+                    @{
+                        index = 0;
+                    }
+                </tr>
+            }
 
             @foreach (var item in d)
             {
+                @if (isFact)
+                {
+                    <input asp-for="@Model[index].Id" hidden />
+                    <input asp-for="@Model[index].ServicePercent" hidden />
+                    <input asp-for="@Model[index].Price" hidden />
+                }
+
                 <input asp-for="@Model[index].AmendmentId" hidden />
                 <input asp-for="@Model[index].ContractId" hidden />
                 <input asp-for="@Model[index].IsChange" hidden />
+                <input asp-for="@Model[index].ChangeServiceId" hidden />
 
                 index++;
             }

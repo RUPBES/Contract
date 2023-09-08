@@ -11,7 +11,7 @@ namespace BusinessLayer.Models
         public bool? IsChange { get; set; }
         public int? ChangeMaterialId { get; set; }
 
-        public MaterialGc ChangeMaterial { get; set; }
+        public MaterialDTO ChangeMaterial { get; set; }
         public Contract Contract { get; set; }
         public List<MaterialDTO> InverseChangeMaterial { get; set; } = new List<MaterialDTO>();
         public List<MaterialAmendmentDTO> MaterialAmendments { get; set; } = new List<MaterialAmendmentDTO>();

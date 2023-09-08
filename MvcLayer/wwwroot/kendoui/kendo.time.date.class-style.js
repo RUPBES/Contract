@@ -30,23 +30,16 @@ let datetimepickerNull = function (classElem) {
     });
 };
 
-//let monthpicker = function (classElem) {
+//let monthYearPicker = function (classElem) {
 //    kendo.culture("by-BY");
 
 //    $(classElem).kendoDatePicker({
-
-//        // defines the start view
-//        start: "year",
-
-//        // defines when the calendar should return date
+//        value: new Date(),
+//        format: "MM.yyyy",
 //        depth: "year",
-
-//        // display month and year in the input
-//        format: "MMMM yyyy",
-
-//        // specifies that DateInput is used for masking the input element
-//        dateInput: true
+//        start: "year"
 //    });
 //};
+
 
 

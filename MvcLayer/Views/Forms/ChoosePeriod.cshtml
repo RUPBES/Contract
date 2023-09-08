@@ -1,0 +1,62 @@
+﻿@model MvcLayer.Models.PeriodChooseViewModel
+
+@{
+    ViewData["Title"] = "ChoosePeriod";
+}
+
+<h1>ChoosePeriod</h1>
+
+
+
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:500px;">
+                <div class="top-modal-block">
+                    <div class="top-modal-left">
+                        <div class="pl-left">
+                            @* <img src="/Images/Icon/logotype.png"> *@
+                        </div>
+                    </div>
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                   @*  <a asp-controller="Instruction" asp-action="ListInstruction" class="close-btn"></a> *@
+                </div>
+                <hr class="modal-line">
+                <form id="target" asp-action="CreateForm" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                    <input name="ContractId" value="@Model?.ContractId" hidden />
+                    <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
+                    <div class="form-group col-12">
+                        <label class="control-label">Период</label>
+                        <select id="periodId" name="ChoosePeriod" class="form-control select">
+                            <option disabled selected>Выберите период</option>
+                            @foreach (var item in Model?.ListDates)
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+                <div id="result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+        $("#periodId").on("change", function () {
+            $("#target").trigger("submit");
+        });
+         $(document).ready(function(){
+            $('.js-chosen').chosen({
+                width: '100%',
+                no_results_text: 'Совпадений не найдено',
+                placeholder_text_single: 'Выберите'
+            });
+        });
+    </script>
+}

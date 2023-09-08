@@ -22,8 +22,20 @@ namespace MvcLayer.Models
 
         [DisplayName("ID измененного объема работ")]
         public int? ChangeScopeWorkId { get; set; }
+        [DisplayName("ID измененного аванса")]
+        public int? ChangePrepaymentId { get; set; }
+        [DisplayName("ID измененного услуг")]
+        public int? ChangeServiceId { get; set; }
+        [DisplayName("ID измененного материалов")]
+        public int? ChangeMaterialId { get; set; }
 
         [DisplayName("ID изменений к договору")]
         public int? AmendmentId { get; set; }
+
+        [DisplayName("Собственными силами?")]
+        public bool IsFact { get; set; }
+
+        public DateTime ChoosePeriod { get; set; }
+        public List<DateTime> ListDates { get; set; } = new List<DateTime>();
     }
 }

@@ -35,13 +35,13 @@ namespace BusinessLayer.Services
 
                     _database.Materials.Create(amend);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create material, ID={amend.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create material, ID={amend.Id}", typeof(MaterialService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return amend.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create material, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create material, object is null", typeof(MaterialService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -58,17 +58,17 @@ namespace BusinessLayer.Services
                     {
                         _database.Materials.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete material, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete material, ID={id}", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete material, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete material, ID is not more than zero", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -98,17 +98,35 @@ namespace BusinessLayer.Services
             {
                 _database.Materials.Update(_mapper.Map<MaterialGc>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update material, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update material, ID={item.Id}", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update material, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update material, object is null", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
         public IEnumerable<MaterialDTO> Find(Func<MaterialGc, bool> predicate)
         {
             return _mapper.Map<IEnumerable<MaterialDTO>>(_database.Materials.Find(predicate));
+        }
+        public void AddAmendmentToMaterial(int amendmentId, int materialId)
+        {
+            if (materialId > 0 && amendmentId > 0)
+            {
+                _database.MaterialAmendments.Create(new MaterialAmendment
+                {
+                    AmendmentId = amendmentId,
+                    MaterialId = materialId
+                });
+
+                _database.Save();
+                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={materialId}) to amendment (ID={amendmentId})", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not add materialAmendment", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
         }
     }
 }

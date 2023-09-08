@@ -9,12 +9,14 @@
 <h4>Справка формы С-3а</h4>
 <hr />
 <div class="row">
-    <form asp-action="Create" class="row" enctype="multipart/form-data">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form asp-action="Create" class="row" enctype="multipart/form-data">       
+        <input asp-for="ContractId" value="@Model.ContractId" hidden />
+        <input asp-for="IsOwnForces" value="@Model.IsOwnForces" hidden />
+        <input asp-for="Period" type="datetime" value="@Model.Period"hidden/>
+
         <div class="form-group col-6">
             <label asp-for="Period" class="control-label"></label>
-            <input asp-for="Period" type="date" class="form-control" />
-            <span asp-validation-for="Period" class="text-danger"></span>
+            <input type="text" value="@Model.Period" class="form-control" disabled/>
         </div>
         <div class="form-group col-6">
             <label asp-for="DateSigning" class="control-label"></label>
@@ -61,7 +63,7 @@
             <input asp-for="GenServiceCost" class="form-control" />
             <span asp-validation-for="GenServiceCost" class="text-danger"></span>
         </div>
-        <div class="form-group col-6">
+       @*  <div class="form-group col-6">
             <label asp-for="Number" class="control-label"></label>
             <input asp-for="Number" class="form-control" />
             <span asp-validation-for="Number" class="text-danger"></span>
@@ -70,9 +72,10 @@
             <label asp-for="IsOwnForces" class="control-label"></label>
             <input asp-for="IsOwnForces" class="form-control" />
             <span asp-validation-for="IsOwnForces" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
+        </div> *@
+        @* <div class="form-group col-6">
             <label asp-for="ContractId" class="control-label">Договор</label>
+            
             <select asp-for="ContractId" class="form-control">
                 <option value="" selected></option>
                 @foreach (var item in Contract.GetAll())
@@ -80,7 +83,7 @@
                     <option value="@item.Id">@item.Number</option>
                 }
             </select>
-        </div>
+        </div>*@
         <div class="form-group col-6">
             <label asp-for="FilesEntity" class="control-label"></label>
             <input asp-for="FilesEntity" type="file" class="form-control" />
@@ -92,8 +95,7 @@
     </form>
 </div>
 
-@* <div>
-    <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewData["Id"]
-    ">Вернуться назад</a>
-</div> *@
+<div>
+    <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.ContractId">Вернуться назад</a>
+</div>
 

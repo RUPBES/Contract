@@ -35,13 +35,13 @@ namespace BusinessLayer.Services
 
                     _database.Prepayments.Create(service);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create prepayment, ID={service.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create prepayment, ID={service.Id}", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     return service.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create prepayment, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(LogLevel.Warning, $"not create prepayment, object is null", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
             return null;
         }
@@ -58,17 +58,17 @@ namespace BusinessLayer.Services
                     {
                         _database.Prepayments.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete prepayment, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Information, $"delete prepayment, ID={id}", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete prepayment, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not delete prepayment, ID is not more than zero", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -97,11 +97,11 @@ namespace BusinessLayer.Services
             {
                 _database.Prepayments.Update(_mapper.Map<Prepayment>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update prepayment, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"update prepayment, ID={item.Id}", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update prepayment, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not update prepayment, object is null", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
 
@@ -126,11 +126,11 @@ namespace BusinessLayer.Services
                 });
 
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to prepayment (ID={prepaymentId})", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to prepayment (ID={prepaymentId})", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not add prepaymentAmendments", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(LogLevel.Warning, $"not add prepaymentAmendments", typeof(PrepaymentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
     }

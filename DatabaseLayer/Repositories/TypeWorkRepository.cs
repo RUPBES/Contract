@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseLayer.Repositories
 {
@@ -37,12 +38,12 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<TypeWork> Find(Func<TypeWork, bool> predicate)
         {
-            return _context.TypeWorks.Where(predicate).ToList();
+            return _context.TypeWorks.Include(x => x.TypeWorkContracts).Where(predicate).ToList();
         }
 
         public IEnumerable<TypeWork> GetAll()
         {
-            return _context.TypeWorks.ToList();
+            return _context.TypeWorks.Include(x=>x.TypeWorkContracts).ToList();
         }
 
         public TypeWork GetById(int id, int? secondId = null)

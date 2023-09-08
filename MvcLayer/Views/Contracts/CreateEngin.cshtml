@@ -16,7 +16,7 @@
         inputDays = $"<div class='col-1'><input type='number' name='PaymentСonditionsDaysRaschet' class='form-control' placeholder='0' min='1'></div>";
     }
 }
-<h4>Договор субподряда</h4>
+<h4>Договор на оказание инжиниринговых услуг</h4>
 <hr />
 <div id="modDialog" class="modal fade">
     <div id="dialogContent" class="modal-dialog modal-dialog-centered" role="document"></div>
@@ -29,11 +29,13 @@
 </div>
 
 <form class="row align-content-start" asp-action=Create method="post" id="MainForm" enctype="multipart/form-data">
-    <input asp-for="IsSubContract" hidden />
-    <input asp-for="SubContractId" hidden />
-    <input asp-for="NameObject" hidden>
-    <input asp-for="IsEngineering" value="false" hidden />
+    <input asp-for="IsEngineering" hidden />
+
     <input asp-for="IsAgreementContract" value="false" hidden />
+    <input asp-for="IsSubContract" value="false" hidden />
+    <input name="EmployeeContracts[0].Employee" hidden />
+    <input name="EmployeeContracts[1].Employee" hidden />
+    <input name="EmployeeContracts[2].Employee" hidden />
 
     <div class="col-4">
         <div class="row">
@@ -43,6 +45,13 @@
                     <div class="input-group-text">№</div>
                     <input asp-for="Number" class="form-control" id="NumDC">
                     <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" alt="Проверить, существует ли договор с таким номером"></button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="CDC">Стоимость оказания услуг</label>
+                <div class="input-group">
+                    <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                    <input asp-for="ContractPrice" class="form-control" id="CDC">
                 </div>
             </div>
             <div class="col-12">
@@ -62,12 +71,12 @@
                         </a>
                     </legend>
                     <div class="col-12">
-                        <label>Субподрядчик</label>  
-                        <input name="ContractOrganizations[0].Organization" hidden />
+                        <label>Заказчик</label>
+                        <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
                         <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
                             @if (Model?.ContractOrganizations[0] is not null)
                             {
-                                var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
+                                var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId);
                                 <option disabled selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.ContractOrganizations[0] is null)
@@ -80,67 +89,12 @@
                                 <option value="@item.Id">@item.Name</option>
                             }
                         </select>
-                    </div>  
-                    
+                    </div>
+
                     <input name="ContractOrganizations[1].Organization" hidden />
                     <input name="ContractOrganizations[2].Organization" hidden />
                 </fieldset>
             </div>  
-
-            @*Сотрудники *********@          
-            <div class="col-12 mt-3">
-                <fieldset class="border rounded-3 p-3">
-                    <legend class="float-none w-auto px-3">
-                        <a asp-action="AddEmployee" id="addEmployee" class="btn btn-sm btn-success">
-                            <img src="~/icons/person-plus.svg" />
-                            Добавить нового сотрудника
-                        </a>
-                    </legend>
-                    <div class="col-12">
-                        <label>Подписант договора</label>
-                        @* <input name="EmployeeContracts[0].Employee" hidden /> *@
-                        <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
-                        <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
-                            @if (Model?.EmployeeContracts[0] is not null)
-                            {
-                                var item = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
-                                <option disabled selected value="@item?.Id">@item?.FullName</option>
-                            }
-                            @if (Model?.EmployeeContracts[0] is null)
-                            {
-                                <option selected>Выберите сотрудника</option>
-                            }
-
-                            @foreach (var item in Employee.GetAll())
-                            {
-                                <option value="@item.Id">@item.FullName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label>Ответственный за ведение договора</label>
-                        @* <input name="EmployeeContracts[1].Employee" hidden /> *@
-                        <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
-                        <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
-                            @if (Model?.EmployeeContracts[1] is not null)
-                            {
-                                var item = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
-                                <option disabled selected value="@item?.Id">@item?.FullName</option>
-                            }
-                            @if (Model?.EmployeeContracts[1] is null)
-                            {
-                                <option selected>Выберите сотрудника</option>
-                            }
-                            @foreach (var item in Employee.GetAll())
-                            {
-                                <option value="@item.Id">@item.FullName</option>
-                            }
-                        </select>
-                    </div>
-                    <input name="EmployeeContracts[2].Employee" hidden />
-                </fieldset>
-            </div>
-
             @*Виды работ*********@
             <div class="col-12 mt-3">
                 <fieldset class="border rounded-3 p-3">
@@ -176,24 +130,10 @@
             </div>
         </div>
     </div>
-    <div class="col-4">
-        <div class="form-group">
-            <label asp-for="ContractPrice" for="CDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                <input asp-for="ContractPrice" class="form-control" id="CDC">
-            </div>
-        </div>
-        <div class="form-group">
-            <label asp-for="Сurrency" for="CurDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
-                <input asp-for="Сurrency" class="form-control" id="CurDC">
-            </div>
-        </div>
+    <div class="col-4"> 
         <div class="col-12">
             <label>Наименование объекта</label>
-            <textarea asp-for="NameObject" class="form-control" rows="2" disabled></textarea>
+            <textarea asp-for="NameObject" class="form-control" rows="2"></textarea>
         </div>
 
         <fieldset class="border rounded-3 p-3">
@@ -252,8 +192,13 @@
 
     </div>
     <div class="col-4">
-        
-        
+        <div class="form-group">
+            <label asp-for="Сurrency" for="CurDC"></label>
+            <div class="input-group">
+                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
+                <input asp-for="Сurrency" class="form-control" id="CurDC">
+            </div>
+        </div>        
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Сроки</legend>
             <label asp-for="DateBeginWork">Начало работ</label>
@@ -261,12 +206,6 @@
 
             <label asp-for="DateEndWork">Окончание работ</label>
             <input asp-for="DateEndWork" type="date" class="form-control">
-
-            <label asp-for="EnteringTerm"></label>
-            <input asp-for="EnteringTerm" type="date" class="form-control">
-
-            <label asp-for="ContractTerm"></label>
-            <input asp-for="ContractTerm" type="date" class="form-control">
         </fieldset>
 
 
@@ -338,62 +277,10 @@
             }
         </fieldset>
     </div>
-    @* <div class="col-8 mt-1">
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
-
-            <div class="col-1">
-                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
-                {
-                    <input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@Model?.PaymentСonditionsDaysRaschet.Value" min="1">
-                }
-                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == false || Model?.PaymentСonditionsDaysRaschet is null)
-                {
-                    <input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" placeholder="0" min="1">
-                }
-
-            </div>
-
-            @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
-            {
-                var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
-
-                bool? isValueValid = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase);
-                bool isDayValid = Model?.PaymentСonditionsDaysRaschet is null || isValueValid is null || isValueValid == false ? false : true;
-
-                <div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text" style="display: block;">
-                                @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
-                                {
-                                    <input type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
-                                }
-                                @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
-                                {
-                                    <input type="radio" name="PaymentСonditionsRaschet" value="@name">
-                                }
-
-                            </div>
-                        </div>
-
-
-                        <div class="col-10">
-                            <input type="text" class="form-control" value="@name" disabled>
-
-                        </div>
-                    </div>
-                </div>
-            }
-        </fieldset>
-    </div> *@
     <div class="col-8 mt-3">
         <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
     </div>
 </form>
-<div>
-    <a asp-action="Index">Вернуться</a>
-</div>
 
 @section Scripts {
     <script type="text/javascript">

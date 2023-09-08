@@ -30,10 +30,11 @@ namespace MvcLayer.Models
 
         [DisplayName("ID Изменений")]
         public int? AmendmentId { get; set; }
-
-        public ServiceGCDTO ChangeService { get; set; }
-        public ContractDTO Contract { get; set; }
-        public List<ServiceGCDTO> InverseChangeService { get; set; }
-        public List<ServiceAmendmentDTO> ServiceAmendments { get; set; }
+        [DisplayName("По факту?")]
+        public bool? IsFact { get; set; }
+        
+        public ContractViewModel Contract { get; set; }
+        public List<ServiceGCViewModel> InverseChangeService { get; set; } = new List<ServiceGCViewModel>();
+        public List<ServiceAmendmentDTO> ServiceAmendments { get; set; } = new List<ServiceAmendmentDTO>();
     }
 }

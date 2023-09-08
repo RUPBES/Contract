@@ -40,6 +40,9 @@ namespace MvcLayer.Models
         [DisplayName("ID измененного аванса")]
         public int? ChangePrepaymentId { get; set; }
 
+        [DisplayName("По факту?")]
+        public bool? IsFact { get; set; }
+
         public virtual PrepaymentViewModel Prepayment { get; set; }
         public virtual ContractViewModel Contract { get; set; }
         public virtual List<PrepaymentViewModel> InverseChangePrepayment { get; set; } = new List<PrepaymentViewModel>();

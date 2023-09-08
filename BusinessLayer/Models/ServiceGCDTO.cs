@@ -13,7 +13,7 @@
 
         public ServiceGCDTO ChangeService { get; set; }
         public ContractDTO Contract { get; set; }
-        public List<ServiceGCDTO> InverseChangeService { get; set; }
-        public List<ServiceAmendmentDTO> ServiceAmendments { get; set; }
+        public List<ServiceGCDTO> InverseChangeService { get; set; } = new List<ServiceGCDTO>();
+        public List<ServiceAmendmentDTO> ServiceAmendments { get; set; } = new List<ServiceAmendmentDTO>();
     }
 }

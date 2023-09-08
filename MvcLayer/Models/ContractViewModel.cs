@@ -115,6 +115,7 @@ namespace MvcLayer.Models
         public string? PaymentСonditionsRaschet { get; set; }
         public int? PaymentСonditionsDaysRaschet { get; set; }
         public int? PaymentСonditionsDaysRaschet2 { get; set; }
+        public int? ContractType { get; set; }
 
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 

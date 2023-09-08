@@ -314,9 +314,9 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("Связь \"Организации\" и \"Контракта\"");
 
-            entity.Property(e => e.IsClient).HasComment("Заказчик?");
+            entity.Property(e => e.IsClient).HasDefaultValueSql("0").HasComment("Заказчик?");
 
-            entity.Property(e => e.IsGenContractor).HasComment("ген.подрядчик?");
+            entity.Property(e => e.IsGenContractor).HasDefaultValueSql("0").HasComment("ген.подрядчик?");
 
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.ContractOrganizations)
@@ -429,9 +429,9 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("связь сотрудник - контракт");
 
-            entity.Property(e => e.IsResponsible).HasComment("ответственный за ведение договора");
+            entity.Property(e => e.IsResponsible).HasDefaultValueSql("0").HasComment("ответственный за ведение договора");
 
-            entity.Property(e => e.IsSignatory)
+            entity.Property(e => e.IsSignatory).HasDefaultValueSql("0")
                 .HasColumnName("IsSignatory ")
                 .HasComment("подписант договора");
 
@@ -539,7 +539,7 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money")
                 .HasComment("стоимость ген.услуг");
 
-            entity.Property(e => e.IsOwnForces).HasComment("работы проводятся собственными силами?");
+            entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
 
             entity.Property(e => e.MaterialCost)
                 .HasColumnType("money")
@@ -831,9 +831,9 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.GenServiceCost).HasColumnType("money");
 
-            entity.Property(e => e.IsChange).HasComment("изменено?");
+            entity.Property(e => e.IsChange).HasDefaultValueSql("0").HasComment("изменено?");
 
-            entity.Property(e => e.IsOwnForces).HasComment("работы проводятся собственными силами?");
+            entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
 
             entity.Property(e => e.MaterialCost)
                 .HasColumnType("money")

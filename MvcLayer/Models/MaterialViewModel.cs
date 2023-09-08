@@ -22,9 +22,14 @@ namespace MvcLayer.Models
         public bool? IsChange { get; set; }
         public int? ChangeMaterialId { get; set; }
 
-        public MaterialGc ChangeMaterial { get; set; }
-        public Contract Contract { get; set; }
-        public List<MaterialDTO> InverseChangeMaterial { get; set; } = new List<MaterialDTO>();
+        [DisplayName("ID Изменений")]
+        public int? AmendmentId { get; set; }
+
+        [DisplayName("По факту?")]
+        public bool? IsFact { get; set; }
+       
+        public ContractViewModel Contract { get; set; }
+        public List<MaterialViewModel> InverseChangeMaterial { get; set; } = new List<MaterialViewModel>();
         public List<MaterialAmendmentDTO> MaterialAmendments { get; set; } = new List<MaterialAmendmentDTO>();
     }
 }

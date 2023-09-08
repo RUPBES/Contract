@@ -5,12 +5,6 @@
 
 @{
     ViewData["Title"] = "Create";
-    bool hasPrepayment = false;
-    var scopes = Prepayment.Find(x => x.ContractId == Model.ContractId)?.FirstOrDefault();
-    if (scopes is not null)
-    {
-        hasPrepayment = true;
-    }
 }
 <style>
     .title-warning {
@@ -39,87 +33,43 @@
         margin: 0 auto 30px auto;
     }
 </style>
-@if (hasPrepayment)
-{
-    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-        <div class="form-group col-12">
-            <div class="title-warning"><span>Авансы для данного договора заполнены</span></div>
-            <label for="amendCheck">Внести изменения в авансы по доп.соглашению?</label>
-            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
-        </div>
-        <div id="chooseAmendment" class="row" hidden>
-            <div class="form-group">
-                <label class="control-label">Выбрать доп.соглашение</label>
-                <select name="AmendmentId" id="AmendId" class="form-control select">
-                    <option disabled selected>Выберите</option>
-                    @foreach (AmendmentDTO org in Amendment.GetAll())
-                    {
-                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                    }
-                </select>
-            </div>
-            <div class="row mt-3" id="date-box" hidden>
-                <div class="form-group col-6 mb-3">
-                    <label for="amendCheck1">Укажите начало периода</label>
-                    <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
-                </div>
-                <div class="form-group col-6 mb-3">
-                    <label for="amendCheck2">Укажите окончание периода</label>
-                    <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
-                </div>
-                <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
 
-            </div>
-        </div>
-    </form>
-}
+<form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+    <input asp-for="ChangePrepaymentId" value="@Model?.ChangePrepaymentId" hidden />
+    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
+    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
+    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
 
-@if (!hasPrepayment)
-{
-    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace">
-        <h4>Выбор периода авансов, предусмотренных договором</h4>
-        <input asp-for="ContractId" value="@Model?.ContractId" hidden />        
-        <div class="form-group col-6 mb-3">
-            <label for="amendCheck1">Укажите начало периода</label>
-            <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
-        </div>
-        <div class="form-group col-6 mb-3">
-            <label for="amendCheck2">Укажите окончание периода</label>
-            <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
-        </div>
-        <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
-    </form>
-}
+    <div class="form-group col-12">
+        <div class="title-warning"><span>Авансы для данного договора заполнены</span></div>
+        <label for="amendCheck">Внести изменения в авансы по доп.соглашению?</label>
+        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+    </div>
+    <div id="chooseAmendment" class="row" hidden>
+        <div class="form-group">
+            <label class="control-label">Выбрать доп.соглашение</label>
+            <select name="AmendmentId" id="AmendId" class="form-control select">
+                <option disabled selected>Выберите</option>
+                @foreach (AmendmentDTO org in Amendment.GetAll())
+                {
+                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                }
+            </select>
+        </div>        
+    </div>
+</form>
+
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script type="text/javascript">
         $("#AmendId").on("change", function () {
-
-            let divDates = document.querySelector("#date-box");
-
-            if (divDates.hidden != true) {
-                divDates.hidden = true;
-            }
-            else {
-                divDates.hidden = null;
-            }
+            $("#target").trigger("submit");
         });
 
-        $("#ownForceId").on("change", function () {
-
-            let isOwn = $(this).prop('checked');
-
-            if (isOwn === false) {
-                $(this).attr("value", "false")
-            }
-            else {
-                $(this).attr("value", "true")
-            }
-
-        });
 
         $("#amendCheck").on("change", function () {
 
@@ -142,11 +92,6 @@
         });
 
         $(document).ready(function () {
-            // $('.js-chosen').chosen({
-            //     width: '100%',
-            //     no_results_text: 'Совпадений не найдено',
-            //     placeholder_text_single: 'Выберите'
-            // });
 
             datepickerNull("input.datepickersNull");
             dateTimepicker("input.datetimepickers");

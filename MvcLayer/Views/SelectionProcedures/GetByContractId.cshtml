@@ -1,0 +1,83 @@
+﻿@model IEnumerable<MvcLayer.Models.SelectionProcedureViewModel>
+
+@{
+    ViewData["Title"] = "Процедура выбора";
+}
+
+@* <h1></h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p> *@
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TypeProcedure)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateBegin)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateEnd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AcceptancePrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AcceptanceNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateAcceptance)
+            </th>
+            @* <th>
+                @Html.DisplayNameFor(model => model.Contract)
+            </th> *@
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TypeProcedure)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateBegin)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateEnd)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AcceptancePrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AcceptanceNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateAcceptance)
+            </td>
+           @*  <td>
+                @Html.DisplayFor(modelItem => item.Contract.Id)
+            </td> *@
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> 
+                @*| <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> *@
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

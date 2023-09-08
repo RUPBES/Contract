@@ -1,6 +1,7 @@
 ﻿@using BusinessLayer.Models;
 @model BusinessLayer.Models.IndexViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
 @section Table{
     <div>
@@ -106,19 +107,26 @@
                             @*Условия оплаты: Аванс - Оплата*@
                             <td>
                                 <span class="table_span-conditions">
-                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
-                                        Аванс
+                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
+                                        @item?.PaymentСonditionsAvans
                                     </a>
-
+                                    @* <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
+                                        Аванс
+                                    </a> *@
+                                    <br/>
+                                    <br/>
                                     <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
-                                        Оплата
+                                        @item?.PaymentСonditionsRaschet@*  Оплата *@
                                     </a>
                                 </span>
                             </td>
                             @*Материалы*@
                             <td>
                                 <span class="table_span-material">
-                                    @Html.ActionLink("Материалы P15","","")
+                                   @*  @Html.ActionLink("Материалы P15","","") *@
+                                    <span class="icon link_to_page">
+                                        <a asp-action="GetByContractId" asp-controller="Material" asp-route-id="@item?.Id"></a>
+                                    </span>
                                 </span>
                             </td>
                             @*Валюта*@
@@ -130,7 +138,7 @@
                             @*Виды работ по договору*@
                             <td>
                                 <span class="table_span-work">
-                                    ?
+                                    @TypeWork?.Find(x=>x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
                                 </span>
                             </td>
                             @*Контрактная цена*@

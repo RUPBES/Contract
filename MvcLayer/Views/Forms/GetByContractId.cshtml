@@ -20,38 +20,80 @@
 <h1> @ViewData["Title"]</h1>
 <div class="table-responsive">
     <table class="table">
-        <thead class="k-text-align-center k-vertical-align-center table-bordered table-sm">
-            <tr>
-                <th><span class="table_span-contractprice">Период</span></th>
-                <th><span class="table_span-remains">Дата подписания</span></th>
-                <th><span class="table_span-volume">Общая стоимость выполненных работ</span></th>
-                <th><span class="table_span-volume">Стоимость СМР</span></th>
-                <th><span class="table_span-volume">Стоимость ПНР</span></th>
-                <th><span class="table_span-volume">Стоимость оборудования</span></th>
-                <th><span class="table_span-volume">Стоимость прочих работ</span></th>
-                <th><span class="table_span-volume">Файл</span></th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="k-text-align-right">
-                @foreach (var item in Model)
-                {
-                    <td><span class="table_span-contractprice">@item.Period</span></td>
-                    <td><span class="table_span-remains">@item.DateSigning</span></td>
-                    <td><span class="table_span-volume">@item.TotalCost</span></td>
-                    <td><span class="table_span-volume">@item.SmrCost</span></td>
-                    <td><span class="table_span-volume">@item.PnrCost</span></td>
-                    <td><span class="table_span-volume">@item.EquipmentCost</span></td>
-                    <td><span class="table_span-volume">@item.AdditionalCost</span></td>
-                    <td>
-                        <span class="table_span-volume">
-                            <img src="~/images/Icon/rofl.png" width="20"
-                                 height="20" alt="Подробнее">
-                        </span>
-                    </td>
-                }
-            </tr>
-        </tbody>
+        @* <thead class="k-text-align-center k-vertical-align-center table-bordered table-sm">
+        *@
+        <tr>
+            <th>
+                <span class="table_span-contractprice">Период</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-contractprice">@item.Period?.ToString("MMM yyyy")</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-remains">Дата подписания</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-remains">@item.DateSigning?.ToString("dd MMM yyyy")</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-volume">Общая стоимость выполненных работ</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-volume">@item.TotalCost</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-volume">Стоимость СМР</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-volume">@item.SmrCost</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-volume">Стоимость ПНР</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-volume">@item.PnrCost</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-volume">Стоимость оборудования</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-volume">@item.EquipmentCost</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-volume">Стоимость прочих работ</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-volume">@item.AdditionalCost</span></td>
+            }
+        </tr>
+        <tr>
+            <th>
+                <span class="table_span-volume">Файл</span>
+            </th>
+            @foreach (var item in Model)
+            {
+                <td><span class="table_span-volume"></span></td>
+            }
+        </tr>
     </table>
     <div>
         <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
