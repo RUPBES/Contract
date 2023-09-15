@@ -37,7 +37,7 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 return View(new PeriodChooseViewModel { ContractId = contractId });
-            }
+            }            
             return View();
         }
 

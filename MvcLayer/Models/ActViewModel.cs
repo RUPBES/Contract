@@ -24,6 +24,7 @@ namespace MvcLayer.Models
 
         [DisplayName("")]
         public bool? IsSuspension { get; set; }
+        [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }
         public int? ContractId { get; set; }
 

@@ -1,0 +1,332 @@
+﻿@using BusinessLayer.Models;
+@model BusinessLayer.Models.IndexViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+
+@section Table{
+    <div>
+        <h1 style="text-align: center;">Список договоров</h1>
+        <div class="contracts-list">
+            <p>
+                <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "EnginContracts")'">Новый инжиниронговый договор</button>
+                @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
+                {
+                    <form style="search-form">
+                        <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                        <input type="submit" value="Найти" />
+                    </form>
+                }
+            </p>
+        </div>
+        <div class="full-width">
+            <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
+                <thead>
+                    <tr class="tr-head-main-table">
+                        <th><span class="table_span-num">          №                            </span></th>
+                        <th>
+                            <span class="table_span-numberanddate">
+                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNumberanddate", @class=""})
+                            </span>
+                        </th>
+                        <th>
+                            <span class="table_span-nameobject">
+                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNameObject", @class=""})
+                            </span>
+                        </th>
+                        <th>
+                            <span class="table_span-customer">
+                                @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayCustomer", @class=""})
+                            </span>
+                        </th>
+                        <th>
+                            <span class="table_span-contractor">
+                                @Html.ActionLink("Генподрядчик", "Index", new { sortOrder = ViewBag.GenSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayGeneralContractor", @class=""})
+                            </span>
+                        </th>
+                        <th>
+                            <span class="table_span-deadlines">
+                                @Html.ActionLink("Cроки", "Index", new { sortOrder = ViewBag.EnterSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayTerms", @class=""})
+                            </span>
+                        </th>
+                        <th><span class="table_span-conditions">    Условия оплаты              </span></th>
+                        <th><span class='table_span-material'>      Материалы (факт или смета)  </span></th>
+                        <th><span class="table_span-currency">      Валюта                      </span></th>
+                        <th><span class="table_span-work">          Виды работ по договору      </span></th>
+                        <th><span class="table_span-contractprice"> Контрактная цена, с НДС     </span></th>
+                        <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
+                        <th><span class="table_span-remains">       Остаток                     </span></th>
+                        <th><span class="table_span-volume">        Объем на текущий год        </span></th>
+                        <th><span class="table_span-action">        Действия с договором        </span></th>
+                    </tr>
+                </thead>
+                <tbody class="table_tbody">
+                    @foreach (VContractDTO item in Model.Objects)
+                    {
+                        <tr>
+                            <td>
+                                <span class="table_span-num">
+                                    ?
+                                </span>
+                            </td>
+                            @*Номер и дата договора*@
+                            <td>
+                                <span class="table_span-numberanddate">
+                                    <a asp-action="Details" asp-route-id="@item.Id">
+                                        @item.Number от
+                                        @item.Date?.ToShortDateString()
+                                    </a>
+                                </span>
+                            </td>
+                            @*Наименование объекта*@
+                            <td>
+                                <span class="table_span-nameobject">
+                                    @item.NameObject
+                                </span>
+                            </td>
+                            @*Заказчик*@
+                            <td>
+                                <span class="table_span-customer">
+                                    @item.Client
+                                </span>
+                            </td>
+                            @*Генподрядчик*@
+                            <td>
+                                <span class="table_span-contractor">
+                                    @item.GenContractor
+                                </span>
+                            </td>
+                            @*Сроки: выполнения работ - ввода *@
+                            <td>
+                                <span class="table_span-deadlines">
+                                    <b>выполнения работ:</b><br>
+                                    @item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()<br>
+                                    <b>ввода:</b><br>
+                                    @item.EnteringTerm?.ToShortDateString()<br>
+                                </span>
+                            </td>
+                            @*Условия оплаты: Аванс - Оплата*@
+                            <td>
+                                <span class="table_span-conditions">
+                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
+                                        @item?.PaymentСonditionsAvans
+                                    </a>
+                                    @* <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
+                            Аванс
+                            </a> *@
+                                    <br />
+                                    <br />
+                                    <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
+                                        @item?.PaymentСonditionsRaschet@*  Оплата *@
+                                    </a>
+                                </span>
+                            </td>
+                            @*Материалы*@
+                            <td>
+                                <span class="table_span-material">
+                                    @*  @Html.ActionLink("Материалы P15","","") *@
+                                    <span class="icon link_to_page">
+                                        <a asp-action="GetByContractId" asp-controller="Material" asp-route-id="@item?.Id"></a>
+                                    </span>
+                                </span>
+                            </td>
+                            @*Валюта*@
+                            <td>
+                                <span class="table_span-currency">
+                                    @item.Сurrency
+                                </span>
+                            </td>
+                            @*Виды работ по договору*@
+                            <td>
+                                <span class="table_span-work">
+                                    @TypeWork?.Find(x=>x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                </span>
+                            </td>
+                            @*Контрактная цена*@
+                            <td>
+                                <span class="table_span-contractprice">?</span>
+                            </td>
+                            @*Выполнено на начало года*@
+                            <td>
+                                <span class="table_span-realization">?</span>
+                            </td>
+                            @*Остаток*@
+                            <td>
+                                <span class="table_span-remains">?</span>
+                            </td>
+                            @*Объем*@
+                            <td>
+                                <span class="table_span-volume">?</span>
+                            </td>
+                            @*Действия с договором*@
+                            <td>
+                                <div class="icon view">
+                                    <a asp-action="Details" asp-route-id="@item.Id"></a>
+                                </div>
+                                <div class="icon edit">
+                                    <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                </div>
+                                <div class="icon delete">
+                                    <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="pages">
+        @{
+            if (Model.PageViewModel.HasPreviousPage)
+            {
+                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+            }
+            else
+            {
+                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+            }
+        }
+        <b> @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages</b>
+        @{
+            if (Model.PageViewModel.HasNextPage)
+            {
+                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+            }
+            else
+            {
+                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+            }
+        }
+    </div>
+
+}
+
+@section Scripts {
+    <script type="text/javascript">
+
+        class ArrayFun {
+
+            constructor(url, element, urlDown, urlUp) {
+                this.url = url;
+                this.element = element;
+                this.urlDoun = urlDown;
+                this.urlUp = urlUp;
+            }
+
+            checkArray(url) {
+                console.log('test', url)
+            }
+
+        }
+        window.onload = function () {
+
+            let actualUrl = window.location.search;
+            let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
+            let elementArrayNameObject = document.getElementById("arrayNameObject");
+            let elementArrayCustomer = document.getElementById("arrayCustomer");
+            let elementArrayGeneralContractor = document.getElementById("arrayGeneralContractor");
+            let elementArrayTerms = document.getElementById("arrayTerms");
+
+            if (actualUrl.includes('dateDesc')) {
+                elementArrayNumberanddate.classList.remove("up")
+                elementArrayNumberanddate.classList.add('down')
+            } else if (actualUrl.includes('date')) {
+                elementArrayNumberanddate.classList.remove("down")
+                elementArrayNumberanddate.classList.add('up')
+            } else {
+                elementArrayNumberanddate.classList.remove("down")
+                elementArrayNumberanddate.classList.remove("up")
+            }
+            if (actualUrl.includes('nameObjectDesc')) {
+                elementArrayNameObject.classList.remove("up")
+                elementArrayNameObject.classList.add('down')
+
+            } else if (actualUrl.includes('nameObject')) {
+                elementArrayNameObject.classList.remove("down")
+                elementArrayNameObject.classList.add('up')
+            } else {
+                elementArrayNameObject.classList.remove("down")
+                elementArrayNameObject.classList.remove("up")
+            }
+            if (actualUrl.includes('clientDesc')) {
+                elementArrayCustomer.classList.remove("up")
+                elementArrayCustomer.classList.add('down')
+            } else if (actualUrl.includes('client')) {
+                elementArrayCustomer.classList.remove("down")
+                elementArrayCustomer.classList.add('up')
+            } else {
+                elementArrayCustomer.classList.remove("down")
+                elementArrayCustomer.classList.remove("up")
+            }
+            if (actualUrl.includes('genContractorDesc')) {
+                elementArrayGeneralContractor.classList.remove("up")
+                elementArrayGeneralContractor.classList.add('down')
+            } else if (actualUrl.includes('genContractor')) {
+                elementArrayGeneralContractor.classList.remove("down")
+                elementArrayGeneralContractor.classList.add('up')
+            } else {
+                elementArrayGeneralContractor.classList.remove("down")
+                elementArrayGeneralContractor.classList.remove("up")
+            }
+            if (actualUrl.includes('dateEnterDesc')) {
+                elementArrayTerms.classList.remove("up")
+                elementArrayTerms.classList.add('down')
+            } else if (actualUrl.includes('dateEnter')) {
+                elementArrayTerms.classList.remove("down")
+                elementArrayTerms.classList.add('up')
+            } else {
+                elementArrayTerms.classList.remove("down")
+                elementArrayTerms.classList.remove("up")
+            }
+
+        };
+
+        ///// вызываем PARTIAL VIEW для создания новой организации
+        $("#addOrganization").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddOrganization","Contracts")',
+                dataType: 'html',
+                data: $("#MainForm").serialize(),
+                success: (function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal('show');
+                })
+            });
+
+        });
+
+        ///// вызываем PARTIAL VIEW для добовления нового сотрудника
+
+        $("#addEmployee").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddEmployee","Contracts")',
+                dataType: 'html',
+                data: $("#MainForm").serialize(),
+                success: (function (result) {
+                    $('#dialogContent2').html(result);
+                    $('#modDialog2').modal('show');
+                })
+            });
+
+        });
+
+        $("#addTypeWork").click(function (e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddTypeWork","Contracts")',
+                dataType: 'html',
+                data: $("#MainForm").serialize(),
+                success: (function (result) {
+                    $('#dialogContent3').html(result);
+                    $('#modDialog3').modal('show');
+                })
+            });
+
+        });
+    </script>
+}

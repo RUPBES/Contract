@@ -20,14 +20,16 @@ namespace MvcLayer.Controllers
             _mapper = mapper;
             _fileService = fileService;
         }
-               
+              
+        [HttpPost]
         public ActionResult Index()
         {
             return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.GetAll()));
         }
 
-        public ActionResult Create()
+        public ActionResult Create(int id)
         {
+            ViewData["id"] = id;
             return View();
         }
 

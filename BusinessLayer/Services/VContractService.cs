@@ -72,7 +72,7 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, bool isEngin)
         {
             int count = _database.vContracts.Count();
             int skipEntities = (pageNum - 1) * pageSize;

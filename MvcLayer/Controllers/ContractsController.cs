@@ -36,7 +36,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "", bool isEngin = false)
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
@@ -51,7 +51,7 @@ namespace MvcLayer.Controllers
             ViewBag.CurrentFilter = query;
 
             if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder));
+                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder, isEngin));
             else return View(_vContractService.GetPage(100, pageNum));
         }
 

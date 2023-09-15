@@ -20,6 +20,7 @@ namespace MvcLayer.Models
         public string Reason { get; set; }
         public int? ContractId { get; set; }
         public bool? IsChange { get; set; }
+        [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }
 
         [DisplayName("Договор")]

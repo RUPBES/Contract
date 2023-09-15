@@ -3,7 +3,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Выбрать период оплаты";
 }
 <style>
     .title-warning {
@@ -32,21 +32,34 @@
         margin: 0 auto 30px auto;
     }
 </style>
-
-<form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace">
-    <h4>Выбор периода оплат, предусмотренных договором</h4>
-    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-    <div class="form-group col-6 mb-3">
-        <label for="amendCheck1">Укажите начало периода</label>
-        <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div  class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.ContractId" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form style="display: flex; flex-direction:column; margin:0px; width:700px;" id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace">
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                    <div class="form-group col-6 mb-3">
+                        <label for="amendCheck1">Укажите начало периода</label>
+                        <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
+                    </div>
+                    <div class="form-group col-6 mb-3">
+                        <label for="amendCheck2">Укажите окончание периода</label>
+                        <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
+                    </div>
+                    <div class="form-group">
+                        <a class="btn btn-success float-start" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.ContractId">Вернуться назад</a>
+                        <button class="btn btn-primary btn-sm float-end" type="submit">Выбрать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group col-6 mb-3">
-        <label for="amendCheck2">Укажите окончание периода</label>
-        <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
-    </div>
-    <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
-</form>
-
+</div>
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -74,15 +87,10 @@
         });
 
         $(document).ready(function () {
-            // $('.js-chosen').chosen({
-            //     width: '100%',
-            //     no_results_text: 'Совпадений не найдено',
-            //     placeholder_text_single: 'Выберите'
-            // });
 
             datepickerNull("input.datepickersNull");
             dateTimepicker("input.datetimepickers");
             datepicker("input.datepickers");
         });
     </script>
-}
+    }

@@ -39,6 +39,7 @@ namespace MvcLayer.Models
         public int? ContractId { get; set; }
 
         public ContractDTO Contract { get; set; }
+        [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }
 
         public List<AmendmentFileDTO> AmendmentFiles { get; set; }

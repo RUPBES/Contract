@@ -3,7 +3,7 @@
 @model List<MvcLayer.Models.PaymentViewModel>
 
 @{
-    ViewData["Title"] = "CreatePayment";
+    ViewData["Title"] = "Добавить оплату договора";
     int index = 0;
     var id = Model.FirstOrDefault()?.ContractId;
     var d = new List<PaymentViewModel>();
@@ -22,64 +22,73 @@
         min-width: 250px;
     }
 </style>
-<h4>Оплата</h4>
-<hr />
-<form asp-action="Create" class="row">
-    <div class="cont-table">
-        <table class="table table-bordered table-striped">
-            <tr>
-                <th>Период</th>
-                @foreach (var item in d)
-                {
-                    <td>
-                        @item.Period?.ToString("MMM yyyy")
-                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                    </td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-            <tr>
-                <th>Всего к оплате</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].PaySum" class="form-control" type="number" step="0.01" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
-            <tr>
-                <th>из них на счет РУП "БЭС"-УКХ"</th>
-                @foreach (var item in d)
-                {
-                    <td><input asp-for="@Model[index].PaySumForRupBes" class="form-control" type="number" step="0.01" min="0" /></td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form asp-action="Create" class="row">
+                    <div class="cont-table">
+                        <table class="table table-bordered table-striped">
+                            <tr>
+                                <th>Период</th>
+                                @foreach (var item in d)
+                                {
+                                    <td>
+                                        @item.Period?.ToString("MMM yyyy")
+                                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                    </td>
+                                    index++;
+                                }
+                                @{
+                                    index = 0;
+                                }
+                            </tr>
+                            <tr>
+                                <th>Всего к оплате</th>
+                                @foreach (var item in d)
+                                {
+                                    <td><input asp-for="@Model[index].PaySum" class="form-control" type="number" step="0.01" min="0" /></td>
+                                    index++;
+                                }
+                                @{
+                                    index = 0;
+                                }
+                            </tr>
+                            <tr>
+                                <th>из них на счет РУП "БЭС"-УКХ"</th>
+                                @foreach (var item in d)
+                                {
+                                    <td><input asp-for="@Model[index].PaySumForRupBes" class="form-control" type="number" step="0.01" min="0" /></td>
+                                    index++;
+                                }
+                                @{
+                                    index = 0;
+                                }
+                            </tr>
 
-            @foreach (var item in d)
-            {
-                <input asp-for="@Model[index].ContractId" hidden />
+                            @foreach (var item in d)
+                            {
+                                <input asp-for="@Model[index].ContractId" hidden />
 
-                index++;
-            }
+                                index++;
+                            }
 
-        </table>
+                        </table>
+                    </div>
+                    <div class="form-group" style="display:flex; justify-content: space-between;">
+                        <a class="btn btn-success float-start" asp-controller="Payments" asp-action="ChoosePeriod" asp-route-contractId="@Model.FirstOrDefault().ContractId">Вернуться назад</a>
+                        <a class="btn btn-success k-text-align-center" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться к договору</a>
+                        <input type="submit" value="Добавить" class="btn btn-primary float-end" />
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <input type="submit" value="Добавить" class="btn btn-primary" />
-    </div>
-</form>
-
-<div>
-    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
 </div>
 
 @section Scripts {
