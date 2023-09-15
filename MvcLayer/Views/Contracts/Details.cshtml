@@ -26,14 +26,10 @@
                             @*Объем на текущий год*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@i</span></th>
-                                // }
                                 @*Период (месяц)*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period</span></th>
+                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period?.Month-@item.Period?.Year</span></th>
                                 }
                             }
                         </tr>
@@ -46,16 +42,11 @@
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
+                            @{                               
                                 @*Стоимость работ общая (месяц)*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.</span></td>
                                 }
                             }
                         </tr>
@@ -66,17 +57,11 @@
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
                                 }
-
                             }
                         </tr>
                         <tr>
@@ -86,15 +71,10 @@
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
                                 }
                             }
                         </tr>
@@ -105,15 +85,10 @@
                             <td class="table-on-their-own"><span class="table_span-remains">Вид работ остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость Оборудования*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
                                 }
                             }
                         </tr>
@@ -125,15 +100,10 @@
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
                                 }
                             }
                         </tr>
@@ -144,15 +114,10 @@
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость ????*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month"> ?</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month"> ?</span></td>
                                 }
                             }
                         </tr>
@@ -163,14 +128,10 @@
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
                                 @*Стоимость доп.работ*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
                                 }
                             }
                         </tr>
@@ -181,15 +142,10 @@
                             <td class="table-on-their-own"><span class="table_span-remains">СМР остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость доп.работ*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></th>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
                                 }
                             }
                         </tr>
@@ -537,15 +493,10 @@
                             @*Объем на текущий год*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@i</span></th>
-                                // }
-
                                 @*Период (месяц)*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period</span></th>
+                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period?.Month-@item.Period?.Year</span></th>
                                 }
                             }
                         </tr>
@@ -562,7 +513,7 @@
                                 @*Стоимость ?*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">?</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
                         </tr>
@@ -573,14 +524,10 @@
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
                                 }
 
                             }
@@ -591,16 +538,11 @@
                             <td><span class="table_span-realization">ПНР выполнено</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
+                            @{                               
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
                                 }
                             }
                         </tr>
@@ -611,15 +553,10 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость Оборудование*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
                                 }
                             }
                         </tr>
@@ -629,16 +566,11 @@
                             <td><span class="table_span-realization">Работы выполнено</span></td>
                             <td><span class="table_span-remains">Работы остаток</span></td>
                             <td><span class="table_span-volume">Работы объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
+                            @{                                
                                 @*Стоимость ?*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">?</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
                         </tr>
@@ -648,15 +580,11 @@
                             <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
                             <td><span class="table_span-remains">Договор без НДС остаток</span></td>
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
+                            @{                               
                                 @*Стоимость ?*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">?</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
                         </tr>
@@ -666,15 +594,11 @@
                             <td><span class="table_span-realization">Доп. работы выполнено</span></td>
                             <td><span class="table_span-remains">Доп. работы остаток</span></td>
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
+                            @{                                
                                 @*Стоимость Доп. работы*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
                                 }
                             }
                         </tr>
@@ -684,16 +608,11 @@
                             <td><span class="table_span-realization">Материалы выполнено</span></td>
                             <td><span class="table_span-remains">Материалы остаток</span></td>
                             <td><span class="table_span-volume">Материалы объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
+                            @{                                
                                 @*Стоимость Материалы*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
                                 }
                             }
                         </tr>
@@ -704,15 +623,15 @@
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
+                            @{                               
                                 @*Период*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                }
+                                for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
                                 }
                             }
                         </tr>
@@ -722,15 +641,15 @@
                             <td><span class="table_span-realization">СМР выполнено</span></td>
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
+                            @{                               
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
+                                }
+                                for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
                                 }
                             }
                         </tr>
@@ -740,15 +659,11 @@
                             <td><span class="table_span-realization">ПНР выполнено</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
-                            @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
+                            @{                                
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
                                 }
                             }
                         </tr>
@@ -759,15 +674,10 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость Оборудование*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
                                 }
                             }
                         </tr>
@@ -778,15 +688,10 @@
                             <td><span class="table_span-remains">Работы остаток</span></td>
                             <td><span class="table_span-volume">Работы объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость ?*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">?</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
                         </tr>
@@ -797,15 +702,10 @@
                             <td><span class="table_span-remains">Договор без НДС остаток</span></td>
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость ?*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">?</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
                         </tr>
@@ -816,15 +716,10 @@
                             <td><span class="table_span-remains">Доп. работы остаток</span></td>
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость Доп. работы*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
                                 }
                             }
                         </tr>
@@ -835,15 +730,10 @@
                             <td><span class="table_span-remains">Материалы остаток</span></td>
                             <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
-                                // for (int i = 0; i < 25; i++)
-                                // {
-                                //     <td><span class="table_span-month">@i - 000</span></td>
-                                // }
-
                                 @*Стоимость Материалы*@
                                 foreach (var item in Model.FormC3as)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></th>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
                                 }
                             }
                         </tr>
@@ -1124,42 +1014,42 @@
                     @*Акт ввода*@
                     <th>
                         <span class="table_span-action">Объем работ(план/факт)</span>
-                    </th>                   
+                    </th>
                 </tr>
             </thead>
             <tbody>
                 <tr id="firstrow">
                     <td>
-                        <div class="table_span-action">                            
+                        <div class="table_span-action">
                             <div class="dropdown">
-                                <button onclick="ShowContent(Dropdown1)" class="icon view_list_pages dropbtn" ></button>
-                                    <div id="Dropdown1" class="dropdown-content">
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Oбъем работ</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Авансы</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@Model?.Id">Стоимость материалов</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model?.Id">Оплату договора</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@Model?.Id">Форму С-3а</a>
-                                    </div>
+                                <button onclick="ShowContent(Dropdown1)" class="icon view_list_pages dropbtn"></button>
+                                <div id="Dropdown1" class="dropdown-content">
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Oбъем работ</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Авансы</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@Model?.Id">Стоимость материалов</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model?.Id">Оплату договора</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@Model?.Id">Форму С-3а</a>
+                                </div>
                             </div>
                             <div class="dropdown">
                                 <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(Dropdown2)"></button>
-                                    <div id="Dropdown2" class="dropdown-content">
-                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
-                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
-                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">+ Услуги генподряда</a>
-                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">+ Стоимость материалов</a>
-                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">+ Оплату договора</a>
-                                        <a class="dropdown-item" asp-action="Create" asp-controller="Forms" asp-route-Id="@Model?.Id">+ Форму С-3а</a>
-                                        <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
-                                        <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
-                                        <a class="dropdown-item" asp-action="Create" asp-controller="Amendments" asp-route-Id="@Model?.Id">+ Изменения к договору</a>
-                                        <a class="dropdown-item" asp-action="Create" asp-controller="Acts" asp-route-Id="@Model?.Id">+ Акт приостановки/возобновления</a>
-                                        <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@Model?.Id">+ Акт ввода</a>
-                                        <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@Model?.Id">+ Переписка с заказчиком</a>
-                                        <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">+ ПСД</a>
-                                    </div>
-                            </div>                                                 
+                                <div id="Dropdown2" class="dropdown-content">
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">+ Услуги генподряда</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">+ Стоимость материалов</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">+ Оплату договора</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Forms" asp-route-Id="@Model?.Id">+ Форму С-3а</a>
+                                    <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
+                                    <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Amendments" asp-route-Id="@Model?.Id">+ Изменения к договору</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Acts" asp-route-Id="@Model?.Id">+ Акт приостановки/возобновления</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@Model?.Id">+ Акт ввода</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@Model?.Id">+ Переписка с заказчиком</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">+ ПСД</a>
+                                </div>
+                            </div>
                         </div>
                     </td>
                     <td>
@@ -1231,7 +1121,7 @@
                             <b>действия договора по взаиморасчетам:</b><br>
                             @Model.ContractTerm?.ToShortDateString()<br>
                         </span>
-                    </td>                    
+                    </td>
                     <td>
                         <span class="table_span-conditions">
                             @* Условия оплаты - *@
@@ -1246,7 +1136,7 @@
                             </a>
                             @* @Html.ActionLink("Расчет P7","","") *@
                         </span>
-                    </td>                  
+                    </td>
                     <td>
                         <span class="table_span-currency">
                             @* Валюта - *@
@@ -1263,28 +1153,28 @@
                             <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
                                  height="60" alt="Подробнее">
                         </span>
-                    </td>                  
+                    </td>
                 </tr>
                 @foreach (var contractBranch in branchAgreement)
                 {
-                var dropdownid1 = "Dropdown" + contractBranch.Id;
-                var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                <tr style="background-color: lightgoldenrodyellow">
+                    var dropdownid1 = "Dropdown" + contractBranch.Id;
+                    var dropdownid2 = "Dropdown_" + contractBranch.Id;
+                    <tr style="background-color: lightgoldenrodyellow">
                         <td>
-                           <div class="table_span-action">                            
-                            <div class="dropdown">
-                                <button onclick="ShowContent(@dropdownid1)" class="icon view_list_pages dropbtn" ></button>
-                                <div id="@dropdownid1" class="dropdown-content">
+                            <div class="table_span-action">
+                                <div class="dropdown">
+                                    <button onclick="ShowContent(@dropdownid1)" class="icon view_list_pages dropbtn"></button>
+                                    <div id="@dropdownid1" class="dropdown-content">
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch.Id">Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch.Id">Авансы</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractBranch.Id">Услуги генподряда</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch.Id">Стоимость материалов</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch.Id">Оплату договора</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@contractBranch.Id">Форму С-3а</a>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="dropdown">
-                                <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(@dropdownid2)"></button>
+                                <div class="dropdown">
+                                    <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(@dropdownid2)"></button>
                                     <div id="@dropdownid2" class="dropdown-content">
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch.Id">+ Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractBranch.Id">+ Авансы</a>
@@ -1300,8 +1190,8 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractBranch.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractBranch.Id">+ ПСД</a>
                                     </div>
-                            </div>                                                 
-                        </div>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             <span>
@@ -1389,19 +1279,47 @@
                                 <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
                                      height="60" alt="Подробнее">
                             </span>
-                        </td>                        
+                        </td>
                     </tr>
                 }
                 @foreach (var contractSub in subContract)
                 {
+                    var dropdownid3 = "Dropdown" + contractSub.Id;
+                    var dropdownid4 = "Dropdown_" + contractSub.Id;
                     <tr style="background-color: lightgoldenrodyellow">
                         <td>
-                            <span class="icon view_list_pages">
-                                <a asp-action="" asp-controller="" asp-route-id=""></a>
-                            </span>
-                            <span class="icon view_to_add_pages">
-                                <a asp-action="" asp-controller="" asp-route-id=""></a>
-                            </span>
+
+                            <div class="table_span-action">
+                                <div class="dropdown">
+                                    <button onclick="ShowContent(@dropdownid3)" class="icon view_list_pages dropbtn"></button>
+                                    <div id="@dropdownid3" class="dropdown-content">
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractSub.Id">Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub.Id">Авансы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractSub.Id">Услуги генподряда</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractSub.Id">Стоимость материалов</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractSub.Id">Оплату договора</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@contractSub.Id">Форму С-3а</a>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(@dropdownid4)"></button>
+                                    <div id="@dropdownid4" class="dropdown-content">
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractSub.Id">+ Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractSub.Id">+ Авансы</a>
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@contractSub.Id">+ Услуги генподряда</a>
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@contractSub.Id">+ Стоимость материалов</a>
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@contractSub.Id">+ Оплату договора</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Forms" asp-route-Id="@contractSub.Id">+ Форму С-3а</a>
+                                        <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@contractSub.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
+                                        <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@contractSub.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Amendments" asp-route-Id="@contractSub.Id">+ Изменения к договору</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Acts" asp-route-Id="@contractSub.Id">+ Акт приостановки/возобновления</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@contractSub.Id">+ Акт ввода</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractSub.Id">+ Переписка с заказчиком</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractSub.Id">+ ПСД</a>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             <span>
@@ -1463,14 +1381,6 @@
                             </span>
                         </td>
                         <td>
-                            <span class="table_span-act-renewal">
-                                @* Акты приостан./возобновления *@
-                                <span class="icon link_to_page">
-                                    <a asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@contractSub?.Id"></a>
-                                </span>
-                            </span>
-                        </td>
-                        <td>
                             <span class="table_span-conditions">
                                 @* Условия оплаты - *@
                                 <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id">
@@ -1480,20 +1390,6 @@
                                     @* Оплата *@
                                     @contractSub?.PaymentСonditionsRaschet
                                 </a>
-                            </span>
-                        </td>
-                        <td>
-                            <span class="table_span-gen-service">
-                                <span class="icon link_to_page">
-                                    <a asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-id="@contractSub?.Id"></a>
-                                </span>
-                            </span>
-                        </td>
-                        <td>
-                            <span class='table_span-material'>
-                                <span class="icon link_to_page">
-                                    <a asp-action="GetByContractId" asp-controller="Material" asp-route-id="@contractSub?.Id"></a>
-                                </span>
                             </span>
                         </td>
                         <td>
@@ -1511,36 +1407,14 @@
                                 <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
                                      height="60" alt="Подробнее">
                             </span>
-                        </td>
-                        <td>
-                            <span class="table_span-act-entering">
-                                <span class="icon link_to_page">
-                                    @contractSub?.CommissionActs?.FirstOrDefault()?.Date?.ToShortDateString()
-                                    <a asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@contractSub?.Id"></a>
-                                </span>
-                            </span>
-                        </td>
-                        <td>
-                            <span class="table_span-correspondence">
-                                <span class="icon link_to_page">
-                                    <a asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractSub?.Id"></a>
-                                </span>
-                            </span>
-                        </td>
-                        <td>
-                            <span class="table_span-estimate-doc">
-                                <span class="icon link_to_page">
-                                    <a asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-id="@contractSub?.Id"></a>
-                                </span>
-                            </span>
-                        </td>
+                        </td>                       
                     </tr>
                 }
             </tbody>
         </table>
     </div>
 
-    <div>  
+    <div>
         <a asp-action="Index">Вернуться</a>
     </div>
 
