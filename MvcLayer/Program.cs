@@ -8,6 +8,7 @@ using MvcLayer.Mapper;
 using OpenIddict.Client;
 using Quartz;
 using System.Configuration;
+using Toolbelt.Extensions.DependencyInjection;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -136,7 +137,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseCssLiveReload();
 app.UseRouting();
 
 app.UseAuthentication();

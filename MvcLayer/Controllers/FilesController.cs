@@ -23,24 +23,25 @@ namespace MvcLayer.Controllers
             return View(_file.GetAll());
         }
 
-        public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null)
+        public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
             ViewBag.fileCategory = fileCategory;
             ViewBag.entityId = entityId;
+            ViewBag.contractId = contractId;
 
             return View();
         }
 
         [HttpPost]
-        public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null)
+        public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
 
             int fileId = (int)_file.Create(collection.Files, fileCategory);
             _file.AttachFileToEntity(fileId, entityId, fileCategory);
 
-            return RedirectToAction(redirectAction, redirectController);
+            return RedirectToAction(redirectAction, redirectController, new { id = contractId });
         }
 
         public ActionResult Create()
@@ -63,7 +64,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Delete(int id, string redirectAction = null, string redirectController = null)
+        public ActionResult Delete(int id, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
             try
             {
@@ -71,7 +72,7 @@ namespace MvcLayer.Controllers
 
                 if (redirectController is not null && redirectAction is not null)
                 {
-                    return RedirectToAction(redirectAction, redirectController);
+                    return RedirectToAction(redirectAction, redirectController, new {id = contractId });
                 }
                 return RedirectToAction(nameof(Index));
             }

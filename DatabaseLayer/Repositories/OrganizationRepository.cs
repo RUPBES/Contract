@@ -50,7 +50,11 @@ namespace DatabaseLayer.Repositories
         {
             if (id > 0)
             {
-                return _context.Organizations.Find(id);
+                return _context.Organizations
+                    .Include(x => x.Addresses)
+                    .Include(x => x.Departments)
+                    .Include(x=>x.Phones)
+                    .FirstOrDefault(x=>x.Id == id);
             }
             else
             {

@@ -1,44 +1,68 @@
 ﻿@model MvcLayer.Models.OrganizationViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    var model = Model;
+    ViewData["Title"] = "Редактировать";
 }
 
-<h1>Редактировать</h1>
-
-<h4>Организация</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:700px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form asp-action="Edit" class="row">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="form-group col-6">
+                        <label asp-for="Name" for="name"></label>
+                        <div class="input-group">
+                            <div class="input-group-text"><img src="~/icons/buildings.svg" /></div>
+                            <input asp-for="Name" class="form-control" id="name">
+                        </div>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="Abbr" for="abb"></label>
+                        <div class="input-group">
+                            <div class="input-group-text"><img src="~/icons/buildings.svg" /></div>
+                            <input asp-for="Abbr" class="form-control" id="abb">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group col-6">
+                        <label asp-for="Unp" class="control-label"></label>
+                        <input asp-for="Unp" class="form-control" />
+                        <span asp-validation-for="Unp" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="Email" for="em"></label>
+                        <div class="input-group">
+                            <div class="input-group-text"><img src="~/icons/alternate_email.svg" /></div>
+                            <input asp-for="Email" class="form-control" id="em">
+                        </div>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="PaymentAccount" for="ac"></label>
+                        <div class="input-group">
+                            <div class="input-group-text"><img src="~/icons/account_balance_wallet.svg" /></div>
+                            <input asp-for="PaymentAccount" class="form-control" id="ac">
+                        </div>
+                    </div>                    
+                    <div class="form-group mt-3">
+                    <input type="submit" value="Сохранить" class="btn btn-primary" />
+                    </div> 
+                </form>
             </div>
-            <div class="form-group">
-                <label asp-for="Abbr" class="control-label"></label>
-                <input asp-for="Abbr" class="form-control" />
-                <span asp-validation-for="Abbr" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Unp" class="control-label"></label>
-                <input asp-for="Unp" class="form-control" />
-                <span asp-validation-for="Unp" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Сохранить" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Вернуться назад</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

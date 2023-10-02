@@ -42,7 +42,7 @@
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
-                            @{                               
+                            @{
                                 @*Стоимость работ общая (месяц)*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
@@ -538,7 +538,7 @@
                             <td><span class="table_span-realization">ПНР выполнено</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
-                            @{                               
+                            @{
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
@@ -566,7 +566,7 @@
                             <td><span class="table_span-realization">Работы выполнено</span></td>
                             <td><span class="table_span-remains">Работы остаток</span></td>
                             <td><span class="table_span-volume">Работы объем</span></td>
-                            @{                                
+                            @{
                                 @*Стоимость ?*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
@@ -580,7 +580,7 @@
                             <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
                             <td><span class="table_span-remains">Договор без НДС остаток</span></td>
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
-                            @{                               
+                            @{
                                 @*Стоимость ?*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
@@ -594,7 +594,7 @@
                             <td><span class="table_span-realization">Доп. работы выполнено</span></td>
                             <td><span class="table_span-remains">Доп. работы остаток</span></td>
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
-                            @{                                
+                            @{
                                 @*Стоимость Доп. работы*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
@@ -608,7 +608,7 @@
                             <td><span class="table_span-realization">Материалы выполнено</span></td>
                             <td><span class="table_span-remains">Материалы остаток</span></td>
                             <td><span class="table_span-volume">Материалы объем</span></td>
-                            @{                                
+                            @{
                                 @*Стоимость Материалы*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
@@ -623,7 +623,7 @@
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
-                            @{                               
+                            @{
                                 @*Период*@
                                 foreach (var item in Model.FormC3as)
                                 {
@@ -641,7 +641,7 @@
                             <td><span class="table_span-realization">СМР выполнено</span></td>
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
-                            @{                               
+                            @{
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.FormC3as)
                                 {
@@ -659,7 +659,7 @@
                             <td><span class="table_span-realization">ПНР выполнено</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
-                            @{                                
+                            @{
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.FormC3as)
                                 {
@@ -1021,35 +1021,67 @@
                 <tr id="firstrow">
                     <td>
                         <div class="table_span-action">
+
                             <div class="dropdown">
-                                <button onclick="ShowContent(Dropdown1)" class="icon view_list_pages dropbtn"></button>
-                                <div id="Dropdown1" class="dropdown-content">
+                                <span class="icon view_list_pages dropdown-toggle">
+                                </span>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Oбъем работ</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Авансы</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@Model?.Id">Стоимость материалов</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model?.Id">Оплату договора</a>
-                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@Model?.Id">Форму С-3а</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@Model?.Id">Форма С-3а</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Amendments" asp-route-id="@Model?.Id">Изменения к договору</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@Model?.Id">Акт приостановки/возобновления</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id">Акт ввода</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-Id="@Model?.Id">Переписка с заказчиком</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">ПСД</a>
                                 </div>
                             </div>
                             <div class="dropdown">
-                                <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(Dropdown2)"></button>
-                                <div id="Dropdown2" class="dropdown-content">
+                                <span class="icon view_to_add_pages dropdown-toggle">
+                                </span>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
+                                    <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
+                                    <div class="dropdown-divider"></div>
+                                    <h6 class="dropdown-header">План</h6>
                                     <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isOwnForces="true">+ Oбъем работ собственными силами</a>
                                     <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
                                     <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">+ Услуги генподряда</a>
                                     <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id">+ Стоимость материалов</a>
+                                    <div class="dropdown-divider"></div>
+                                    <h6 class="dropdown-header">Факт</h6>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Forms" asp-route-contractId="@Model?.Id">+ Форму С-3а</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Forms" asp-route-contractId="@Model?.Id" asp-route-isOwnForces="true">+ Форму С-3а (собственными силами)</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id" asp-route-isFact="true">+ Авансы</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id" asp-route-isFact="true">+ Услуги генподряда</a>
+                                    <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@Model?.Id" asp-route-isFact="true">+ Стоимость материалов</a>
+                                    <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@Model?.Id">+ Оплату договора</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="Forms" asp-route-Id="@Model?.Id">+ Форму С-3а</a>
-                                    <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
-                                    <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="Amendments" asp-route-Id="@Model?.Id">+ Изменения к договору</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="Acts" asp-route-Id="@Model?.Id">+ Акт приостановки/возобновления</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@Model?.Id">+ Акт ввода</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@Model?.Id">+ Переписка с заказчиком</a>
-                                    <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">+ ПСД</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Amendments" asp-route-contractId="@Model?.Id">+ Изменения к договору</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Acts" asp-route-contractId="@Model?.Id">+ Акт приостановки/возобновления</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-contractId="@Model?.Id">+ Акт ввода</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-contractId="@Model?.Id">+ Переписка с заказчиком</a>
+                                    <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-contractId="@Model?.Id">+ ПСД</a>
                                 </div>
                             </div>
+
+
+                            @*  <div class="dropdown">
+                        <button onclick="ShowContent(Dropdown1)" class="icon view_list_pages dropbtn"></button>
+                        <div id="Dropdown1" class="dropdown-content">
+                        </div>
+                        </div>
+                        <div class="dropdown">
+                        <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(Dropdown2)"></button>
+                        <div id="Dropdown2" class="dropdown-content">
+                        </div>
+
+
+                        </div> *@
                         </div>
                     </td>
                     <td>
@@ -1150,8 +1182,7 @@
                     </td>
                     <td>
                         <span class="table_span-act-entering">
-                            <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
-                                 height="60" alt="Подробнее">
+                            <span class="icon link_to_page" id="SMR-detail" title="Объем работ генподряда"></span>
                         </span>
                     </td>
                 </tr>
@@ -1275,9 +1306,8 @@
                             </span>
                         </td>
                         <td>
-                            <span class="table_span-act-entering">
-                                <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
-                                     height="60" alt="Подробнее">
+                            <span class="table_span-act-entering">                                
+                            <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
                             </span>
                         </td>
                     </tr>
@@ -1407,7 +1437,7 @@
                                 <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
                                      height="60" alt="Подробнее">
                             </span>
-                        </td>                       
+                        </td>
                     </tr>
                 }
             </tbody>

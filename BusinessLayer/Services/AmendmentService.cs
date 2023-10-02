@@ -127,8 +127,12 @@ namespace BusinessLayer.Services
                     _logger.WriteLog(LogLevel.Information, $"create file of amendment", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
                 }
             }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not create file of amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
 
-            _logger.WriteLog(LogLevel.Warning, $"not create file of amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+
         }
     }
 }

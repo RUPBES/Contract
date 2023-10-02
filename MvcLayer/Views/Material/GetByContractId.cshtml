@@ -1,61 +1,117 @@
 ﻿@model IEnumerable<MvcLayer.Models.MaterialViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
-    ViewData["Title"] = "GetByContractId";
+    ViewData["Title"] = string.Empty;
+    var id = Model.FirstOrDefault()?.ContractId;
+    if (id is not null)
+    {
+        var number = Contract.GetById((int)id).Number;
+        ViewData["Title"] = $"Стоимость материалов согласно договора № {number}";
+    }
 }
 
-<h1>GetByContractId</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FactPrice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Period)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsChange)
-            </th>
-            
-            <th>
-                @Html.DisplayNameFor(model => model.Contract)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FactPrice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Period)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsChange)
-            </td>
-            
-            <td>
-                @Html.DisplayFor(modelItem => item.Contract.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" >
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (@id != null && @id > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                    }
+                    @if (@id == null || @id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <div style=" overflow:scroll; max-height:600px">
+                    <table class="table">
+                        @*!!!план без изменений!!*@
+                        <tr>
+                            <th>
+                                Период
+                            </th>
+                            @foreach (var item in Model.Where(x => x.IsChange != true))
+                            {
+                                <th>
+                                    @item.Period?.ToString("MMM yyyy")
+                                </th>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Price)
+                            </th>
+                            @foreach (var item in Model.Where(x => x.IsChange != true))
+                            {
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Price)
+                                </td>
+                            }
+                        </tr>
+                        @if (Model.Where(x => x.IsChange == true).Count() > 0)
+                        {
+                            @foreach (var item2 in Model.Where(x => x.IsChange == true))
+                            {
+                                var amendment = @item2?.MaterialAmendments?.FirstOrDefault(x => x.MaterialId == item2.Id)?.Amendment;
+
+                                <tr>@amendment?.Number</tr>
+                                <tr>
+                                    <th class="text-uppercase fw-light">
+                                        Cогласно графику стоимости в редакции ДС @amendment?.Number к договору
+                                    </th>
+                                    @foreach (var item3 in Model.Where(x => x.IsChange == true))
+                                    {
+                                        <th>
+                                            @item3.Period?.ToString("MMM yyyy")
+                                        </th>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Price)
+                                    </th>
+                                    @foreach (var item in Model.Where(x => x.IsChange == true))
+                                    {
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Price)
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                        @*!!!факт!!*@
+                        <tr>
+                            <th class="text-uppercase fw-light">
+                                По факту
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <th>
+                                    @item.Period?.ToString("MMM yyyy")
+                                </th>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.FactPrice)
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.FactPrice)
+                                </td>
+                            }
+                        </tr>
+                    </table>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+</div>

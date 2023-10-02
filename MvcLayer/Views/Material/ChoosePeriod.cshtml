@@ -4,7 +4,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IMaterialService Material
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Выбрать период или изменение к договору";
 }
 <style>
     .title-warning {
@@ -26,7 +26,7 @@
 
     #target {
         margin: 100px auto;
-        width: 50%;
+        width: 60%;
     }
 
     #chooseAmendment {
@@ -34,31 +34,51 @@
     }
 </style>
 
-<form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-    <input asp-for="ChangeMaterialId" value="@Model?.ChangeMaterialId" hidden />
-    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
-    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
-    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width: 850px; height:440px">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form id="target" sty asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                    <input asp-for="ChangeMaterialId" value="@Model?.ChangeMaterialId" hidden />
+                    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
+                    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
+                    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
 
-    <div class="form-group col-12">
-        <div class="title-warning"><span>Материалы для данного договора заполнены</span></div>
-        <label for="amendCheck">Внести изменения в материалы по доп.соглашению?</label>
-        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+                    <div class="form-group col-12">
+                        <div class="title-warning"><span>Материалы для данного договора заполнены</span></div>
+                        <label for="amendCheck">Внести изменения в материалы по доп.соглашению?</label>
+                        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+                    </div>
+                    <div id="chooseAmendment" class="row" hidden>
+                        <div class="form-group">
+                            <label class="control-label">Выбрать доп.соглашение</label>
+                            <select name="AmendmentId" id="AmendId" class="form-control select">
+                                <option disabled selected>Выберите</option>
+                                @foreach (AmendmentDTO org in Amendment.GetAll())
+                                {
+                                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div id="chooseAmendment" class="row" hidden>
-        <div class="form-group">
-            <label class="control-label">Выбрать доп.соглашение</label>
-            <select name="AmendmentId" id="AmendId" class="form-control select">
-                <option disabled selected>Выберите</option>
-                @foreach (AmendmentDTO org in Amendment.GetAll())
-                {
-                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                }
-            </select>
-        </div>        
-    </div>
-</form>
+</div>
 
 
 @section Scripts {

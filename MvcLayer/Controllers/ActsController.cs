@@ -2,8 +2,10 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -25,14 +27,14 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int id)
         {
-            return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int id)
+        public ActionResult Create(int contractId)
         {
-            ViewData["id"] = id;
+            ViewData["contractId"] = contractId;
             return View();
         }
 
@@ -45,8 +47,16 @@ namespace MvcLayer.Controllers
                 int fileId = (int)_fileService.Create(actViewModel.FilesEntity, FolderEnum.Acts);
                 int actId = (int)_actService.Create(_mapper.Map<ActDTO>(actViewModel));
                 _actService.AddFile(actId, fileId);
-
-                return RedirectToAction(nameof(Index));
+                
+                //если запрос пришел с детальной инфы по договору, тогда редиректим туда же
+                if (actViewModel.ContractId is not null &&  actViewModel.ContractId > 0)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new { id = actViewModel.ContractId });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             catch
             {
@@ -54,8 +64,9 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, int? contractId = null)
         {
+            ViewBag.contractId = contractId;
             return View(_mapper.Map<ActViewModel>(_actService.GetById(id)));
         }
 
@@ -74,11 +85,17 @@ namespace MvcLayer.Controllers
                     return View();
                 }
             }
-
-            return RedirectToAction(nameof(Index));
+            if (act?.ContractId is not null && act.ContractId > 0)
+            {
+                return RedirectToAction(nameof(GetByContractId), new { id = act.ContractId });
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int id, int? contractId = null)
         {
             try
             {
@@ -88,7 +105,15 @@ namespace MvcLayer.Controllers
                 }
 
                 _actService.Delete(id);
-                return RedirectToAction(nameof(Index));
+
+                if (contractId is not null && contractId > 0)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             catch
             {

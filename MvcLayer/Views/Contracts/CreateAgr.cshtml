@@ -29,7 +29,7 @@
 </div>
 
 <form class="row align-content-start" asp-action=Create method="post" id="MainForm" enctype="multipart/form-data">
-    <input asp-for="IsAgreementContract" hidden />
+    <input asp-for="IsAgreementContract" value="true" hidden />
     <input asp-for="AgreementContractId" hidden />
     <input asp-for="NameObject" hidden>
     <input asp-for="IsEngineering" value="false" hidden />
@@ -42,7 +42,7 @@
                 <div class="input-group">
                     <div class="input-group-text">№</div>
                     <input asp-for="Number" class="form-control" id="NumDC">
-                    <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" alt="Проверить, существует ли договор с таким номером"></button>
+                    <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли договор с таким номером"></button>
                 </div>
             </div>
             <div class="col-12">
@@ -337,55 +337,6 @@
             }
         </fieldset>
     </div>
-    @* <div class="col-8 mt-1">
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
-
-            <div class="col-1">
-                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
-                {
-                    <input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@Model?.PaymentСonditionsDaysRaschet.Value" min="1">
-                }
-                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == false || Model?.PaymentСonditionsDaysRaschet is null)
-                {
-                    <input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" placeholder="0" min="1">
-                }
-
-            </div>
-
-            @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
-            {
-                var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
-
-                bool? isValueValid = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase);
-                bool isDayValid = Model?.PaymentСonditionsDaysRaschet is null || isValueValid is null || isValueValid == false ? false : true;
-
-                <div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text" style="display: block;">
-                                @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
-                                {
-                                    <input type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
-                                }
-                                @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
-                                {
-                                    <input type="radio" name="PaymentСonditionsRaschet" value="@name">
-                                }
-
-                            </div>
-                        </div>
-
-
-                        <div class="col-10">
-                            <input type="text" class="form-control" value="@name" disabled>
-
-                        </div>
-                    </div>
-                </div>
-            }
-        </fieldset>
-    </div> *@
     <div class="col-8 mt-3">
         <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
     </div>
@@ -397,6 +348,7 @@
 @section Scripts {
     <script type="text/javascript">
         $(document).ready(function () {
+            let isCheckNumberContract = false;
 
             let styleName = "border:solid red 4px;";
 
@@ -427,6 +379,8 @@
                             console.log(resultChecking);
                         }
                         else {
+                            // isCheckNumberContract = true;
+                            // changeButtonType("#subBtn", "#NumDC");
                             alert(`Договор с данным номером не существует!`)
                         }
                     },
@@ -435,6 +389,7 @@
                     }
                 });
             });
+
             
             $("#addOrganization").click(function (e) {
                 e.preventDefault();
@@ -484,7 +439,6 @@
                 });
 
             });
-
             
         });
     </script>

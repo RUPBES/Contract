@@ -163,9 +163,41 @@ namespace MvcLayer.Controllers
         public IActionResult Create(ContractViewModel contract, string? message = null)
         {
             var listExistContracts = _contractService.ExistContractAndReturnListSameContracts(contract.Number, contract.Date);
+
             if (listExistContracts is not null && listExistContracts.Count > 0)
             {
                 ViewBag.Message = message;
+
+                if (contract.IsSubContract == true)
+                {
+                    return View("CreateSub", contract);
+                }
+                if (contract.IsAgreementContract == true)
+                {
+                    return View("CreateAgr", contract);
+                }
+                if (contract.IsEngineering == true)
+                {
+                    return View("CreateEngin", contract);
+                }
+                return View(contract);
+            }
+
+            if (_contractService.ExistContractByNumber(contract.Number) || contract.Number is null)
+            {
+                if (contract.IsSubContract == true)
+                {
+                    return View("CreateSub", contract);
+                }
+                if (contract.IsAgreementContract == true)
+                {
+                    return View("CreateAgr", contract);
+                }
+                if (contract.IsEngineering == true)
+                {
+                    return View("CreateEngin", contract);
+                }
+
                 return View(contract);
             }
 
@@ -234,6 +266,7 @@ namespace MvcLayer.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
+
             return View(contract);
         }
 

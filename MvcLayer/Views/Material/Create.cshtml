@@ -5,7 +5,7 @@
 @{
     int index = 0;
     var d = new List<MaterialViewModel>();
-
+    ViewData["Title"] = "Стоимость материалов";
     if (TempData["material"] is string s)
     {
         d.AddRange(JsonConvert.DeserializeObject<List<MaterialViewModel>>(s));
@@ -13,6 +13,7 @@
     bool isFact = d.FirstOrDefault().IsFact == true ? true : false;
 
     string actionName = isFact ? "EditMaterial" : "Create";
+    int contrId = d?.FirstOrDefault()?.ContractId is not null && d?.FirstOrDefault()?.ContractId > 0 ? (int)d?.FirstOrDefault()?.ContractId : 0;
 }
 <style>
     .cont-table {
@@ -24,80 +25,95 @@
         min-width: 250px;
     }
 </style>
-<h4>Стоимость материалов</h4>
-<hr />
-<form asp-action=@actionName class="row">
-    <div class="cont-table">
-        <table class="table table-bordered table-striped">
-            <tr>
 
-                <th>Период</th>
-                @foreach (var item in d)
-                {
-                    <td>
-                        @item.Period?.ToString("MMM yyyy")
-                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                    </td>
-                    index++;
-                }
-                @{
-                    index = 0;
-                }
-            </tr>   
-            @if (!isFact)
-            {
-                <tr>
-                    <th>Планируемая стоимость материалов</th>
-                    @foreach (var item in d)
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] </label>
+                    @if (@contrId != null && @contrId > 0)
                     {
-                        <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
-                        index++;
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contrId" class="close-btn"></a>
                     }
-                    @{
-                        index = 0;
-                    }
-                </tr>
-            }
-            @if (isFact)
-            {
-                <tr>
-                    <th>Цена материалов фактическая</th>
-                    @foreach (var item in d)
+                    @if (@contrId == null || @contrId == 0)
                     {
-                        <td><input asp-for="@Model[index].FactPrice" class="form-control" type="number" step="0.01" min="0" /></td>
-                        index++;
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
-                    @{
-                        index = 0;
-                    }
-                </tr>
-            }
+                </div>
+                <hr class="modal-line" />
+                <form asp-action=@actionName class="row">
+                    <div class="cont-table">
+                        <table class="table table-bordered table-striped">
+                            <tr>
 
-            @foreach (var item in d)
-            {
-                @if (isFact)
-                {
-                    <input asp-for="@Model[index].Id" hidden />
-                    <input asp-for="@Model[index].Price" hidden />
-                }
+                                <th>Период</th>
+                                @foreach (var item in d)
+                                {
+                                    <td>
+                                        @item.Period?.ToString("MMM yyyy")
+                                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                    </td>
+                                    index++;
+                                }
+                                @{
+                                    index = 0;
+                                }
+                            </tr>
+                            @if (!isFact)
+                            {
+                                <tr>
+                                    <th>Планируемая стоимость материалов</th>
+                                    @foreach (var item in d)
+                                    {
+                                        <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        index++;
+                                    }
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                            }
+                            @if (isFact)
+                            {
+                                <tr>
+                                    <th>Цена материалов фактическая</th>
+                                    @foreach (var item in d)
+                                    {
+                                        <td><input asp-for="@Model[index].FactPrice" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        index++;
+                                    }
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                            }
 
-                <input asp-for="@Model[index].AmendmentId" hidden />
-                <input asp-for="@Model[index].ContractId" hidden />
-                <input asp-for="@Model[index].IsChange" hidden />
-                <input asp-for="@Model[index].ChangeMaterialId" hidden />
+                            @foreach (var item in d)
+                            {
+                                @if (isFact)
+                                {
+                                    <input asp-for="@Model[index].Id" hidden />
+                                    <input asp-for="@Model[index].Price" hidden />
+                                }
 
-                index++;
-            }
+                                <input asp-for="@Model[index].AmendmentId" hidden />
+                                <input asp-for="@Model[index].ContractId" hidden />
+                                <input asp-for="@Model[index].IsChange" hidden />
+                                <input asp-for="@Model[index].ChangeMaterialId" hidden />
 
-        </table>
+                                index++;
+                            }
+
+                        </table>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-primary" />
-    </div>
-</form>
-
-<div>
-    <a asp-action="Index">Вернуться назад</a>
 </div>
 
 @section Scripts {

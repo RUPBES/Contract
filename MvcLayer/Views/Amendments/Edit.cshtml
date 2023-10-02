@@ -1,67 +1,88 @@
 ﻿@model MvcLayer.Models.AmendmentViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Изменениe по договору";
 }
 
-<h4>Изменения</h4>
-<hr />
-<div class="row">
-    <form asp-action="Edit" class="row">
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="form-group col-6">
-            <label asp-for="Number" class="control-label"></label>
-            <input asp-for="Number" class="form-control" />
-            <span asp-validation-for="Number" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="Date" class="control-label"></label>
-            <input asp-for="Date" type="date" class="form-control" />
-            <span asp-validation-for="Date" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="Reason" class="control-label"></label>
-            <input asp-for="Reason" class="form-control" />
-            <span asp-validation-for="Reason" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="ContractPrice" class="control-label"></label>
-            <input asp-for="ContractPrice" class="form-control" />
-            <span asp-validation-for="ContractPrice" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="DateBeginWork" class="control-label"></label>
-            <input asp-for="DateBeginWork" type="date" class="form-control" />
-            <span asp-validation-for="DateBeginWork" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="DateEndWork" class="control-label"></label>
-            <input asp-for="DateEndWork" type="date" class="form-control" />
-            <span asp-validation-for="DateEndWork" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="DateEntryObject" class="control-label"></label>
-            <input asp-for="DateEntryObject" type="date" class="form-control" />
-            <span asp-validation-for="DateEntryObject" class="text-danger"></span>
-        </div>
-        <div class="form-group col-6">
-            <label asp-for="Comment" class="control-label"></label>
-            <input asp-for="Comment" class="form-control" />
-            <span asp-validation-for="Comment" class="text-danger"></span>
-        </div>
-        @* <div class="form-group col-6">
-            <label asp-for="ContractId" class="control-label"></label>
-            <select asp-for="ContractId" class="form-control" asp-items="ViewBag.ContractId">
-                <option></option>
-            </select>
-        </div> *@
-        <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-primary" />
-        </div>
-    </form>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:960px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] @Model?.Number</label>
+                    @if (Model?.Id != null && @Model?.Id > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.Id" class="close-btn"></a>
+                    }
+                    @if (@Model?.Id == null || @Model?.Id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <div class="row">
+                    <form asp-action="Edit" class="row">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input asp-for="ContractId" value="@Model?.ContractId" hidden>
 
+                        <div class="col-3">
+                            <label asp-for="Number" for="NumId"></label>
+                            <div class="input-group">
+                                <div class="input-group-text">№</div>
+                                <input asp-for="Number" class="form-control" id="NumId">
+                            </div>
+                        </div>
+                        <div class="form-group col-3">
+                            <label asp-for="Date" class="control-label"></label>
+                            <input asp-for="Date" class="form-control datepickers" type="datetime" />
+                            <span asp-validation-for="Date" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group col-6">
+                            <label asp-for="ContractPrice" class="control-label" for="contr"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                                <input asp-for="ContractPrice" type="number" min="0" class="form-control" value="@Model?.ContractPrice" id="contr" />
+                            </div>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="Reason" class="control-label"></label>
+                            <textarea asp-for="Reason" class="form-control"></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="ContractChanges" class="control-label"></label>
+                            <textarea asp-for="ContractChanges" class="form-control"></textarea>
+                            <span asp-validation-for="ContractChanges" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="DateBeginWork" class="control-label"></label>
+                            <input asp-for="DateBeginWork" class="form-control datepickers" type="datetime" />
+                            <span asp-validation-for="DateBeginWork" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="DateEndWork" class="control-label"></label>
+                            <input asp-for="DateEndWork" class="form-control datepickers" type="datetime" />
+                            <span asp-validation-for="DateEndWork" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="DateEntryObject" class="control-label"></label>
+                            <input asp-for="DateEntryObject" class="form-control datepickers" type="datetime" />
+                            <span asp-validation-for="DateEntryObject" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="FilesEntity" class="control-label"></label>
+                            <input name="FilesEntity" type="file" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <a class="btn btn-secondary mt-3" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId">Вернуться</a>
+                            <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

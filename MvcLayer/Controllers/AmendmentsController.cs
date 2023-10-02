@@ -5,6 +5,7 @@ using BusinessLayer.Models;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -21,15 +22,21 @@ namespace MvcLayer.Controllers
             _fileService = fileService;
         }
               
-        [HttpPost]
+        [HttpGet]
         public ActionResult Index()
         {
             return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.GetAll()));
         }
 
-        public ActionResult Create(int id)
+        [HttpGet]
+        public ActionResult GetByContractId(int id)
         {
-            ViewData["id"] = id;
+            return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x=>x.ContractId == id)));
+        }
+
+        public ActionResult Create(int contractId)
+        {
+            ViewData["contractId"] = contractId;
             return View();
         }
 
@@ -51,8 +58,9 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, int? contractId = null)
         {
+            ViewBag.contractId = contractId;
             return View(_mapper.Map<AmendmentViewModel>(_amendment.GetById(id)));
         }
 
@@ -71,11 +79,17 @@ namespace MvcLayer.Controllers
                     return View();
                 }
             }
-
-            return RedirectToAction(nameof(Index));
+            if (amendment.ContractId is not null && amendment.ContractId > 0)
+            {
+                return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId });
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int id, int? contractId = null)
         {
             try
             {
@@ -85,7 +99,14 @@ namespace MvcLayer.Controllers
                 }
 
                 _amendment.Delete(id);
-                return RedirectToAction(nameof(Index));
+                if (contractId is not null && contractId > 0)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new {id = contractId});
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }                
             }
             catch
             {

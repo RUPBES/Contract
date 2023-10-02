@@ -17,7 +17,7 @@ namespace MvcLayer.Models
         [DisplayName("Причина")]
         public string Reason { get; set; }
 
-        [DisplayName("Договорная (контрактная) цена, руб. с НДС")]
+        [DisplayName("Договорная (контрактная) цена, с НДС")]
         public decimal? ContractPrice { get; set; }
 
         [DisplayName("Срок выполнения работ (начало)")]

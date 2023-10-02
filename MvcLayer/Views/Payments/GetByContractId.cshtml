@@ -5,69 +5,83 @@
 
 @{
     ViewData["Title"] = string.Empty;
-    var id = Model.FirstOrDefault()?.ContractId;
+    var id = Model.FirstOrDefault()?.ContractId is null || Model.FirstOrDefault()?.ContractId == 0 ? 0 : Model?.FirstOrDefault()?.ContractId;
+    var contract = Contract.GetById((int)id);
     decimal? form = 0;
     decimal? scopeWork = 0;
-    decimal? price = 0;
+    
     if (id is not null)
     {
-        price = Contract.GetById((int)id).ContractPrice;
-        scopeWork = Scope.Find(x => x.ContractId == id).Select(x => x.CostNds).LastOrDefault();
-        form = Form.Find(x => x.ContractId == id).Select(x => x.TotalCost).LastOrDefault();
-        var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = $"Денежные средства по договору № {number}";        
+        scopeWork = contract.ScopeWorks.Where(x => x.ContractId == id).Select(x => x.CostNds).LastOrDefault();
+        form = contract.FormC3as.Where(x => x.ContractId == id).Select(x => x.TotalCost).LastOrDefault();
+
+        ViewData["Title"] = $"Денежные средства по договору № {contract?.Number}";
     }
-    else
-    {
-        string url = Context.Request.HttpContext.Request.QueryString.Value;
-        id = int.Parse(url.Substring(url.LastIndexOf("=") + 1));
-    }
+    // else
+    // {
+    //     string url = Context.Request.HttpContext.Request.QueryString.Value;
+    //     id = int.Parse(url.Substring(url.LastIndexOf("=") + 1));
+    // }
 }
 
-<h1> @ViewData["Title"]</h1>
-<div class="table-responsive">
-    <table class="table">
-        <thead class="k-text-align-center k-vertical-align-center table-bordered table-sm">
-            <tr>
-                <th rowspan="2"><span class="table_span-contractprice"> Контрактная цена, с НДС </span></th>
-                <th rowspan="2"><span class="table_span-remains">Остаток по выполнению</span></th>
-                <th rowspan="2"><span class="table_span-volume">Объем на текущий год</span></th>
-                <th rowspan="2"><span class="table_span-volume">Выполнено с-3а</span></th>
-                @{
-                    foreach (var item in Model)
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (@contract?.Id != null && @contract?.Id > 0)
                     {
-                        <th colspan="2"><span class="span-month-double">@item.Period.Value.ToShortDateString()</span></th>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
                     }
-                }
-            </tr>
-            <tr>
-                @{
-                    for (int i = 0; i < Model.Count(); i++)
+                    @if (@contract?.Id == null || @contract?.Id == 0)
                     {
-                        <th><span class="span-50-per">к оплате </span></th>
-                        <th><span class="span-50-per">на счет РУП "БЭС" - УКХ"</span></th>
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
-                }
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="k-text-align-right">
-                @if (Model.Count() > 0)
-                {
-                    <td><span class="table_span-contractprice">@price</span></td>
-                    <td><span class="table_span-remains">???</span></td>
-                    <td><span class="table_span-volume">@scopeWork</span></td>
-                    <td><span class="table_span-volume">@form</span></td>
-                    @foreach (var item in Model)
-                    {
-                        <td><span class="span-50-per">@item.PaySum</span></td>
-                        <td><span class="span-50-per">@item.PaySumForRupBes</span></td>
-                    }
-                }
-            </tr>
-        </tbody>
-    </table>
-    <div>
-        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
+                </div>
+                <hr class="modal-line" />
+                <table class="table table-bordered" style="overflow-x: scroll;width: 950px;/*! display: flex; */display: block;height: 190px;">
+                    <thead>
+                        <tr>
+                            <th rowspan="2"><span class="table_span-contractprice"> Контрактная цена, с НДС </span></th>
+                            <th rowspan="2"><span class="table_span-remains">Остаток по выполнению</span></th>
+                            <th rowspan="2"><span class="table_span-volume">Объем на текущий год</span></th>
+                            <th rowspan="2"><span class="table_span-volume">Выполнено с-3а</span></th>
+                            @{
+                                foreach (var item in Model)
+                                {
+                                    <th colspan="2"><span class="span-month-double text-center">@item?.Period?.ToShortDateString()</span></th>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @{
+                                for (int i = 0; i < Model.Count(); i++)
+                                {
+                                    <th><span class="span-50-per">к оплате </span></th>
+                                    <th><span class="span-50-per">на счет РУП "БЭС" - УКХ"</span></th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            @if (Model.Count() > 0)
+                            {
+                                <td><span class="table_span-contractprice">@contract?.ContractPrice</span></td>
+                                <td><span class="table_span-remains">???</span></td>
+                                <td><span class="table_span-volume">@scopeWork</span></td>
+                                <td><span class="table_span-volume">@form</span></td>
+                                @foreach (var item in Model)
+                                {
+                                    <td><span class="span-50-per">@item.PaySum</span></td>
+                                    <td><span class="span-50-per">@item.PaySumForRupBes</span></td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>

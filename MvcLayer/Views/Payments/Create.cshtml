@@ -1,16 +1,20 @@
 ﻿@using MvcLayer.Models;
 @using Newtonsoft.Json;
 @model List<MvcLayer.Models.PaymentViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
     ViewData["Title"] = "Добавить оплату договора";
-    int index = 0;
-    var id = Model.FirstOrDefault()?.ContractId;
+    int index = 0;    
     var d = new List<PaymentViewModel>();
     if (TempData["payment"] is string s)
     {
         d.AddRange(JsonConvert.DeserializeObject<List<PaymentViewModel>>(s));
     }
+
+    string actionName = (TempData["existPayment"] is bool) == true ? "EditPayments" : "Create";
+    var existPayment = (TempData["existPayment"] is bool) == true ? true:false;
+    var contract = Contract.GetById((int)d?.FirstOrDefault()?.ContractId);
 }
 <style>
     .cont-table {
@@ -28,10 +32,10 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract.Id" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Create" class="row">
+                <form asp-action=@actionName class="row">
                     <div class="cont-table">
                         <table class="table table-bordered table-striped">
                             <tr>
@@ -74,16 +78,19 @@
                             @foreach (var item in d)
                             {
                                 <input asp-for="@Model[index].ContractId" hidden />
-
+                                @if (existPayment)
+                                {
+                                    <input asp-for=@Model[index].Id hidden />
+                                }
+                                
                                 index++;
                             }
 
                         </table>
                     </div>
-                    <div class="form-group" style="display:flex; justify-content: space-between;">
-                        <a class="btn btn-success float-start" asp-controller="Payments" asp-action="ChoosePeriod" asp-route-contractId="@Model.FirstOrDefault().ContractId">Вернуться назад</a>
-                        <a class="btn btn-success k-text-align-center" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться к договору</a>
-                        <input type="submit" value="Добавить" class="btn btn-primary float-end" />
+                    <div class="form-group">
+                        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@contract.Id">Вернуться к договору</a>
+                        <input type="submit" value="Добавить" class="btn btn-primary" />
                     </div>
                 </form>
             </div>

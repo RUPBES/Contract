@@ -2,90 +2,106 @@
 @using BusinessLayer.Enums;
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
     ViewData["Title"] = "Проектно-сметная документация";
     bool isAdmin = true;
-    string redirectAction = "Index";
+    string redirectAction = "GetByContractId";
     string redirectController = "EstimateDocs";
+    var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
 }
 
-<h1>@ViewData["Title"]</h1>
-
-<p>
-    <a asp-action="Create">Добавить</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Number)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateChange)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateOutput)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Reason)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsChange)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Contract)
-            </th>
-            <th>Файл</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Number)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateChange)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateOutput)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Reason)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsChange)
-                </td>
-                <td>
-                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.EstimateDocumentations))
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" @* style="width: 860px;" *@>
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] по договору @contract?.Number</label>
+                    @if (@contract?.Id != null && @contract?.Id > 0)
                     {
-                        <div>
-                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                            @if (isAdmin)
-                            {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
-                            }
-                        </div>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
                     }
-                </td>
-                <td>
-                    <a asp-action="AddFile" asp-controller="Files"
-                       asp-route-entityId="@item.Id"
-                       asp-route-fileCategory="@FolderEnum.EstimateDocumentations"
-                       asp-route-redirectAction=@redirectAction
-                       asp-route-redirectController=@redirectController>Добавить файл</a> |
-
-                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="text-center" colspan="4">
+                               Проектно-сметная документация
+                            </th>
+                            <th class="text-center">
+                               Файлы ПСД
+                            </th>
+                            <th rowspan="2"></th>
+                        </tr>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Number)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.DateChange)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.DateOutput)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Reason)
+                            </th>                           
+                            <th>Файлы изменений</th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Number)
+                                </td>
+                                <td>
+                                    @item.DateChange?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @item.DateOutput?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Reason)
+                                </td>                               
+                                <td>
+                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.EstimateDocumentations))
+                                    {
+                                        <div>
+                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                            @if (isAdmin)
+                                            {
+                                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="icon file-add" title="Добавить файл к письму">
+                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.EstimateDocumentations" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                    <span class="icon edit" title="Редактировать письмо">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                    <span class="icon delete" title="Удалить письмо">
+                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts {
     <script type="text/javascript">
         function confirmDelete() {

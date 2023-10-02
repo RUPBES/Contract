@@ -4,8 +4,9 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IServiceGCService ServiceGC
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Выбрать период или изменение к договору";
 }
+
 <style>
     .title-warning {
         display: flex;
@@ -34,32 +35,51 @@
     }
 </style>
 
-<form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-    <input asp-for="ChangeServiceId" value="@Model?.ChangeServiceId" hidden />
-    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
-    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
-    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width: 850px; height:440px">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                    <input asp-for="ChangeServiceId" value="@Model?.ChangeServiceId" hidden />
+                    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
+                    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
+                    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
 
-    <div class="form-group col-12">
-        <div class="title-warning"><span>Услуги для данного договора заполнены</span></div>
-        <label for="amendCheck">Внести изменения в услуги по доп.соглашению?</label>
-        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+                    <div class="form-group col-12">
+                        <div class="title-warning"><span>Услуги для данного договора заполнены</span></div>
+                        <label for="amendCheck">Внести изменения в услуги по доп.соглашению?</label>
+                        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+                    </div>
+                    <div id="chooseAmendment" class="row" hidden>
+                        <div class="form-group">
+                            <label class="control-label">Выбрать доп.соглашение</label>
+                            <select name="AmendmentId" id="AmendId" class="form-control select">
+                                <option disabled selected>Выберите</option>
+                                @foreach (AmendmentDTO org in Amendment.GetAll())
+                                {
+                                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div id="chooseAmendment" class="row" hidden>
-        <div class="form-group">
-            <label class="control-label">Выбрать доп.соглашение</label>
-            <select name="AmendmentId" id="AmendId" class="form-control select">
-                <option disabled selected>Выберите</option>
-                @foreach (AmendmentDTO org in Amendment.GetAll())
-                {
-                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                }
-            </select>
-        </div>        
-    </div>
-</form>
-
+</div>
 
 @section Scripts {
     @{
@@ -100,59 +120,3 @@
     </script>
 
 }
-
-
-
-
-@* 
-    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-        <div class="form-group col-12">
-            <div class="title-warning"><span>Услуги генподрядчика для данного договора заполнены</span></div>
-            <label for="amendCheck">Внести изменения в услуги генподрядчика по доп.соглашению?</label>
-            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
-        </div>
-        <div id="chooseAmendment" class="row" hidden>
-            <div class="form-group">
-                <label class="control-label">Выбрать доп.соглашение</label>
-                <select name="AmendmentId" id="AmendId" class="form-control select">
-                    <option disabled selected>Выберите</option>
-                    @foreach (AmendmentDTO org in Amendment.GetAll())
-                    {
-                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                    }
-                </select>
-            </div>
-            <div class="row mt-3" id="date-box" hidden>
-                <div class="form-group col-6 mb-3">
-                    <label for="amendCheck1">Укажите начало периода</label>
-                    <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
-                </div>
-                <div class="form-group col-6 mb-3">
-                    <label for="amendCheck2">Укажите окончание периода</label>
-                    <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
-                </div>
-                <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
-
-            </div>
-        </div>
-    </form>
-}
-
-@if (!hasService)
-{
-    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace">
-        <h4>Выбор периода оказания услуг генподрядчика</h4>
-        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-        <div class="form-group col-6 mb-3">
-            <label for="amendCheck1">Укажите начало периода</label>
-            <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="datepickers" />
-        </div>
-        <div class="form-group col-6 mb-3">
-            <label for="amendCheck2">Укажите окончание периода</label>
-            <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="datepickers" />
-        </div>
-        <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
-    </form>
-}
-} *@

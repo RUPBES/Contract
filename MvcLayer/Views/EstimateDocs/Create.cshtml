@@ -2,68 +2,84 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
     ViewData["Title"] = "Добавить ПСД";
-    var id = ViewData["id"];
+    var contid = ViewData["contractId"];
+    var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
 
-<h1>@ViewData["Title"]</h1>
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" style="max-width:960px;">
                 <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                    <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
+                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group col-6">
-                        <label asp-for="Number" class="control-label"></label>
-                        <input asp-for="Number" class="form-control" />
-                        <span asp-validation-for="Number" class="text-danger"></span>
+                    <input asp-for="ContractId" value="@contract?.Id" hidden>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label asp-for="Number" class="control-label"></label>
+                            <input asp-for="Number" class="form-control" />
+                            <span asp-validation-for="Number" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="DateChange" class="control-label"></label>
+                            <input asp-for="DateChange" type="datetime" class="form-control datepickers" />
+                            <span asp-validation-for="DateChange" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="DateOutput" class="control-label"></label>
+                            <input asp-for="DateOutput" type="datetime" class="form-control datepickers" />
+                            <span asp-validation-for="DateOutput" class="text-danger"></span>
+                        </div>
                     </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateChange" class="control-label"></label>
-                        <input asp-for="DateChange" type="date" class="form-control" />
-                        <span asp-validation-for="DateChange" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateOutput" class="control-label"></label>
-                        <input asp-for="DateOutput" type="date" class="form-control" />
-                        <span asp-validation-for="DateOutput" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="Reason" class="control-label"></label>
-                        <input asp-for="Reason" class="form-control" />
-                        <span asp-validation-for="Reason" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="IsChange" class="control-label"></label>
-                        <input asp-for="IsChange" class="form-control" />
-                        <span asp-validation-for="IsChange" class="text-danger"></span>
-                    </div><div class="form-group col-6">
-                        <label asp-for="ContractId" class="control-label">Договор</label>
-                        <select asp-for="ContractId" class="form-control" disabled>
-                            <option value="@id" selected>@Contract.GetById((int)id).Number</option>
-                            @*@foreach (var item in Contract.GetAll())
-                            {
-                            <option value="@item.Id">@item.Number</option>
-                            }*@
-                        </select>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="FilesEntity" class="control-label"></label>
-                        <input asp-for="FilesEntity" type="file" class="form-control" />
-                        <span asp-validation-for="FilesEntity" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <a class="btn btn-success float-start" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
-                        <input type="submit" value="Create" class="btn btn-primary float-end" />
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label asp-for="Reason" class="control-label"></label>
+                            <textarea asp-for="Reason" class="form-control"></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="FilesEntity" class="control-label"></label>
+                            <input asp-for="FilesEntity" type="file" class="form-control" />
+                            <span asp-validation-for="FilesEntity" class="text-danger"></span>
+                        </div>
+                    </div>                    
+                    <div class="form-group mt-3">
+                        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id">Вернуться</a>
+                        <input type="submit" value="Добавить" class="btn btn-primary col-3" />
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $("#checkActId").on("change", function () {
+            let isChange = $(this).prop('checked');
+            if (isChange === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+        });
+    </script>
+}
 

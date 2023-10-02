@@ -18,3 +18,17 @@
 
     });
 }
+
+function changeButtonType(buttonId, NumDCId) { 
+    let button = $(buttonId);
+    let input = $(NumDCId);
+    button.attr("type", "submit");
+    input.attr("disabled", true);
+}
+
+$(document).ready(function () {
+
+    datepickerNull("input.datepickersNull");
+    dateTimepicker("input.datetimepickers");
+    datepicker("input.datepickers");
+});

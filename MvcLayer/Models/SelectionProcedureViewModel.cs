@@ -41,19 +41,19 @@ namespace MvcLayer.Models
         /// <summary>
         /// Цена акцента
         /// </summary>
-        [Display(Name = "Цена акцента")]
+        [Display(Name = "Цена акцепта")]
         public decimal? AcceptancePrice { get; set; }
 
         /// <summary>
         /// Номер акцента
         /// </summary>
-        [Display(Name = "Номер акцента")]
+        [Display(Name = "Номер акцепта")]
         public string? AcceptanceNumber { get; set; }
 
         /// <summary>
         /// Дата акцента
         /// </summary>
-        [Display(Name = "Дата акцента")]
+        [Display(Name = "Дата акцепта")]
         public DateTime? DateAcceptance { get; set; }
 
         public int? ContractId { get; set; }

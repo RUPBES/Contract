@@ -1,83 +1,124 @@
 ﻿@model IEnumerable<MvcLayer.Models.SelectionProcedureViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
+    var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
     ViewData["Title"] = "Процедура выбора";
+    bool isAdmin = true;
+    string redirectAction = "GetByContractId";
+    string redirectController = "SelectionProcedures";
 }
 
-@* <h1></h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p> *@
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TypeProcedure)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateBegin)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateEnd)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StartPrice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AcceptancePrice)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.AcceptanceNumber)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateAcceptance)
-            </th>
-            @* <th>
-                @Html.DisplayNameFor(model => model.Contract)
-            </th> *@
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TypeProcedure)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateBegin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateEnd)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartPrice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AcceptancePrice)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AcceptanceNumber)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateAcceptance)
-            </td>
-           @*  <td>
-                @Html.DisplayFor(modelItem => item.Contract.Id)
-            </td> *@
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> 
-                @*| <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> *@
-            </td>
-        </tr>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] по договору @contract?.Number</label>
+                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                    }
+                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.TypeProcedure)
+                            </th>
+                            <th class="text-center" colspan="2">
+                                Cроки проведения
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.StartPrice)
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.AcceptancePrice)
+                            </th>
+                            <th rowspan="2">
+                                Снижение
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.AcceptanceNumber),
+                                @Html.DisplayNameFor(model => model.DateAcceptance)
+                            </th>
+                            <th rowspan="2"></th>
+                        </tr>
+                        <tr>                            
+                            <th>
+                                @Html.DisplayNameFor(model => model.DateBegin)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.DateEnd)
+                            </th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>                               
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.TypeProcedure)
+                                </td>
+                                <td>
+                                    @item.DateBegin?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @item.DateEnd?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.StartPrice)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AcceptancePrice)
+                                </td>
+                                <td>
+                                    @{
+                                        var discont = item.StartPrice - item.AcceptancePrice;
+                                    }
+                                    @discont
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.AcceptanceNumber)
+                                от
+                                    @item.DateAcceptance?.ToShortDateString()
+                                </td>
+                                <td>
+                                    <span class="icon edit" title="Редактировать процедуру закупки">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                    <span class="icon delete" title="Удалить процедуру закупки">
+                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
 }
-    </tbody>
-</table>

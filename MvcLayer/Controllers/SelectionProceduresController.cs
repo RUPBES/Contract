@@ -30,23 +30,7 @@ namespace MvcLayer.Controllers
         {
             return View(_mapper.Map<IEnumerable<SelectionProcedureViewModel>>(_selectProcedureService.Find(x => x.ContractId == contractId)));
         }
-
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null || _scopeWork.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var scopeWork = _scopeWork.GetById((int)id);
-        //    if (scopeWork == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(_mapper.Map<ScopeWorkViewModel>(scopeWork));
-        //}
-
+                
         //при создании договора, автоматически создается запись в таблице "Процедура выбора" с Видом закупки,
         // поэтому необходимо найти созданную для данного договора проц.выбора и добавить все данные
         public IActionResult Create(int contractId)
@@ -74,61 +58,42 @@ namespace MvcLayer.Controllers
                 }
                 else
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Index", "Contracts");
                 }
             }
             return View(selectProcedure);
         }
 
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null || _scopeWork.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
+        public ActionResult Edit(int id, int? contractId = null)
+        {
+            ViewBag.contractId = contractId;
+            return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.GetById(id)));
+        }
 
-        //    var scopeWork = _scopeWork.GetById((int)id);
-        //    if (scopeWork == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    //ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
-        //    //ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
-        //    return View(_mapper.Map<ScopeWorkViewModel>(scopeWork));
-        //}
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, ScopeWorkViewModel scopeWork)
-        //{
-        //    if (id != scopeWork.Id)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _scopeWork.Update(_mapper.Map<ScopeWorkDTO>(scopeWork));
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (_scopeWork.GetById((int)id) is null)
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    //ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", scopeWork.AgreementContractId);
-        //    //ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", scopeWork.SubContractId);
-        //    return View(scopeWork);
-        //}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(SelectionProcedureViewModel selectProcedure)
+        {
+            if (selectProcedure is not null)
+            {
+                try
+                {
+                    _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
+                }
+                catch
+                {
+                    return View();
+                }
+            }
+            if (selectProcedure?.ContractId is not null && selectProcedure.ContractId > 0)
+            {
+                return RedirectToAction(nameof(GetByContractId), new { contractId = selectProcedure.ContractId });
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
 
         public async Task<IActionResult> Delete(int? id)
         {

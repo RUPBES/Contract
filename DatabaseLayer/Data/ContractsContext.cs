@@ -341,7 +341,7 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("datetime")
                 .HasComment("Дата письма");
 
-            entity.Property(e => e.IsInBox).HasComment("Входящее / Исходящее");
+            entity.Property(e => e.IsInBox).HasDefaultValueSql("0").HasComment("Входящее / Исходящее (true-вход., false-исход.)");
 
             entity.Property(e => e.Number).HasComment("Номер письма");
 

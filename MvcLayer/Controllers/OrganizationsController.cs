@@ -91,29 +91,17 @@ namespace MvcLayer.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Abbr,Unp")] OrganizationViewModel organization)
-        {
-            if (id != organization.Id)
-            {
-                return NotFound();
-            }
+        public async Task<IActionResult> Edit(OrganizationViewModel organization)
+        {          
 
-            if (ModelState.IsValid)
+            if (organization is not null)
             {
                 try
                 {
                     _organizationService.Update(_mapper.Map<OrganizationDTO>(organization));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch
                 {
-                    if (_organizationService.GetById(organization.Id) is null)
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }

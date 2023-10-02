@@ -1,47 +1,69 @@
 ﻿@model IEnumerable<MvcLayer.Models.OrganizationViewModel>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Список организаций";
 }
-
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Abbr)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Unp)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Abbr)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Unp)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<style>
+    td{
+        word-wrap:anywhere;
+    }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" >
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                </div>
+                <div style="padding-left:20px"><a asp-action="Create">Добавить новую</a></div>
+                <hr class="modal-line" />
+                <div style="max-height:700px; overflow-y:scroll">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Abbr)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Unp)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Abbr)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Unp)
+                                </td>
+                                <td>
+                                   @*  <span class="icon file-add" title="Детальная информация">
+                                        <a asp-action="Details" asp-route-id="@item.Id"></a>
+                                    </span> *@
+                                    <span class="icon edit" title="Редактировать">
+                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                    </span>
+                                    <span class="icon delete" title="Удалить">
+                                        <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                    </span>
+                                </td>                                
+                            </tr>
+                        }
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

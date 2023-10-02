@@ -25,14 +25,14 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int id)
         {
-            return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int id)
+        public ActionResult Create(int contractId)
         {
-            ViewData["id"] = id;
+            ViewData["contractId"] = contractId;
             return View();
         }
 
@@ -46,7 +46,14 @@ namespace MvcLayer.Controllers
                 int estimateDocId = (int)_estimateDocService.Create(_mapper.Map<EstimateDocDTO>(estimateDoc));
                 _estimateDocService.AddFile(estimateDocId, fileId);
 
-                return RedirectToAction(nameof(Index));
+                if (estimateDoc?.ContractId is not null && estimateDoc.ContractId > 0)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new { id = estimateDoc.ContractId });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             catch
             {
@@ -54,8 +61,9 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, int? contractId = null)
         {
+            ViewBag.contractId = contractId;
             return View(_mapper.Map<EstimateDocViewModel>(_estimateDocService.GetById(id)));
         }
 
@@ -75,10 +83,17 @@ namespace MvcLayer.Controllers
                 }
             }
 
-            return RedirectToAction(nameof(Index));
+            if (commissionAct?.ContractId is not null && commissionAct.ContractId > 0)
+            {
+                return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId });
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int id, int? contractId = null)
         {
             try
             {
@@ -88,7 +103,14 @@ namespace MvcLayer.Controllers
                 }
 
                 _estimateDocService.Delete(id);
-                return RedirectToAction(nameof(Index));
+                if (contractId is not null && contractId > 0)
+                {
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             catch
             {

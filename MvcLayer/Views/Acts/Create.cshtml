@@ -2,20 +2,28 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
     ViewData["Title"] = "Добавить акт приостановки/возобновления";
-    var id = ViewData["id"];
+    var contid = ViewData["contractId"];
+    var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
-
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" style="max-width:960px;">
                 <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                    <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
+                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input asp-for="ContractId" value="@contract?.Id" hidden>
                     <div class="form-group col-6">
                         <label asp-for="Reason" class="control-label"></label>
                         <input asp-for="Reason" class="form-control" />
@@ -23,47 +31,35 @@
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateAct" class="control-label"></label>
-                        <input asp-for="DateAct" type="date" class="form-control" />
+                        <input asp-for="DateAct" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateAct" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateSuspendedFrom" class="control-label"></label>
-                        <input asp-for="DateSuspendedFrom" type="date" class="form-control" />
+                        <input asp-for="DateSuspendedFrom" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateSuspendedFrom" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateSuspendedUntil" class="control-label"></label>
-                        <input asp-for="DateSuspendedUntil" type="date" class="form-control" />
+                        <input asp-for="DateSuspendedUntil" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateSuspendedUntil" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateRenewal" class="control-label"></label>
-                        <input asp-for="DateRenewal" type="date" class="form-control" />
+                        <input asp-for="DateRenewal" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateRenewal" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
-                        <label asp-for="IsSuspension" class="control-label"></label>
-                        <input asp-for="IsSuspension" class="form-control" />
-                        <span asp-validation-for="IsSuspension" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="ContractId" class="control-label">Договор</label>
-                        <select asp-for="ContractId" class="form-control" disabled>
-                            <option value="@id" selected>@Contract.GetById((int)id).Number</option>
-                            @*@foreach (var item in Contract.GetAll())
-                            {
-                            <option value="@item.Id">@item.Number</option>
-                            }*@
-                        </select>
-                    </div>
+                        <label>Приостановлено?</label>
+                        <input name="IsSuspension" id="checkActId" type="checkbox" />
+                    </div>                    
                     <div class="form-group col-6">
                         <label asp-for="FilesEntity" class="control-label"></label>
-                        <input asp-for="FilesEntity" type="file" class="form-control" />
-                        <span asp-validation-for="FilesEntity" class="text-danger"></span>
+                        <input name="FilesEntity" type="file" class="form-control" />                        
                     </div>
-                    <div class="form-group">
-                        <a class="btn btn-success float-start" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
-                        <input type="submit" value="Create" class="btn btn-primary float-end" />
+                    <div class="form-group mt-3">
+                        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id">Вернуться</a>
+                        <input type="submit" value="Добавить" class="btn btn-primary col-3" />
                     </div>
                 </form>
             </div>
@@ -75,5 +71,16 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $("#checkActId").on("change", function () {
+            let isChange = $(this).prop('checked');
+            if (isChange === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+        });
+    </script>
 }
 

@@ -2,92 +2,119 @@
 @using BusinessLayer.Enums;
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 
 @{
-    ViewData["Title"] = "Акты приостановления (возобновления) работ (услуг)";
+    var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
+    ViewData["Title"] = "Акты приостановления/возобновления работ (услуг)";
     bool isAdmin = true;
-    string redirectAction = "Index";
+    string redirectAction = "GetByContractId";
     string redirectController = "Acts";
 }
-<h2>@ViewData["Title"]</h2>
-@* <p>
-    <a asp-action="Create">Добавить</a>
-</p> *@
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Reason)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateAct)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateSuspendedFrom)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateSuspendedUntil)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DateRenewal)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsSuspension)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Contract)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Reason)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateAct)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateSuspendedFrom)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateSuspendedUntil)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateRenewal)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsSuspension)
-                </td>
-                @*             <td>
-            @Html.DisplayFor(modelItem => item.Contract.Id)
-            </td> *@
-                <td>
-                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Acts))
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width: 860px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
+                    @if (@contract?.Id != null && @contract?.Id > 0)
                     {
-                        <div>
-                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                            @if (isAdmin)
-                            {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
-                            }
-                        </div>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
                     }
-                </td>
-                <td>
-                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Acts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
-                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="text-center" rowspan="2">                               
+                                @Html.DisplayNameFor(model => model.DateAct)
+                            </th>
+                            <th class="text-center" rowspan="2">
+                                Приостановка/возобновление работ
+                            </th>
+                            <th class="text-center" rowspan="2">
+                                @Html.DisplayNameFor(model => model.Reason)
+                            </th>
+                            
+                            <th class="text-center align-middle" colspan="2">Период приостановки</th>
+                            <th class="text-center" rowspan="2">
+                                @Html.DisplayNameFor(model => model.DateRenewal)
+                            </th>
+                            <th class="text-center" rowspan="2">Файлы</th>
+                            <th rowspan="2"></th>
+                        </tr>
+                        <tr>
+                            <th class="text-center align-middle" colspan="1">с "дата"</th>
+                            <th class="text-center align-middle" colspan="1">по "дата"</th>
+                        </tr>                        
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>                                   
+                                    @item.DateAct?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @if (item.IsSuspension == true)
+                                    {
+                                        <span>приостановка</span>
+                                    }
+                                    @if (item.IsSuspension != true)
+                                    {
+                                        <span>возобновление</span>
+                                    }
+                                    
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Reason)
+                                </td>                                
+                                <td>
+                                    @item.DateSuspendedFrom?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @item.DateSuspendedUntil?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @item.DateRenewal?.ToShortDateString()
+                                </td>                                
+                                <td>
+                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Acts))
+                                    {
+                                        <div>
+                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                            @if (isAdmin)
+                                            {
+                                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                                <td>                                    
+                                    <span class="icon file-add" title="Добавить файл к акту">
+                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Acts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                    <span class="icon edit" title="Редактировать акт">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                    <span class="icon delete" title="Удалить акт">
+                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts {
     <script type="text/javascript">
         function confirmDelete() {

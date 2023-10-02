@@ -1,79 +1,83 @@
 ﻿@model MvcLayer.Models.AmendmentViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
-    ViewData["Title"] = "Добавить изменения к договору";
-    var id = ViewData["id"];
+    ViewData["Title"] = "Добавление изменения к договору";
+    var contid = ViewData["contractId"];
+    var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" style="max-width:960px;">
                 <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>                    
+                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
+                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line" />
 
                 <form asp-action="Create" class="row" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="form-group col-6">
-                        <label asp-for="Number" class="control-label"></label>
-                        <input asp-for="Number" class="form-control" />
-                        <span asp-validation-for="Number" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
+                    <input asp-for="ContractId" value="@contract?.Id" hidden>
+
+                    <div class="col-3">
+                        <label asp-for="Number" for="NumId"></label>
+                        <div class="input-group">
+                            <div class="input-group-text">№</div>
+                            <input asp-for="Number" class="form-control" id="NumId">
+                        </div>
+                    </div>   
+                    <div class="form-group col-3">
                         <label asp-for="Date" class="control-label"></label>
-                        <input asp-for="Date" class="form-control" type="date" />
+                        <input asp-for="Date" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="Date" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group col-6">
+                        <label asp-for="ContractPrice" class="control-label" for="contr"></label>
+                        <div class="input-group">
+                            <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                            <input asp-for="ContractPrice" type="number" min="0" class="form-control" value="@contract?.ContractPrice" id="contr"/>
+                        </div>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="Reason" class="control-label"></label>
-                        <input asp-for="Reason" class="form-control" />
+                        <textarea asp-for="Reason" class="form-control"></textarea>
                         <span asp-validation-for="Reason" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
-                        <label asp-for="ContractPrice" class="control-label"></label>
-                        <input asp-for="ContractPrice" class="form-control" />
-                        <span asp-validation-for="ContractPrice" class="text-danger"></span>
+                        <label asp-for="ContractChanges" class="control-label"></label>
+                        <textarea asp-for="ContractChanges" class="form-control"></textarea>
+                        <span asp-validation-for="ContractChanges" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateBeginWork" class="control-label"></label>
-                        <input asp-for="DateBeginWork" class="form-control" type="date" />
+                        <input asp-for="DateBeginWork" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateBeginWork" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateEndWork" class="control-label"></label>
-                        <input asp-for="DateEndWork" class="form-control" type="date" />
+                        <input asp-for="DateEndWork" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateEndWork" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateEntryObject" class="control-label"></label>
-                        <input asp-for="DateEntryObject" class="form-control" type="date" />
+                        <input asp-for="DateEntryObject" class="form-control datepickers" type="datetime" />
                         <span asp-validation-for="DateEntryObject" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
-                        <label asp-for="ContractChanges" class="control-label"></label>
-                        <input asp-for="ContractChanges" class="form-control" />
-                        <span asp-validation-for="ContractChanges" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="ContractId" class="control-label">Договор</label>
-                        <select asp-for="ContractId" class="form-control" disabled>
-                            <option value="@id" selected>@Contract.GetById((int)id).Number</option>
-                            @*@foreach (var item in Contract.GetAll())
-                            {
-                                <option value="@item.Id">@item.Number</option>
-                            }*@
-                        </select>
-                    </div>
-                    <div class="form-group col-6">
                         <label asp-for="FilesEntity" class="control-label"></label>
-                        <input asp-for="FilesEntity" type="file" class="form-control" />
-                        <span asp-validation-for="FilesEntity" class="text-danger"></span>
+                        <input name="FilesEntity" type="file" class="form-control" />
                     </div>                    
                     <div class="form-group">
-                        <a class="btn btn-success float-start" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
-                        <input type="submit" value="Создать" class="btn btn-primary float-end" />
+                        <a class="btn btn-secondary mt-3" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId">Вернуться</a>
+                        <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
                     </div>
                 </form>                
             </div>
