@@ -4,12 +4,13 @@
 
         let menu = e.parentNode.querySelector('div.dropdown-menu');
         
-        unactiveMenuDropdown();
+        
         if (menu.classList.contains('show')){
             menu.classList.remove('show');
             e.classList.remove('active');
         }
         else {
+            unactiveMenuDropdown();
             menu.classList.add('show');
             e.classList.add('active');
         }
