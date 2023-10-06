@@ -11,14 +11,25 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     <a asp-controller="Home" asp-action="" class="close-btn "></a>
                 </div>
-                <a class="btn btn-success" asp-action="Create">Добавить новую</a>
+                <p>
+                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Departments")'">Новый договор</button>
+                    @using (Html.BeginForm("Index", "Departments", FormMethod.Get))
+                    {
+                        <form style="search-form">
+                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                            <input type="submit" value="Найти" />
+                        </form>
+                    }
+                </p>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>
+                                @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
                                 @Html.DisplayNameFor(model => model.Name)
                             </th>
                             <th>
+                                @Html.ActionLink("Организация", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayOrganization", @class=""})
                                 @Html.DisplayNameFor(model => model.Organization)
                             </th>
                             <th></th>
@@ -50,3 +61,30 @@
         </div>
     </div>
 </div>
+<script>
+    let actualUrl = window.location.search;
+    let elementArrayNumberanddate = document.getElementById("arrayName");
+    let elementArrayNameObject = document.getElementById("arrayOrganization");
+
+    if (actualUrl.includes('nameDesc')) {
+        elementArrayNumberanddate.classList.remove("up")
+        elementArrayNumberanddate.classList.add('down')
+    } else if (actualUrl.includes('name')) {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.add('up')
+    } else {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.remove("up")
+    }
+
+    if (actualUrl.includes('organizationDesc')) {
+        elementArrayNumberanddate.classList.remove("up")
+        elementArrayNumberanddate.classList.add('down')
+    } else if (actualUrl.includes('organization')) {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.add('up')
+    } else {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.remove("up")
+    }
+</script>

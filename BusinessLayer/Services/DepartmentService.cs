@@ -7,6 +7,7 @@ using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BusinessLayer.Services
 {
@@ -75,7 +76,7 @@ namespace BusinessLayer.Services
         public IEnumerable<DepartmentDTO> Find(Func<Department, bool> predicate)
         {
             return _mapper.Map<IEnumerable<DepartmentDTO>>(_database.Departments.Find(predicate));
-        }
+        }        
 
         public IEnumerable<DepartmentDTO> GetAll()
         {

@@ -102,5 +102,69 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(LogLevel.Warning, $"not update organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
+
+        public IndexViewModel GetPage(int pageSize, int pageNum)
+        {
+            int count = _database.Organizations.GetAll().Count();
+            int skipEntities = (pageNum - 1) * pageSize;
+            var items = _database.Organizations.GetAll().Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<OrganizationDTO>>(items);
+
+            PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = t
+            };
+
+            return viewModel;
+        }
+
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
+        {
+            int count = _database.Organizations.GetAll().Count();
+            int skipEntities = (pageNum - 1) * pageSize;
+            IEnumerable<Organization> items;
+            if (!String.IsNullOrEmpty(request))
+            { items = _database.Organizations.GetAll(); }
+            else { items = _database.Organizations.GetAll(); }
+
+
+            switch (sortOrder)
+            {
+                case "name":
+                    items = items.OrderBy(s => s.Name);
+                    break;
+                case "nameDesc":
+                    items = items.OrderByDescending(s => s.Name);
+                    break;
+                case "abbr":
+                    items = items.OrderBy(s => s.Abbr);
+                    break;
+                case "abbrDesc":
+                    items = items.OrderByDescending(s => s.Abbr);
+                    break;
+                case "unp":
+                    items = items.OrderBy(s => s.Unp);
+                    break;
+                case "unpDesc":
+                    items = items.OrderByDescending(s => s.Unp);
+                    break;                
+                default:
+                    items = items.OrderBy(s => s.Id);
+                    break;
+            }
+            items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<OrganizationDTO>>(items);
+
+            PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = t
+            };
+
+            return viewModel;
+        }
     }
 }
