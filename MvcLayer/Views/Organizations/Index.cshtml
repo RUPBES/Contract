@@ -13,86 +13,89 @@
         <div class="dm-cell">
             <div class="dm-modal">
                 <div class="top-modal-block flex-column">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Home" asp-action="" class="close-btn"></a>                   
-                    <div class="contracts-list">
-                        <div>
-                            <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Organization")'">Новый договор</button>
-                            @using (Html.BeginForm("Index", "Organization", FormMethod.Get))
-                            {
-                                <form style="search-form">
-                                    <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
-                                    <input type="submit" value="Найти" />
-                                </form>
-                            }
-                        </div>
+                    <div class="input-group m-2 ">
+                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
+                        <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                    </div>
+                    <div class="input-group m-2">
+
+                        <button type="button" class="btn btn-success k-mr-2" onclick="location.href='@Url.Action("Create", "Organization")'">Новый договор</button>
+                        @using (Html.BeginForm("Index", "Organization", FormMethod.Get))
+                        {
+                            <form style="search-form">
+                                <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                                <input type="submit" value="Найти" />
+                            </form>
+                        }
                     </div>
                     <hr class="modal-line" />
-                <div style="max-height:700px; overflow-y:scroll">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>                                    
-                                     @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
-                                </th>
-                                <th>
-                                     @Html.ActionLink("Аббревиатура", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class=""})
-                                </th>
-                                <th>
-                                     @Html.ActionLink("УНП", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayUnp", @class=""})
-                                </th>
-                                <th colspan="2">
-                                     Отделы
-                                </th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (OrganizationDTO item in Model.Objects)
-                            {
+                    <div style="max-height:700px; overflow-y:scroll">
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Name)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Abbr)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Unp)
-                                    </td>
-                                    <td>
-                                        @foreach (var department in item.Departments)
-                                            {
-                                                <span>@department.Name</span>
-                                                
-                                                <br />
-                                            }
-                                    </td>
+                                    <th>
+                                        @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("Аббревиатура", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class=""})
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("УНП", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayUnp", @class=""})
+                                    </th>
+                                    <th>
+                                        Отделы
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (OrganizationDTO item in Model.Objects)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Name)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Abbr)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Unp)
+                                        </td>
+
                                         <td>
                                             @foreach (var department in item.Departments)
-                                            {                                                
-                                                <span class="icon edit" title="Редактировать">
-                                                    <a asp-controller="Departments" asp-action="Edit" asp-route-id="@department.Id"></a>
-                                                </span>
-                                                <span class="icon delete" title="Удалить">
-                                                    <a asp-controller="Departments" asp-action="Delete" asp-route-id="@department.Id"></a>
-                                                </span>                                                
-                                                <br />
+                                            {
+                                                <div class="d-flex flex-row">
+                                                    <span class="p-1 k-mr-5">@department.Name</span>
+                                                    <span class="icon edit k-mr-1" title="Редактировать">
+
+                                                        <a asp-controller="Departments" asp-action="Edit" asp-route-id="@department.Id">
+
+                                                        </a>
+                                                    </span>
+                                                    <span class="icon delete k-mr-1" title="Удалить">
+
+                                                        <a asp-controller="Departments" asp-action="Delete" asp-route-id="@department.Id">
+
+                                                        </a>
+                                                    </span>
+
+                                                </div>
                                             }
                                         </td>
-                                    <td>                                        
-                                        <span class="icon edit" title="Редактировать">
-                                            <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                        </span>
-                                        <span class="icon delete" title="Удалить">
-                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                        </span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                        <td>
+                                            <span class="icon edit" title="Редактировать">
+                                                <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                            </span>
+                                            <span class="icon delete" title="Удалить">
+                                                <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="pages">
                         @{
                             if (Model.PageViewModel.HasPreviousPage)
@@ -116,7 +119,7 @@
                             }
                         }
                     </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
