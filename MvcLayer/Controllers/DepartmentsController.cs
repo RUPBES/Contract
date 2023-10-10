@@ -5,6 +5,8 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace MvcLayer.Controllers
 {
@@ -21,11 +23,20 @@ namespace MvcLayer.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
         {
-            var contractsContext = _departmentService.GetAll();
-            return View(_mapper.Map<IEnumerable<DepartmentViewModel>>(contractsContext));
-        }
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
+            ViewBag.OrganizationSortParm = sortOrder == "organization" ? "organizationDesc" : "organization";            
+
+            if (query != null)
+            { }
+            else
+            { query = currentFilter; }
+            ViewBag.CurrentFilter = query;
+            var items = _departmentService.GetAll();
+            return View(_mapper.Map<IEnumerable<DepartmentViewModel>>(items));
+        }        
 
         public async Task<IActionResult> Details(int? id)
         {

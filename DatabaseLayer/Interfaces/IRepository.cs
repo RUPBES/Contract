@@ -13,7 +13,6 @@ namespace DatabaseLayer.Interfaces
         IEnumerable<T> GetAll();
         IEnumerable<T> Find(Func<T, bool> predicate);
         void Update(T entity);
-        void Delete(int id, int? secondId = null);
-
+        void Delete(int id, int? secondId = null);        
     }
 }

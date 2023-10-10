@@ -8,6 +8,7 @@ using static System.Net.WebRequestMethods;
 using System.Reflection;
 using DatabaseLayer.Models;
 using BusinessLayer.Interfaces.CommonInterfaces;
+using Microsoft.Data.SqlClient;
 
 namespace MvcLayer.Controllers
 {
@@ -25,11 +26,22 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
         {
-            return _organizationService.GetAll() != null ?
-                        View(_mapper.Map<IEnumerable<OrganizationViewModel>>(_organizationService.GetAll())) :
-                        Problem("Entity set 'ContractsContext.Organizations'  is null.");
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
+            ViewBag.AbbrSortParm = sortOrder == "abbr" ? "abbrDesc" : "abbr";
+            ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
+
+            if (query != null)
+            { }
+            else
+            { query = currentFilter; }
+            ViewBag.CurrentFilter = query;
+
+            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
+                return View(_organizationService .GetPageFilter(100, pageNum, query, sortOrder));
+            else return View(_organizationService.GetPage(100, pageNum));
         }
 
         // GET: Organizations/Details/5
