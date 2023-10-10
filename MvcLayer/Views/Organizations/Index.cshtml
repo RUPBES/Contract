@@ -45,6 +45,15 @@
                                     <th>
                                         Отделы
                                     </th>
+                                    <th>
+                                        Телефоны
+                                    </th>
+                                    <th>
+                                        Юр. адрес
+                                    </th>
+                                    <th>
+                                        Почтовый индекс
+                                    </th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -63,24 +72,58 @@
                                         </td>
 
                                         <td>
+                                            <span class="icon link_to_page dropdown-toggle">
+                                            </span>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                             @foreach (var department in item.Departments)
                                             {
                                                 <div class="d-flex flex-row">
                                                     <span class="p-1 k-mr-5">@department.Name</span>
                                                     <span class="icon edit k-mr-1" title="Редактировать">
 
-                                                        <a asp-controller="Departments" asp-action="Edit" asp-route-id="@department.Id">
+                                                        <a asp-controller="Departments" asp-action="Details" asp-route-id="@department.Id">
 
                                                         </a>
                                                     </span>
-                                                    <span class="icon delete k-mr-1" title="Удалить">
+                                                    @*<span class="icon delete k-mr-1" title="Удалить">
 
                                                         <a asp-controller="Departments" asp-action="Delete" asp-route-id="@department.Id">
 
                                                         </a>
-                                                    </span>
+                                                    </span>*@
 
                                                 </div>
+                                            }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @foreach (var phone in item.Phones)
+                                            {
+                                                <div class="d-flex flex-row">
+                                                    <span class="p-1 k-mr-5 text-break">@phone.Number</span>                                                    
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @foreach (var address in item.Addresses)
+                                            {
+                                                @if (address.FullAddressFact != null)
+                                                {
+                                                    <div class="d-flex flex-row">
+                                                        <span class="p-1 k-mr-5 text-break">@address.FullAddressFact</span>
+                                                    </div>
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            @foreach (var address in item.Addresses)
+                                            {
+                                                @if (address.PostIndex != null)
+                                                {
+                                                    <div class="d-flex flex-row">
+                                                        <span class="p-1 k-mr-5 text-break">@address.PostIndex</span>
+                                                    </div>
+                                                }
                                             }
                                         </td>
                                         <td>
