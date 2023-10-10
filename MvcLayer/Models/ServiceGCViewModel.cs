@@ -36,5 +36,6 @@ namespace MvcLayer.Models
         public ContractViewModel Contract { get; set; }
         public List<ServiceGCViewModel> InverseChangeService { get; set; } = new List<ServiceGCViewModel>();
         public List<ServiceAmendmentDTO> ServiceAmendments { get; set; } = new List<ServiceAmendmentDTO>();
+        public List<ServiceCostDTO> ServiceCosts { get; set; } = new List<ServiceCostDTO>();
     }
 }

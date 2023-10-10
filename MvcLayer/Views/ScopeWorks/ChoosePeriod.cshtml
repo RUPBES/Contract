@@ -7,7 +7,7 @@
     ViewData["Title"] = "Create";
     bool hasScope = false;
     // ищем есть ли изменения, выбтраем последние. если изменения есть то ID последнего помечаем что изменяем
-    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId && x.IsOwnForces == Model.IsOwnForces)?.LastOrDefault();
+    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
     if (scopes is not null)
     {
         hasScope = true;

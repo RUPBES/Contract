@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,19 +38,19 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<MaterialGc> Find(Func<MaterialGc, bool> predicate)
         {
-            return _context.MaterialGcs.Where(predicate).ToList();
+            return _context.MaterialGcs.Include(x => x.MaterialCosts).Where(predicate).ToList();
         }
 
         public IEnumerable<MaterialGc> GetAll()
         {
-            return _context.MaterialGcs.ToList();
+            return _context.MaterialGcs.Include(x => x.MaterialCosts).ToList();
         }
 
         public MaterialGc GetById(int id, int? secondId = null)
         {
             if (id > 0)
             {
-                return _context.MaterialGcs.Find(id);
+                return _context.MaterialGcs.Include(x=>x.MaterialCosts).FirstOrDefault(x=>x.Id == id);
             }
             else
             {
@@ -64,14 +65,11 @@ namespace DatabaseLayer.Repositories
                 var material = _context.MaterialGcs.Find(entity.Id);
 
                 if (material is not null)
-                {
-                    material.Price = entity.Price;
-                    material.FactPrice = entity.FactPrice;
-                    material.Period = entity.Period;
+                {                   
                     material.ContractId = entity.ContractId;
                     material.IsChange = entity.IsChange;
                     material.ChangeMaterialId = entity.ChangeMaterialId;
-
+                    material.MaterialCosts = entity.MaterialCosts;
 
                     _context.MaterialGcs.Update(material);
                 }

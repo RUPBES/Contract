@@ -43,9 +43,11 @@ namespace MvcLayer.Models
         [DisplayName("По факту?")]
         public bool? IsFact { get; set; }
 
-        public virtual PrepaymentViewModel Prepayment { get; set; }
-        public virtual ContractViewModel Contract { get; set; }
-        public virtual List<PrepaymentViewModel> InverseChangePrepayment { get; set; } = new List<PrepaymentViewModel>();
-        public virtual List<PrepaymentAmendmentDTO> PrepaymentAmendments { get; set; } = new List<PrepaymentAmendmentDTO>();
+        public  PrepaymentViewModel Prepayment { get; set; }
+        public  ContractViewModel Contract { get; set; }
+        public  List<PrepaymentViewModel> InverseChangePrepayment { get; set; } = new List<PrepaymentViewModel>();
+        public  List<PrepaymentAmendmentDTO> PrepaymentAmendments { get; set; } = new List<PrepaymentAmendmentDTO>();
+        public List<PrepaymentFactDTO> PrepaymentFacts { get; set; } = new List<PrepaymentFactDTO>();
+        public List<PrepaymentPlanDTO> PrepaymentPlans { get; set; } = new List<PrepaymentPlanDTO>();
     }
 }

@@ -1,0 +1,60 @@
+﻿@model MvcLayer.Models.PrepaymentViewModel
+@{
+    ViewData["Title"] = "Добавление аванса, полученного фактически";
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (Model?.ContractId != null && Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                
+                <form asp-action="Create" class="row" enctype="multipart/form-data">
+                    <input asp-for="Id" value="@Model?.Id" hidden />
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                    <input asp-for="@Model.PrepaymentFacts[0].PrepaymentId" value="@Model?.Id" hidden />
+                    <input asp-for="Period" value="@Model?.Period" hidden />
+                    <input asp-for="PrepaymentFacts[0].Period" value="@Model.Period" type="datetime" hidden />
+
+                    <div class="form-group col-6">
+                        <label class="control-label">Месяц</label>
+                        <input asp-for="PrepaymentFacts[0].Period" value="@Model.Period?.ToShortDateString()" type="datetime" class="form-control" disabled />
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="CurrentValueFact" class="control-label"></label>
+                        <input asp-for="@Model.PrepaymentFacts[0].CurrentValue" class="form-control" />
+
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="TargetValueFact" class="control-label"></label>
+                        <input asp-for="@Model.PrepaymentFacts[0].TargetValue" class="form-control" />
+
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="WorkingOutValueFact" class="control-label"></label>
+                        <input asp-for="@Model.PrepaymentFacts[0].WorkingOutValue" class="form-control" />
+                    </div>
+                    @*  <div class="form-group col-6">
+                    <label asp-for="PnrCost" class="control-label"></label>
+                    <input asp-for="@Model.PrepaymentFacts[0].PrepaymentId" value="@Model." class="form-control" />
+                    </div> *@
+
+                    <div class="form-group">
+                        <input type="submit" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

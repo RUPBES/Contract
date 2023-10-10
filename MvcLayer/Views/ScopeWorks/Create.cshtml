@@ -1,15 +1,15 @@
 ﻿@using MvcLayer.Models;
 @using Newtonsoft.Json;
-@model List<MvcLayer.Models.ScopeWorkViewModel>
+@model MvcLayer.Models.ScopeWorkViewModel
 
 @{
     ViewData["Title"] = "CreateScopeWork";
     int index = 0;
 
-    var d = new List<ScopeWorkViewModel>();
+    var d = new ScopeWorkViewModel();
     if (TempData["scopeW"] is string s)
     {
-        d.AddRange(JsonConvert.DeserializeObject<List<ScopeWorkViewModel>>(s));
+        d = JsonConvert.DeserializeObject<ScopeWorkViewModel>(s);
     }
 }
 
@@ -30,11 +30,11 @@
         <table class="table table-bordered table-striped">
             <tr>
                 <th>Период</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
                     <td>
                         @item.Period?.ToString("MMM yyyy")
-                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                        <input asp-for="SWCosts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
                     </td>
                     index++;
                 }
@@ -44,9 +44,9 @@
             </tr>
             <tr>
                 <th>Cтоимость работ с НДС</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].CostNds" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].CostNds" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -55,9 +55,9 @@
             </tr>
             <tr>
                 <th>Стоимость СМР</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].SmrCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].SmrCost" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -66,9 +66,9 @@
             </tr>
             <tr>
                 <th>Цена ПНР</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].PnrCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].PnrCost" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -77,9 +77,9 @@
             </tr>
             <tr>
                 <th>Цена оборудования</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].EquipmentCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].EquipmentCost" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -88,9 +88,9 @@
             </tr>
             <tr>
                 <th>Цена остальных работ</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].OtherExpensesCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].OtherExpensesCost" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -99,9 +99,9 @@
             </tr>
             <tr>
                 <th>Цена доп. работ</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].AdditionalCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].AdditionalCost" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -110,9 +110,9 @@
             </tr>
             <tr>
                 <th>Цена материалов</th>
-                @foreach (var item in d)
+                @foreach (var item in d.SWCosts)
                 {
-                    <td><input asp-for="@Model[index].MaterialCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    <td><input asp-for="SWCosts[index].MaterialCost" class="form-control" type="number" step="0.001" min="0" /></td>
                     index++;
                 }
                 @{
@@ -120,28 +120,34 @@
                 }
             </tr>
 
-            @foreach (var item in d)
+            <tr>
+                <th>Цена услуг генподрядчика</th>
+                @foreach (var item in d.SWCosts)
+                {
+                    <td><input asp-for="SWCosts[index].GenServiceCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                    index++;
+                }
+                @{
+                    index = 0;
+                }
+            </tr>
+            @foreach (var item in d.SWCosts)
             {
-                <input asp-for="@Model[index].GenServiceCost" hidden />
-                <input asp-for="@Model[index].IsOwnForces" hidden />
-                <input asp-for="@Model[index].ContractId" hidden />
-                <input asp-for="@Model[index].IsChange" hidden />
-                <input asp-for="@Model[index].AmendmentId" hidden />
-                <input asp-for="@Model[index].ChangeScopeWorkId" hidden />
-
+                <input asp-for="SWCosts[index].IsOwnForces" hidden />
                 index++;
             }
 
+            <input asp-for="ContractId" hidden />
+            <input asp-for="IsOwnForces" hidden />
+            <input asp-for="IsChange" hidden />
+            <input asp-for="AmendmentId" hidden />
+            <input asp-for="ChangeScopeWorkId" hidden />
         </table>
     </div>
     <div class="form-group">
         <input type="submit" value="Create" class="btn btn-primary" />
     </div>
 </form>
-
-@* <div>
-    <a asp-action="Details" asp-controller="Contracts" asp-route-id="@d[0]?.ContractId">Back to List</a>
-</div> *@
 
 @section Scripts {
     @{

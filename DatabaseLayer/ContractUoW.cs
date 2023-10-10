@@ -14,7 +14,12 @@ namespace DatabaseLayer
     {
         #region valueRepo
         private readonly ContractsContext _context;
+
         private AddressRepository addressRepository;
+         private ActRepository actRepository;
+        private ActFileRepository actFileRepository;
+        private AmendmentFileRepository amendmentFileRepository;
+        private AmendmentRepository amendmentRepository;
         private ContractOrganizationRepository contractOrganizationRepository;
         private ContractRepository contractRepository;
         private DepartmentRepository departmentRepository;
@@ -23,29 +28,32 @@ namespace DatabaseLayer
         private PhoneRepository phoneRepository;
         private TypeWorkRepository typeWorkRepository;
 
+        private PrepaymentPlanRepository prepaymentPlanRepository;
+        private PrepaymentFactRepository prepaymentFactRepository;
         private PrepaymentRepository prepaymentRepository;
         private PaymentRepository paymentRepository;
         private FormC3Repository formC3Repository;
         private SelectionProcedureRepository selectionProcedureRepository;
         private CommissionActRepository commissionActRepository;
         private CommissionActFileRepository commissionActFileRepository;
-        private CorrespondenceRepository correspondenceRepository;
-        private ActRepository actRepository;
+        private CorrespondenceRepository correspondenceRepository;      
 
         private CorrespondenceFileRepository correspondenceFileRepository;
         private EstimateDocFileRepository estimateDocFileRepository;
         private EstimateDocRepository estimateDocRepository;
         private FileRepository fileRepository;
-        private ActFileRepository actFileRepository;
-        private AmendmentFileRepository amendmentFileRepository;
-        private AmendmentRepository amendmentRepository;
+       
         private MaterialAmendmentRepository materialAmendmentRepository;
         private FormFileRepository formFileRepository;
 
+        private MaterialCostRepository materialCostRepository;
         private MaterialRepository materialRepository;
         private ServiceAmendmentRepository serviceAmendmentRepository;
         private ServiceGCRepository serviceGCRepository;
+        private ServiceCostRepository serviceCostRepository;
+
         private ScopeWorkRepository scopeWorkRepository;
+        private SWCostRepository sWCostRepository;
         private ScopeWorkAmendmentRepository scopeWorkAmendmentRepository;
         private PrepaymentAmendmentRepository prepaymentAmendmentRepository;
 
@@ -75,6 +83,63 @@ namespace DatabaseLayer
 
         #region tables
 
+        public IRepository<MaterialCost> MaterialCosts
+        {
+            get
+            {
+                if (materialCostRepository is null)
+                {
+                    materialCostRepository = new MaterialCostRepository(_context);
+                }
+                return materialCostRepository;
+            }
+        }
+
+        public IRepository<ServiceCost> ServiceCosts
+        {
+            get
+            {
+                if (serviceCostRepository is null)
+                {
+                    serviceCostRepository = new ServiceCostRepository(_context);
+                }
+                return serviceCostRepository;
+            }
+        }
+
+        public IRepository<SWCost> SWCosts
+        {
+            get
+            {
+                if (sWCostRepository is null)
+                {
+                    sWCostRepository = new SWCostRepository(_context);
+                }
+                return sWCostRepository;
+            }
+        }
+        public IRepository<PrepaymentPlan> PrepaymentPlans
+        {
+            get
+            {
+                if (prepaymentPlanRepository is null)
+                {
+                    prepaymentPlanRepository = new PrepaymentPlanRepository(_context);
+                }
+                return prepaymentPlanRepository;
+            }
+        }
+        public IRepository<PrepaymentFact> PrepaymentFacts
+        {
+            get
+            {
+                if (prepaymentFactRepository is null)
+                {
+                    prepaymentFactRepository = new PrepaymentFactRepository(_context);
+                }
+                return prepaymentFactRepository;
+            }
+        }
         public IRepository<FormFile> FormFiles
         {
             get
@@ -433,8 +498,7 @@ namespace DatabaseLayer
         #endregion
 
         public void Dispose()
-        {
-            
+        {            
         }
         public void Save()
         {

@@ -31,5 +31,6 @@ namespace MvcLayer.Models
         public ContractViewModel Contract { get; set; }
         public List<MaterialViewModel> InverseChangeMaterial { get; set; } = new List<MaterialViewModel>();
         public List<MaterialAmendmentDTO> MaterialAmendments { get; set; } = new List<MaterialAmendmentDTO>();
+        public List<MaterialCostDTO> MaterialCosts { get; set; } = new List<MaterialCostDTO>();
     }
 }

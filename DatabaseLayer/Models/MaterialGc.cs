@@ -11,12 +11,10 @@ namespace DatabaseLayer.Models
         {
             InverseChangeMaterial = new HashSet<MaterialGc>();
             MaterialAmendments = new HashSet<MaterialAmendment>();
+            MaterialCosts = new HashSet<MaterialCost>();
         }
 
         public int Id { get; set; }
-        public decimal? Price { get; set; }
-        public decimal? FactPrice { get; set; }
-        public DateTime? Period { get; set; }
         public int? ContractId { get; set; }
         public bool? IsChange { get; set; }
         public int? ChangeMaterialId { get; set; }
@@ -25,5 +23,6 @@ namespace DatabaseLayer.Models
         public virtual Contract Contract { get; set; }
         public virtual ICollection<MaterialGc> InverseChangeMaterial { get; set; }
         public virtual ICollection<MaterialAmendment> MaterialAmendments { get; set; }
+        public virtual ICollection<MaterialCost> MaterialCosts { get; set; }
     }
 }

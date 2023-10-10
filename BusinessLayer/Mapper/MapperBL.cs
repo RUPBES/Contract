@@ -13,6 +13,9 @@ namespace BusinessLayer.Mapper
             CreateMap<Amendment, AmendmentDTO>().ReverseMap();
             CreateMap<AmendmentFile, AmendmentFileDTO>().ReverseMap();
 
+            CreateMap<PrepaymentFact, PrepaymentFactDTO>().ReverseMap();
+            CreateMap<PrepaymentPlan, PrepaymentPlanDTO>().ReverseMap();
+
             CreateMap<Contract, ContractDTO>().ReverseMap();
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
             CreateMap<CommissionActDTO, CommissionAct>().ReverseMap();
@@ -29,14 +32,18 @@ namespace BusinessLayer.Mapper
             CreateMap<Log, LogDTO>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
             CreateMap<MaterialDTO, MaterialGc>().ReverseMap();
+            CreateMap<MaterialCostDTO, MaterialCost>().ReverseMap();
             CreateMap<MaterialAmendmentDTO, MaterialAmendment>().ReverseMap();
             CreateMap<Payment, PaymentDTO>().ReverseMap();
             CreateMap<PrepaymentDTO, Prepayment>().ReverseMap();
+            CreateMap<PrepaymentAmendmentDTO, PrepaymentAmendment>().ReverseMap();
             CreateMap<Phone, PhoneDTO>().ReverseMap();
             CreateMap<SelectionProcedure, SelectionProcedureDTO>().ReverseMap();
             CreateMap<ServiceAmendmentDTO, ServiceAmendment>().ReverseMap();
             CreateMap<ServiceGCDTO, ServiceGc>().ReverseMap();
+            CreateMap<ServiceCostDTO, ServiceCost>().ReverseMap();
             CreateMap<ScopeWork, ScopeWorkDTO>().ReverseMap();
+            CreateMap<SWCost, SWCostDTO>().ReverseMap();
             CreateMap<TypeWork, TypeWorkDTO>().ReverseMap();
             CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
 

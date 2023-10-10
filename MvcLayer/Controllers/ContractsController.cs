@@ -56,12 +56,14 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, string? message = null)
         {
             if (id == null || _contractService.GetAll() == null)
             {
                 return NotFound();
             }
+
+            ViewBag.Message = message;
 
             var contract = _contractService.GetById((int)id);
             if (contract == null)

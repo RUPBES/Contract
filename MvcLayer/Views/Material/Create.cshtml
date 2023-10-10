@@ -1,19 +1,19 @@
 ﻿@using MvcLayer.Models;
 @using Newtonsoft.Json;
-@model List<MvcLayer.Models.MaterialViewModel>
+@model MvcLayer.Models.MaterialViewModel
 
 @{
     int index = 0;
-    var d = new List<MaterialViewModel>();
+    var d = new MaterialViewModel();
     ViewData["Title"] = "Стоимость материалов";
     if (TempData["material"] is string s)
     {
-        d.AddRange(JsonConvert.DeserializeObject<List<MaterialViewModel>>(s));
+        d = JsonConvert.DeserializeObject<MaterialViewModel>(s);
     }
-    bool isFact = d.FirstOrDefault().IsFact == true ? true : false;
+    bool isFact = d.IsFact == true ? true : false;
 
     string actionName = isFact ? "EditMaterial" : "Create";
-    int contrId = d?.FirstOrDefault()?.ContractId is not null && d?.FirstOrDefault()?.ContractId > 0 ? (int)d?.FirstOrDefault()?.ContractId : 0;
+    int contrId = d?.ContractId is not null && d?.ContractId > 0 ? (int)d?.ContractId : 0;
 }
 <style>
     .cont-table {
@@ -48,11 +48,11 @@
                             <tr>
 
                                 <th>Период</th>
-                                @foreach (var item in d)
+                                @foreach (var item in d.MaterialCosts)
                                 {
                                     <td>
                                         @item.Period?.ToString("MMM yyyy")
-                                        <input asp-for="@Model[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                        <input asp-for="MaterialCosts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
                                     </td>
                                     index++;
                                 }
@@ -60,50 +60,28 @@
                                     index = 0;
                                 }
                             </tr>
-                            @if (!isFact)
-                            {
-                                <tr>
-                                    <th>Планируемая стоимость материалов</th>
-                                    @foreach (var item in d)
-                                    {
-                                        <td><input asp-for="@Model[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                            }
-                            @if (isFact)
-                            {
-                                <tr>
-                                    <th>Цена материалов фактическая</th>
-                                    @foreach (var item in d)
-                                    {
-                                        <td><input asp-for="@Model[index].FactPrice" class="form-control" type="number" step="0.01" min="0" /></td>
-                                        index++;
-                                    }
-                                    @{
-                                        index = 0;
-                                    }
-                                </tr>
-                            }
-
-                            @foreach (var item in d)
-                            {
-                                @if (isFact)
+                            <tr>
+                                <th>Планируемая стоимость материалов</th>
+                                @foreach (var item in d.MaterialCosts)
                                 {
-                                    <input asp-for="@Model[index].Id" hidden />
-                                    <input asp-for="@Model[index].Price" hidden />
+                                    <td><input asp-for="MaterialCosts[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
+                                    index++;
                                 }
+                                @{
+                                    index = 0;
+                                }
+                            </tr>
 
-                                <input asp-for="@Model[index].AmendmentId" hidden />
-                                <input asp-for="@Model[index].ContractId" hidden />
-                                <input asp-for="@Model[index].IsChange" hidden />
-                                <input asp-for="@Model[index].ChangeMaterialId" hidden />
+                            @* @foreach (var item in d.MaterialCosts)
+                            { *@
 
+                                <input asp-for="AmendmentId" hidden />
+                                <input asp-for="ContractId" hidden />
+                                <input asp-for="IsChange" hidden />
+                                <input asp-for="ChangeMaterialId" hidden />
+@* 
                                 index++;
-                            }
+                            } *@
 
                         </table>
                     </div>

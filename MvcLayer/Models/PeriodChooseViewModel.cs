@@ -35,7 +35,7 @@ namespace MvcLayer.Models
         [DisplayName("Собственными силами?")]
         public bool IsFact { get; set; }
 
-        public DateTime ChoosePeriod { get; set; }
+        public DateTime? ChoosePeriod { get; set; }
         public List<DateTime> ListDates { get; set; } = new List<DateTime>();
     }
 }

@@ -14,17 +14,19 @@ namespace MvcLayer.Controllers
         private readonly IContractService _contractService;
         private readonly IOrganizationService _organization;
         private readonly IMaterialService _materialService;
+        private readonly IMaterialCostService _materialCostService;
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
 
         public MaterialController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IMaterialService materialService, IScopeWorkService scopeWork)
+            IMaterialService materialService, IScopeWorkService scopeWork, IMaterialCostService materialCostService)
         {
             _contractService = contractService;
             _mapper = mapper;
             _organization = organization;
             _materialService = materialService;
             _scopeWork = scopeWork;
+            _materialCostService = materialCostService;
         }
 
         public IActionResult Index()
@@ -35,24 +37,7 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId)
         {
             return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.Find(x => x.ContractId == contractId)));
-        }
-
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null || _prepayment.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var prepayment = _prepayment.GetById((int)id);
-        //    if (prepayment == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(_mapper.Map<PrepaymentViewModel>(scopeWork));
-        //}
-
+        }      
 
         /// <summary>
         /// Выбор периода для заполнения материалов, на основе заполненного объема работ
@@ -64,9 +49,8 @@ namespace MvcLayer.Controllers
         {
             if (contractId > 0)
             {
-
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetDatePeriodLastOrMainScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
                 if (period is null)
                 {
@@ -116,25 +100,29 @@ namespace MvcLayer.Controllers
                         return RedirectToAction("Details", "Contracts", new { id = contractId });
                     }
 
-                    //находим ID по которому ищем все материалы с изменениями
-                    var materialId = сhangeMaterial?.LastOrDefault()?.ChangeMaterialId is null ?
-                                        materialMain?.LastOrDefault()?.ChangeMaterialId : сhangeMaterial?.LastOrDefault()?.ChangeMaterialId;
-
-                    var model = _mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.Find(x => x.ContractId == contractId && x.ChangeMaterialId == materialId));
-
-                    foreach (var item in model)
+                    if (_materialCostService.Find(x => x.IsFact != true && x.MaterialId == сhangeMaterialId).FirstOrDefault() is null)
                     {
-                        item.IsFact = isFact;
+                        return RedirectToAction("Details", "Contracts", new { id = contractId, message = "Не заполнены стоимость материалов по плану" });
                     }
 
-                    var serviceFact = JsonConvert.SerializeObject(model);
-                    TempData["material"] = serviceFact;
 
-                    return RedirectToAction("Create", new
+                    DateTime startDate = period.Value.Item1;
+
+                    //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
+                    while (startDate <= period?.Item2)
                     {
-                        contractId = contractId
-                    });
+                        //проверяем если по данной дате уже заполненные факт.авансы
+                        if (_materialCostService.Find(x => x.Period.Value.Date == startDate.Date && x.MaterialId == сhangeMaterialId && x.IsFact == true).FirstOrDefault() is null)
+                        {
+                            periodChoose.ListDates.Add(startDate);
+                        }
 
+                        startDate = startDate.AddMonths(1);
+                    }
+
+
+                    TempData["materialId"] = сhangeMaterialId;
+                    return View("ChooseDate", periodChoose);
                 }
             }
             else
@@ -143,30 +131,62 @@ namespace MvcLayer.Controllers
             }
         }
 
+        public ActionResult CreateMaterialFact(PeriodChooseViewModel model)
+        {
+            int id = TempData["materialId"] is int preId ? preId : 0;
+            return View("AddMaterialFact", new MaterialViewModel
+            {
+                Id = id,
+                Period = model.ChoosePeriod,
+                ContractId = model.ContractId,
+                IsFact = model.IsFact,
+                ChangeMaterialId = model.ChangeMaterialId,
+                MaterialCosts = new List<MaterialCostDTO>{
+                new MaterialCostDTO{
+                    MaterialId = id
+                }
+                }
+            });
+        }
 
         public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel)
         {
             if (periodViewModel is not null)
             {
-                List<MaterialViewModel> model = new List<MaterialViewModel>();
+                MaterialViewModel model = new MaterialViewModel();
 
                 if (periodViewModel.AmendmentId > 0)
                 {
                     periodViewModel.IsChange = true;
                 }
+
+                List<MaterialCostDTO> costs = new List<MaterialCostDTO>();
+
                 while (periodViewModel.PeriodStart <= periodViewModel.PeriodEnd)
                 {
-                    model.Add(new MaterialViewModel
+                    costs.Add(new MaterialCostDTO
                     {
                         Period = periodViewModel.PeriodStart,
-                        IsChange = periodViewModel.IsChange,
-                        ContractId = periodViewModel.ContractId,
-                        AmendmentId = periodViewModel.AmendmentId,
-                        ChangeMaterialId = periodViewModel.ChangeMaterialId
                     });
+
+                  
+                    //model.Add(new MaterialViewModel
+                    //{
+                    //    Period = periodViewModel.PeriodStart,
+                    //    IsChange = periodViewModel.IsChange,
+                    //    ContractId = periodViewModel.ContractId,
+                    //    AmendmentId = periodViewModel.AmendmentId,
+                    //    ChangeMaterialId = periodViewModel.ChangeMaterialId
+                    //});
 
                     periodViewModel.PeriodStart = periodViewModel.PeriodStart.AddMonths(1);
                 }
+
+                model.IsChange = periodViewModel.IsChange;
+                model.ContractId = periodViewModel.ContractId;
+                model.AmendmentId = periodViewModel.AmendmentId;
+                model.ChangeMaterialId = periodViewModel.ChangeMaterialId;
+                model.MaterialCosts = costs;
 
                 var service = JsonConvert.SerializeObject(model);
                 TempData["material"] = service;
@@ -180,7 +200,7 @@ namespace MvcLayer.Controllers
         {
             if (TempData["material"] is string s)
             {
-                return View(JsonConvert.DeserializeObject<List<MaterialViewModel>>(s));
+                return View(JsonConvert.DeserializeObject<MaterialViewModel>(s));
             }
 
             if (contractId > 0)
@@ -195,55 +215,37 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(List<MaterialViewModel> listMaterials)
+        public IActionResult Create(MaterialViewModel material)
         {
-            if (listMaterials is not null)
+            if (material is not null)
             {
-                foreach (var item in listMaterials)
-                {
-                    var materialId = (int)_materialService.Create(_mapper.Map<MaterialDTO>(item));
+               
+                    var materialId = (int)_materialService.Create(_mapper.Map<MaterialDTO>(material));
 
-                    if (item?.AmendmentId is not null && item?.AmendmentId > 0)
+                    if (material?.AmendmentId is not null && material?.AmendmentId > 0)
                     {
-                        _materialService.AddAmendmentToMaterial((int)item?.AmendmentId, materialId);
+                        _materialService.AddAmendmentToMaterial((int)material?.AmendmentId, materialId);
                     }
-                }
-                return RedirectToAction("Details", "Contracts", new { id = listMaterials?.FirstOrDefault()?.ContractId });
-                //return RedirectToAction(nameof(GetByContractId), new { id = listMaterials.FirstOrDefault().ContractId });
+                
+                return RedirectToAction("Details", "Contracts", new { id = material?.ContractId });
             }
-            return View(listMaterials);
+            return View(material);
         }
 
-        public IActionResult EditMaterial(List<MaterialViewModel> material)
+        public IActionResult Edit(MaterialViewModel material)
         {
-            if (material is not null || material?.Count() > 0)
+            if (material is not null)
             {
-                foreach (var item in material)
+                foreach (var item in material.MaterialCosts)
                 {
-                    _materialService.Update(_mapper.Map<MaterialDTO>(item));
+                    _materialCostService.Create(item);
                 }
-                return RedirectToAction("Details", "Contracts", new { id = material?.FirstOrDefault()?.ContractId });
+               
+                return RedirectToAction("Details", "Contracts", new { id = material?.ContractId });
             }
 
             return RedirectToAction("Index", "Contracts");
-        }
-
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null || _prepayment.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var prepayment = _prepayment.GetById((int)id);
-        //    if (prepayment == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    //ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
-        //    //ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
-        //    return View(_mapper.Map<ScopeWorkViewModel>(scopeWork));
-        //}
+        }              
 
         public async Task<IActionResult> Delete(int? id)
         {

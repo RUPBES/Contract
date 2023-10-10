@@ -36,13 +36,19 @@ namespace BusinessLayer.IoC
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IFormService, FormService>();
             services.AddScoped<IMaterialService, MaterialService>();
+            services.AddScoped<IMaterialCostService, MaterialCostService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
             services.AddScoped<IPhoneService, PhoneService>();
             services.AddScoped<IPrepaymentService, PrepaymentService>();
+            services.AddScoped<IPrepaymentFactService, PrepaymentFactService>();
+            services.AddScoped<IPrepaymentPlanService, PrepaymentPlanService>();
+
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IScopeWorkService, ScopeWorkService>();
+            services.AddScoped<ISWCostService, SWCostService>();
             services.AddScoped<ISelectionProcedureService, SelectionProcedureService>();
             services.AddScoped<IServiceGCService, ServiceGCService>();
+            services.AddScoped<IServiceCostService, ServiceCostService>();
             services.AddScoped<ITypeWorkService, TypeWorkService>();
 
             services.AddScoped<IVContractService, VContractService>();

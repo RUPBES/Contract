@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +44,10 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<PrepaymentAmendment> Find(Func<PrepaymentAmendment, bool> predicate)
         {
-            return _context.PrepaymentAmendments.Where(predicate).ToList();
+            return _context.PrepaymentAmendments
+                .Include(x=>x.Prepayment)
+                .Include(x=>x.Amendment)
+                .Where(predicate).ToList();
         }
 
         public IEnumerable<PrepaymentAmendment> GetAll()
@@ -56,6 +60,8 @@ namespace DatabaseLayer.Repositories
             if (id > 0 && amendId != null)
             {
                 return _context.PrepaymentAmendments
+                .Include(x => x.Prepayment)
+                .Include(x => x.Amendment)
                     .FirstOrDefault(x => x.PrepaymentId == id && x.AmendmentId == amendId);
             }
             else

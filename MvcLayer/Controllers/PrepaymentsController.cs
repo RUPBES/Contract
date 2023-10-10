@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
-using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -15,17 +13,22 @@ namespace MvcLayer.Controllers
         private readonly IContractService _contractService;
         private readonly IOrganizationService _organization;
         private readonly IPrepaymentService _prepayment;
+        private readonly IPrepaymentFactService _prepaymentFact;
+        private readonly IPrepaymentPlanService _prepaymentPlan;
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
 
         public PrepaymentsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IPrepaymentService prepayment, IScopeWorkService scopeWork)
+            IPrepaymentService prepayment, IScopeWorkService scopeWork, IPrepaymentFactService prepaymentFact,
+            IPrepaymentPlanService prepaymentPlan)
         {
             _contractService = contractService;
             _mapper = mapper;
             _organization = organization;
             _prepayment = prepayment;
             _scopeWork = scopeWork;
+            _prepaymentFact = prepaymentFact;
+            _prepaymentPlan = prepaymentPlan;
         }
 
         public IActionResult Index()
@@ -38,22 +41,6 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.Find(x => x.ContractId == contractId)));
         }
 
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null || _prepayment.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var prepayment = _prepayment.GetById((int)id);
-        //    if (prepayment == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(_mapper.Map<PrepaymentViewModel>(scopeWork));
-        //}
-
         /// <summary>
         /// Выбор периода для заполнения авансов, на основе заполненного объема работ
         /// </summary>
@@ -64,9 +51,8 @@ namespace MvcLayer.Controllers
         {
             if (contractId > 0)
             {
-
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetDatePeriodLastOrMainScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
                 if (period is null)
                 {
@@ -83,11 +69,11 @@ namespace MvcLayer.Controllers
 
                 // определяем, есть уже авансы
                 var prepayment = _prepayment
-                    .Find(x => x.ContractId == contractId && true && x.IsChange != true);
+                    .Find(x => x.ContractId == contractId && x.IsChange != true);
 
                 // определяем, есть уже измененные авансы
                 var сhangePrepayment = _prepayment
-                    .Find(x => x.ContractId == contractId && true && x.IsChange == true);
+                    .Find(x => x.ContractId == contractId && x.IsChange == true);
 
                 //для последующего поиска всех измененных авансов, через таблицу Изменений по договору, устанавливаем ID одного из объема работ
                 var сhangePrepaymentId = сhangePrepayment?.LastOrDefault()?.Id is null ?
@@ -116,23 +102,23 @@ namespace MvcLayer.Controllers
                         return RedirectToAction("Details", "Contracts", new { id = contractId });
                     }
 
-                    var prepaymentId = сhangePrepayment?.LastOrDefault()?.ChangePrepaymentId is null ?
-                                        prepayment?.LastOrDefault()?.ChangePrepaymentId : сhangePrepayment?.LastOrDefault()?.ChangePrepaymentId;
-
-                    var model =_mapper.Map<IEnumerable<PrepaymentViewModel>>( _prepayment.Find(x => x.ContractId == contractId && x.ChangePrepaymentId == prepaymentId));
-
-                    foreach (var item in model)
+                    DateTime startDate = period.Value.Item1;
+                    var prepaymentId = prepayment?.FirstOrDefault()?.Id;
+                    //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
+                    while (startDate <= period?.Item2)
                     {
-                        item.IsFact = isFact;
+                        //проверяем если по данной дате уже заполненные факт.авансы
+                        if (_prepaymentFact.Find(x=>x.Period.Value.Date == startDate.Date && x.PrepaymentId == prepaymentId).FirstOrDefault() is null)
+                        {
+                            periodChoose.ListDates.Add(startDate);
+                        }
+                       
+                        startDate = startDate.AddMonths(1);
                     }
-                    var prepaymentFact = JsonConvert.SerializeObject(model);
-                    TempData["prepayment"] = prepaymentFact;
 
-                    return RedirectToAction("Create", new
-                    {
-                        contractId = contractId
-                    });
-
+                   
+                    TempData["prepaymentId"] = prepaymentId;
+                    return View("ChooseDate", periodChoose);
                 }
             }
             else
@@ -141,30 +127,54 @@ namespace MvcLayer.Controllers
             }
         }
 
+        public ActionResult CreatePrepaymentFact(PeriodChooseViewModel model)
+        {
+            int id = TempData["prepaymentId"] is int preId ? preId : 0;
+            return View("AddPrepaymentFact", new PrepaymentViewModel
+            {
+                Id = id,
+                Period = model.ChoosePeriod,
+                ContractId = model.ContractId,
+                PrepaymentFacts = new List<PrepaymentFactDTO>{
+                new PrepaymentFactDTO{
+                    
+                    PrepaymentId = id
+                }
+                }
+            });
+        }
 
         public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel)
         {
             if (prepaymentViewModel is not null)
             {
-                List<PrepaymentViewModel> model = new List<PrepaymentViewModel>();
+                PrepaymentViewModel model = new PrepaymentViewModel();
 
                 if (prepaymentViewModel.AmendmentId > 0)
                 {
                     prepaymentViewModel.IsChange = true;
                 }
+
+
+                List<PrepaymentPlanDTO> plan = new List<PrepaymentPlanDTO>();
+
                 while (prepaymentViewModel.PeriodStart <= prepaymentViewModel.PeriodEnd)
                 {
-                    model.Add(new PrepaymentViewModel
+                    plan.Add(new PrepaymentPlanDTO
                     {
                         Period = prepaymentViewModel.PeriodStart,
-                        IsChange = prepaymentViewModel.IsChange,
-                        ContractId = prepaymentViewModel.ContractId,
-                        AmendmentId = prepaymentViewModel.AmendmentId,
-                        ChangePrepaymentId = prepaymentViewModel.ChangePrepaymentId,
                     });
 
                     prepaymentViewModel.PeriodStart = prepaymentViewModel.PeriodStart.AddMonths(1);
                 }
+
+
+                model.IsChange = prepaymentViewModel.IsChange;
+                model.ContractId = prepaymentViewModel.ContractId;
+                model.AmendmentId = prepaymentViewModel.AmendmentId;
+                model.ChangePrepaymentId = prepaymentViewModel.ChangePrepaymentId;
+                model.PrepaymentPlans = plan;
+
 
                 var prepayment = JsonConvert.SerializeObject(model);
                 TempData["prepayment"] = prepayment;
@@ -178,7 +188,7 @@ namespace MvcLayer.Controllers
         {
             if (TempData["prepayment"] is string s)
             {
-                return View(JsonConvert.DeserializeObject<List<PrepaymentViewModel>>(s));
+                return View(JsonConvert.DeserializeObject<PrepaymentViewModel>(s));
             }
 
             if (contractId > 0)
@@ -193,20 +203,24 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(List<PrepaymentViewModel> prepayment)
+        public IActionResult Create(PrepaymentViewModel prepayment)
         {
             if (prepayment is not null)
             {
-                foreach (var item in prepayment)
+                if(prepayment.PrepaymentFacts.Count() > 0 && prepayment.PrepaymentFacts is not null)
                 {
-                    var prepaymentId = (int)_prepayment.Create(_mapper.Map<PrepaymentDTO>(item));
-
-                    if (item?.AmendmentId is not null && item?.AmendmentId > 0)
-                    {
-                        _prepayment.AddAmendmentToPrepayment((int)item?.AmendmentId, prepaymentId);
-                    }
+                    _prepaymentFact.Create(prepayment?.PrepaymentFacts?.FirstOrDefault());
+                    return RedirectToAction(nameof(GetByContractId), new { contractId = prepayment.ContractId });
                 }
-                return RedirectToAction(nameof(Index));
+                
+                var prepaymentId = (int)_prepayment.Create(_mapper.Map<PrepaymentDTO>(prepayment));
+
+                if (prepayment?.AmendmentId is not null && prepayment?.AmendmentId > 0)
+                {
+                    _prepayment.AddAmendmentToPrepayment((int)prepayment?.AmendmentId, prepaymentId);
+                }
+              
+                return RedirectToAction(nameof(GetByContractId), new { contractId  = prepayment.ContractId});
             }
             return View(prepayment);
         }

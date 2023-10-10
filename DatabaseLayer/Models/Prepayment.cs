@@ -1,33 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-
-#nullable disable
+﻿#nullable disable
 
 namespace DatabaseLayer.Models
 {
     public partial class Prepayment
     {
-        public Prepayment()
-        {
-            InverseChangePrepayment = new HashSet<Prepayment>();
-            PrepaymentAmendments = new HashSet<PrepaymentAmendment>();
-        }
 
         public int Id { get; set; }
-        public decimal? CurrentValue { get; set; }
-        public decimal? CurrentValueFact { get; set; }
-        public decimal? TargetValue { get; set; }
-        public decimal? TargetValueFact { get; set; }
-        public decimal? WorkingOutValue { get; set; }
-        public decimal? WorkingOutValueFact { get; set; }
-        public DateTime? Period { get; set; }
+
+        /// <summary>
+        /// Контракт
+        /// </summary>
         public int? ContractId { get; set; }
+
+        /// <summary>
+        /// Изменено?
+        /// </summary>
         public bool? IsChange { get; set; }
+
+        /// <summary>
+        /// ID измененного аванса
+        /// </summary>
         public int? ChangePrepaymentId { get; set; }
 
-        public virtual Prepayment ChangePrepayment { get; set; }
-        public virtual Contract Contract { get; set; }
-        public virtual ICollection<Prepayment> InverseChangePrepayment { get; set; }
+        public virtual Prepayment? ChangePrepayment { get; set; }
+
+        public virtual Contract? Contract { get; set; }
+
+        public virtual ICollection<Prepayment> InverseChangePrepayment { get; set; } = new List<Prepayment>();
+
+        public virtual ICollection<PrepaymentFact> PrepaymentFacts { get; set; } = new List<PrepaymentFact>();
+
+        public virtual ICollection<PrepaymentPlan> PrepaymentPlans { get; set; } = new List<PrepaymentPlan>();
+
         public virtual ICollection<PrepaymentAmendment> PrepaymentAmendments { get; set; }
     }
 }

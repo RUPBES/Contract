@@ -112,7 +112,13 @@ namespace BusinessLayer.Services
 
         public IEnumerable<PrepaymentDTO> FindByContractId(int id)
         {
-            return _mapper.Map<IEnumerable<PrepaymentDTO>>(GetAll().Where(p => p.ContractId == id));
+            return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.GetAll().Where(p => p.ContractId == id));
+        }
+
+        public AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId)
+        {
+            var prepModelChange = _database.Prepayments.GetById(prepaymentId);
+            return _mapper.Map<AmendmentDTO>(_database.PrepaymentAmendments?.Find(p => p.PrepaymentId == prepModelChange.ChangePrepaymentId)?.FirstOrDefault()?.Amendment);
         }
 
         public void AddAmendmentToPrepayment(int amendmentId, int prepaymentId)

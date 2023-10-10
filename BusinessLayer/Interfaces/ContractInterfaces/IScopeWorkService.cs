@@ -7,6 +7,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     public interface IScopeWorkService:IService<ScopeWorkDTO, ScopeWork>
     {
         void AddAmendmentToScopeWork(int amendmentId, int scopeworkId);
-        (DateTime, DateTime)? GetDatePeriodLastOrMainScopeWork(int contractId);
+        (DateTime, DateTime)? GetPeriodRangeScopeWork(int contractId);
     }
 }

@@ -1,0 +1,67 @@
+﻿@model MvcLayer.Models.PeriodChooseViewModel
+
+@{
+    ViewData["Title"] = "Выбрать дату запонения";
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:500px;">
+                <div class="top-modal-block">
+                    <div class="top-modal-left">
+                        <div class="pl-left">
+                            @* <img src="/Images/Icon/logotype.png"> *@
+                        </div>
+                    </div>
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                </div>
+                <hr class="modal-line">
+                <form id="target" asp-action="CreatePrepaymentFact" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                    <input name="ContractId" value="@Model?.ContractId" hidden />
+                    <input asp-for="IsFact" value="@Model?.IsFact" hidden />
+                    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
+                    <input asp-for="ChangePrepaymentId" value="@Model?.ChangePrepaymentId" hidden />
+
+                    <div class="form-group col-12">
+                        @if (Model?.ListDates.Count > 0)
+                        {
+                            <label class="control-label">Период</label>
+                            <select id="periodId" name="ChoosePeriod" class="form-control select">
+                                <option disabled selected>Выберите период</option>
+                                @foreach (var item in Model?.ListDates)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        }
+                        @if (Model?.ListDates.Count < 1)
+                        {
+                            <h4>Авансы, фактически полученные, заполнены</h4>
+                        }
+                    </div>
+                </form>
+                <div id="result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+        $("#periodId").on("change", function () {
+            $("#target").trigger("submit");
+        });
+        $(document).ready(function () {
+            $('.js-chosen').chosen({
+                width: '100%',
+                no_results_text: 'Совпадений не найдено',
+                placeholder_text_single: 'Выберите'
+            });
+        });
+    </script>
+}

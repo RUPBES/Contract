@@ -1,4 +1,6 @@
-﻿namespace BusinessLayer.Models
+﻿using DatabaseLayer.Models;
+
+namespace BusinessLayer.Models
 {
     public class PrepaymentDTO
     {
@@ -18,5 +20,9 @@
         public ContractDTO Contract { get; set; }
         public List<PrepaymentDTO> InverseChangePrepayment { get; set; } = new List<PrepaymentDTO>();
         public List<PrepaymentAmendmentDTO> PrepaymentAmendments { get; set; } = new List<PrepaymentAmendmentDTO>();
+
+        public List<PrepaymentFactDTO> PrepaymentFacts { get; set; } = new List<PrepaymentFactDTO>();
+
+        public List<PrepaymentPlanDTO> PrepaymentPlans { get; set; } = new List<PrepaymentPlanDTO>();
     }
 }

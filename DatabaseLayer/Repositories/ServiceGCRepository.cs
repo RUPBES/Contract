@@ -1,11 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
@@ -66,12 +61,11 @@ namespace DatabaseLayer.Repositories
                 if (service is not null)
                 {
                     service.ServicePercent = entity.ServicePercent;
-                    service.Period = entity.Period;
-                    service.Price = entity.Price;
-                    service.FactPrice = entity.FactPrice;
+                   
                     service.IsChange = entity.IsChange;
                     service.ContractId = entity.ContractId;
                     service.ChangeServiceId = entity.ChangeServiceId;
+                    service.ServiceCosts = entity.ServiceCosts;
 
                     _context.ServiceGcs.Update(service);
                 }

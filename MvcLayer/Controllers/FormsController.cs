@@ -2,7 +2,6 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 
@@ -38,7 +37,7 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 // по объему работ, берем начало и окончание периода
-                var period = _scopeWork.GetDatePeriodLastOrMainScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
                 
                 var periodChoose = new PeriodChooseViewModel
                 {
@@ -61,35 +60,20 @@ namespace MvcLayer.Controllers
                     .Find(x => x.ContractId == contractId && x.IsOwnForces == isOwnForces);
 
                 if (formExist.Count() > 0)
-                {
-                    //если уже заполнена форма по какой-то дате, берем эту дату и по ней обрезаем список
-                    //с начала дат, остальное отправляем на вью
-                    var lastDate = formExist.LastOrDefault().Period;
+                {                   
 
-                    if (startDate < lastDate)
+                    //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
+                    while (startDate <= period?.Item2)
                     {
-                        startDate = (DateTime)lastDate;
-                    }
-                    else if(startDate == lastDate)
-                    {
-                        startDate = startDate.AddMonths(1);
-                    }
-
-
-                    if (startDate <= period?.Item2)
-                    {
-                        //заполняем период в виде списка, для выбора месяца по которому будет заполняться форма с3 - а
-                        while (startDate <= period?.Item2)
+                        //проверяем если по данной дате уже заполненные факт.авансы
+                        if (_formService.Find(x => x.Period.Value.Date == startDate.Date && x.ContractId == contractId && x.IsOwnForces == true).FirstOrDefault() is null)
                         {
                             periodChoose.ListDates.Add(startDate);
-                            startDate = startDate.AddMonths(1);
                         }
-                        return View(periodChoose);
+
+                        startDate = startDate.AddMonths(1);
                     }
-                    else
-                    {
-                        return RedirectToAction("Details", "Contracts", new { id = contractId });
-                    }
+                    return View(periodChoose);
                 }
                 else
                 {
@@ -99,6 +83,7 @@ namespace MvcLayer.Controllers
                         periodChoose.ListDates.Add(startDate);
                         startDate = startDate.AddMonths(1);
                     }
+
                     return View(periodChoose);
                 }
 
@@ -106,15 +91,13 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        public ActionResult CreateForm(PeriodChooseViewModel model/*int contractId, DateTime? date = null*/)
+        public ActionResult CreateForm(PeriodChooseViewModel model)
         {
-
             return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
         }
 
         public ActionResult Create()
         {
-
             return View();
         }
 

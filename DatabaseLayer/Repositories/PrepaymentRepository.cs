@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,19 +38,19 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Prepayment> Find(Func<Prepayment, bool> predicate)
         {
-            return _context.Prepayments.Where(predicate).ToList();
+            return _context.Prepayments.Include(x=>x.PrepaymentPlans).Include(x=>x.PrepaymentFacts).Where(predicate).ToList();
         }
 
         public IEnumerable<Prepayment> GetAll()
         {
-            return _context.Prepayments.ToList();
+            return _context.Prepayments.Include(x => x.PrepaymentPlans).Include(x => x.PrepaymentFacts).ToList();
         }
 
         public Prepayment GetById(int id, int? secondId = null)
         {
             if (id > 0)
             {
-                return _context.Prepayments.Find(id);
+                return _context.Prepayments.Include(x => x.PrepaymentPlans).Include(x => x.PrepaymentFacts).FirstOrDefault(x=>x.Id == id);
             }
             else
             {
@@ -64,14 +65,7 @@ namespace DatabaseLayer.Repositories
                 var prepayment = _context.Prepayments.Find(entity.Id);
 
                 if (prepayment is not null)
-                {
-                    prepayment.CurrentValue = entity.CurrentValue;
-                    prepayment.CurrentValueFact = entity.CurrentValueFact;
-                    prepayment.TargetValue = entity.TargetValue;
-                    prepayment.TargetValueFact = entity.TargetValueFact;
-                    prepayment.WorkingOutValueFact = entity.WorkingOutValueFact;
-                    prepayment.WorkingOutValue = entity.WorkingOutValue;
-                    prepayment.Period = entity.Period; 
+                {                    
                     prepayment.ContractId = entity.ContractId;
                     prepayment.IsChange = entity.IsChange;
                     prepayment.ChangePrepaymentId = entity.ChangePrepaymentId;

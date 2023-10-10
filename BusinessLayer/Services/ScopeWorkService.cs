@@ -139,33 +139,37 @@ namespace BusinessLayer.Services
         /// <returns>tuple(DateTime, DateTime) or Null</returns>
         /// ///
         /// 
-        public (DateTime, DateTime)? GetDatePeriodLastOrMainScopeWork(int contractId)
+        public (DateTime, DateTime)? GetPeriodRangeScopeWork(int contractId)
         {
             (DateTime start, DateTime end) resultPeriod;
 
             //проверяем есть измененный объем работы по доп.соглашению (флаг - IsChange = true), если есть выбираем последний объем работы по ДС
             //если нет, находим основной (без ДС) и берем начальную и конечную дату. Если объема работы для договора не существует,
-            //перенаправляем запрос на страницу с данным контрактом
+            //возвращаем NULL
 
-            var scopeChangeMain = _database.ScopeWorks
-                        .Find(x => x.ContractId == contractId && x.IsOwnForces != true && x.IsChange == true);
+            var scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsChange == true)
+                .LastOrDefault();
 
-            var scopeMain = _database.ScopeWorks
-                .Find(x => x.ContractId == contractId && x.IsOwnForces != true && x.IsChange == false);
+            //если объем по измененным равен NULL смотрим основной(без изменений)
+            if (scope is null)
+            {
+                scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
+            }
 
-            //чтобы отфильтровать последние от всех объемов, ищем ID измененного объема работ
-            var changescopeId = scopeChangeMain?.LastOrDefault()?.ChangeScopeWorkId;
-            var changeMainScopeId = scopeMain?.LastOrDefault()?.ChangeScopeWorkId;
-
-            if (scopeMain is null)
+            //если и основной объем равен NULL возвращаем NULL
+            if (scope is null)
             {
                 return null;
             }
 
-            var periodScope = scopeChangeMain?.Count() > 0 ? scopeChangeMain.Where(x=>x.ChangeScopeWorkId == changescopeId) : scopeMain.Where(x => x.ChangeScopeWorkId == changeMainScopeId);
+            //чтобы найти стоимость по смр, пнр и т.д. всех объемов, ищем ID измененного(если нету - основного) объема работ
+            var scopeId = scope?.Id;
+            var periodScope = scope?.SWCosts is null ? null : scope?.SWCosts.Where(x => x.ScopeWorkId == scopeId);
 
-            var startPeriod = periodScope?.FirstOrDefault() == null ? new DateTime() : (DateTime)periodScope?.FirstOrDefault()?.Period;
-            var endPeriod = periodScope?.LastOrDefault() == null ? new DateTime() : (DateTime)periodScope?.LastOrDefault()?.Period;
+            var startPeriod = periodScope?.FirstOrDefault() == null ? new DateTime() : (DateTime)periodScope.FirstOrDefault().Period;
+            var endPeriod = periodScope?.LastOrDefault() == null ? new DateTime() : (DateTime)periodScope.LastOrDefault().Period;
 
             if (periodScope is null || periodScope.Count() < 1 || startPeriod == default || endPeriod == default)
             {

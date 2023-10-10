@@ -49,7 +49,7 @@ namespace MvcLayer.Controllers
             {
 
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetDatePeriodLastOrMainScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
                 if (period is null)
                 {

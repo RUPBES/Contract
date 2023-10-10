@@ -9,5 +9,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         public IEnumerable<PrepaymentDTO> FindByContractId(int id);
 
         void AddAmendmentToPrepayment(int amendmentId, int prepaymentId);
+        AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId);
     }
 }

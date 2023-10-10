@@ -38,19 +38,24 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<ScopeWork> Find(Func<ScopeWork, bool> predicate)
         {
-            return _context.ScopeWorks.Where(predicate).ToList();
+            return _context.ScopeWorks
+                .Include(x => x.SWCosts)
+                .Where(predicate)
+                .ToList();
         }
 
         public IEnumerable<ScopeWork> GetAll()
         {
-            return _context.ScopeWorks.ToList();
+            return _context.ScopeWorks
+                .Include(x => x.SWCosts)
+                .ToList();
         }
 
         public ScopeWork GetById(int id, int? secondId = null)
         {
             if (id > 0)
             {
-                return _context.ScopeWorks.Find(id);
+                return _context.ScopeWorks.Include(x=>x.SWCosts).FirstOrDefault(x=>x.Id == id);
             }
             else
             {
@@ -65,24 +70,11 @@ namespace DatabaseLayer.Repositories
                 var scWork = _context.ScopeWorks.Find(entity.Id);
 
                 if (scWork is not null)
-                {
-                    scWork.Period = entity.Period;
-                    scWork.CostNoNds = entity.CostNoNds;
-                    scWork.CostNds = entity.CostNds;
-                    scWork.SmrCost = entity.SmrCost;
-                    scWork.PnrCost = entity.PnrCost;
-
-                    scWork.EquipmentCost = entity.EquipmentCost;
-                    scWork.OtherExpensesCost = entity.OtherExpensesCost;
-                    scWork.AdditionalCost = entity.AdditionalCost;
-                    scWork.MaterialCost = entity.MaterialCost;
-                    scWork.GenServiceCost = entity.GenServiceCost;
+                {                    
                     scWork.IsChange = entity.IsChange;
                     scWork.IsOwnForces = entity.IsOwnForces;
-
                     scWork.ContractId = entity.ContractId;
                     scWork.ChangeScopeWorkId = entity.ChangeScopeWorkId;
-
 
                     _context.ScopeWorks.Update(scWork);
                 }

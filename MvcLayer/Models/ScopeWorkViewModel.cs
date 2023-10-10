@@ -56,5 +56,6 @@ namespace MvcLayer.Models
         public virtual ContractViewModel Contract { get; set; }
         public virtual List<ScopeWorkViewModel> InverseChangeScopeWork { get; set; } = new List<ScopeWorkViewModel>();
         public virtual List<ScopeWorkAmendmentDTO> ScopeWorkAmendments { get; set; } = new List<ScopeWorkAmendmentDTO>();
+        public virtual List<SWCostDTO> SWCosts { get; set; } = new List<SWCostDTO>();
     }
 }

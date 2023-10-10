@@ -4,6 +4,7 @@
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
 }
+
 @section Table{
     <div id="modal-placeholder"></div>
 
@@ -29,7 +30,10 @@
                                 @*Период (месяц)*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period?.Month-@item.Period?.Year</span></th>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
+                                    }
                                 }
                             }
                         </tr>
@@ -60,7 +64,10 @@
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -74,7 +81,10 @@
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -88,7 +98,10 @@
                                 @*Стоимость Оборудования*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -103,7 +116,10 @@
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -131,7 +147,10 @@
                                 @*Стоимость доп.работ*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -145,7 +164,10 @@
                                 @*Стоимость доп.работ*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -496,7 +518,10 @@
                                 @*Период (месяц)*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item.Period?.Month-@item.Period?.Year</span></th>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
+                                    }
                                 }
                             }
                         </tr>
@@ -527,7 +552,10 @@
                                 @*Стоимость СМР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    }
                                 }
 
                             }
@@ -542,7 +570,10 @@
                                 @*Стоимость ПНР*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -556,7 +587,10 @@
                                 @*Стоимость Оборудование*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -598,7 +632,10 @@
                                 @*Стоимость Доп. работы*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -612,7 +649,10 @@
                                 @*Стоимость Материалы*@
                                 foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                    }
                                 }
                             }
                         </tr>
@@ -1306,8 +1346,8 @@
                             </span>
                         </td>
                         <td>
-                            <span class="table_span-act-entering">                                
-                            <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
+                            <span class="table_span-act-entering">
+                                <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
                             </span>
                         </td>
                     </tr>
@@ -1506,4 +1546,10 @@
             });
         });
     </script>
+    @if (ViewBag.Message != null)
+    {
+        <script>
+            alert("@Html.Raw(ViewBag.Message)");
+        </script>
+    }
 }

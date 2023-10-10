@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 
 @{
     ViewData["Title"] = "GetByContractId";
@@ -55,57 +56,65 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var scope in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Period)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CostNoNds)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.CostNds)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SmrCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.PnrCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.EquipmentCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.OtherExpensesCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AdditionalCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MaterialCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.GenServiceCost)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsOwnForces)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsChange)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ChangeScopeWork.Id)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Contract.Id)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
-            </tr>
+           @*  <tr>                
+                <td>@scope.Contract.Number</td>
+                <td>@scope.ChangeScopeWorkId</td>
+            </tr> *@
+            @foreach (var item in SWCosts.Find(x => x.ScopeWorkId == scope.Id))
+            {
+                <tr>
+                    <td>
+                        @item.Period
+                    </td>
+                    <td>
+                        @item.CostNoNds
+                    </td>
+                    <td>
+                        @item.CostNds
+                    </td>
+                    <td>
+                        @item.SmrCost
+                    </td>
+                    <td>
+                        @item.PnrCost
+                    </td>
+                    <td>
+                        @item.EquipmentCost
+                    </td>
+                    <td>
+                        @item.OtherExpensesCost
+                    </td>
+                    <td>
+                        @item.AdditionalCost
+                    </td>
+                    <td>
+                        @item.MaterialCost
+                    </td>
+                    <td>
+                        @item.GenServiceCost
+                    </td>
+                    <td>
+                        @item.IsOwnForces                
+                        </td>
+                    <td>
+                        @* @item.IsChange *@
+                    </td>
+                    <td>
+                       @*  @item.ChangeScopeWork.Id *@
+                    </td>
+                    <td>
+                        @* @item.Contract.Id *@
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+            
         }
     </tbody>
 </table>

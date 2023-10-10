@@ -5,6 +5,7 @@ using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -15,53 +16,29 @@ namespace MvcLayer.Controllers
         private readonly IOrganizationService _organization;
         private readonly IServiceGCService _serviceGC;
         private readonly IScopeWorkService _scopeWork;
+
+        private readonly IServiceCostService _serviceCost;
         private readonly IMapper _mapper;
 
         public ServiceGCController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IServiceGCService serviceGC, IScopeWorkService scopeWork)
+            IServiceGCService serviceGC, IScopeWorkService scopeWork, IServiceCostService serviceCost)
         {
             _contractService = contractService;
             _scopeWork = scopeWork;
             _mapper = mapper;
             _organization = organization;
             _serviceGC = serviceGC;
+            _serviceCost = serviceCost;
         }
 
         public IActionResult Index()
         {
             return View(_mapper.Map<IEnumerable<ServiceGCViewModel>>(_serviceGC.GetAll()));
         }
-
         public IActionResult GetByContractId(int contractId)
         {
             return View(_mapper.Map<IEnumerable<ServiceGCViewModel>>(_serviceGC.Find(x => x.ContractId == contractId)));
         }
-
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null || _prepayment.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var prepayment = _prepayment.GetById((int)id);
-        //    if (prepayment == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(_mapper.Map<PrepaymentViewModel>(scopeWork));
-        //}
-
-        //public IActionResult ChoosePeriod(int contractId)
-        //{
-        //    if (contractId > 0)
-        //    {
-        //        return View(new PeriodChooseViewModel { ContractId = contractId });
-        //    }
-        //    return View();
-        //}
-
 
         /// <summary>
         /// Выбор периода для заполнения услуг, на основе заполненного объема работ
@@ -73,9 +50,8 @@ namespace MvcLayer.Controllers
         {
             if (contractId > 0)
             {
-
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetDatePeriodLastOrMainScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
                 if (period is null)
                 {
@@ -92,13 +68,13 @@ namespace MvcLayer.Controllers
 
                 // определяем, есть уже услуги
                 var serviceMain = _serviceGC
-                    .Find(x => x.ContractId == contractId && true && x.IsChange != true);
+                    .Find(x => x.ContractId == contractId && x.IsChange != true);
 
                 // определяем, есть уже измененные услуги
                 var сhangeService = _serviceGC
-                    .Find(x => x.ContractId == contractId && true && x.IsChange == true);
+                    .Find(x => x.ContractId == contractId && x.IsChange == true);
 
-                //для последующего поиска всех измененных услуг, через таблицу Изменений по договору, устанавливаем ID одного из них
+                //для последующего поиска всех измененных услуг, через таблицу Изменений по договору, устанавливаем ID одного из объема работ
                 var сhangeServiceId = сhangeService?.LastOrDefault()?.Id is null ?
                                            serviceMain?.LastOrDefault()?.Id : сhangeService?.LastOrDefault()?.Id;
 
@@ -108,6 +84,7 @@ namespace MvcLayer.Controllers
                     if (serviceMain is null || serviceMain?.Count() < 1)
                     {
                         periodChoose.IsChange = false;
+                        
                         return RedirectToAction(nameof(CreatePeriods), periodChoose);
                     }
 
@@ -119,30 +96,34 @@ namespace MvcLayer.Controllers
                 }
                 else
                 {
-                    //если нет услуг, запонять факт невозможно, перенаправляем обратно на договор
+                    //если нет авансов, запонять факт невозможно, перенаправляем обратно на договор
                     if (serviceMain is null || serviceMain?.Count() < 1)
                     {
                         return RedirectToAction("Details", "Contracts", new { id = contractId });
                     }
 
-                    var serviceId = сhangeService?.LastOrDefault()?.ChangeServiceId is null ?
-                                        serviceMain?.LastOrDefault()?.ChangeServiceId : сhangeService?.LastOrDefault()?.ChangeServiceId;
-
-                    var model = _mapper.Map<IEnumerable<ServiceGCViewModel>>(_serviceGC.Find(x => x.ContractId == contractId && x.ChangeServiceId == serviceId));
-
-                    foreach (var item in model)
+                    if (_serviceCost.Find(x => x.IsFact != true && x.ServiceGCId == сhangeServiceId).FirstOrDefault() is null)
                     {
-                        item.IsFact = isFact;
+                        return RedirectToAction("Details", "Contracts", new { id = contractId, message = "Не заполнены суммы планируемых генуслуг" });
                     }
 
-                    var serviceFact = JsonConvert.SerializeObject(model);
-                    TempData["serviceGC"] = serviceFact;
+                    DateTime startDate = period.Value.Item1;
 
-                    return RedirectToAction("Create", new
+                    //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
+                    while (startDate <= period?.Item2)
                     {
-                        contractId = contractId
-                    });
+                        //проверяем если по данной дате уже заполненные факт.авансы
+                        if (_serviceCost.Find(x => x.Period.Value.Date == startDate.Date && x.ServiceGCId == сhangeServiceId && x.IsFact == true).FirstOrDefault() is null)
+                        {
+                            periodChoose.ListDates.Add(startDate);
+                        }
 
+                        startDate = startDate.AddMonths(1);
+                    }
+
+
+                    TempData["serviceId"] = сhangeServiceId;
+                    return View("ChooseDate", periodChoose);
                 }
             }
             else
@@ -150,108 +131,107 @@ namespace MvcLayer.Controllers
                 return RedirectToAction("Index", "Contracts");
             }
         }
-
+        public ActionResult CreateServiceFact(PeriodChooseViewModel model)
+        {
+            int id = TempData["serviceId"] is int preId ? preId : 0;
+            return View("AddServiceFact", new ServiceGCViewModel
+            {
+                Id = id,
+                Period = model.ChoosePeriod,
+                ContractId = model.ContractId,
+                ServiceCosts = new List<ServiceCostDTO>{
+                new ServiceCostDTO{
+                    ServiceGCId = id
+                }
+                }
+            });
+        }
         public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel)
         {
             if (periodViewModel is not null)
             {
-                List<ServiceGCViewModel> model = new List<ServiceGCViewModel>();
+                ServiceGCViewModel model = new ServiceGCViewModel();
 
                 if (periodViewModel.AmendmentId > 0)
                 {
                     periodViewModel.IsChange = true;
                 }
+
+                List<ServiceCostDTO> costs = new List<ServiceCostDTO>();
+
                 while (periodViewModel.PeriodStart <= periodViewModel.PeriodEnd)
                 {
-                    model.Add(new ServiceGCViewModel
+                    costs.Add(new ServiceCostDTO
                     {
                         Period = periodViewModel.PeriodStart,
-                        IsChange = periodViewModel.IsChange,
-                        ContractId = periodViewModel.ContractId,
-                        AmendmentId = periodViewModel.AmendmentId,
-                        ChangeServiceId = periodViewModel.ChangeServiceId
                     });
 
                     periodViewModel.PeriodStart = periodViewModel.PeriodStart.AddMonths(1);
                 }
 
-                var service = JsonConvert.SerializeObject(model);
-                TempData["serviceGC"] = service;
+                model.IsChange = periodViewModel.IsChange;
+                model.ContractId = periodViewModel.ContractId;
+                model.AmendmentId = periodViewModel.AmendmentId;
+                model.ChangeServiceId = periodViewModel.ChangeServiceId;
+                model.ServiceCosts = costs;
+
+                var serviceGc = JsonConvert.SerializeObject(model);
+                TempData["serviceGC"] = serviceGc;
 
                 return RedirectToAction("Create");
             }
             return View(periodViewModel);
         }
-
         public IActionResult Create(int contractId)
         {
             if (TempData["serviceGC"] is string s)
             {
-                return View(JsonConvert.DeserializeObject<List<ServiceGCViewModel>>(s));
+                return View(JsonConvert.DeserializeObject<ServiceGCViewModel>(s));
             }
 
             if (contractId > 0)
             {
-                //PrepaymentViewModel prepayment = new PrepaymentViewModel { ContractId = contractId};
-
                 return View(new ServiceGCViewModel { ContractId = contractId });
-
             }
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(List<ServiceGCViewModel> listServiceGC)
+        public IActionResult Create(ServiceGCViewModel listServiceGC)
         {
             if (listServiceGC is not null)
             {
-                foreach (var item in listServiceGC)
-                {
-                    var serviceId = (int)_serviceGC.Create(_mapper.Map<ServiceGCDTO>(item));
+                var serviceId = (int)_serviceGC.Create(_mapper.Map<ServiceGCDTO>(listServiceGC));
 
-                    if (item?.AmendmentId is not null && item?.AmendmentId > 0)
-                    {
-                        _serviceGC.AddAmendmentToService((int)item?.AmendmentId, serviceId);
-                    }
+                if (listServiceGC?.AmendmentId is not null && listServiceGC?.AmendmentId > 0)
+                {
+                    _serviceGC.AddAmendmentToService((int)listServiceGC?.AmendmentId, serviceId);
                 }
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Details", "Contracts", new { id = listServiceGC.ContractId });
+
             }
             return View(listServiceGC);
         }
-
-        public async Task<IActionResult> EditService(List<ServiceGCViewModel> serviceGC)
+        //TODO: Переименовать заполнение факта!!!
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ServiceGCViewModel serviceGC)
         {
-            if (serviceGC is not null || serviceGC.Count() > 0)
+            if (serviceGC is not null)
             {
-                foreach (var item in serviceGC)
+                foreach (var item in serviceGC.ServiceCosts)
                 {
-                    _serviceGC.Update(_mapper.Map<ServiceGCDTO>(item));
+                    _serviceCost.Create(item);
                 }
-                return RedirectToAction("Details", "Contracts", new { id = serviceGC.FirstOrDefault().ContractId });
+                
+
+                return RedirectToAction("Details", "Contracts", new { id = serviceGC.ContractId });
             }
 
             return RedirectToAction("Index", "Contracts");
         }
-
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null || _prepayment.GetAll() == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var prepayment = _prepayment.GetById((int)id);
-        //    if (prepayment == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    //ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
-        //    //ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
-        //    return View(_mapper.Map<ScopeWorkViewModel>(scopeWork));
-        //}
-
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _serviceGC.GetAll() == null)
@@ -262,7 +242,5 @@ namespace MvcLayer.Controllers
             _serviceGC.Delete((int)id);
             return RedirectToAction(nameof(Index));
         }
-
-
     }
 }

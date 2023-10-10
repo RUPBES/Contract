@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DatabaseLayer.Models;
+﻿using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using File = DatabaseLayer.Models.File;
@@ -47,6 +45,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<FormC3a> FormC3as { get; set; }
 
     public virtual DbSet<MaterialGc> MaterialGcs { get; set; }
+    public virtual DbSet<MaterialCost> MaterialCosts { get; set; }
 
     public virtual DbSet<Organization> Organizations { get; set; }
 
@@ -55,12 +54,17 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<Phone> Phones { get; set; }
 
     public virtual DbSet<Prepayment> Prepayments { get; set; }
+    public virtual DbSet<PrepaymentFact> PrepaymentFacts { get; set; }
+
+    public virtual DbSet<PrepaymentPlan> PrepaymentPlans { get; set; }
 
     public virtual DbSet<ScopeWork> ScopeWorks { get; set; }
+    public virtual DbSet<SWCost> SWCosts { get; set; }
 
     public virtual DbSet<SelectionProcedure> SelectionProcedures { get; set; }
 
     public virtual DbSet<ServiceGc> ServiceGcs { get; set; }
+    public virtual DbSet<ServiceCost> ServiceCosts { get; set; }
 
     public virtual DbSet<TypeWork> TypeWorks { get; set; }
 
@@ -102,7 +106,7 @@ public partial class ContractsContext : DbContext
             entity.ToTable("Act");
 
             entity.HasComment("Акты приостановки/возобновления работ");
-                        
+
             entity.Property(e => e.DateAct)
                 .HasColumnType("datetime")
                 .HasComment("дата акта");
@@ -639,20 +643,8 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.ChangeMaterialId).HasComment("ID измененных материалов");
 
             entity.Property(e => e.ContractId).HasComment("Контракт");
-
-            entity.Property(e => e.FactPrice)
-                .HasColumnType("money")
-                .HasComment("Цена фактическая");
-
+                      
             entity.Property(e => e.IsChange).HasComment("изменено?");
-
-            entity.Property(e => e.Period)
-                .HasColumnType("datetime")
-                .HasComment("период отчета");
-
-            entity.Property(e => e.Price)
-                .HasColumnType("money")
-                .HasComment("Цена по договору");
 
             entity.HasOne(d => d.ChangeMaterial)
                 .WithMany(p => p.InverseChangeMaterial)
@@ -663,6 +655,25 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.MaterialGcs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_MaterialGC_Contract_Id");
+        });
+
+        modelBuilder.Entity<MaterialCost>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("MaterialCost", tb => tb.HasComment("стоимость материалов"));
+
+            entity.Property(e => e.Period).HasColumnType("datetime");
+           
+
+            entity.Property(e => e.IsFact).HasDefaultValueSql("0");
+
+            entity.Property(e => e.Price)
+                .HasColumnType("money");
+
+            entity.HasOne(d => d.Material).WithMany(p => p.MaterialCosts)
+                .HasForeignKey(d => d.MaterialId)
+                .HasConstraintName("FK_MaterialCost_MaterialGC_Id");
         });
 
         modelBuilder.Entity<Organization>(entity =>
@@ -731,53 +742,55 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<Prepayment>(entity =>
         {
-            entity.ToTable("Prepayment");
+            entity.HasKey(e => e.Id).HasName("PK_Prepayment_Id");
 
-            entity.HasComment("Аванс");
+            entity.ToTable("Prepayment", tb => tb.HasComment("Аванс"));
 
             entity.Property(e => e.ChangePrepaymentId).HasComment("ID измененного аванса");
-
             entity.Property(e => e.ContractId).HasComment("Контракт");
+            entity.Property(e => e.IsChange)
+                .HasDefaultValueSql("((0))")
+                .HasComment("Изменено?");
 
-            entity.Property(e => e.CurrentValue)
-                .HasColumnType("money")
-                .HasComment("Текущие авансы");
-
-            entity.Property(e => e.CurrentValueFact)
-                .HasColumnType("money")
-                .HasComment("Текущие авансы по факту");
-
-            entity.Property(e => e.IsChange).HasComment("Изменено?");
-
-            entity.Property(e => e.Period)
-                .HasColumnType("datetime")
-                .HasComment("Месяц за который получено");
-
-            entity.Property(e => e.TargetValue)
-                .HasColumnType("money")
-                .HasComment("Целевые Авансы");
-
-            entity.Property(e => e.TargetValueFact)
-                .HasColumnType("money")
-                .HasComment("Целевые Авансы по факту");
-
-            entity.Property(e => e.WorkingOutValue)
-                .HasColumnType("money")
-                .HasComment("Отработка целевых");
-
-            entity.Property(e => e.WorkingOutValueFact)
-                .HasColumnType("money")
-                .HasComment("Отработка целевых фактическое");
-
-            entity.HasOne(d => d.ChangePrepayment)
-                .WithMany(p => p.InverseChangePrepayment)
+            entity.HasOne(d => d.ChangePrepayment).WithMany(p => p.InverseChangePrepayment)
                 .HasForeignKey(d => d.ChangePrepaymentId)
                 .HasConstraintName("FK_Prepayment_Prepayment_Id");
 
-            entity.HasOne(d => d.Contract)
-                .WithMany(p => p.Prepayments)
+            entity.HasOne(d => d.Contract).WithMany(p => p.Prepayments)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Prepayment_Contract_Id");
+        });
+
+        modelBuilder.Entity<PrepaymentFact>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_PrepaymentFact_Id");
+
+            entity.ToTable("PrepaymentFact", tb => tb.HasComment("Авансовые платежи фактические"));
+
+            entity.Property(e => e.CurrentValue).HasColumnType("money");
+            entity.Property(e => e.Period).HasColumnType("datetime");
+            entity.Property(e => e.TargetValue).HasColumnType("money");
+            entity.Property(e => e.WorkingOutValue).HasColumnType("money");
+
+            entity.HasOne(d => d.Prepayment).WithMany(p => p.PrepaymentFacts)
+                .HasForeignKey(d => d.PrepaymentId)
+                .HasConstraintName("FK_PrepaymentFact_Prepayment_Id");
+        });
+
+        modelBuilder.Entity<PrepaymentPlan>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_PrepaymentPlan_Id");
+
+            entity.ToTable("PrepaymentPlan", tb => tb.HasComment("Авансовые платежи планируемые"));
+
+            entity.Property(e => e.CurrentValue).HasColumnType("money");
+            entity.Property(e => e.Period).HasColumnType("datetime");
+            entity.Property(e => e.TargetValue).HasColumnType("money");
+            entity.Property(e => e.WorkingOutValue).HasColumnType("money");
+
+            entity.HasOne(d => d.Prepayment).WithMany(p => p.PrepaymentPlans)
+                .HasForeignKey(d => d.PrepaymentId)
+                .HasConstraintName("FK_PrepaymentPlan_Prepayment_Id");
         });
 
         modelBuilder.Entity<PrepaymentAmendment>(entity =>
@@ -807,14 +820,33 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("Объем работ");
 
-            entity.Property(e => e.AdditionalCost)
-                .HasColumnType("money")
-                .HasComment("Цена дополнительных работ");
-
             entity.Property(e => e.ChangeScopeWorkId).HasComment("ID измененного объема работ");
 
             entity.Property(e => e.ContractId).HasComment("Контракт");
 
+            entity.Property(e => e.IsChange).HasDefaultValueSql("0").HasComment("изменено?");
+            entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0");
+
+            entity.HasOne(d => d.ChangeScopeWork)
+                .WithMany(p => p.InverseChangeScopeWork)
+                .HasForeignKey(d => d.ChangeScopeWorkId)
+                .HasConstraintName("FK_ScopeWork_ScopeWork_Id");
+
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.ScopeWorks)
+                .HasForeignKey(d => d.ContractId)
+                .HasConstraintName("FK_ScopeWork_Contract_Id");
+        });
+
+        modelBuilder.Entity<SWCost>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("SWCost", tb => tb.HasComment("стоимость объема работ"));
+                       
+            entity.Property(e => e.Period).HasColumnType("datetime");
+            entity.Property(e => e.AdditionalCost)
+                .HasColumnType("money");
             entity.Property(e => e.CostNds)
                 .HasColumnType("money")
                 .HasColumnName("CostNDS")
@@ -829,10 +861,6 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money")
                 .HasComment("Цена оборудования");
 
-            entity.Property(e => e.GenServiceCost).HasColumnType("money");
-
-            entity.Property(e => e.IsChange).HasDefaultValueSql("0").HasComment("изменено?");
-
             entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
 
             entity.Property(e => e.MaterialCost)
@@ -843,27 +871,19 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money")
                 .HasComment("Цена остальных работ");
 
-            entity.Property(e => e.Period)
-                .HasColumnType("datetime")
-                .HasComment("Период отчета");
+            entity.Property(e => e.GenServiceCost).HasColumnType("money");
 
             entity.Property(e => e.PnrCost)
-                .HasColumnType("money")
-                .HasComment("Цена ПНР");
+               .HasColumnType("money")
+               .HasComment("Цена ПНР");
 
             entity.Property(e => e.SmrCost)
                 .HasColumnType("money")
                 .HasComment("стоимость СМР");
 
-            entity.HasOne(d => d.ChangeScopeWork)
-                .WithMany(p => p.InverseChangeScopeWork)
-                .HasForeignKey(d => d.ChangeScopeWorkId)
-                .HasConstraintName("FK_ScopeWork_ScopeWork_Id");
-
-            entity.HasOne(d => d.Contract)
-                .WithMany(p => p.ScopeWorks)
-                .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK_ScopeWork_Contract_Id");
+            entity.HasOne(d => d.ScopeWork).WithMany(p => p.SWCosts)
+                .HasForeignKey(d => d.ScopeWorkId)
+                .HasConstraintName("FK_SWCosts_ScopeWork_Id");
         });
 
         modelBuilder.Entity<ScopeWorkAmendment>(entity =>
@@ -956,19 +976,11 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.ContractId).HasComment("Контракт");
 
-            entity.Property(e => e.FactPrice)
-                .HasColumnType("money")
-                .HasComment("Сумма фактическая");
+            entity.Property(e => e.IsFact).HasDefaultValueSql("0");
 
-            entity.Property(e => e.IsChange).HasComment("изменено?");
+            entity.Property(e => e.IsChange).HasDefaultValueSql("0").HasComment("изменено?");
 
-            entity.Property(e => e.Period)
-                .HasColumnType("datetime")
-                .HasComment("Месяц и год");
-
-            entity.Property(e => e.Price)
-                .HasColumnType("money")
-                .HasComment("Сумма по договору");
+           
 
             entity.Property(e => e.ServicePercent).HasComment("процент услуг");
 
@@ -981,6 +993,25 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.ServiceGcs)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_ServiceGC_Contract_Id");
+        });
+
+        modelBuilder.Entity<ServiceCost>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("ServiceCost", tb => tb.HasComment("оплата услуг генподряда"));
+
+            entity.Property(e => e.Period).HasColumnType("datetime");
+
+
+            entity.Property(e => e.IsFact).HasDefaultValueSql("0");
+
+            entity.Property(e => e.Price)
+                .HasColumnType("money");
+
+            entity.HasOne(d => d.ServiceGC).WithMany(p => p.ServiceCosts)
+                .HasForeignKey(d => d.ServiceGCId)
+                .HasConstraintName("FK_ServiceCost_ServiceGC_Id");
         });
 
         modelBuilder.Entity<TypeWork>(entity =>

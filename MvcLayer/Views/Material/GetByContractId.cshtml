@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<MvcLayer.Models.MaterialViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IMaterialCostService MaterialCost
 
 @{
     ViewData["Title"] = string.Empty;
@@ -32,14 +33,16 @@
                 <div style=" overflow:scroll; max-height:600px">
                     <table class="table">
                         @*!!!план без изменений!!*@
+                        @foreach (var item in Model)
+                    {
                         <tr>
                             <th>
                                 Период
                             </th>
-                            @foreach (var item in Model.Where(x => x.IsChange != true))
+                            @foreach (var item1 in MaterialCost.Find(x => x.IsFact != true && x.MaterialId == item.Id))
                             {
                                 <th>
-                                    @item.Period?.ToString("MMM yyyy")
+                                    @item1.Period?.ToString("MMM yyyy")
                                 </th>
                             }
                         </tr>
@@ -47,67 +50,27 @@
                             <th>
                                 @Html.DisplayNameFor(model => model.Price)
                             </th>
-                            @foreach (var item in Model.Where(x => x.IsChange != true))
+                                @foreach (var item1 in MaterialCost.Find(x => x.IsFact != true && x.MaterialId == item.Id))
                             {
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.Price)
+                                    @item1.Price
                                 </td>
                             }
-                        </tr>
-                        @if (Model.Where(x => x.IsChange == true).Count() > 0)
-                        {
-                            @foreach (var item2 in Model.Where(x => x.IsChange == true))
-                            {
-                                var amendment = @item2?.MaterialAmendments?.FirstOrDefault(x => x.MaterialId == item2.Id)?.Amendment;
-
-                                <tr>@amendment?.Number</tr>
-                                <tr>
-                                    <th class="text-uppercase fw-light">
-                                        Cогласно графику стоимости в редакции ДС @amendment?.Number к договору
-                                    </th>
-                                    @foreach (var item3 in Model.Where(x => x.IsChange == true))
-                                    {
-                                        <th>
-                                            @item3.Period?.ToString("MMM yyyy")
-                                        </th>
-                                    }
-                                </tr>
-                                <tr>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.Price)
-                                    </th>
-                                    @foreach (var item in Model.Where(x => x.IsChange == true))
-                                    {
-                                        <td>
-                                            @Html.DisplayFor(modelItem => item.Price)
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        }
+                        </tr>                        
                         @*!!!факт!!*@
-                        <tr>
-                            <th class="text-uppercase fw-light">
-                                По факту
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <th>
-                                    @item.Period?.ToString("MMM yyyy")
-                                </th>
-                            }
-                        </tr>
+                        
                         <tr>
                             <th>
                                 @Html.DisplayNameFor(model => model.FactPrice)
                             </th>
-                            @foreach (var item in Model)
+                                @foreach (var item1 in MaterialCost.Find(x => x.IsFact == true && x.MaterialId == item.Id))
                             {
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.FactPrice)
+                                    @Html.DisplayFor(modelItem => item1.Price)
                                 </td>
                             }
                         </tr>
+                        }
                     </table>
                 </div>
                
