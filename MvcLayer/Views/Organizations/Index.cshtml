@@ -37,7 +37,9 @@
                                         @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
                                     </th>
                                     <th>
-                                        @Html.ActionLink("Аббревиатура", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class=""})
+                                        <span class="table_span-month">
+                                            @Html.ActionLink("Аббревиатура", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class=""})
+                                        </span>
                                     </th>
                                     <th>
                                         @Html.ActionLink("УНП", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayUnp", @class=""})
@@ -65,7 +67,9 @@
                                             @Html.DisplayFor(modelItem => item.Name)
                                         </td>
                                         <td>
+                                            <span class="table_span-month">
                                             @Html.DisplayFor(modelItem => item.Abbr)
+                                            </span>
                                         </td>
                                         <td>
                                             @Html.DisplayFor(modelItem => item.Unp)
@@ -75,22 +79,16 @@
                                             <span class="icon link_to_page dropdown-toggle">
                                             </span>
                                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <a class="icon view_to_add_pages " asp-controller="Departments"
+                                               asp-action="Create" asp-route-idOrg="@item.Id"></a>
+                                                <div class="dropdown-divider"></div>
                                             @foreach (var department in item.Departments)
                                             {
-                                                <div class="d-flex flex-row">
-                                                    <span class="p-1 k-mr-5">@department.Name</span>
-                                                    <span class="icon edit k-mr-1" title="Редактировать">
-
-                                                        <a asp-controller="Departments" asp-action="Details" asp-route-id="@department.Id">
-
+                                                <div class="d-flex flex-row">                                                        
+                                                        <a  asp-controller="Departments" asp-action="Details" asp-route-id="@department.Id">
+                                                                @department.Name
                                                         </a>
-                                                    </span>
-                                                    @*<span class="icon delete k-mr-1" title="Удалить">
-
-                                                        <a asp-controller="Departments" asp-action="Delete" asp-route-id="@department.Id">
-
-                                                        </a>
-                                                    </span>*@
+                                                  
 
                                                 </div>
                                             }

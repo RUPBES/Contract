@@ -43,7 +43,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Organization> GetAll()
         {
-            return _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).ToList();
+            return _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).ToList();
         }
 
         public Organization GetById(int id, int? secondId = null)
