@@ -22,10 +22,23 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Employees
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
         {
-            var employees = _employeesService.GetAll();
-            return View(_mapper.Map<IEnumerable<EmployeeViewModel>>(employees));
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.FullNameSortParm = sortOrder == "fullName" ? "fullNameDesc" : "fullName";
+            ViewBag.FioSortParm = sortOrder == "fio" ? "fioDesc" : "fio";
+            ViewBag.PositionSortParm = sortOrder == "position" ? "positionDesc" : "position";
+            ViewBag.EmailSortParm = sortOrder == "email" ? "emailDesc" : "email";
+
+            if (query != null)
+            { }
+            else
+            { query = currentFilter; }
+            ViewBag.CurrentFilter = query;
+
+            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
+                return View(_employeesService.GetPageFilter(100, pageNum, query, sortOrder));
+            else return View(_employeesService.GetPage(100, pageNum));           
         }
 
         // GET: Employees/Details/5
@@ -53,7 +66,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Fio,Position,Email,ContractId")] EmployeeViewModel employee)
+        public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
             if (ModelState.IsValid)
             {
@@ -144,6 +157,18 @@ namespace MvcLayer.Controllers
                 _employeesService.Delete(id);
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> ShowDelete()
+        {
+            return PartialView("_ViewDelete");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShowResultDelete(int id)
+        {            
+            _employeesService.Delete(id);
+            return PartialView("_ViewDelete");
         }
     }
 }

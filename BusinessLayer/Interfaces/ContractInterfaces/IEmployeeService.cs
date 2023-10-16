@@ -6,5 +6,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IEmployeeService : IService<EmployeeDTO, Employee>
     {
+        public IndexViewModel GetPage(int pageSize, int pageNum);
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder);
     }
 }

@@ -67,10 +67,10 @@ namespace MvcLayer.Controllers
             if (ModelState.IsValid)
             {
                 _departmentService.Create(_mapper.Map<DepartmentDTO>(department));
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Organizations");
             }
             ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Name", department.OrganizationId);
-            return RedirectToAction("Index","Organization");
+            return RedirectToAction("Index","Organizations");
         }
 
         public async Task<IActionResult> Edit(int? id)
