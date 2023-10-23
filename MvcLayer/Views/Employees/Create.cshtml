@@ -1,5 +1,5 @@
 ﻿@model MvcLayer.Models.EmployeeViewModel
-
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @{
     ViewData["Title"] = "Добавить сотрудника";
 }
@@ -28,7 +28,22 @@
                         <label asp-for="FatherName" class="control-label"></label>
                         <input asp-for="FatherName" class="form-control" />
                         <span asp-validation-for="FatherName" class="text-danger"></span>
-                    </div>             
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Организация</label>
+                        <select id="organizationNameSelect" class="form-control js-chosen">
+                            <option disabled selected>Выберите организацию</option>
+                            @foreach (var item in Organization.GetAll())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Отдел</label>
+                        <select id="departmentNameSelect" asp-for="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen">
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label asp-for="Position" class="control-label"></label>
                         <input asp-for="Position" class="form-control" />
@@ -39,6 +54,11 @@
                         <input asp-for="Email" class="form-control" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
+                    <div class="form-group">
+                        <label asp-for="Phones[0].Number" class="control-label">Телефон</label>
+                        <input asp-for="Phones[0].Number" class="form-control" required />
+                        <span asp-validation-for="Phones[0].Number" class="text-danger"></span>
+                    </div>
                     <div class="form-group mt-3">
                         <input type="submit" value="Добавить" class="btn btn-primary" />
                     </div>
@@ -47,9 +67,32 @@
         </div>
     </div>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script type="text/javascript">        
+        $("#organizationNameSelect").change(function () {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetJsonDepartments","Departments")',
+                dataType: 'json',
+                data: { id: $("#organizationNameSelect").val() },
+                success: function (department) {
+                    $("#departmentNameSelect").children().remove();
+                    if (department.length == 0)
+                        return;
+
+                    $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
+                    $.each(department, function (r, emp) {
+                        $("#departmentNameSelect").append('<option value="' + emp.id + '">' + emp.name + '</option>');
+                    });
+                },
+                error: function (ex) {
+                    alert('Failed to retrieve departments.' + ex);
+                }
+            });
+        });
+
+    </script>
 }

@@ -33,6 +33,6 @@ namespace MvcLayer.Models
                
         public List<PhoneViewModel> Phones { get; set; } = new List<PhoneViewModel>();
 
-        public List<DepartmentViewModel> Departments { get; set; } = new List<DepartmentViewModel>();
-    }
+        public List<DepartmentEmployeeDTO> DepartmentEmployees { get; set; } = new List<DepartmentEmployeeDTO>();
+     }
 }

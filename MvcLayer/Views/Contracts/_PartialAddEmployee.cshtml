@@ -106,13 +106,14 @@
         $('#modDialog2').modal('hide');
     }); 
     
-    $("#organizationNameSelect").change(function () { 
+    $("#organizationNameSelect").change(function () {
         $.ajax({
             type: 'POST',
             url: '@Url.Action("GetJsonDepartments","Departments")',
             dataType: 'json',
             data: { id: $("#organizationNameSelect").val() },
             success: function (department) {
+                $("#departmentNameSelect").children().remove();
                 if (department.length == 0)
                     return;
 
@@ -126,4 +127,5 @@
             }
         });
     });
+
 </script> 

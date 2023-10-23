@@ -68,7 +68,7 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)
             {
                 _employeesService.Create(_mapper.Map<EmployeeDTO>(employee));
                 return RedirectToAction(nameof(Index));
