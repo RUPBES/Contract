@@ -75,7 +75,8 @@ namespace DatabaseLayer.Repositories
                     employee.Fio = entity.Fio;
                     employee.Position = entity.Position;
                     employee.Email = entity.Email;
-                    
+                    employee.DepartmentEmployees = entity.DepartmentEmployees;
+                    employee.Phones = entity.Phones;
                     _context.Employees.Update(employee);
                 }
             }

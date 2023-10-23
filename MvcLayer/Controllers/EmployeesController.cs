@@ -92,23 +92,37 @@ namespace MvcLayer.Controllers
             }
 
             //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee);
+            var fio = employee.FullName != null ? employee.FullName.Split(" "): new string[3];
+            employee.LastName= fio[0];
+            employee.FirstName = fio[1];
+            employee.FatherName = fio[2];
+            if (employee.DepartmentEmployees.Count == 0) 
+            { var emp = new DepartmentEmployeeDTO();
+                employee.DepartmentEmployees.Add(emp);  }
+            if(employee.Phones.Count == 0)
+            {
+                var emp = new PhoneDTO();
+                employee.Phones.Add(emp);
+            }            
             return View(_mapper.Map<EmployeeViewModel>(employee));  
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Fio,Position,Email,ContractId")] EmployeeViewModel employee)
+        public async Task<IActionResult> Edit(int id, EmployeeViewModel employee)
         {
             if (id != employee.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
+            //if (ModelState.IsValid)
+            //{
                 try
-                {
-                    _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
+                {                    
+                    employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
+                    employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
+                _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -124,8 +138,8 @@ namespace MvcLayer.Controllers
                 return RedirectToAction(nameof(Index));
             }
             //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
-            return View(employee);
-        }
+        //    return View(employee);
+        //}
 
         public async Task<IActionResult> Delete(int? id)
         {
