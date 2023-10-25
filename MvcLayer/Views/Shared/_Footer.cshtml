@@ -2,10 +2,15 @@
     &copy;<span id="year"> </span><span>РУП "Белэнергострой" - Договоры.</span> <a asp-controller="Home" asp-action="Privacy">Документация</a>
 </div>
 
-<script>
-    let year = document.querySelector("#year");
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        let year = document.querySelector("#year");
 
-    $(document).ready(function () {
-        year.innerText = new Date().getFullYear();
-    });
-</script>
+        $(document).ready(function () {
+            year.innerText = new Date().getFullYear();
+        });
+    </script>
+}

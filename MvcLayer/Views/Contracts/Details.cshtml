@@ -1210,7 +1210,7 @@
                     </td>
                     <td>
                         <span class="table_span-act-entering">
-                            <span class="icon link_to_page" id="SMR-detail" onclick="showModal(@Model.Id)" title="Объем работ генподряда"></span>
+                            <span class="icon link_to_page" id="SMR-detail" title="Объем работ генподряда"></span>
                         </span>
                     </td>
                 </tr>
@@ -1477,78 +1477,82 @@
     </div>
 
     <script>
+
         let elementButton = document.getElementById("SMR-detail")
 
-        elementButton.addEventListener("click", (event) => {
-            let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-            elementTable.classList.remove('modal__visibility-close')
-            elementTable.classList.add('modal__visibility-active')
-        });
-
-        let elementChangeTableCategories = document.getElementById('ChangeToCategories')
-        elementChangeTableCategories.addEventListener("click", event => {
-            let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
-            elementTable.classList.remove('modal__visibility-active')
-            elementTable.classList.add('modal__visibility-close')
-
-            let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
-            elementTable1.classList.remove('modal__visibility-close')
-            elementTable1.classList.add('modal__visibility-active')
-        })
-
-        let elementChangeTableTypes = document.getElementById('ChangeToType')
-        elementChangeTableTypes.addEventListener("click", event => {
-            let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-            elementTable.classList.remove('modal__visibility-active')
-            elementTable.classList.add('modal__visibility-close')
-
-            let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
-            elementTable1.classList.remove('modal__visibility-close')
-            elementTable1.classList.add('modal__visibility-active')
-        })
-
-        let elementButtonTableCategories = document.getElementById('buttonTableCategories')
-        elementButtonTableCategories.addEventListener("click", event => {
-            let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-            elementTable.classList.remove('modal__visibility-active')
-            elementTable.classList.add('modal__visibility-close')
-        })
-
-        let elementButtonTableType = document.getElementById('buttonTableType')
-        elementButtonTableType.addEventListener("click", event => {
-            let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
-            elementTable.classList.remove('modal__visibility-active')
-            elementTable.classList.add('modal__visibility-close')
-        })
-
-        $('#modal-placeholder').html(data);
-        $('#modal-placeholder > .modal', data).modal('show');
-
-        $(function () {
-            $('button[data-toggle="ajax-modal"]').click(function (event) {
-                var url = $(this).data('url');
-                $.get(url).done(function (data) {
-                    $('#modal-placeholder').html(data);
-                    $('#modal-placeholder > .modal').modal('show');
-                });
-            });
-        });
-
-        $(function showModal(id) {
+        function ShowModalScopeWork(id) {
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("ShowScopeWorks")',
                 dataType: 'html',
                 data: { id: id },
                 success: function (result) {
-                   $('#dialogContent').html(result);                    
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({backdrop: false});
+                    $('#modDialog').modal('toggle');
                 },
                 error: function (result) {
                     console.log(result, 'Ошибка удаления');
                     alert("Ошибка удаления");
                 }
             });
+        };
+
+        elementButton.addEventListener("click", (event) => {
+            ShowModalScopeWork(@Model.Id)
+            //let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
+            //elementTable.classList.remove('modal__visibility-close')
+            //elementTable.classList.add('modal__visibility-active')
         });
+
+        //let elementChangeTableCategories = document.getElementById('ChangeToCategories')
+        //elementChangeTableCategories.addEventListener("click", event => {
+        //    let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
+        //    elementTable.classList.remove('modal__visibility-active')
+        //    elementTable.classList.add('modal__visibility-close')
+
+        //    let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
+        //    elementTable1.classList.remove('modal__visibility-close')
+        //    elementTable1.classList.add('modal__visibility-active')
+        //})
+
+        //let elementChangeTableTypes = document.getElementById('ChangeToType')
+        //elementChangeTableTypes.addEventListener("click", event => {
+        //    let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
+        //    elementTable.classList.remove('modal__visibility-active')
+        //    elementTable.classList.add('modal__visibility-close')
+
+        //    let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
+        //    elementTable1.classList.remove('modal__visibility-close')
+        //    elementTable1.classList.add('modal__visibility-active')
+        //})
+
+        //let elementButtonTableCategories = document.getElementById('buttonTableCategories')
+        //elementButtonTableCategories.addEventListener("click", event => {
+        //    let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
+        //    elementTable.classList.remove('modal__visibility-active')
+        //    elementTable.classList.add('modal__visibility-close')
+        //})
+
+        //let elementButtonTableType = document.getElementById('buttonTableType')
+        //elementButtonTableType.addEventListener("click", event => {
+        //    let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
+        //    elementTable.classList.remove('modal__visibility-active')
+        //    elementTable.classList.add('modal__visibility-close')
+        //})
+
+        //$('#modal-placeholder').html(data);
+        //$('#modal-placeholder > .modal', data).modal('show');
+
+        //$(function () {
+        //    $('button[data-toggle="ajax-modal"]').click(function (event) {
+        //        var url = $(this).data('url');
+        //        $.get(url).done(function (data) {
+        //            $('#modal-placeholder').html(data);
+        //            $('#modal-placeholder > .modal').modal('show');
+        //        });
+        //    });
+        //});        
     </script>
     @if (ViewBag.Message != null)
     {

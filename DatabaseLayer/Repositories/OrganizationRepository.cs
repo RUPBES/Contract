@@ -75,6 +75,7 @@ namespace DatabaseLayer.Repositories
                     orgnization.Unp = entity.Unp;
                     orgnization.Email = entity.Email;
                     orgnization.PaymentAccount = entity.PaymentAccount;
+                    orgnization.Addresses = entity.Addresses;
 
                     _context.Organizations.Update(orgnization);
                 }

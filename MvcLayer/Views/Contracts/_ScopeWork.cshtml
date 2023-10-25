@@ -4,989 +4,1031 @@
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
 }
-<div id="ConstructionInstallationWorksByTypes" class="modal modal-in-detail-view modal__visibility-close">
-    <div class="modal__back"></div>
-    <div class="modal__container">
-        <button id="ChangeToCategories">Сменить вид</button>
-        <div class="full-width">
-            <table class="PartialTable modal__table">
-                <thead>
-                    <tr class="tr-head-main-table">
-                        @*Виды работ по договору*@
-                        <th colspan="2" class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Виды работ по договору</span></th>
-                        @*Контрактная договорная цена*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
-                        @*Выполнено на 01.01 текущего года*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
-                        @*Остаток по выполнению от стоимости контрактной цены*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
-                        @*Объем на текущий год*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
-                        @{
-                            @*Период (месяц)*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+<div id="ConstructionInstallationWorksByTypes" class="hidden d-none">
+    <div class="modal-content" style="width : 1300px!important">
+        <div class="modal-body">
+            <button id="ChangeToCategories">Сменить вид</button>
+            <div class="full-width">
+                <table class="PartialTable modal__table">
+                    <thead>
+                        <tr class="tr-head-main-table">
+                            @*Виды работ по договору*@
+                            <th colspan="2" class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Виды работ по договору</span></th>
+                            @*Контрактная договорная цена*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
+                            @*Выполнено на 01.01 текущего года*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
+                            @*Остаток по выполнению от стоимости контрактной цены*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
+                            @*Объем на текущий год*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
+                            @{
+                                @*Период (месяц)*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                </thead>
-                <tbody class="tbodyPartialTableModal">
-                    <tr id="all">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-work">Вид работ</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            @*Стоимость работ общая (месяц)*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">@item.</span></td>
-                            }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            @*Стоимость СМР*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                    </thead>
+                    <tbody class="tbodyPartialTableModal">
+                        <tr id="all">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-work">Вид работ</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                @*Стоимость работ общая (месяц)*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.</span></td>
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            @*Стоимость ПНР*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                @*Стоимость СМР*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency"> Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            @*Стоимость Оборудования*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                @*Стоимость ПНР*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                    <tr id="smr">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">СМР</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            @*Стоимость СМР*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency"> Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                @*Стоимость Оборудования*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            @*Стоимость ????*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month"> ?</span></td>
-                            }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            @*Стоимость доп.работ*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr id="smr">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                @*Стоимость СМР*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">СМР цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">СМР выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">СМР остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            @*Стоимость доп.работ*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                @*Стоимость ????*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month"> ?</span></td>
                                 }
                             }
-                        }
-                    </tr>
-                    <tr id="pnr">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                @*Стоимость доп.работ*@
+                                foreach (var item in Model.ScopeWorks)
+                                {
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                    }
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">СМР цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">СМР выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">СМР остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                @*Стоимость доп.работ*@
+                                foreach (var item in Model.ScopeWorks)
+                                {
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                    }
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="pnr">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">ПНР остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr id="equip">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">Оборудование</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">ПНР остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="equip">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">Оборудование</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr id="other">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                        <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                        <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                        <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                        <td><span class="table_span-volume">РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                        <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                        <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                        <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                        <td><span class="table_span-volume">РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                        <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                        <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                        <td><span class="table_span-volume">РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="other">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
+                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
+                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr id="allWithoutNDS">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">Всего по договору без учета НДС</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                        <td><span class="table_span-contractprice">Всего по договору цена</span></td>
-                        <td><span class="table_span-realization">Всего по договору выполнено</span></td>
-                        <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                        <td><span class="table_span-volume">Всего по договору объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
+                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                        <td><span class="table_span-contractprice">Всего по договору цена</span></td>
-                        <td><span class="table_span-realization">Всего по договору выполнено</span></td>
-                        <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                        <td><span class="table_span-volume">Всего по договору объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">РАБОТЫ выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">Всего по договору цена</span></td>
-                        <td><span class="table_span-realization">Всего по договору выполнено</span></td>
-                        <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                        <td><span class="table_span-volume">Всего по договору объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="allWithoutNDS">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">Всего по договору без учета НДС</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">Всего по договору цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">Всего по договору выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">Всего по договору остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">Всего по договору объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr id="optionnaly">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">ДОП.РАБОТЫ</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                        <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                        <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                        <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                        <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td><span class="table_span-realization">Всего по договору выполнено</span></td>
+                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                        <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                        <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                        <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                        <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">Всего по договору выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">Всего по договору объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                        <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                        <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                        <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="optionnaly">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">ДОП.РАБОТЫ</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr id="material">
-                        <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                        <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                        <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                        <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                        <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                        <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                        <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                        <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                        <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                        <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                        <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                        <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                        <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="material">
+                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                        <td class="table-on-their-own"><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                        <td class="table-on-their-own"><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                        <td class="table-on-their-own"><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                        <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                </tbody>
-            </table>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="buttonTableType" class="modal__container-button">Закрыть таблицу</button>
         </div>
-        <button id="buttonTableType" class="modal__container-button">Закрыть таблицу</button>
     </div>
 </div>
 
-<div id="ConstructionInstallationWorksByCategories" class="modal modal-in-detail-view modal__visibility-close">
-    <div class="modal__back"></div>
-    <div class="modal__container">
-        <button id="ChangeToType">Сменить вид</button>
-        <div class="full-width">
-            <table class="PartialTable modal__table table table-striped table-hover">
-                <thead>
-                    <tr class="tr-head-main-table">
-                        @*Виды работ по договору*@
-                        <th colspan="2" class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Виды работ по договору</span></th>
-                        @*Контрактная договорная цена*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
-                        @*Выполнено на 01.01 текущего года*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
-                        @*Остаток по выполнению от стоимости контрактной цены*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
-                        @*Объем на текущий год*@
-                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
-                        @{
-                            @*Период (месяц)*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+<div id="ConstructionInstallationWorksByCategories" class="show">
+    <div class="modal-content" style="width : 1300px!important">
+        <div class="modal-body">
+            <button id="ChangeToType">Сменить вид</button>
+            <div class="full-width">
+                <table class="PartialTable modal__table table table-striped table-hover">
+                    <thead>
+                        <tr class="tr-head-main-table">
+                            @*Виды работ по договору*@
+                            <th colspan="2" class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Виды работ по договору</span></th>
+                            @*Контрактная договорная цена*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
+                            @*Выполнено на 01.01 текущего года*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
+                            @*Остаток по выполнению от стоимости контрактной цены*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
+                            @*Объем на текущий год*@
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
+                            @{
+                                @*Период (месяц)*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                </thead>
-                <tbody class="tbodyPartialTableModal">
-                    <tr id="plan">
-                        <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План</span></td>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            @*Стоимость ?*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
-                            }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            @*Стоимость СМР*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                    </thead>
+                    <tbody class="tbodyPartialTableModal">
+                        <tr id="plan">
+                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План</span></td>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                @*Стоимость ?*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                @*Стоимость СМР*@
+                                foreach (var item in Model.ScopeWorks)
+                                {
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                    }
+                                }
 
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            @*Стоимость ПНР*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                            }
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                @*Стоимость ПНР*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            @*Стоимость Оборудование*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                @*Стоимость Оборудование*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                    }
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                        <td><span class="table_span-contractprice">Работы цена</span></td>
-                        <td><span class="table_span-realization">Работы выполнено</span></td>
-                        <td><span class="table_span-remains">Работы остаток</span></td>
-                        <td><span class="table_span-volume">Работы объем</span></td>
-                        @{
-                            @*Стоимость ?*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
-                            }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                        <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                        <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                        <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                        <td><span class="table_span-volume">Договор без НДС объем</span></td>
-                        @{
-                            @*Стоимость ?*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
-                            }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                        <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                        <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                        <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                        <td><span class="table_span-volume">Доп. работы объем</span></td>
-                        @{
-                            @*Стоимость Доп. работы*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>
+                            @{
+                                @*Стоимость ?*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                        <td><span class="table_span-contractprice">Материалы цена</span></td>
-                        <td><span class="table_span-realization">Материалы выполнено</span></td>
-                        <td><span class="table_span-remains">Материалы остаток</span></td>
-                        <td><span class="table_span-volume">Материалы объем</span></td>
-                        @{
-                            @*Стоимость Материалы*@
-                            foreach (var item in Model.ScopeWorks)
-                            {
-                                foreach (var item2 in item.SWCosts)
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
+                            @{
+                                @*Стоимость ?*@
+                                foreach (var item in Model.ScopeWorks)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
                                 }
                             }
-                        }
-                    </tr>
-                    <tr id="fact">
-                        <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">Факт</span></td>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            @*Период*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>
+                            @{
+                                @*Стоимость Доп. работы*@
+                                foreach (var item in Model.ScopeWorks)
+                                {
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                    }
+                                }
                             }
-                            for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>
+                            @{
+                                @*Стоимость Материалы*@
+                                foreach (var item in Model.ScopeWorks)
+                                {
+                                    foreach (var item2 in item.SWCosts)
+                                    {
+                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                    }
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            @*Стоимость СМР*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
+                        </tr>
+                        <tr id="fact">
+                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">Факт</span></td>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                @*Период*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                }
+                                for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
+                                }
                             }
-                            for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                @*Стоимость СМР*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
+                                }
+                                for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            @*Стоимость ПНР*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                @*Стоимость ПНР*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            @*Стоимость Оборудование*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                @*Стоимость Оборудование*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                        <td><span class="table_span-contractprice">Работы цена</span></td>
-                        <td><span class="table_span-realization">Работы выполнено</span></td>
-                        <td><span class="table_span-remains">Работы остаток</span></td>
-                        <td><span class="table_span-volume">Работы объем</span></td>
-                        @{
-                            @*Стоимость ?*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>
+                            @{
+                                @*Стоимость ?*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                        <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                        <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                        <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                        <td><span class="table_span-volume">Договор без НДС объем</span></td>
-                        @{
-                            @*Стоимость ?*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
+                            @{
+                                @*Стоимость ?*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                        <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                        <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                        <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                        <td><span class="table_span-volume">Доп. работы объем</span></td>
-                        @{
-                            @*Стоимость Доп. работы*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>
+                            @{
+                                @*Стоимость Доп. работы*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                        <td><span class="table_span-contractprice">Материалы цена</span></td>
-                        <td><span class="table_span-realization">Материалы выполнено</span></td>
-                        <td><span class="table_span-remains">Материалы остаток</span></td>
-                        <td><span class="table_span-volume">Материалы объем</span></td>
-                        @{
-                            @*Стоимость Материалы*@
-                            foreach (var item in Model.FormC3as)
-                            {
-                                <td class="Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>
+                            @{
+                                @*Стоимость Материалы*@
+                                foreach (var item in Model.FormC3as)
+                                {
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
+                                }
                             }
-                        }
-                    </tr>
+                        </tr>
 
-                    <tr id="planOur">
-                        <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План своими силами</span></td>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        <tr id="planOur">
+                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План своими силами</span></td>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                        <td><span class="table_span-contractprice">Работы цена</span></td>
-                        <td><span class="table_span-realization">Работы выполнено</span></td>
-                        <td><span class="table_span-remains">Работы остаток</span></td>
-                        <td><span class="table_span-volume">Работы объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                        <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                        <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                        <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                        <td><span class="table_span-volume">Договор без НДС объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                        <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                        <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                        <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                        <td><span class="table_span-volume">Доп. работы объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                        <td><span class="table_span-contractprice">Материалы цена</span></td>
-                        <td><span class="table_span-realization">Материалы выполнено</span></td>
-                        <td><span class="table_span-remains">Материалы остаток</span></td>
-                        <td><span class="table_span-volume">Материалы объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr id="factOur">
-                        <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">Факт своими силами</span></td>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                        <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                        <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                        <td><span class="table_span-remains">Вид работ остаток</span></td>
-                        <td><span class="table_span-volume">Вид работ объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr id="factOur">
+                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">Факт своими силами</span></td>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                        <td><span class="table_span-contractprice">СМР цена</span></td>
-                        <td><span class="table_span-realization">СМР выполнено</span></td>
-                        <td><span class="table_span-remains">СМР остаток</span></td>
-                        <td><span class="table_span-volume">СМР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                        <td><span class="table_span-contractprice">ПНР цена</span></td>
-                        <td><span class="table_span-realization">ПНР выполнено</span></td>
-                        <td><span class="table_span-remains">ПНР остаток</span></td>
-                        <td><span class="table_span-volume">ПНР объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                        <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                        <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                        <td><span class="table_span-remains">Оборудование остаток</span></td>
-                        <td><span class="table_span-volume">Оборудование объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                        <td><span class="table_span-contractprice">Работы цена</span></td>
-                        <td><span class="table_span-realization">Работы выполнено</span></td>
-                        <td><span class="table_span-remains">Работы остаток</span></td>
-                        <td><span class="table_span-volume">Работы объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                        <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                        <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                        <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                        <td><span class="table_span-volume">Договор без НДС объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                        <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                        <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                        <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                        <td><span class="table_span-volume">Доп. работы объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                    <tr>
-                        <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                        <td><span class="table_span-contractprice">Материалы цена</span></td>
-                        <td><span class="table_span-realization">Материалы выполнено</span></td>
-                        <td><span class="table_span-remains">Материалы остаток</span></td>
-                        <td><span class="table_span-volume">Материалы объем</span></td>
-                        @{
-                            for (int i = 0; i < 25; i++)
-                            {
-                                <td><span class="table_span-month">@i - 000</span></td>
+                        </tr>
+                        <tr>
+                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>
+                            @{
+                                for (int i = 0; i < 25; i++)
+                                {
+                                    <td><span class="table_span-month">@i - 000</span></td>
+                                }
                             }
-                        }
-                    </tr>
-                </tbody>
-            </table>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="buttonTableCategories" class="modal__container-button">Закрыть таблицу</button>
         </div>
-        <button id="buttonTableCategories" class="modal__container-button">Закрыть таблицу</button>
     </div>
 </div>
+
+
+
+<script>
+    var elementChangeTableCategories = document.getElementById('ChangeToCategories')
+    elementChangeTableCategories.addEventListener("click", event => {
+        let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
+        elementTable.classList.remove('modal__visibility-active')
+        elementTable.classList.add('modal__visibility-close')
+
+        let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
+        elementTable1.classList.remove('modal__visibility-close')
+        elementTable1.classList.add('modal__visibility-active')
+    })
+
+    let elementChangeTableTypes = document.getElementById('ChangeToType')
+    elementChangeTableTypes.addEventListener("click", event => {
+        let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
+        elementTable.classList.remove('modal__visibility-active')
+        elementTable.classList.add('modal__visibility-close')
+
+        let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
+        elementTable1.classList.remove('modal__visibility-close')
+        elementTable1.classList.add('modal__visibility-active')
+    })
+
+    let elementButtonTableCategories = document.getElementById('buttonTableCategories')
+    elementButtonTableCategories.addEventListener("click", event => {
+        let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
+        elementTable.classList.remove('modal__visibility-active')
+        elementTable.classList.add('modal__visibility-close')
+    })
+
+    let elementButtonTableType = document.getElementById('buttonTableType')
+    elementButtonTableType.addEventListener("click", event => {
+        let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
+        elementTable.classList.remove('modal__visibility-active')
+        elementTable.classList.add('modal__visibility-close')
+    })
+</script>

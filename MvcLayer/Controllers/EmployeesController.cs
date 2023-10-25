@@ -5,6 +5,7 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -119,10 +120,18 @@ namespace MvcLayer.Controllers
             //if (ModelState.IsValid)
             //{
                 try
-                {                    
-                    employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
+                {
+                    if (employee.DepartmentEmployees[0].DepartmentId == 0)
+                    {
+                    employee.DepartmentEmployees.Clear();
+                    }
+                    if (employee.Phones[0].Number == null)
+                    {
+                        employee.Phones.Clear();
+                    }
+                employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
                     employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
-                _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
+                    _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
