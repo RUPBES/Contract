@@ -1,14 +1,11 @@
 ﻿@model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
-@{
-    var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
-    var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
-}
-<div id="ConstructionInstallationWorksByTypes" class="hidden d-none">
-    <div class="modal-content" style="width : 1300px!important">
+
+<div id="ConstructionInstallationWorksByTypes" class="d-none">
+    <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
             <button id="ChangeToCategories">Сменить вид</button>
-            <div class="full-width">
+            <div class="full-width" style="width: 100%">
                 <table class="PartialTable modal__table">
                     <thead>
                         <tr class="tr-head-main-table">
@@ -494,10 +491,10 @@
 </div>
 
 <div id="ConstructionInstallationWorksByCategories" class="show">
-    <div class="modal-content" style="width : 1300px!important">
+    <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
             <button id="ChangeToType">Сменить вид</button>
-            <div class="full-width">
+            <div class="full-width" style="width: 100%">
                 <table class="PartialTable modal__table table table-striped table-hover">
                     <thead>
                         <tr class="tr-head-main-table">
@@ -999,36 +996,38 @@
     var elementChangeTableCategories = document.getElementById('ChangeToCategories')
     elementChangeTableCategories.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
 
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
-        elementTable1.classList.remove('modal__visibility-close')
-        elementTable1.classList.add('modal__visibility-active')
+        elementTable1.classList.remove('d-none')
+        elementTable1.classList.add('show')
     })
 
     let elementChangeTableTypes = document.getElementById('ChangeToType')
     elementChangeTableTypes.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
 
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
-        elementTable1.classList.remove('modal__visibility-close')
-        elementTable1.classList.add('modal__visibility-active')
+        elementTable1.classList.remove('d-none')
+        elementTable1.classList.add('show')
     })
 
     let elementButtonTableCategories = document.getElementById('buttonTableCategories')
     elementButtonTableCategories.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
+        $('#modDialog').modal('toggle');
     })
 
     let elementButtonTableType = document.getElementById('buttonTableType')
     elementButtonTableType.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
+        $('#modDialog').modal('toggle');
     })
 </script>
