@@ -13,26 +13,28 @@
     <link href="~/kendoui/kendo.bootstrap-main.min.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="modal-container"></div>
+    <div id="modDialog" class="modal fade" data-backdrop="static">
+        <div id="dialogContent" class="modal-dialog" style="display: flex; justify-content: center;"></div>
+    </div>
     <div class="flex-container">
-    <header class="header_container">
-        @Html.Partial("_Header")
-    </header>
+        <header class="header_container">
+            @Html.Partial("_Header")
+        </header>
 
-    @if (IsSectionDefined("Table"))
-    {
-        <div class="table-container">
-            @RenderSection("Table")
-        </div>
-    }
-    else
-    {
-        <div class="container">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
-        </div>
-    }
+        @if (IsSectionDefined("Table"))
+        {
+            <div class="table-container">
+                @RenderSection("Table")
+            </div>
+        }
+        else
+        {
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        }
         @Html.Partial("_Footer")
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

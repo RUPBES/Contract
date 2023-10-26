@@ -95,6 +95,11 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
+            if (organization.Addresses.Count == 0)
+            {
+                var addr = new AddressDTO();
+                organization.Addresses.Add(addr);
+            }
             return View(_mapper.Map<OrganizationViewModel>(organization));
         }
 
@@ -110,6 +115,10 @@ namespace MvcLayer.Controllers
             {
                 try
                 {
+                    if (organization.Addresses[0].FullAddress == null && organization.Addresses[0].PostIndex == null)
+                    {
+                        organization.Addresses.Clear();
+                    }
                     _organizationService.Update(_mapper.Map<OrganizationDTO>(organization));
                 }
                 catch

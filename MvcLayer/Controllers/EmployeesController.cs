@@ -5,6 +5,7 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -22,10 +23,23 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Employees
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
         {
-            var employees = _employeesService.GetAll();
-            return View(_mapper.Map<IEnumerable<EmployeeViewModel>>(employees));
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.FullNameSortParm = sortOrder == "fullName" ? "fullNameDesc" : "fullName";
+            ViewBag.FioSortParm = sortOrder == "fio" ? "fioDesc" : "fio";
+            ViewBag.PositionSortParm = sortOrder == "position" ? "positionDesc" : "position";
+            ViewBag.EmailSortParm = sortOrder == "email" ? "emailDesc" : "email";
+
+            if (query != null)
+            { }
+            else
+            { query = currentFilter; }
+            ViewBag.CurrentFilter = query;
+
+            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
+                return View(_employeesService.GetPageFilter(100, pageNum, query, sortOrder));
+            else return View(_employeesService.GetPage(100, pageNum));           
         }
 
         // GET: Employees/Details/5
@@ -53,9 +67,9 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Fio,Position,Email,ContractId")] EmployeeViewModel employee)
+        public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)
             {
                 _employeesService.Create(_mapper.Map<EmployeeDTO>(employee));
                 return RedirectToAction(nameof(Index));
@@ -79,22 +93,44 @@ namespace MvcLayer.Controllers
             }
 
             //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee);
+            var fio = employee.FullName != null ? employee.FullName.Split(" "): new string[3];
+            employee.LastName= fio[0];
+            employee.FirstName = fio[1];
+            employee.FatherName = fio[2];
+            if (employee.DepartmentEmployees.Count == 0) 
+            { var emp = new DepartmentEmployeeDTO();
+                employee.DepartmentEmployees.Add(emp);  }
+            if(employee.Phones.Count == 0)
+            {
+                var emp = new PhoneDTO();
+                employee.Phones.Add(emp);
+            }            
             return View(_mapper.Map<EmployeeViewModel>(employee));  
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Fio,Position,Email,ContractId")] EmployeeViewModel employee)
+        public async Task<IActionResult> Edit(int id, EmployeeViewModel employee)
         {
             if (id != employee.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
-            {
+            //if (ModelState.IsValid)
+            //{
                 try
                 {
+                    if (employee.DepartmentEmployees[0].DepartmentId == 0)
+                    {
+                    employee.DepartmentEmployees.Clear();
+                    }
+                    if (employee.Phones[0].Number == null)
+                    {
+                        employee.Phones.Clear();
+                    }
+                employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
+                    employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
                     _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -111,8 +147,8 @@ namespace MvcLayer.Controllers
                 return RedirectToAction(nameof(Index));
             }
             //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
-            return View(employee);
-        }
+        //    return View(employee);
+        //}
 
         public async Task<IActionResult> Delete(int? id)
         {
@@ -144,6 +180,18 @@ namespace MvcLayer.Controllers
                 _employeesService.Delete(id);
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> ShowDelete()
+        {
+            return PartialView("_ViewDelete");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShowResultDelete(int id)
+        {            
+            _employeesService.Delete(id);
+            return PartialView("_ViewDelete");
         }
     }
 }

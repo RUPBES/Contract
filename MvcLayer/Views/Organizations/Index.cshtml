@@ -19,11 +19,11 @@
                     </div>
                     <div class="input-group m-2">
 
-                        <button type="button" class="btn btn-success k-mr-2" onclick="location.href='@Url.Action("Create", "Organization")'">Новый договор</button>
+                        <button type="button" class="btn btn-success k-mr-2" onclick="location.href='@Url.Action("Create", "Organization")'">Новая организация</button>
                         @using (Html.BeginForm("Index", "Organization", FormMethod.Get))
                         {
                             <form style="search-form">
-                                <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                                <label style="search-form__text">Название организации:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
                                 <input type="submit" value="Найти" />
                             </form>
                         }
@@ -37,13 +37,24 @@
                                         @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
                                     </th>
                                     <th>
-                                        @Html.ActionLink("Аббревиатура", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class=""})
+                                        <span class="table_span-month">
+                                            @Html.ActionLink("Аббревиатура", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class=""})
+                                        </span>
                                     </th>
                                     <th>
                                         @Html.ActionLink("УНП", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayUnp", @class=""})
                                     </th>
                                     <th>
                                         Отделы
+                                    </th>
+                                    <th>
+                                        Телефоны
+                                    </th>
+                                    <th>
+                                        Юр. адрес
+                                    </th>
+                                    <th>
+                                        Почтовый индекс
                                     </th>
                                     <th></th>
                                 </tr>
@@ -56,31 +67,61 @@
                                             @Html.DisplayFor(modelItem => item.Name)
                                         </td>
                                         <td>
+                                            <span class="table_span-month">
                                             @Html.DisplayFor(modelItem => item.Abbr)
+                                            </span>
                                         </td>
                                         <td>
                                             @Html.DisplayFor(modelItem => item.Unp)
                                         </td>
 
                                         <td>
+                                            <span class="icon link_to_page dropdown-toggle">
+                                            </span>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <a class="icon view_to_add_pages " asp-controller="Departments"
+                                               asp-action="Create" asp-route-idOrg="@item.Id"></a>
+                                                <div class="dropdown-divider"></div>
                                             @foreach (var department in item.Departments)
                                             {
-                                                <div class="d-flex flex-row">
-                                                    <span class="p-1 k-mr-5">@department.Name</span>
-                                                    <span class="icon edit k-mr-1" title="Редактировать">
-
-                                                        <a asp-controller="Departments" asp-action="Edit" asp-route-id="@department.Id">
-
+                                                <div class="d-flex flex-row">                                                        
+                                                        <a  asp-controller="Departments" asp-action="Details" asp-route-id="@department.Id">
+                                                                @department.Name
                                                         </a>
-                                                    </span>
-                                                    <span class="icon delete k-mr-1" title="Удалить">
-
-                                                        <a asp-controller="Departments" asp-action="Delete" asp-route-id="@department.Id">
-
-                                                        </a>
-                                                    </span>
+                                                  
 
                                                 </div>
+                                            }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @foreach (var phone in item.Phones)
+                                            {
+                                                <div class="d-flex flex-row">
+                                                    <span class="p-1 k-mr-5 text-break">@phone.Number</span>                                                    
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @foreach (var address in item.Addresses)
+                                            {
+                                                @if (address.FullAddress != null)
+                                                {
+                                                    <div class="d-flex flex-row">
+                                                        <span class="p-1 k-mr-5 text-break">@address.FullAddress</span>
+                                                    </div>
+                                                }
+                                            }
+                                        </td>
+                                        <td>
+                                            @foreach (var address in item.Addresses)
+                                            {
+                                                @if (address.PostIndex != null)
+                                                {
+                                                    <div class="d-flex flex-row">
+                                                        <span class="p-1 k-mr-5 text-break">@address.PostIndex</span>
+                                                    </div>
+                                                }
                                             }
                                         </td>
                                         <td>
@@ -123,3 +164,4 @@
             </div>
         </div>
     </div>
+</div>

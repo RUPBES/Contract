@@ -11,7 +11,7 @@ namespace MvcLayer.Models
         public string? Name { get; set; }
         [DisplayName("Название организации")]
         public int? OrganizationId { get; set; }
-
+        [DisplayName("Название организации")]
         public OrganizationDTO? Organization { get; set; }
 
         public List<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();

@@ -510,7 +510,12 @@ namespace MvcLayer.Controllers
         {
             var doc = _contractService.GetById(id);
             return PartialView("_OneContract", _mapper.Map<ContractViewModel>(doc));
-        }       
+        }
 
+        public ActionResult ShowScopeWorks(int id)
+        {
+            var doc = _contractService.GetById(id);
+            return PartialView("_ScopeWork", _mapper.Map<ContractViewModel>(doc));
+        }
     }
 }

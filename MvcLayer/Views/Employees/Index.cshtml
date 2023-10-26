@@ -1,55 +1,171 @@
-﻿@model IEnumerable<MvcLayer.Models.EmployeeViewModel>
-
+﻿@model BusinessLayer.Models.IndexViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
+@inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@using BusinessLayer.Models;
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Cотрудники";
 }
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block flex-column">
+                    <div class="input-group m-2 ">
+                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
+                        <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                    </div>
+                    <div class="input-group m-2">
 
-<h1>Index</h1>
+                        <button type="button" class="btn btn-success k-mr-2" onclick="location.href='@Url.Action("Create", "Employees")'">Новый сотрудник</button>
+                        @using (Html.BeginForm("Index", "Organization", FormMethod.Get))
+                        {
+                            <form style="search-form">
+                                <label style="search-form__text">ФИО сотрудника:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                                <input type="submit" value="Найти" />
+                            </form>
+                        }
+                    </div>
+                    <div style="max-height:650px; overflow-y:scroll">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.ActionLink("Фамилия, имя, отчество", "Index", new { sortOrder = ViewBag.FullNameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayFullName", @class=""})
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("Фио", "Index", new { sortOrder = ViewBag.FioSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayFio", @class=""})
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("Должность", "Index", new { sortOrder = ViewBag.PositionSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayPosition", @class=""})
+                                    </th>
+                                    <th>
+                                        @Html.ActionLink("Электронная почта", "Index", new { sortOrder = ViewBag.EmailSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayEmail", @class=""})
+                                    </th>
+                                    <th>
+                                    Телефон
+                                    </th>
+                                    <th>
+                                        Организация
+                                    </th>
+                                    <th>
+                                        Отдел
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (EmployeeDTO item in Model.Objects)
+                                {
+                                    <tr>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.FullName)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Fio)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Position)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Email)
+                                        </td>
+                                        <td>
+                                            @foreach(var phone in item.Phones)
+                                            {
+                                                <span>@phone.Number</span>
+                                            }                                            
+                                        </td>
+                                        <td>
+                                            @foreach(var department in item.DepartmentEmployees)
+                                            {
+                                                <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Abbr</span>
+                                            }                                            
+                                        </td>
+                                        <td>
+                                            @foreach (var department in item.DepartmentEmployees)
+                                            {
+                                                <span>@Department.GetById(@department.DepartmentId).Name</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-row">
+                                                <a class="icon edit" asp-action="Edit" asp-route-id="@item.Id"></a>                                                                                        
+                                                @*<a class="icon view" asp-action="Details" asp-route-id="@item.Id"></a>*@
+                                                <a class="icon delete" onclick="confirm(@item.Id)"></a>
+                                                @*<a class="icon delete" asp-action="Delete" asp-route-id="@item.Id"></a>*@
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pages">
+                        @{
+                            if (Model.PageViewModel.HasPreviousPage)
+                            {
+                                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+                            }
+                        }
+                        <b> @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages</b>
+                        @{
+                            if (Model.PageViewModel.HasNextPage)
+                            {
+                                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+                            }
+                            else
+                            {
+                                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Fio)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Position)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fio)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Position)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<script type="text/javascript">    
+
+    function confirm(val) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ShowDelete","Employees")',
+            contentType: "application/html; charset=utf-8",
+            dataType: 'html',
+            success: function (result) {
+                $('#dialogContent').html(result);
+                $('#modDialog').modal('show');
+
+                let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                elementDeleteButton[0].addEventListener('click', () => {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowResultDelete","Employees")',
+                        dataType: 'html',
+                        data: { id: val },
+                        success: function (result) {                            
+                            let buttonElement = document.querySelectorAll('#dialogContent')
+                            location.reload();
+                        },
+                        error: function (result) {
+                            console.log(result, 'Ошибка удаления');
+                            alert("Ошибка удаления");
+                        }
+                    });
+
+                })
+
+            },
+            error: function (result) {
+                console.log(result, 'error 2');
+                alert("Ошибка отображения");
+            }
+        })
+    }
+</script>

@@ -7,6 +7,7 @@ using MvcLayer.Models;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -49,28 +50,27 @@ namespace MvcLayer.Controllers
             if (department == null)
             {
                 return NotFound();
-            }
-
+            }            
             return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
-        public IActionResult Create()
+        public IActionResult Create(int idOrg)
         {
-            ViewData["OrganizationId"] = new SelectList(_organizationService.GetAll(), "Id", "Name");
+            ViewData["OrganizationId"] = idOrg;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,OrganizationId")] DepartmentViewModel department)
+        public async Task<IActionResult> Create(DepartmentViewModel department)
         {
             if (ModelState.IsValid)
             {
                 _departmentService.Create(_mapper.Map<DepartmentDTO>(department));
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Organizations");
             }
             ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Name", department.OrganizationId);
-            return View(department);
+            return RedirectToAction("Index","Organizations");
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -136,6 +136,19 @@ namespace MvcLayer.Controllers
 
             return View(_mapper.Map<DepartmentViewModel>(department));
         }
+        
+        public async Task<IActionResult> ShowDelete()
+        {
+            return PartialView("_ViewDelete");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShowResultDelete(int id)
+        {
+            var department = _departmentService.GetById((int)id);
+            _departmentService.Delete(id);
+            return PartialView("_ViewDelete");
+        }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -143,7 +156,7 @@ namespace MvcLayer.Controllers
         {
             if (_departmentService.GetAll() == null)
             {
-                return Problem("Entity set 'ContractsContext.Departments'  is null.");
+                return Problem("Entity set 'ContractsContext.Departments'  is null.");                
             }
             var department = _departmentService.GetById((int)id);
             if (department != null)
@@ -151,7 +164,7 @@ namespace MvcLayer.Controllers
                 _departmentService.Delete(id);
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index));            
         }
 
         public JsonResult GetJsonDepartments(int id)

@@ -111,5 +111,75 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(LogLevel.Warning, $"not update employee, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
+
+        public IndexViewModel GetPage(int pageSize, int pageNum)
+        {
+            int count = _database.Employees.GetAll().Count();
+            int skipEntities = (pageNum - 1) * pageSize;
+            var items = _database.Employees.GetAll().Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<EmployeeDTO>>(items);
+
+            PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = t
+            };
+
+            return viewModel;
+        }
+
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
+        {
+            int count = _database.Employees.GetAll().Count();
+            int skipEntities = (pageNum - 1) * pageSize;
+            IEnumerable<Employee> items;
+            if (!String.IsNullOrEmpty(request))
+            { items = _database.Employees.GetAll(); }
+            else { items = _database.Employees.GetAll(); }
+
+
+            switch (sortOrder)
+            {
+                case "fullName":
+                    items = items.OrderBy(s => s.FullName);
+                    break;
+                case "fullNameDesc":
+                    items = items.OrderByDescending(s => s.FullName);
+                    break;
+                case "fio":
+                    items = items.OrderBy(s => s.Fio);
+                    break;
+                case "fioDesc":
+                    items = items.OrderByDescending(s => s.Fio);
+                    break;
+                case "position":
+                    items = items.OrderBy(s => s.Position);
+                    break;
+                case "positionDesc":
+                    items = items.OrderByDescending(s => s.Position);
+                    break;
+                case "email":
+                    items = items.OrderBy(s => s.Email);
+                    break;
+                case "emailDesc":
+                    items = items.OrderByDescending(s => s.Email);
+                    break;
+                default:
+                    items = items.OrderBy(s => s.Id);
+                    break;
+            }
+            items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<EmployeeDTO>>(items);
+
+            PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = t
+            };
+
+            return viewModel;
+        }
     }
 }
