@@ -51,6 +51,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IServiceCostService, ServiceCostService>();
             services.AddScoped<ITypeWorkService, TypeWorkService>();
 
+            services.AddScoped<IVContractEnginService, VContractEnginService>();
             services.AddScoped<IVContractService, VContractService>();
         }
     }

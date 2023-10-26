@@ -48,6 +48,7 @@ namespace BusinessLayer.Mapper
             CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
 
             CreateMap<VContract, VContractDTO>().ReverseMap();
+            CreateMap<VContractEngin, VContractDTO>().ReverseMap();
 
         }
     }

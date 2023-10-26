@@ -36,8 +36,9 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int contractId, bool isEngineering)
         {
+            ViewBag.IsEngineering = isEngineering;
             return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.Find(x => x.ContractId == contractId)));
         }
 

@@ -3,7 +3,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DatabaseLayer.Repositories
+namespace DatabaseLayer.Repositories.ViewRepo
 {
     internal class VContractRepository : IViewRepository<VContract>
     {

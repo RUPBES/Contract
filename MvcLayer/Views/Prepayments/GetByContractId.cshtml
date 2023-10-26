@@ -14,6 +14,8 @@
         ViewData["Title"] = $"Авансы по договору № {number}";
     }
     bool isAdmin = true;
+    var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
+}
 }
 
 <div class="dm-overlay">
@@ -27,8 +29,8 @@
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contractId" class="close-btn"></a>
                     }
                     @if (@contractId == null || @contractId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    {                       
+                        <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />

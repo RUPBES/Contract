@@ -34,8 +34,9 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int contractId, bool isEngineering)
         {
+            ViewBag.IsEngineering = isEngineering;
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId)));
         }
 
@@ -188,6 +189,25 @@ namespace MvcLayer.Controllers
 
             _scopeWork.Delete((int)id);
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult GetCostDeviation()
+        {
+            var maxPeriod = _swCostService.GetAll().MaxBy(x => x.Period).Period;
+            var minPeriod = _swCostService.GetAll().MinBy(x => x.Period).Period;
+
+            List<DateTime> listDate = new List<DateTime>();
+            DateTime startDate = (DateTime)minPeriod;
+
+            while (startDate <= maxPeriod)
+            {
+                listDate.Add(startDate);
+                startDate = startDate.AddMonths(1);
+            }
+
+            ViewBag.ListDate = listDate;
+
+            return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.GetAll()));
         }
     }
 }

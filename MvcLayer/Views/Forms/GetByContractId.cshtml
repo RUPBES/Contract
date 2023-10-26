@@ -1,9 +1,15 @@
-﻿@model IEnumerable<MvcLayer.Models.FormViewModel>
+﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
+@model IEnumerable<MvcLayer.Models.FormViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 
 @{
     ViewData["Title"] = string.Empty;
     var id = Model.FirstOrDefault()?.ContractId;
+    bool isAdmin = true;
+    string redirectAction = "GetByContractId";
+    string redirectController = "Forms";
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
@@ -17,85 +23,199 @@
     }
 }
 
-<h1> @ViewData["Title"]</h1>
-<div class="table-responsive">
-    <table class="table">
-        @* <thead class="k-text-align-center k-vertical-align-center table-bordered table-sm">
-        *@
-        <tr>
-            <th>
-                <span class="table_span-contractprice">Период</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-contractprice">@item.Period?.ToString("MMM yyyy")</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-remains">Дата подписания</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-remains">@item.DateSigning?.ToString("dd MMM yyyy")</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-volume">Общая стоимость выполненных работ</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-volume">@item.TotalCost</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-volume">Стоимость СМР</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-volume">@item.SmrCost</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-volume">Стоимость ПНР</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-volume">@item.PnrCost</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-volume">Стоимость оборудования</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-volume">@item.EquipmentCost</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-volume">Стоимость прочих работ</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-volume">@item.AdditionalCost</span></td>
-            }
-        </tr>
-        <tr>
-            <th>
-                <span class="table_span-volume">Файл</span>
-            </th>
-            @foreach (var item in Model)
-            {
-                <td><span class="table_span-volume"></span></td>
-            }
-        </tr>
-    </table>
-    <div>
-        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@id">Вернуться назад</a>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (@id != null && id > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                    }
+                    @if (id == null || id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Period)                                   
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.DateSigning)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TotalCost)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.SmrCost)
+                                </th>
+                                <th >
+                                    @Html.DisplayNameFor(model => model.PnrCost)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.EquipmentCost)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                </th>                               
+                                <th>Файлы ДС</th>
+                                <th ></th>
+                            </tr>                            
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.Period?.ToString("MMM yyyy")
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.DateSigning)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.TotalCost)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.SmrCost)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.PnrCost)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.EquipmentCost)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.OtherExpensesCost)
+                                    </td>
+                                    <td>
+                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
+                                        {
+                                            <div>
+                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                @if (isAdmin)
+                                                {
+                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>                                       
+                                        <span class="icon file-add" title="Добавить файл к форме">
+                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
+                                        </span>
+                                        <span class="icon edit" title="Редактировать форму">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                        </span>
+                                        <span class="icon delete" title="Удалить форму">
+                                            <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+
+
+                        @*
+
+                        <table class="table table-bordered">
+                       
+                        
+                        <tr>
+                            <th>
+                                <span class="table_span-contractprice">Период</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-contractprice">@item.Period?.ToString("MMM yyyy")</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-remains">Дата подписания</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-remains">@item.DateSigning?.ToString("dd MMM yyyy")</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-volume">Общая стоимость выполненных работ</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-volume">@item.TotalCost</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-volume">Стоимость СМР</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-volume">@item.SmrCost</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-volume">Стоимость ПНР</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-volume">@item.PnrCost</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-volume">Стоимость оборудования</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-volume">@item.EquipmentCost</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-volume">Стоимость прочих работ</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td><span class="table_span-volume">@item.AdditionalCost</span></td>
+                            }
+                        </tr>
+                        <tr>
+                            <th>
+                                <span class="table_span-volume">Файл</span>
+                            </th>
+                            @foreach (var item in Model)
+                            {
+                                <td style="word-wrap:anywhere">
+                                    <span class="table_span-volume">
+                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
+                                        {
+                                             <div>
+                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                @if (isAdmin)
+                                                {
+                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                }
+                                            </div>
+                                        }
+                                    </span>
+                                </td>
+                            }
+                        </tr>
+                    </table>
+
+                        *@

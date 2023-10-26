@@ -5,6 +5,7 @@ using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -37,7 +38,7 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId)
         {
             return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.Find(x => x.ContractId == contractId)));
-        }      
+        }
 
         /// <summary>
         /// Выбор периода для заполнения материалов, на основе заполненного объема работ
@@ -169,7 +170,7 @@ namespace MvcLayer.Controllers
                         Period = periodViewModel.PeriodStart,
                     });
 
-                  
+
                     //model.Add(new MaterialViewModel
                     //{
                     //    Period = periodViewModel.PeriodStart,
@@ -219,14 +220,14 @@ namespace MvcLayer.Controllers
         {
             if (material is not null)
             {
-               
-                    var materialId = (int)_materialService.Create(_mapper.Map<MaterialDTO>(material));
 
-                    if (material?.AmendmentId is not null && material?.AmendmentId > 0)
-                    {
-                        _materialService.AddAmendmentToMaterial((int)material?.AmendmentId, materialId);
-                    }
-                
+                var materialId = (int)_materialService.Create(_mapper.Map<MaterialDTO>(material));
+
+                if (material?.AmendmentId is not null && material?.AmendmentId > 0)
+                {
+                    _materialService.AddAmendmentToMaterial((int)material?.AmendmentId, materialId);
+                }
+
                 return RedirectToAction("Details", "Contracts", new { id = material?.ContractId });
             }
             return View(material);
@@ -240,12 +241,12 @@ namespace MvcLayer.Controllers
                 {
                     _materialCostService.Create(item);
                 }
-               
+
                 return RedirectToAction("Details", "Contracts", new { id = material?.ContractId });
             }
 
             return RedirectToAction("Index", "Contracts");
-        }              
+        }
 
         public async Task<IActionResult> Delete(int? id)
         {
@@ -257,5 +258,25 @@ namespace MvcLayer.Controllers
             _materialService.Delete((int)id);
             return RedirectToAction(nameof(Index));
         }
+
+        public IActionResult GetCostDeviation()
+        {
+            var maxPeriod = _materialCostService.GetAll().MaxBy(x => x.Period).Period;
+            var minPeriod = _materialCostService.GetAll().MinBy(x => x.Period).Period;
+
+            List<DateTime> listDate = new List<DateTime>();
+            DateTime startDate = (DateTime)minPeriod;
+
+            while (startDate <= maxPeriod)
+            {
+                listDate.Add(startDate);
+                startDate = startDate.AddMonths(1);
+            }
+            
+            ViewBag.ListDate = listDate;
+
+            return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.GetAll()));
+        }
+
     }
 }

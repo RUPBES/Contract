@@ -113,9 +113,10 @@
             dataType: 'json',
             data: { id: $("#organizationNameSelect").val() },
             success: function (department) {
+                $("#departmentNameSelect").children().remove();
                 if (department.length == 0)
                     return;
-
+               
                 $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
                 $.each(department, function (r, emp) {
                     $("#departmentNameSelect").append('<option value="' + emp.id + '">' + emp.name + '</option>');

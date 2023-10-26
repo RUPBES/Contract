@@ -264,9 +264,15 @@
         <div class="form-group">
             <label asp-for="Сurrency" for="CurDC"></label>
             <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
-                <input asp-for="Сurrency" class="form-control" id="CurDC">
-            </div>
+                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>                
+                <select name="Сurrency" class="form-control js-chosen" id="CurDC">
+                    <option selected disabled>Выбрать валюту</option>
+                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                    {
+                        <option value="@item">@item</option>
+                    }
+                </select>
+            </div>            
         </div>
         <fieldset class="border rounded-1 p-3">
             <legend class="float-none w-auto px-3">Сроки</legend>

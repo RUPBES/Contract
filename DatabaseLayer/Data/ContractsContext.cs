@@ -17,6 +17,7 @@ public partial class ContractsContext : DbContext
     }
 
     public virtual DbSet<VContract> VContracts { get; set; }
+    public virtual DbSet<VContractEngin> VContractEngins { get; set; }
 
     #region DbSet
     public virtual DbSet<Act> Acts { get; set; }
@@ -643,7 +644,7 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.ChangeMaterialId).HasComment("ID измененных материалов");
 
             entity.Property(e => e.ContractId).HasComment("Контракт");
-                      
+
             entity.Property(e => e.IsChange).HasComment("изменено?");
 
             entity.HasOne(d => d.ChangeMaterial)
@@ -664,7 +665,7 @@ public partial class ContractsContext : DbContext
             entity.ToTable("MaterialCost", tb => tb.HasComment("стоимость материалов"));
 
             entity.Property(e => e.Period).HasColumnType("datetime");
-           
+
 
             entity.Property(e => e.IsFact).HasDefaultValueSql("0");
 
@@ -843,7 +844,7 @@ public partial class ContractsContext : DbContext
             entity.HasKey(e => e.Id);
 
             entity.ToTable("SWCost", tb => tb.HasComment("стоимость объема работ"));
-                       
+
             entity.Property(e => e.Period).HasColumnType("datetime");
             entity.Property(e => e.AdditionalCost)
                 .HasColumnType("money");
@@ -980,7 +981,7 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.IsChange).HasDefaultValueSql("0").HasComment("изменено?");
 
-           
+
 
             entity.Property(e => e.ServicePercent).HasComment("процент услуг");
 
@@ -1107,6 +1108,21 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.Сurrency).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<VContractEngin>(entity =>
+               {
+                   entity
+                       .HasNoKey()
+                       .ToView("vContractEngin");
+
+                   entity.Property(e => e.ContractPrice).HasColumnType("money");
+                   entity.Property(e => e.ContractTerm).HasColumnType("datetime");
+                   entity.Property(e => e.Date).HasColumnType("datetime");
+                   entity.Property(e => e.DateBeginWork).HasColumnType("datetime");
+                   entity.Property(e => e.DateEndWork).HasColumnType("datetime");
+                   entity.Property(e => e.EnteringTerm).HasColumnType("datetime");
+                   entity.Property(e => e.Number).HasMaxLength(100);
+                   entity.Property(e => e.Сurrency).HasMaxLength(50);
+               });
         #endregion
 
         OnModelCreatingPartial(modelBuilder);

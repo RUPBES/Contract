@@ -51,7 +51,7 @@ namespace MvcLayer.Controllers
             ViewBag.CurrentFilter = query;
 
             if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder, isEngin));
+                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder));
             else return View(_vContractService.GetPage(100, pageNum));
         }
     }

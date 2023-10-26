@@ -10,7 +10,7 @@
     string redirectAction = "GetByContractId";
     string redirectController = "Correspondences";
     var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
-
+    var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
 }
 <style>
     table > thead {
@@ -34,7 +34,7 @@
                     }
                     @if (@contract?.Id == null || @contract?.Id == 0)
                     {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />

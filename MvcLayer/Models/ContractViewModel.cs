@@ -94,7 +94,7 @@ namespace MvcLayer.Models
         /// является ли договор инжиниринговыми услугами
         /// </summary>
         [DisplayName("Договор инжиниринговых услуг?")]
-        public bool? IsEngineering { get; set; }
+        public bool IsEngineering { get; set; }
 
         /// <summary>
         /// является ли соглашением с филиалом

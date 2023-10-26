@@ -34,15 +34,6 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
         }
 
-        //public IActionResult ChoosePeriod(int contractId)
-        //{
-        //    if (contractId > 0)
-        //    {
-        //        return View(new PeriodChooseViewModel { ContractId = contractId });
-        //    }            
-        //    return View();
-        //}
-
         public IActionResult ChoosePeriod(int contractId)
         {
             if (contractId > 0)
@@ -86,6 +77,7 @@ namespace MvcLayer.Controllers
                 return RedirectToAction("Index", "Contracts");
             }
         }
+
         public IActionResult CreatePeriods(PeriodChooseViewModel paymentViewModel)
         {
             if (paymentViewModel is not null)
@@ -155,6 +147,25 @@ namespace MvcLayer.Controllers
             }
 
             return RedirectToAction("Index", "Contracts");
+        }
+
+        public IActionResult GetPayableCash()
+        {
+            var maxPeriod = _payment.GetAll().MaxBy(x => x.Period).Period;
+            var minPeriod = _payment.GetAll().MinBy(x => x.Period).Period;
+
+            List<DateTime> listDate = new List<DateTime>();
+            DateTime startDate = (DateTime)minPeriod;
+
+            while (startDate <= maxPeriod)
+            {
+                listDate.Add(startDate);
+                startDate = startDate.AddMonths(1);
+            }
+
+            ViewBag.ListDate = listDate;
+
+            return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.GetAll()));
         }
     }
 }

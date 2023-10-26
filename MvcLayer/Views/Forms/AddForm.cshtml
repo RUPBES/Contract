@@ -9,12 +9,15 @@
         <div class="dm-cell">
             <div class="dm-modal" style="width:850px;">
                 <div class="top-modal-block">
-                    <div class="top-modal-left">
-                        <div class="pl-left">
-                        </div>
-                    </div>
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Home" asp-action="Index" class="close-btn"></a>
+                    @if (Model?.ContractId != null && Model?.ContractId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line">
                 <form asp-action="Create" class="row" enctype="multipart/form-data">

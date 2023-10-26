@@ -1,0 +1,166 @@
+﻿@model IEnumerable<MvcLayer.Models.MaterialViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
+
+@{
+    ViewData["Title"] = "Мониторинг отклонения стоимости по материалам";
+
+    List<DateTime> listDate = ViewBag.ListDate;
+}
+
+<style>
+    table {
+        text-align: center;
+    }
+
+    .wrapper-table {
+        width: 65vw;
+        height: 75vh;
+        overflow: scroll;
+    }
+
+        .wrapper-table tbody, td, tfoot, th, thead, tr {
+            border-color: #373b3e;
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .wrapper-table table td:first-child {
+            position: sticky;
+            z-index: 10;
+            left: 0;
+        }
+
+        .wrapper-table table th:first-child {
+            position: sticky;
+            z-index: 20;
+            left: 0;
+            top: 0;
+        }
+
+        .wrapper-table thead {
+            position: sticky;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            opacity: 1;
+            border-color: #373b3e;
+        }
+
+    .second-td-elem {
+        z-index: 5 !important;
+        box-shadow: inset 0 0 0 9999px #bdbac3 !important;
+        background-color: grey !important;
+    }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <div style=" overflow-x:scroll;">
+                    <table class="table table-bordered table-striped table-success border-white table-sm">
+                        <thead class="table-dark text-center text-white align-top">
+                            <tr>
+                                <th rowspan="3">
+                                    Номер и дата договора
+                                </th>
+                                <th rowspan="3">
+                                    Наименование объекта
+                                </th>
+                                <th rowspan="3">
+                                    Сметная стоимость материалов по договору
+                                </th>
+                                <th colspan="@(listDate.Count*3)">в том числе</th>
+                                <th rowspan="3">
+                                    Отклонение всего
+                                </th>
+                            </tr>
+                            <tr>
+                                @foreach (var item in listDate)
+                                {
+                                    <th colspan="3">
+                                        @item.ToString("MMMM yyyy")
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                @foreach (var item in listDate)
+                                {
+                                    <th>
+                                        План
+                                    </th>
+                                    <th>
+                                        Факт
+                                    </th>
+                                    <th>
+                                        Отклонение
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var contract = @Contract.GetById((int)item?.ContractId);
+                                var cost = item.MaterialCosts;
+                                var deviationTotal = 0M;
+                                <tr>
+                                    <td>
+                                        @contract.Number <br>
+                                        @contract.Date
+                                    </td>
+                                    <td>
+                                        @contract.NameObject
+                                    </td>
+                                    <td>
+                                        @* @ScopeWork.Find(x=>x.ContractId == item.ContractId && x.IsOwnForces != true).LastOrDefault().SWCosts.Where(x). *@
+                                    </td>
+
+                                    @foreach (var item2 in listDate)
+                                    {
+                                        <td>
+                                            @{
+                                                var resultPlan = cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2) != null ?
+                                                cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2).Price : null;
+                                            }
+                                            @resultPlan
+                                        </td>
+                                        <td>
+                                            @{
+                                                var resultFact = cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2) != null ?
+                                                cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2).Price : null;
+                                            }
+                                            @resultFact
+                                        </td>
+                                        <td>
+                                            @{
+                                                var deviation = resultPlan - resultFact;
+                                                deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                            }
+                                            @deviation
+                                        </td>
+                                    }
+
+                                    <td>
+                                        @deviationTotal
+                                    </td>
+                                    @*  <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                </td> *@
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

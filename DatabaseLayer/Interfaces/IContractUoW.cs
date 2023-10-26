@@ -49,6 +49,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<TypeWork> TypeWorks { get; }
 
         IViewRepository<VContract> vContracts { get; }
+        IViewRepository<VContractEngin> vContractEngins { get; }
         IRepository<Log> Logs { get; }
 
         void Save();

@@ -16,6 +16,7 @@ namespace MvcLayer.Controllers
     {
         private readonly IContractOrganizationService _contractOrganizationService;
         private readonly IVContractService _vContractService;
+        private readonly IVContractEnginService _vContractEnginService;
         private readonly IContractService _contractService;
         private readonly IOrganizationService _organization;
         private readonly IEmployeeService _employee;
@@ -24,7 +25,8 @@ namespace MvcLayer.Controllers
         private readonly IMapper _mapper;
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork, IVContractService vContractService)
+            IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork, 
+            IVContractService vContractService, IVContractEnginService vContractEnginService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -33,11 +35,17 @@ namespace MvcLayer.Controllers
             _contractOrganizationService = contractOrganizationService;
             _typeWork = typeWork;
             _vContractService = vContractService;
+            _vContractEnginService = vContractEnginService;
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "", bool isEngin = false)
+        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
         {
+            if(pageNum < 1)
+            {
+                pageNum = 1;
+            }
+            ViewBag.IsEngineering = false;
             ViewBag.CurrentSort = sortOrder;
             ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
             ViewBag.NameObjectSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
@@ -51,8 +59,29 @@ namespace MvcLayer.Controllers
             ViewBag.CurrentFilter = query;
 
             if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder, isEngin));
+                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder));
             else return View(_vContractService.GetPage(100, pageNum));
+        }
+
+        // GET: Contracts of Engineerings
+        public async Task<IActionResult> Engineerings(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        {
+            ViewBag.IsEngineering = true;
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
+            ViewBag.NameObjectSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+            ViewBag.ClientSortParm = sortOrder == "client" ? "clientDesc" : "client";
+            ViewBag.GenSortParm = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+            ViewBag.EnterSortParm = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+            if (query != null)
+            { }
+            else
+            { query = currentFilter; }
+            ViewBag.CurrentFilter = query;
+
+            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
+                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum, query, sortOrder));
+            else return View("Index", _vContractEnginService.GetPage(100, pageNum));
         }
 
         // GET: Contracts/Details/5
@@ -292,7 +321,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Number,SubContractId,AgreementContractId,Date,EnteringTerm,ContractTerm,DateBeginWork,DateEndWork,Сurrency,ContractPrice,NameObject,Client,FundingSource,IsSubContract,IsEngineering,IsAgreementContract")] ContractViewModel contract)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Number,SubContractId,AgreementContractId,Date,EnteringTerm,ContractTerm,DateBeginWork,DateEndWork,Сurrency,ContractPrice,NameObject,Client,FundingSource")] ContractViewModel contract)
         {
             if (id != contract.Id)
             {

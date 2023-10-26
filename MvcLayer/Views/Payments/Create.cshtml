@@ -32,7 +32,14 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract.Id" class="close-btn"></a>
+                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                    }
+                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line" />
                 <form asp-action=@actionName class="row">

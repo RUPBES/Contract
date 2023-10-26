@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BusinessLayer.Models
+﻿namespace DatabaseLayer.Models
 {
-    public class VContractDTO
+    public class VContractEngin
     {
         public int Id { get; set; }
 
@@ -14,18 +8,10 @@ namespace BusinessLayer.Models
 
         public string? ProcedureName { get; set; }
 
-        public string? SignatoryEmp { get; set; }
-
-        public string? ResponsibleEmp { get; set; }
-
         public string? GenContractor { get; set; }
 
         public string? Client { get; set; }
-        public bool IsEngineering { get; set; }
-
-        public int? SubContractId { get; set; }
-
-        public int? AgreementContractId { get; set; }
+        public bool? IsEngineering { get; set; }
 
         public DateTime? Date { get; set; }
 

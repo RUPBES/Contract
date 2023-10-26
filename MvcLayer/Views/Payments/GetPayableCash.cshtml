@@ -1,0 +1,196 @@
+﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
+    List<DateTime> listDate = ViewBag.ListDate;
+}
+<style>
+    table {
+        text-align: center;
+    }
+
+    .wrapper-table {
+        width: 88vw;
+        height: 75vh;
+        overflow: scroll;
+    }
+
+        .wrapper-table tbody, td, tfoot, th, thead, tr {
+            border-color: #373b3e;
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .wrapper-table table td:first-child {
+            position: sticky;
+            z-index: 10;
+            left: 0;
+        }
+
+        .wrapper-table table th:first-child {
+            position: sticky;
+            z-index: 20;
+            left: 0;
+            top: 0;
+        }
+
+        .wrapper-table thead {
+            position: sticky;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            opacity: 1;
+            border-color: #373b3e;
+        }
+
+    .second-td-elem {
+        z-index: 5 !important;
+        box-shadow: inset 0 0 0 9999px #bdbac3 !important;
+        background-color: grey !important;
+    }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="min-width:90vw;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <div class="wrapper-table">
+                    <table class="table table-bordered table-striped table-warning table-sm">
+                        <thead class="table-dark text-center text-white align-top" style="position:sticky">
+                            <tr>
+                                <th rowspan="2">
+                                    Номер и дата договора
+                                </th>
+                                <th rowspan="2">
+                                    Наименование объекта
+                                </th>
+                                <th rowspan="2">
+                                    Заказчик
+                                </th>
+                                <th rowspan="2">
+                                    Генподрядчик (филиал-исполнитель по приказу)
+                                </th>
+                                <th rowspan="2">
+                                    Субподрядчик (филиал-исполнитель по приказу)
+                                </th>
+                                <th rowspan="2">
+                                    Сроки выполнения работ
+                                </th>
+                                <th rowspan="2">
+                                    Срок ввода
+                                </th>
+                                <th rowspan="2">
+                                    Валюта расчетов
+                                </th>
+                                <th rowspan="2">
+                                    Контракная договорная цена, с учетом НДС
+                                </th>
+                                <th rowspan="2">
+                                    Остаток по выполнению от стоимости контрактной цены
+                                </th>
+                                <th rowspan="2">
+                                    Объем на текущий год
+                                </th>
+                                <th rowspan="2">
+                                    Фактическое выполнение по справке С-3а, в т.ч.
+                                </th>
+                                @foreach (var item in listDate)
+                                {
+                                    <th colspan="2">
+                                        @item.ToString("MMMM yyyy")
+                                    </th>
+                                }
+                            </tr>
+
+                            <tr>
+                                @foreach (var item in listDate)
+                                {
+                                    <th>
+                                        к оплате
+                                    </th>
+                                    <th>
+                                        из них на счет РУП "БЭС"-УКХ"
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody style="height:70vh;">
+                            @foreach (var item in Model)
+                            {
+                                var contract = @Contract.GetById((int)item?.ContractId);
+                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsClient == true);
+                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsGenContractor == true);
+                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
+
+                                <tr>
+                                    <td>
+                                        @contract?.Number <br>
+                                        @contract?.Date?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @contract?.NameObject
+                                    </td>
+                                    <td>
+                                        @client?.Organization.Name
+                                    </td>
+                                    <td>
+                                        @genContractor?.Organization.Name
+                                    </td>
+                                    <td>
+                                        @subContractor?.Organization.Name
+                                    </td>
+                                    <td>
+                                        @contract?.DateBeginWork?.ToShortDateString() - @contract?.DateEndWork?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @contract?.EnteringTerm?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @contract?.Сurrency
+                                    </td>
+                                    <td>
+                                        @contract?.ContractPrice?.ToString("0.00")
+                                    </td>
+                                    <td>
+                                        jc
+                                    </td>
+                                    <td>
+                                        jd
+                                    </td>
+                                    <td>
+                                        jd
+                                    </td>
+
+                                    @foreach (var item2 in listDate)
+                                    {
+                                        <td>
+                                            @{
+                                                var resultPlan = item.Period?.Date == item2 && item.Period?.Date != null ?
+                                                item.PaySum : null;
+                                            }
+                                            @resultPlan?.ToString("0.00")
+                                        </td>
+                                        <td>
+                                            @{
+                                                var resultFact = item.Period?.Date == item2 && item.Period?.Date != null ?
+                                                item.PaySumForRupBes : null;
+                                            }
+                                            @resultFact?.ToString("0.00")
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,7 +4,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Добавление объема работ";
     bool hasScope = false;
     // ищем есть ли изменения, выбтраем последние. если изменения есть то ID последнего помечаем что изменяем
     var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
@@ -40,74 +40,98 @@
         margin: 0 auto 30px auto;
     }
 </style>
-@if (hasScope)
-{
-    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-        <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
-        <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
 
-        <div class="form-group col-12">
-            <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
-            <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
-            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
-        </div>
-        <div id="chooseAmendment" class="row" hidden>
-            <div class="form-group">
-                <label class="control-label">Выбрать доп.соглашение</label>
-                <select name="AmendmentId" id="AmendId" class="form-control select">
-                    <option disabled selected>Выберите</option>
-                    @foreach (AmendmentDTO org in Amendment.GetAll())
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" />
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (Model?.ContractId != null && Model?.ContractId > 0)
                     {
-                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
                     }
-                </select>
-            </div>
-            @if (Model?.IsOwnForces == true)
-            {
-                <input asp-for="PeriodStart" type="datetime" hidden value="@Model.PeriodStart"/>
-                <input asp-for="PeriodEnd" type="datetime" hidden value="@Model.PeriodEnd" />
-            }
-            @if (Model?.IsOwnForces == false)
-            {
-                <div class="row mt-3" id="date-box" hidden>
-                    <div class="form-group col-6 mb-3">
-                        <label for="amendCheck1">Укажите начало периода</label>
-                        <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
-                    </div>
-                    <div class="form-group col-6 mb-3">
-                        <label for="amendCheck2">Укажите окончание периода</label>
-                        <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
-                    </div>
-                    
+                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
                 </div>
-            }
-            <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
-        </div>
-    </form>
-}
+                <hr class="modal-line" />
 
-@if (!hasScope)
-{
-    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-        <h4>Выбор периода объема работ</h4>
-        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-        <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
-        @* <div class="form-group col-12 mb-3">
-    <label for="ownForceId">Объем работ производится собственными силами?</label>
-    <input type="checkbox" id="ownForceId" name="IsOwnForces"value="false" />
-    </div> *@
-        <div class="form-group col-6 mb-3">
-            <label for="amendCheck1">Укажите начало периода</label>
-            <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
+
+                @if (hasScope)
+                {
+                    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                        <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
+                        <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
+
+                        <div class="form-group col-12">
+                            <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
+                            <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+                            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+                        </div>
+                        <div id="chooseAmendment" class="row" hidden>
+                            <div class="form-group">
+                                <label class="control-label">Выбрать доп.соглашение</label>
+                                <select name="AmendmentId" id="AmendId" class="form-control select">
+                                    <option disabled selected>Выберите</option>
+                                    @foreach (AmendmentDTO org in Amendment.GetAll())
+                                    {
+                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    }
+                                </select>
+                            </div>
+                            @if (Model?.IsOwnForces == true)
+                            {
+                                <input asp-for="PeriodStart" type="datetime" hidden value="@Model.PeriodStart" />
+                                <input asp-for="PeriodEnd" type="datetime" hidden value="@Model.PeriodEnd" />
+                            }
+                            @if (Model?.IsOwnForces == false)
+                            {
+                                <div class="row mt-3" id="date-box" hidden>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="amendCheck1">Начало периода</label>
+                                        <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
+                                    </div>
+                                    <div class="form-group col-6 mb-3">
+                                        <label for="amendCheck2">Окончание периода</label>
+                                        <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
+                                    </div>
+
+                                </div>
+                            }
+                            <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
+                        </div>
+                    </form>
+                }
+
+                @if (!hasScope)
+                {
+                    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                        <h4>Выбор периода объема работ</h4>
+                        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                        <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
+                        @* <div class="form-group col-12 mb-3">
+                    <label for="ownForceId">Объем работ производится собственными силами?</label>
+                    <input type="checkbox" id="ownForceId" name="IsOwnForces"value="false" />
+                    </div> *@
+                        <div class="form-group col-6 mb-3">
+                            <label for="amendCheck1">Укажите начало периода</label>
+                            <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
+                        </div>
+                        <div class="form-group col-6 mb-3">
+                            <label for="amendCheck2">Укажите окончание периода</label>
+                            <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
+                        </div>
+                        <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
+                    </form>
+                }
+
+            </div>
         </div>
-        <div class="form-group col-6 mb-3">
-            <label for="amendCheck2">Укажите окончание периода</label>
-            <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
-        </div>
-        <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
-    </form>
-}
+    </div>
+</div>
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -126,21 +150,7 @@
             }
         });
 
-        // $("#ownForceId").on("change", function () {
-
-        //     let isOwn = $(this).prop('checked');
-
-        //     if (isOwn === false) {
-        //         $(this).attr("value", "false")
-        //     }
-        //     else {
-        //         $(this).attr("value", "true")
-        //     }
-
-        // });
-
         $("#amendCheck").on("change", function () {
-
             let isChange = $(this).prop('checked');
             let besInput = document.querySelector("#chooseAmendment");
 
@@ -160,12 +170,6 @@
         });
 
         $(document).ready(function () {
-            // $('.js-chosen').chosen({
-            //     width: '100%',
-            //     no_results_text: 'Совпадений не найдено',
-            //     placeholder_text_single: 'Выберите'
-            // });
-                       
             kendo.culture("by-BY");
             $("input.monthYearPickers").kendoDatePicker({
                 value: new Date(),

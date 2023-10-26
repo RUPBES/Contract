@@ -2,11 +2,7 @@
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using DatabaseLayer.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DatabaseLayer.Repositories.ViewRepo;
 
 namespace DatabaseLayer
 {
@@ -58,6 +54,7 @@ namespace DatabaseLayer
         private PrepaymentAmendmentRepository prepaymentAmendmentRepository;
 
         private VContractRepository vContractRepository;
+        private VContractEnginRepository vContractEnginRepository;
         private LogRepository logRepository;
         #endregion
         public ContractUoW()
@@ -67,6 +64,17 @@ namespace DatabaseLayer
 
         #region views
 
+        public IViewRepository<VContractEngin> vContractEngins
+        {
+            get
+            {
+                if (vContractEnginRepository is null)
+                {
+                    vContractEnginRepository = new VContractEnginRepository(_context);
+                }
+                return vContractEnginRepository;
+            }
+        }
         public IViewRepository<VContract> vContracts
         {
             get

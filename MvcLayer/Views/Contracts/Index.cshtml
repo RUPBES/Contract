@@ -8,14 +8,30 @@
         <h1 style="text-align: center;">Список договоров</h1>
         <div class="contracts-list">
             <p>
-                <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
-                @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
+                @if (ViewBag.IsEngineering)
                 {
-                    <form style="search-form">
-                        <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
-                        <input type="submit" value="Найти" />
-                    </form>
+                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">Новый договор на оказание инжиниринговых услуг</button>
+                    @using (Html.BeginForm("Engineerings", "Contracts", FormMethod.Get))
+                    {
+                        <form style="search-form">
+                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                            <input type="submit" value="Найти" />
+                        </form>
+                    }
                 }
+                @if (!ViewBag.IsEngineering)
+                {
+                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
+                    @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
+                    {
+                        <form style="search-form">
+                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                            <input type="submit" value="Найти" />
+                        </form>
+                    }
+
+                }
+
             </p>
         </div>
         <div class="full-width">
@@ -36,12 +52,12 @@
                         <th>
                             <span class="table_span-customer">
                                 @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayCustomer", @class=""})
-                            </span>                            
+                            </span>
                         </th>
                         <th>
                             <span class="table_span-contractor">
                                 @Html.ActionLink("Генподрядчик", "Index", new { sortOrder = ViewBag.GenSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayGeneralContractor", @class=""})
-                            </span>                           
+                            </span>
                         </th>
                         <th>
                             <span class="table_span-deadlines">
@@ -111,10 +127,10 @@
                                         @item?.PaymentСonditionsAvans
                                     </a>
                                     @* <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
-                                        Аванс
-                                    </a> *@
-                                    <br/>
-                                    <br/>
+                            Аванс
+                            </a> *@
+                                    <br />
+                                    <br />
                                     <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
                                         @item?.PaymentСonditionsRaschet@*  Оплата *@
                                     </a>
@@ -123,7 +139,7 @@
                             @*Материалы*@
                             <td>
                                 <span class="table_span-material">
-                                   @*  @Html.ActionLink("Материалы P15","","") *@
+                                    @*  @Html.ActionLink("Материалы P15","","") *@
                                     <span class="icon link_to_page">
                                         <a asp-action="GetByContractId" asp-controller="Material" asp-route-id="@item?.Id"></a>
                                     </span>
@@ -143,7 +159,9 @@
                             </td>
                             @*Контрактная цена*@
                             <td>
-                                <span class="table_span-contractprice">?</span>
+                                <span class="table_span-contractprice">
+                                    @item.ContractPrice
+                                </span>
                             </td>
                             @*Выполнено на начало года*@
                             <td>
@@ -174,31 +192,50 @@
                 </tbody>
             </table>
         </div>
-    </div>
-    <div class="pages">
-        @{
-            if (Model.PageViewModel.HasPreviousPage)
-            {
-                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
-            }
-            else
-            {
-                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
-            }
-        }
-        <b> @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages</b>
-        @{
-            if (Model.PageViewModel.HasNextPage)
-            {
-                <a class="btn btn-primary" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
-            }
-            else
-            {
-                <a class="btn btn-primary disabled" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
-            }
-        }
-    </div>
+    </div>   
+    <nav aria-label="Page navigation example" style="margin-top:10px;">
+        <ul class="pagination justify-content-center">
+            <li class="page-item previous_btn">
+                @{
+                    @if (Model.PageViewModel.PageNumber > 1)
+                    {
+                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+                    }
+                    @if (Model.PageViewModel.PageNumber <= 1)
+                    {
+                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)" tabindex="-1" aria-disabled="true">&lt;</a>
+                    }
+                }
 
+            </li>
+            @{
+                int counter = 1;
+                int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
+                for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
+                {
+                    <li class="page-item pag_btn_num"><a class="page-link " asp-action="Index" asp-route-pageNum="@i" value="@i">@i</a></li>
+                    if (counter == 5)
+                    {
+                        counter = 1;
+                        break;
+                    }
+                }
+            }
+
+            <li class="page-item next_btn">
+                @{
+                    @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
+                    {
+                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+                    }
+                    else
+                    {
+                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)" aria-disabled="true">&gt;</a>
+                    }
+                }
+            </li>
+        </ul>
+    </nav>
 }
 
 @section Scripts {
@@ -235,7 +272,7 @@
                 elementArrayNumberanddate.classList.add('up')
             } else {
                 elementArrayNumberanddate.classList.remove("down")
-                elementArrayNumberanddate.classList.remove("up")            
+                elementArrayNumberanddate.classList.remove("up")
             }
 
             if (actualUrl.includes('nameObjectDesc')) {
@@ -284,6 +321,10 @@
 
         };
 
+        ////// Pagination
+        paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
+        //////ENd pagination
+
         ///// вызываем PARTIAL VIEW для создания новой организации
         $("#addOrganization").click(function (e) {
             e.preventDefault();
@@ -330,6 +371,6 @@
                 })
             });
 
-        });   
+        });
     </script>
 }

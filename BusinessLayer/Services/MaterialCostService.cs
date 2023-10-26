@@ -109,5 +109,10 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(LogLevel.Warning, $"not update material costs, object is null", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
             }
         }
+
+        //public (DateTime, DateTime) GetPeriodRange()
+        //{
+            
+        //}
     }
 }
