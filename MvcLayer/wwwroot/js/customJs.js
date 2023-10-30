@@ -63,3 +63,15 @@ function paginationFunc(page_number, total_page) {
         next_pag_btn.classList.remove("disabled");
     }
 }
+
+function addition_nav_bar() {
+    let btn_left_bar = document.querySelector('.link_add_emp');
+    let new_emp = document.querySelector('.new_emp');
+    let btn_panel_search = document.querySelector('.btn_panel_search');
+
+    btn_left_bar.addEventListener('click', () => {
+        btn_panel_search.classList.toggle('panel_active');
+        btn_left_bar.classList.toggle('panel_active');
+        new_emp.classList.toggle('btn_new_emp_active');
+    });
+}

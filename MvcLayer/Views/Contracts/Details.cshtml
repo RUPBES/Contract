@@ -1076,6 +1076,10 @@
                                     }
                                     @if (!isEngineering)
                                     {
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" >Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id" >Авансы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id" >Акт ввода</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-Id="@Model?.Id">Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@Model?.Id">Форма С-3а</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@Model?.Id">Стоимость материалов</a>
@@ -1084,9 +1088,6 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@Model?.Id">Акт приостановки/возобновления</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">ПСД</a>
                                     }
-
-                                   
-
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -1122,15 +1123,13 @@
                                     @if (isEngineering)
                                     {
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
-                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-contractId="@Model?.Id">+ Акт ввода</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-contractId="@Model?.Id">+ Переписка с заказчиком</a>
                                     }
                                 </div>
-                            </div>                           
-
-
-                        </div>                       
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <span>
@@ -1238,23 +1237,27 @@
                 {
                     var dropdownid1 = "Dropdown" + contractBranch.Id;
                     var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                    <tr style="background-color: lightgoldenrodyellow">
+                <tr style="background-color: #ccf3ff">
                         <td>
                             <div class="table_span-action">
                                 <div class="dropdown">
-                                    <button onclick="ShowContent(@dropdownid1)" class="icon view_list_pages dropbtn"></button>
-                                    <div id="@dropdownid1" class="dropdown-content">
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch.Id">Oбъем работ</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch.Id">Авансы</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractBranch.Id">Услуги генподряда</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch.Id">Стоимость материалов</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch.Id">Оплату договора</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@contractBranch.Id">Форму С-3а</a>
+                                    <span class="icon view_list_pages dropdown-toggle">
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id">Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id">Авансы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-Id="@contractBranch?.Id">Переписка с заказчиком</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@contractBranch?.Id">Форма С-3а</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractBranch?.Id">Услуги генподряда</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch?.Id">Стоимость материалов</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id">Оплату договора</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@contractBranch?.Id">Акт приостановки/возобновления</a>
                                     </div>
                                 </div>
                                 <div class="dropdown">
-                                    <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(@dropdownid2)"></button>
-                                    <div id="@dropdownid2" class="dropdown-content">
+                                    <span class="icon view_to_add_pages dropdown-toggle">
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch.Id">+ Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractBranch.Id">+ Авансы</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@contractBranch.Id">+ Услуги генподряда</a>
@@ -1364,24 +1367,27 @@
                 {
                     var dropdownid3 = "Dropdown" + contractSub.Id;
                     var dropdownid4 = "Dropdown_" + contractSub.Id;
-                    <tr style="background-color: lightgoldenrodyellow">
+                    <tr style="background-color: #d8f3d8">
                         <td>
 
                             <div class="table_span-action">
                                 <div class="dropdown">
-                                    <button onclick="ShowContent(@dropdownid3)" class="icon view_list_pages dropbtn"></button>
-                                    <div id="@dropdownid3" class="dropdown-content">
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractSub.Id">Oбъем работ</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub.Id">Авансы</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractSub.Id">Услуги генподряда</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractSub.Id">Стоимость материалов</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractSub.Id">Оплату договора</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-Id="@contractSub.Id">Форму С-3а</a>
+                                    <span class="icon view_list_pages dropdown-toggle">
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractSub?.Id">Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id">Авансы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-Id="@contractSub?.Id">Переписка с заказчиком</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@contractSub?.Id">Форма С-3а</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractSub?.Id">Услуги генподряда</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractSub?.Id">Стоимость материалов</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractSub?.Id">Оплату договора</a>
                                     </div>
                                 </div>
                                 <div class="dropdown">
-                                    <button class="icon view_to_add_pages dropbtn" role="button" onclick="ShowContent(@dropdownid4)"></button>
-                                    <div id="@dropdownid4" class="dropdown-content">
+                                    <span class="icon view_to_add_pages dropdown-toggle">
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractSub.Id">+ Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractSub.Id">+ Авансы</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@contractSub.Id">+ Услуги генподряда</a>
@@ -1396,7 +1402,7 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractSub.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractSub.Id">+ ПСД</a>
                                     </div>
-                                </div>
+                                </div>  
                             </div>
                         </td>
                         <td>
@@ -1482,8 +1488,7 @@
                         </td>
                         <td>
                             <span class="table_span-act-entering">
-                                <img id="SMR-detail" src="~/images/Icon/rofl.png" width="60"
-                                     height="60" alt="Подробнее">
+                                <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
                             </span>
                         </td>
                     </tr>
@@ -1508,7 +1513,7 @@
                 data: { id: id },
                 success: function (result) {
                     $('#dialogContent').html(result);
-                    $('#modDialog').modal({backdrop: false});
+                    $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('toggle');
                 },
                 error: function (result) {
@@ -1572,12 +1577,12 @@
         //            $('#modal-placeholder > .modal').modal('show');
         //        });
         //    });
-        //});        
+        //});
     </script>
     @if (ViewBag.Message != null)
     {
         <script>
             alert("@Html.Raw(ViewBag.Message)");
         </script>
-    }       
+    }
 }
