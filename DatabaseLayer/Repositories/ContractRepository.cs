@@ -51,7 +51,7 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.SelectionProcedures)
                 .Include(c => c.Acts)
                 .Include(c => c.CommissionActs)
-                .Include(c => c.ScopeWorks)
+                .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(c => c.FormC3as)
                 .ToList();
         }
@@ -67,7 +67,7 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.SelectionProcedures)
                 .Include(c => c.Acts)
                 .Include(c => c.CommissionActs)
-                .Include(c => c.ScopeWorks)
+                .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(c => c.FormC3as)
                 .FirstOrDefault(x=>x.Id == id);
             }
