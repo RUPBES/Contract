@@ -13,7 +13,7 @@
                     <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">Новый договор на оказание инжиниринговых услуг</button>
                     @using (Html.BeginForm("Engineerings", "Contracts", FormMethod.Get))
                     {
-                        <form style="search-form">
+                        <form style="search-form" method="get">
                             <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
                             <input type="submit" value="Найти" />
                         </form>
@@ -24,8 +24,8 @@
                     <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
                     @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
                     {
-                        <form style="search-form">
-                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                        <form style="search-form" method="get">
+                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
                             <input type="submit" value="Найти" />
                         </form>
                     }
@@ -41,29 +41,33 @@
                         <th><span class="table_span-num">          №                            </span></th>
                         <th>
                             <span class="table_span-numberanddate">
-                                @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNumberanddate", @class="bi bi-arrow-bar-up"})
-                                <i class="bi-chevron-up"></i>
+                                Номер и дата договора
+                                @Html.ActionLink(" ", "Index", new { sortOrder = ViewData["DateSortParm"], currentFilter=ViewData["CurrentFilter"] } , new {id="arrayNumberanddate", @class="up"})
                             </span>
                         </th>
                         <th>
                             <span class="table_span-nameobject">
-                                @Html.ActionLink("Наименование объекта", "Index", new { sortOrder = ViewBag.NameObjectSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNameObject", @class=""})
-                                <i class="bi-chevron-up"></i>
+                                Наименование объекта
+                            @Html.ActionLink("", "Index", new { sortOrder = ViewData["NameObjectSortParm"], currentFilter=ViewData["CurrentFilter"] } , new {id="arrayNameObject", @class="up"})
+                                
                             </span>
                         </th>
                         <th>
                             <span class="table_span-customer">
-                                @Html.ActionLink("Заказчик", "Index", new { sortOrder = ViewBag.ClientSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayCustomer", @class=""})
+                                Заказчик
+                            @Html.ActionLink("", "Index", new { sortOrder = ViewData["ClientSortParm"], currentFilter=ViewData["CurrentFilter"] }, new {id="arrayCustomer", @class="up"})
                             </span>
                         </th>
                         <th>
                             <span class="table_span-contractor">
-                                @Html.ActionLink("Генподрядчик", "Index", new { sortOrder = ViewBag.GenSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayGeneralContractor", @class=""})
+                                Генподрядчик
+                            @Html.ActionLink("", "Index", new { sortOrder = ViewData["GenSortParm"], currentFilter=ViewData["CurrentFilter"] }, new {id="arrayGeneralContractor", @class="up"})
                             </span>
                         </th>
                         <th>
                             <span class="table_span-deadlines">
-                                @Html.ActionLink("Cроки", "Index", new { sortOrder = ViewBag.EnterSortParm, currentFilter=ViewBag.CurrentFilter }, new {id="arrayTerms", @class=""})
+                                Cроки
+                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewData["EnterSortParm"], currentFilter=ViewData["CurrentFilter"] }, new {id="arrayTerms", @class="up"})
                             </span>
                         </th>
                         <th><span class="table_span-conditions">    Условия оплаты              </span></th>
@@ -201,11 +205,22 @@
                 @{
                     @if (Model.PageViewModel.PageNumber > 1)
                     {
-                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+                        <a class="page-link" asp-action="Index" 
+                        asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                        asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                        &lt;
+                        </a>
                     }
                     @if (Model.PageViewModel.PageNumber <= 1)
                     {
-                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)" tabindex="-1" aria-disabled="true">&lt;</a>
+                        <a class="page-link" asp-action="Index" 
+                        asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                        asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                        tabindex="-1" aria-disabled="true">
+                        &lt;
+                        </a>
                     }
                 }
 
@@ -215,7 +230,11 @@
                 int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
                 for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
                 {
-                    <li class="page-item pag_btn_num"><a class="page-link " asp-action="Index" asp-route-pageNum="@i" value="@i">@i</a></li>
+                    <li class="page-item pag_btn_num"><a class="page-link " asp-action="Index" 
+                    asp-route-pageNum="@i"
+               asp-route-sortOrder="@ViewData["CurrentSort"]"
+               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                    value="@i">@i</a></li>
                     if (counter == 5)
                     {
                         counter = 1;
@@ -228,11 +247,22 @@
                 @{
                     @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
                     {
-                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+                        <a class="page-link" asp-action="Index" 
+                        asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+               asp-route-sortOrder="@ViewData["CurrentSort"]"
+               asp-route-currentFilter="@ViewData["CurrentFilter"]">
+               &gt;
+               </a>
                     }
                     else
                     {
-                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)" aria-disabled="true">&gt;</a>
+                        <a class="page-link" asp-action="Index" 
+                        asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+               asp-route-sortOrder="@ViewData["CurrentSort"]"
+               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                        aria-disabled="true">
+                        &gt;
+                        </a>
                     }
                 }
             </li>
@@ -268,59 +298,41 @@
 
             if (actualUrl.includes('dateDesc')) {
                 elementArrayNumberanddate.classList.remove("up")
+                elementArrayNumberanddate.classList.add("up-down-active")
                 elementArrayNumberanddate.classList.add('down')
-            } else if (actualUrl.includes('date')) {
-                elementArrayNumberanddate.classList.remove("down")
-                elementArrayNumberanddate.classList.add('up')
-            } else {
-                elementArrayNumberanddate.classList.remove("down")
-                elementArrayNumberanddate.classList.remove("up")
-            }
-
+            } else if (actualUrl.includes('date')) {             
+                elementArrayNumberanddate.classList.add("up-down-active")                
+            }else 
             if (actualUrl.includes('nameObjectDesc')) {
                 elementArrayNameObject.classList.remove("up")
+                elementArrayNameObject.classList.add("up-down-active")
                 elementArrayNameObject.classList.add('down')
             } else if (actualUrl.includes('nameObject')) {
-                elementArrayNameObject.classList.remove("down")
-                elementArrayNameObject.classList.add('up')
-            } else {
-                elementArrayNameObject.classList.remove("down")
-                elementArrayNameObject.classList.remove("up")
-            }
-
+                elementArrayNameObject.classList.add('up-down-active')
+            } 
+            else 
             if (actualUrl.includes('clientDesc')) {
                 elementArrayCustomer.classList.remove("up")
+                elementArrayCustomer.classList.add("up-down-active")
                 elementArrayCustomer.classList.add('down')
             } else if (actualUrl.includes('client')) {
-                elementArrayCustomer.classList.remove("down")
-                elementArrayCustomer.classList.add('up')
-            } else {
-                elementArrayCustomer.classList.remove("down")
-                elementArrayCustomer.classList.remove("up")
-            }
-
+                elementArrayCustomer.classList.add('up-down-active')
+            } 
+            else 
             if (actualUrl.includes('genContractorDesc')) {
                 elementArrayGeneralContractor.classList.remove("up")
+                elementArrayGeneralContractor.classList.add("up-down-active")
                 elementArrayGeneralContractor.classList.add('down')
             } else if (actualUrl.includes('genContractor')) {
-                elementArrayGeneralContractor.classList.remove("down")
-                elementArrayGeneralContractor.classList.add('up')
-            } else {
-                elementArrayGeneralContractor.classList.remove("down")
-                elementArrayGeneralContractor.classList.remove("up")
-            }
-
+                elementArrayGeneralContractor.classList.add('up-down-active')
+            }else 
             if (actualUrl.includes('dateEnterDesc')) {
                 elementArrayTerms.classList.remove("up")
+                elementArrayTerms.classList.add("up-down-active")
                 elementArrayTerms.classList.add('down')
             } else if (actualUrl.includes('dateEnter')) {
-                elementArrayTerms.classList.remove("down")
-                elementArrayTerms.classList.add('up')
-            } else {
-                elementArrayTerms.classList.remove("down")
-                elementArrayTerms.classList.remove("up")
-            }
-
+                elementArrayTerms.classList.add('up-down-active')
+            } 
         };
 
         ////// Pagination
