@@ -6,8 +6,8 @@
 @{
     ViewData["Title"] = "Добавление объема работ";
     bool hasScope = false;
-    // ищем есть ли изменения, выбтраем последние. если изменения есть то ID последнего помечаем что изменяем
-    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
+    // ищем есть ли изменения, выбираем последние. если изменения есть то ID последнего помечаем что изменяем
+    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId && x.IsOwnForces == Model.IsOwnForces)?.LastOrDefault();
     if (scopes is not null)
     {
         hasScope = true;

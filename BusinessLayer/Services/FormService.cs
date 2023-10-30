@@ -129,5 +129,10 @@ namespace BusinessLayer.Services
 
             _logger.WriteLog(LogLevel.Warning, $"not create file of form, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
         }
+
+        //public FormDTO? GetValueScopeWorkByPeriod(int contractId, DateTime? period, Boolean IsOwn = false)
+        //{ 
+                       
+        //}
     }
 }

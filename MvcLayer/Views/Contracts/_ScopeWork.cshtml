@@ -1,14 +1,52 @@
 ﻿@model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService FormC3
+
 @{
-    var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
-    var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
+    DateTime? PeriodStart, PeriodEnd;
+    var firstObj = Model.ScopeWorks.FirstOrDefault();
+
+    if (firstObj != null)
+    {
+        var secondObj = firstObj.SWCosts.FirstOrDefault();
+        if (secondObj != null)
+        {
+            PeriodStart = secondObj.Period;
+            PeriodEnd = secondObj.Period;
+        }
+        else
+        {
+            PeriodStart = DateTime.Today;
+            PeriodEnd = DateTime.Today.AddMonths(-1);
+        }
+    }
+    else
+    {
+        PeriodStart = DateTime.Today;
+        PeriodEnd = DateTime.Today.AddMonths(-1);
+    }
+
+    foreach (var item in Model.ScopeWorks)
+    {
+        foreach (var item2 in item.SWCosts)
+        {
+            if (PeriodStart > item2.Period)
+            {
+                PeriodStart = (DateTime)item2.Period;
+            }
+            if (PeriodEnd < item2.Period)
+            {
+                PeriodEnd = (DateTime)item2.Period;
+            }
+        }
+    }
 }
-<div id="ConstructionInstallationWorksByTypes" class="hidden d-none">
-    <div class="modal-content" style="width : 1300px!important">
+<div id="ConstructionInstallationWorksByTypes" class="d-none">
+    <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
             <button id="ChangeToCategories">Сменить вид</button>
-            <div class="full-width">
+            <div class="full-width" style="width: 100%">
                 <table class="PartialTable modal__table">
                     <thead>
                         <tr class="tr-head-main-table">
@@ -24,12 +62,11 @@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
                             @{
                                 @*Период (месяц)*@
-                                foreach (var item in Model.ScopeWorks)
+                                var iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
-                                    {
-                                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
-                                    }
+                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -44,9 +81,18 @@
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость работ общая (месяц)*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -58,12 +104,18 @@
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость СМР*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                        sum = @obj.TotalCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -75,12 +127,18 @@
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                        sum = @obj.CostNds;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -92,12 +150,18 @@
                             <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость Оборудования*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                        sum = @obj.TotalCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -110,12 +174,18 @@
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                        sum = @obj.SmrCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -127,9 +197,18 @@
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость ????*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month"> ?</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.SmrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -141,12 +220,18 @@
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость доп.работ*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator,true);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                        sum = @obj.SmrCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -158,12 +243,18 @@
                             <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость доп.работ*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                        sum = @obj.SmrCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -175,9 +266,18 @@
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -188,9 +288,18 @@
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -201,9 +310,18 @@
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator,true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -214,9 +332,18 @@
                             <td class="table-on-their-own"><span class="table_span-remains">ПНР остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -228,9 +355,18 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -241,9 +377,18 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -254,9 +399,18 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -267,9 +421,18 @@
                             <td class="table-on-their-own"><span class="table_span-remains">Оборудование остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -281,9 +444,18 @@
                             <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
                             <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -294,9 +466,18 @@
                             <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
                             <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -307,9 +488,18 @@
                             <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
                             <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -320,9 +510,18 @@
                             <td class="table-on-their-own"><span class="table_span-remains">РАБОТЫ остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -334,9 +533,18 @@
                             <td><span class="table_span-remains">Всего по договору остаток</span></td>
                             <td><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNoNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -347,9 +555,18 @@
                             <td><span class="table_span-remains">Всего по договору остаток</span></td>
                             <td><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.TotalCost/(decimal)(1.2);
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -360,9 +577,18 @@
                             <td><span class="table_span-remains">Всего по договору остаток</span></td>
                             <td><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNoNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -373,9 +599,18 @@
                             <td class="table-on-their-own"><span class="table_span-remains">Всего по договору остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.TotalCost / (decimal)(1.2);
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -387,9 +622,18 @@
                             <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
                             <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -400,9 +644,18 @@
                             <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
                             <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -413,9 +666,18 @@
                             <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
                             <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -426,9 +688,18 @@
                             <td class="table-on-their-own"><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -440,9 +711,18 @@
                             <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
                             <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -453,9 +733,18 @@
                             <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
                             <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -466,9 +755,18 @@
                             <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
                             <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -479,9 +777,18 @@
                             <td class="table-on-their-own"><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
                             <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="table-on-their-own"><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -494,10 +801,10 @@
 </div>
 
 <div id="ConstructionInstallationWorksByCategories" class="show">
-    <div class="modal-content" style="width : 1300px!important">
+    <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
             <button id="ChangeToType">Сменить вид</button>
-            <div class="full-width">
+            <div class="full-width" style="width: 100%">
                 <table class="PartialTable modal__table table table-striped table-hover">
                     <thead>
                         <tr class="tr-head-main-table">
@@ -513,12 +820,11 @@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
                             @{
                                 @*Период (месяц)*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
-                                    {
-                                        <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@item2.Period?.Month-@item2.Period?.Year</span></th>
-                                    }
+                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -533,9 +839,18 @@
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость ?*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -547,12 +862,18 @@
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.SmrCost</span></td>
+                                        sum = @obj.SmrCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
 
                             }
@@ -565,12 +886,18 @@
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.PnrCost</span></td>
+                                        sum = @obj.PnrCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -582,12 +909,18 @@
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 @*Стоимость Оборудование*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.EquipmentCost</span></td>
+                                        sum = @obj.EquipmentCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -598,10 +931,18 @@
                             <td><span class="table_span-remains">Работы остаток</span></td>
                             <td><span class="table_span-volume">Работы объем</span></td>
                             @{
-                                @*Стоимость ?*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -613,9 +954,18 @@
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
                                 @*Стоимость ?*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNoNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -627,12 +977,18 @@
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.AdditionalCost</span></td>
+                                        sum = @obj.AdditionalCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -644,12 +1000,18 @@
                             <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
                                 @*Стоимость Материалы*@
-                                foreach (var item in Model.ScopeWorks)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    foreach (var item2 in item.SWCosts)
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        <td class="Partialtable-sticky-top"><span class="table_span-month">@item2.MaterialCost</span></td>
+                                        sum = @obj.MaterialCost;
                                     }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum </span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -662,13 +1024,18 @@
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Период*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
-                                }
-                                for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
-                                {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.TotalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -680,13 +1047,18 @@
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.SmrCost</span></td>
-                                }
-                                for (int i = 0; i < Model.ScopeWorks.Count - Model.FormC3as.Count; i++)
-                                {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">-</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.SmrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -698,9 +1070,18 @@
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.PnrCost</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -712,9 +1093,18 @@
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 @*Стоимость Оборудование*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.EquipmentCost</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -726,9 +1116,18 @@
                             <td><span class="table_span-volume">Работы объем</span></td>
                             @{
                                 @*Стоимость ?*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -740,9 +1139,18 @@
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
                                 @*Стоимость ?*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">?</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.TotalCost/(decimal)(1.2);
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -754,9 +1162,18 @@
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.AdditionalCost</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -768,24 +1185,43 @@
                             <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
                                 @*Стоимость Материалы*@
-                                foreach (var item in Model.FormC3as)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@item.MaterialCost</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="planOur">
-                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План своими силами</span></td>
+                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План cвоими силами</span></td>
                             <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
                             <td><span class="table_span-contractprice">Вид работ цена</span></td>
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость ?*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator,true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -796,10 +1232,21 @@
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость СМР*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.SmrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
+
                             }
                         </tr>
                         <tr>
@@ -809,9 +1256,19 @@
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость ПНР*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -822,9 +1279,19 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость Оборудование*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -835,9 +1302,18 @@
                             <td><span class="table_span-remains">Работы остаток</span></td>
                             <td><span class="table_span-volume">Работы объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -848,9 +1324,19 @@
                             <td><span class="table_span-remains">Договор без НДС остаток</span></td>
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость ?*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.CostNoNds;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -861,9 +1347,19 @@
                             <td><span class="table_span-remains">Доп. работы остаток</span></td>
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость Доп. работы*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -874,9 +1370,19 @@
                             <td><span class="table_span-remains">Материалы остаток</span></td>
                             <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость Материалы*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum </span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -888,9 +1394,19 @@
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Период*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = obj.TotalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -901,9 +1417,19 @@
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость СМР*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.SmrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -914,9 +1440,19 @@
                             <td><span class="table_span-remains">ПНР остаток</span></td>
                             <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость ПНР*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.PnrCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -927,9 +1463,19 @@
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
                             <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость Оборудование*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.EquipmentCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -940,9 +1486,19 @@
                             <td><span class="table_span-remains">Работы остаток</span></td>
                             <td><span class="table_span-volume">Работы объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость ?*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.OtherExpensesCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -953,9 +1509,19 @@
                             <td><span class="table_span-remains">Договор без НДС остаток</span></td>
                             <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость ?*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.TotalCost/(decimal)(1.2);
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -966,9 +1532,19 @@
                             <td><span class="table_span-remains">Доп. работы остаток</span></td>
                             <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость Доп. работы*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.AdditionalCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -979,9 +1555,19 @@
                             <td><span class="table_span-remains">Материалы остаток</span></td>
                             <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
-                                for (int i = 0; i < 25; i++)
+                                @*Стоимость Материалы*@
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
                                 {
-                                    <td><span class="table_span-month">@i - 000</span></td>
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
+                                    {
+                                        sum = @obj.MaterialCost;
+                                    }
+                                    else { sum = 0; }
+                                    <td class="Partialtable-sticky-top"><span class="table_span-month">@sum</span></td>
+                                    iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
@@ -999,36 +1585,38 @@
     var elementChangeTableCategories = document.getElementById('ChangeToCategories')
     elementChangeTableCategories.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
 
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
-        elementTable1.classList.remove('modal__visibility-close')
-        elementTable1.classList.add('modal__visibility-active')
+        elementTable1.classList.remove('d-none')
+        elementTable1.classList.add('show')
     })
 
     let elementChangeTableTypes = document.getElementById('ChangeToType')
     elementChangeTableTypes.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
 
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
-        elementTable1.classList.remove('modal__visibility-close')
-        elementTable1.classList.add('modal__visibility-active')
+        elementTable1.classList.remove('d-none')
+        elementTable1.classList.add('show')
     })
 
     let elementButtonTableCategories = document.getElementById('buttonTableCategories')
     elementButtonTableCategories.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
+        $('#modDialog').modal('toggle');
     })
 
     let elementButtonTableType = document.getElementById('buttonTableType')
     elementButtonTableType.addEventListener("click", event => {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
-        elementTable.classList.remove('modal__visibility-active')
-        elementTable.classList.add('modal__visibility-close')
+        elementTable.classList.remove('show')
+        elementTable.classList.add('d-none')
+        $('#modDialog').modal('toggle');
     })
 </script>

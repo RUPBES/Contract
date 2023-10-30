@@ -162,5 +162,42 @@ namespace BusinessLayer.Services
 
             return resultPeriod;
         }
+
+        public SWCost? GetValueScopeWorkByPeriod(int contractId, DateTime? period, Boolean IsOwn = false)
+        {
+            var scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsChange == true && x.IsOwnForces == IsOwn)
+                .LastOrDefault();
+            if (scope is null)
+            {
+                scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
+            }
+            if (scope is null)
+            {
+                return null;
+            }
+            var scopeId = scope?.Id;
+            var answer = _database.SWCosts
+                .Find(x => x.Period == period && x.ScopeWorkId == scopeId).LastOrDefault();
+            while (answer is null && scope != null) 
+            {
+                scope = scope.ChangeScopeWork;
+                if (scope != null)
+                {
+                    answer = _database.SWCosts
+                    .Find(x => x.Period == period && x.ScopeWorkId == scope.Id).LastOrDefault();
+                    if (answer != null)
+                    {
+                        return answer;
+                    }
+                }
+            }
+            if (answer != null)
+            {
+                return answer;
+            }
+            return null;
+        }
     }
 }
