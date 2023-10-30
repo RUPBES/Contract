@@ -181,5 +181,36 @@ namespace BusinessLayer.Services
 
             return resultPeriod;
         }
+
+        public (DateTime, DateTime)? GetFullPeriodRangeScopeWork(int contractId)
+        {
+            (DateTime start, DateTime end) resultPeriod;
+
+            //проверяем есть измененный объем работы по доп.соглашению (флаг - IsChange = true), если есть выбираем последний объем работы по ДС
+            //если нет, находим основной (без ДС) и берем начальную и конечную дату. Если объема работы для договора не существует,
+            //возвращаем NULL
+
+            var scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsOwnForces == false).ToList();                   
+
+            //если и основной объем равен NULL возвращаем NULL
+            if (scope is null)
+            {
+                return null;
+            }
+
+            resultPeriod.start = (DateTime)scope[0].SWCosts.FirstOrDefault().Period;
+            resultPeriod.end = (DateTime)scope[0].SWCosts.FirstOrDefault().Period;
+            foreach ( var item in scope)
+            {
+                foreach (var item2 in item.SWCosts) 
+                {
+                    resultPeriod.start = resultPeriod.start > item2.Period ? (DateTime)item2.Period : resultPeriod.start;
+                    resultPeriod.end = resultPeriod.end < item2.Period ? (DateTime)item2.Period : resultPeriod.end;
+                }
+            }
+
+            return resultPeriod;
+        }
     }
 }

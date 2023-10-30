@@ -45,7 +45,7 @@
 <div id="ConstructionInstallationWorksByTypes" class="d-none">
     <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
-            <button id="ChangeToCategories">Сменить вид</button>
+            <button id="ChangeToCategories" onclick="funcChangeToCategories()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
                 <table class="PartialTable modal__table">
                     <thead>
@@ -802,7 +802,7 @@
                     </tbody>
                 </table>
             </div>
-            <button id="buttonTableType" class="modal__container-button">Закрыть таблицу</button>
+            <button id="buttonTableType" onclick="funcCloseByTableType()" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
 </div>
@@ -810,7 +810,7 @@
 <div id="ConstructionInstallationWorksByCategories" class="show">
     <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
-            <button id="ChangeToType">Сменить вид</button>
+            <button id="ChangeToType" onclick="funcChangeToType()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
                 <table class="PartialTable modal__table table table-striped table-hover">
                     <thead>
@@ -1583,7 +1583,7 @@
                     </tbody>
                 </table>
             </div>
-            <button id="buttonTableCategories" class="modal__container-button">Закрыть таблицу</button>
+            <button id="buttonTableCategories" onclick="funcCloseByTableCategories()" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
 </div>
@@ -1591,8 +1591,8 @@
 
 
 <script>
-    var elementChangeTableCategories = document.getElementById('ChangeToCategories')
-    elementChangeTableCategories.addEventListener("click", event => {
+        
+    function funcChangeToCategories (){
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
@@ -1600,10 +1600,9 @@
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable1.classList.remove('d-none')
         elementTable1.classList.add('show')
-    })
-
-    let elementChangeTableTypes = document.getElementById('ChangeToType')
-    elementChangeTableTypes.addEventListener("click", event => {
+    } 
+    
+    function funcChangeToType (){
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
@@ -1611,21 +1610,20 @@
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable1.classList.remove('d-none')
         elementTable1.classList.add('show')
-    })
-
-    let elementButtonTableCategories = document.getElementById('buttonTableCategories')
-    elementButtonTableCategories.addEventListener("click", event => {
+    }
+        
+    function funcCloseByTableCategories (){
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
         $('#modDialog').modal('toggle');
-    })
+    }
 
-    let elementButtonTableType = document.getElementById('buttonTableType')
-    elementButtonTableType.addEventListener("click", event => {
+    
+    function funcCloseByTableType (){
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
         $('#modDialog').modal('toggle');
-    })
+    }
 </script>
