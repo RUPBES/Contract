@@ -131,13 +131,13 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
         {
-            int count = _database.Employees.GetAll().Count();
+            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Employee> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Employees.GetAll(); }
+            { items = _database.Employees.Find(x => x.FullName.Contains(request)).ToList(); }
             else { items = _database.Employees.GetAll(); }
-
+            int count = items.Count();
 
             switch (sortOrder)
             {

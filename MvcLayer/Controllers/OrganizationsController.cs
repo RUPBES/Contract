@@ -26,22 +26,22 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations
-        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
             ViewBag.AbbrSortParm = sortOrder == "abbr" ? "abbrDesc" : "abbr";
             ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
 
-            if (query != null)
-            { }
+            if (searchString != null)
+            { pageNum = 1; }
             else
-            { query = currentFilter; }
-            ViewBag.CurrentFilter = query;
+            { searchString = currentFilter; }
+            ViewBag.CurrentFilter = searchString;
 
-            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View(_organizationService .GetPageFilter(100, pageNum, query, sortOrder));
-            else return View(_organizationService.GetPage(100, pageNum));
+            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+                return View(_organizationService .GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
+            else return View(_organizationService.GetPage(100, pageNum ?? 1));
         }
 
         // GET: Organizations/Details/5
@@ -160,6 +160,14 @@ namespace MvcLayer.Controllers
         public JsonResult GetJsonOrganizations()
         {           
             return Json(_mapper.Map<IEnumerable<OrganizationsJson>>(_organizationService.GetAll()));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShowResultDelete(int id)
+        {
+            _organizationService.Delete(id);
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", "Запись успешно удалена.");
         }
     }
     class OrganizationsJson {

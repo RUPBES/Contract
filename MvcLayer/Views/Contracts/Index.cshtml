@@ -16,7 +16,7 @@
                     @using (Html.BeginForm("Engineerings", "Contracts", FormMethod.Get))
                     {
                         <form style="search-form" method="get">
-                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
                             <input type="submit" value="Найти" />
                         </form>
                     }
@@ -295,12 +295,7 @@
                 this.element = element;
                 this.urlDoun = urlDown;
                 this.urlUp = urlUp;
-            }
-
-            checkArray(url) {
-                console.log('test', url)
-            }
-
+            }         
         }
         window.onload = function () {
 

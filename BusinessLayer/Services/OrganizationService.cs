@@ -121,14 +121,13 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
-        {
-            int count = _database.Organizations.GetAll().Count();
+        {            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Organization> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Organizations.GetAll(); }
+            { items = _database.Organizations.Find(x => x.Abbr.Contains(request)).ToList(); }
             else { items = _database.Organizations.GetAll(); }
-
+            int count = items.Count();
 
             switch (sortOrder)
             {
