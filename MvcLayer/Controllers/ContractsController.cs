@@ -39,28 +39,28 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString , string sortOrder)
         {
             if(pageNum < 1)
             {
                 pageNum = 1;
             }
-            ViewBag.IsEngineering = false;
-            ViewBag.CurrentSort = sortOrder;
-            ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
-            ViewBag.NameObjectSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-            ViewBag.ClientSortParm = sortOrder == "client" ? "clientDesc" : "client";
-            ViewBag.GenSortParm = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-            ViewBag.EnterSortParm = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            if (query != null)
-            { }
+            ViewData["IsEngineering"] = false;
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["DateSortParm"] = sortOrder == "date" ? "dateDesc" : "date";
+            ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+            ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
+            ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+            ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+            if (searchString != null)
+            { pageNum = 1; }
             else
-            { query = currentFilter; }
-            ViewBag.CurrentFilter = query;
+            { searchString = currentFilter; }
+            ViewData["CurrentFilter"] = searchString;
 
-            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View(_vContractService.GetPageFilter(100, pageNum, query, sortOrder));
-            else return View(_vContractService.GetPage(100, pageNum));
+            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
+            else return View(_vContractService.GetPage(100, pageNum ?? 1));
         }
 
         // GET: Contracts of Engineerings
