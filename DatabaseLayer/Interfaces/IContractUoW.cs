@@ -21,7 +21,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<CommissionActFile> CommissionActFiles { get; }
         IRepository<Correspondence> Correspondences { get; }
         IRepository<CorrespondenceFile> CorrespondenceFiles { get; }
-        IRepository<Employee> Employees { get; }
+        IEntityWithPagingRepository<Employee> Employees { get; }
         IRepository<EstimateDoc> EstimateDocs { get; }
         IRepository<EstimateDocFile> EstimateDocFiles { get; }
         IRepository<FormC3a> Forms { get; }
@@ -31,7 +31,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<MaterialGc> Materials { get; }
         IRepository<MaterialCost> MaterialCosts { get; }
 
-        IRepository<Organization> Organizations { get; }
+        IEntityWithPagingRepository<Organization> Organizations { get; }
         IRepository<Phone> Phones { get; }
         IRepository<Payment> Payments { get; }
         IRepository<Prepayment> Prepayments { get; }

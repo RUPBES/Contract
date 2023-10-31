@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class OrganizationRepository : IRepository<Organization>
+    internal class OrganizationRepository : IEntityWithPagingRepository<Organization>
     {
         private readonly ContractsContext _context;
         public OrganizationRepository(ContractsContext context)
@@ -80,6 +80,26 @@ namespace DatabaseLayer.Repositories
                     _context.Organizations.Update(orgnization);
                 }
             }
+        }
+
+        public int Count()
+        {
+            return _context.Organizations.Count();
+        }
+
+        public IEnumerable<Organization> GetEntitySkipTake(int skip, int take)
+        {
+            return _context.Organizations.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+        }
+
+        public IEnumerable<Organization> GetEntityWithSkipTake(int skip, int take, int legalPersonId)
+        {
+            return _context.Organizations/*.Where(x => x.LegalPersonId == legalPersonId)*/.Skip(skip).Take(take).ToList();
+        }
+
+        public IEnumerable<Organization> FindLike(string propName, string queryString)
+        {
+            return _context.Organizations.Where(x => EF.Functions.Like(propName, $"%{queryString}%")).OrderBy(x => x.Name).ToList();
         }
     }
 }

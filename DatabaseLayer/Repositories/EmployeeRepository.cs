@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class EmployeeRepository:IRepository<Employee>
+    internal class EmployeeRepository: IEntityWithPagingRepository<Employee>
     {
         private readonly ContractsContext _context;
         public EmployeeRepository(ContractsContext context)
@@ -80,6 +80,27 @@ namespace DatabaseLayer.Repositories
                     _context.Employees.Update(employee);
                 }
             }
+        }
+
+
+        public int Count()
+        {
+            return _context.Employees.Count();
+        }
+
+        public IEnumerable<Employee> GetEntitySkipTake(int skip, int take)
+        {
+            return _context.Employees.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+        }
+
+        public IEnumerable<Employee> GetEntityWithSkipTake(int skip, int take, int legalPersonId)
+        {
+            return _context.Employees/*.Where(x => x.LegalPersonId == legalPersonId)*/.Skip(skip).Take(take).ToList();
+        }
+
+        public IEnumerable<Employee> FindLike(string propName, string queryString)
+        {
+            return _context.Employees.Where(x => EF.Functions.Like(propName, $"%{queryString}%")).OrderBy(x => x.FullName).ToList();
         }
     }
 }

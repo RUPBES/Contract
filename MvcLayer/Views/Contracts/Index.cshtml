@@ -1,6 +1,8 @@
 ﻿@using BusinessLayer.Models;
 @model BusinessLayer.Models.IndexViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
 @section Table{
@@ -38,7 +40,7 @@
             <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
                 <thead>
                     <tr class="tr-head-main-table">
-                        <th><span class="table_span-num">          №                            </span></th>
+                        @* <th><span class="table_span-num">          №                            </span></th> *@
                         <th>
                             <span class="table_span-numberanddate">
                                 @Html.ActionLink("Номер и дата договора", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayNumberanddate", @class=""})
@@ -78,12 +80,21 @@
                 <tbody class="table_tbody">
                     @foreach (VContractDTO item in Model.Objects)
                     {
+
+                        var ds = ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange == true).LastOrDefault();
+                        var resultScopeWork = ds is null ? ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange != true).LastOrDefault() : ds;
+                        var dateRange = DateTime.Now.Date.Year;
+                        
+                        var sumPreviusYear = SWCost.Find(x => x.ScopeWorkId == resultScopeWork?.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.CostNds);
+                        var sumThisYear = SWCost.Find(x => x.ScopeWorkId == resultScopeWork?.Id && x.Period >= new DateTime(dateRange, 1, 1) && x.Period <= new DateTime(dateRange, 12, 31)).Sum(x => x.CostNds);
+
+
                         <tr>
-                            <td>
-                                <span class="table_span-num">
-                                    ?
-                                </span>
-                            </td>
+                            @*  <td>
+                    <span class="table_span-num">
+                    ?
+                    </span>
+                    </td> *@
                             @*Номер и дата договора*@
                             <td>
                                 <span class="table_span-numberanddate">
@@ -126,9 +137,6 @@
                                     <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
                                         @item?.PaymentСonditionsAvans
                                     </a>
-                                    @* <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item.Id">
-                            Аванс
-                            </a> *@
                                     <br />
                                     <br />
                                     <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
@@ -139,7 +147,6 @@
                             @*Материалы*@
                             <td>
                                 <span class="table_span-material">
-                                    @*  @Html.ActionLink("Материалы P15","","") *@
                                     <span class="icon link_to_page">
                                         <a asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@item?.Id"></a>
                                     </span>
@@ -165,15 +172,23 @@
                             </td>
                             @*Выполнено на начало года*@
                             <td>
-                                <span class="table_span-realization">?</span>
+                                <span class="table_span-realization">
+                                    @sumPreviusYear
+                                </span>
                             </td>
                             @*Остаток*@
                             <td>
-                                <span class="table_span-remains">?</span>
+                                <span class="table_span-remains">
+                                    @{
+                                       var ostatok = @item.ContractPrice
+                                        -@sumPreviusYear - sumThisYear;
+                                    }
+                                    @ostatok
+                                </span>
                             </td>
                             @*Объем*@
                             <td>
-                                <span class="table_span-volume">?</span>
+                                <span class="table_span-volume">@sumThisYear</span>
                             </td>
                             @*Действия с договором*@
                             <td>
@@ -192,7 +207,7 @@
                 </tbody>
             </table>
         </div>
-    </div>   
+    </div>
     <nav aria-label="Page navigation example" style="margin-top:10px;">
         <ul class="pagination justify-content-center">
             <li class="page-item previous_btn">

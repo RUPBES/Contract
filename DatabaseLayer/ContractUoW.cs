@@ -446,7 +446,7 @@ namespace DatabaseLayer
                 return contractRepository;
             }
         }
-        public IRepository<Employee> Employees
+        public IEntityWithPagingRepository<Employee> Employees
         {
             get
             {
@@ -468,7 +468,7 @@ namespace DatabaseLayer
                 return departmentRepository;
             }
         }
-        public IRepository<Organization> Organizations
+        public IEntityWithPagingRepository<Organization> Organizations
         {
             get
             {
