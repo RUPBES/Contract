@@ -113,7 +113,7 @@ namespace BusinessLayer.Services
                     items = items.OrderBy(s => s.Id);
                     break;
             }
-            items.Skip(skipEntities).Take(pageSize);
+            items = items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);

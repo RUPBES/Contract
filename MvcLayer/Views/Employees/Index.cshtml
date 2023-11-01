@@ -16,7 +16,7 @@
         <div class="dm-cell">
             <div class="dm-modal">
                 <div class="top-modal-block flex-column">
-                    <div class="input-group m-2 ">
+                    <div class="input-group m-2">
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Home" asp-action="" class="close-btn"></a>
                     </div>
@@ -25,16 +25,13 @@
                             <div class="link_add_emp"></div>
                             <div class="btn_panel_search">
                                 <button type="button" class="btn btn-success new_emp" onclick="location.href='@Url.Action("Create", "Employees")'">Добавить сотрудника</button>
-                                @using (Html.BeginForm("Index", "Organizations", FormMethod.Get))
-                                {
-                                    <form style="search-form">
-                                        <label style="search-form__text">ФИО(часть): </label> @Html.TextBox("searchString", ViewBag.CurrentFilter as string)
-                                        <input type="submit" value="Найти" />
-                                    </form>
-                                }
+                                <form asp-controller="Employees" asp-action="Index" style="search-form">
+                                    <input name="searchString" value="@ViewBag.CurrentFilter" type="text" placeholder="Поиск по ФИО" id="er" />
+                                    <button type="submit"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
+                                </form>
                             </div>
                         </div>
-                    </div>
+                    </div>                    
                     <div style="max-height:650px; overflow-y:scroll">
                         <table class="table table-bordered table-main table-main-short" id="org_table">
                             <thead>
@@ -249,6 +246,11 @@
         }
         window.onload = function () 
         {
+            var elementFilter = '@ViewBag.CurrentFilter';
+            if (elementFilter != "") {
+                $(".link_add_emp").click()
+            }
+
             let actualUrl = window.location.search;
             let elementArrayFullName = document.getElementById("arrayFullName");
             let elementArrayPosition = document.getElementById("arrayPosition");

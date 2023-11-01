@@ -23,7 +23,7 @@
                             <div class="btn_panel_search">
                                 <button type="button" class="btn btn-success new_emp" onclick="location.href='@Url.Action("Create", "Organizations")'">Добавить организацию</button>
                                 <form asp-controller="Organizations" asp-action="Index" style="search-form">
-                                    <input type="text" placeholder="Поиск по названию" id="er" />
+                                    <input name="searchString" value="@ViewBag.CurrentFilter" type="text" placeholder="Поиск по названию" id="er" />
                                     <button type="submit"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
                                 </form>
                             </div>
@@ -238,6 +238,11 @@
 
         window.onload = function () 
         {
+            var elementFilter = '@ViewBag.CurrentFilter';            
+            if (elementFilter != "") {                
+                $(".link_add_emp").click()                
+            }
+
             let actualUrl = window.location.search;
             let elementArrayName = document.getElementById("arrayName");
             let elementArrayAbbr = document.getElementById("arrayAbbr");

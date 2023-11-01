@@ -135,7 +135,7 @@ namespace BusinessLayer.Services
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Employee> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Employees.Find(x => x.FullName.Contains(request)).ToList(); }
+            { items = _database.Employees.FindLike("FullName", request); }
             else { items = _database.Employees.GetAll(); }
             int count = items.Count();
 
@@ -169,7 +169,7 @@ namespace BusinessLayer.Services
                     items = items.OrderBy(s => s.Id);
                     break;
             }
-            items.Skip(skipEntities).Take(pageSize);
+            items = items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<EmployeeDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
