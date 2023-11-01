@@ -2,6 +2,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService FormC3
+@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 
 @{
     DateTime? PeriodStart, PeriodEnd;
@@ -41,6 +42,10 @@
             }
         }
     }
+
+    var contractPrice = Model.ContractPrice;
+    var amendLast = Amendment.Find(a => a.ContractId == Model.Id).LastOrDefault();
+    if (amendLast != null) { contractPrice = amendLast.ContractPrice; }
 }
 <div id="ConstructionInstallationWorksByTypes" class="d-none">
     <div class="modal-content" style="width : 99vw">
@@ -837,13 +842,13 @@
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="plan">
+                        <tr id="plan">                            
                             <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План</span></td>
                             <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice</span></td>
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>          
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -863,7 +868,7 @@
                         </tr>
                         <tr>
                             <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-contractprice"></span></td>
                             <td><span class="table_span-realization">СМР выполнено</span></td>
                             <td><span class="table_span-remains">СМР остаток</span></td>
                             <td><span class="table_span-volume">СМР объем</span></td>
@@ -879,7 +884,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
 

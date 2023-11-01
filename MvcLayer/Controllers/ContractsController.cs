@@ -99,7 +99,7 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
-
+            
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -314,6 +314,7 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
+            
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
             return View(_mapper.Map<ContractViewModel>(contract));
