@@ -131,13 +131,13 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
         {
-            int count = _database.Employees.GetAll().Count();
+            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Employee> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Employees.GetAll(); }
+            { items = _database.Employees.FindLike("FullName", request); }
             else { items = _database.Employees.GetAll(); }
-
+            int count = items.Count();
 
             switch (sortOrder)
             {
@@ -169,7 +169,7 @@ namespace BusinessLayer.Services
                     items = items.OrderBy(s => s.Id);
                     break;
             }
-            items.Skip(skipEntities).Take(pageSize);
+            items = items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<EmployeeDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);

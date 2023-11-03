@@ -6,6 +6,8 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Data;
 
 namespace MvcLayer.Controllers
 {
@@ -23,7 +25,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Employees
-        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.FullNameSortParm = sortOrder == "fullName" ? "fullNameDesc" : "fullName";
@@ -31,15 +33,15 @@ namespace MvcLayer.Controllers
             ViewBag.PositionSortParm = sortOrder == "position" ? "positionDesc" : "position";
             ViewBag.EmailSortParm = sortOrder == "email" ? "emailDesc" : "email";
 
-            if (query != null)
-            { }
+            if (searchString != null)
+            { pageNum = 1; }
             else
-            { query = currentFilter; }
-            ViewBag.CurrentFilter = query;
+            { searchString = currentFilter; }
+            ViewData["CurrentFilter"] = searchString;
 
-            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View(_employeesService.GetPageFilter(100, pageNum, query, sortOrder));
-            else return View(_employeesService.GetPage(100, pageNum));           
+            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+                return View(_employeesService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
+            else return View(_employeesService.GetPage(100, pageNum ?? 1));           
         }
 
         // GET: Employees/Details/5
@@ -191,7 +193,8 @@ namespace MvcLayer.Controllers
         public async Task<IActionResult> ShowResultDelete(int id)
         {            
             _employeesService.Delete(id);
-            return PartialView("_ViewDelete");
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", "Запись успешно удалена.");
         }
     }
 }

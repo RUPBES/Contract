@@ -69,13 +69,13 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
         {
-            int count = _database.vContractEngins.Count();
+            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<VContractEngin> items;
             if (!String.IsNullOrEmpty(request))
             { items = _database.vContractEngins.FindContract(request); }
             else { items = _database.vContractEngins.GetAll(); }
-
+            int count = items.Count();
 
             switch (sortOrder)
             {

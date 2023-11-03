@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MVC_layer.Models;
 using System.Diagnostics;
@@ -29,6 +30,11 @@ namespace MVC_layer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        
+        public IActionResult Message(string message)
+        {
+            return PartialView("_Message", message);
         }
     }
 }

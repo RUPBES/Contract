@@ -64,24 +64,24 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts of Engineerings
-        public async Task<IActionResult> Engineerings(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
-            ViewBag.IsEngineering = true;
-            ViewBag.CurrentSort = sortOrder;
-            ViewBag.DateSortParm = sortOrder == "date" ? "dateDesc" : "date";
-            ViewBag.NameObjectSortParm = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-            ViewBag.ClientSortParm = sortOrder == "client" ? "clientDesc" : "client";
-            ViewBag.GenSortParm = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-            ViewBag.EnterSortParm = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            if (query != null)
-            { }
+            ViewData["IsEngineering"] = true;
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["DateSortParm"] = sortOrder == "date" ? "dateDesc" : "date";
+            ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+            ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
+            ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+            ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+            if (searchString != null)
+            { pageNum = 1; }
             else
-            { query = currentFilter; }
-            ViewBag.CurrentFilter = query;
+            { searchString = currentFilter; }
+            ViewData["CurrentFilter"] = searchString;
 
-            if (!String.IsNullOrEmpty(query) || !String.IsNullOrEmpty(sortOrder))
-                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum, query, sortOrder));
-            else return View("Index", _vContractEnginService.GetPage(100, pageNum));
+            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
+            else return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1));
         }
 
         // GET: Contracts/Details/5
@@ -99,7 +99,7 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
-
+            
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -314,6 +314,7 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
+            
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
             return View(_mapper.Map<ContractViewModel>(contract));

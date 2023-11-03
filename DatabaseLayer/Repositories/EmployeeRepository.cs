@@ -98,9 +98,12 @@ namespace DatabaseLayer.Repositories
             return _context.Employees/*.Where(x => x.LegalPersonId == legalPersonId)*/.Skip(skip).Take(take).ToList();
         }
 
-        public IEnumerable<Employee> FindLike(string propName, string queryString)
+        public IEnumerable<Employee> FindLike(string propName, string queryString) => propName switch
         {
-            return _context.Employees.Where(x => EF.Functions.Like(propName, $"%{queryString}%")).OrderBy(x => x.FullName).ToList();
-        }
+            "FullName" => _context.Employees.Where(x => EF.Functions.Like(x.FullName, $"%{queryString}%")).OrderBy(x => x.FullName).ToList(),
+            "Position" => _context.Employees.Where(x => EF.Functions.Like(x.Position, $"%{queryString}%")).OrderBy(x => x.Position).ToList(),
+            "Email" => _context.Employees.Where(x => EF.Functions.Like(x.Email, $" %{queryString}%")).OrderBy(x => x.Email).ToList(),            
+            _ => new List<Employee>()
+        };
     }
 }

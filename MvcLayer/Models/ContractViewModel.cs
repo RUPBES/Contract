@@ -46,13 +46,13 @@ namespace MvcLayer.Models
         /// <summary>
         /// Начало работ
         /// </summary>
-        [DisplayName("Срок выполнения/Начало работ")]
+        [DisplayName("Начало работ")]
         public DateTime? DateBeginWork { get; set; }
 
         /// <summary>
         /// Конец работ
         /// </summary>
-        [DisplayName("Срок выполнения/Окончание работ")]
+        [DisplayName("Окончание работ")]
         public DateTime? DateEndWork { get; set; }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace MvcLayer.Models
         /// <summary>
         /// Цена контракта
         /// </summary>
-        [DisplayName("Контрактная договорная цена")]
+        [DisplayName("Договорная цена")]
         public decimal? ContractPrice { get; set; }
 
         /// <summary>

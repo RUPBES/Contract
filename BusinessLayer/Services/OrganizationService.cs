@@ -6,6 +6,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.Contracts;
 using System.Reflection;
 
 namespace BusinessLayer.Services
@@ -105,9 +106,9 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPage(int pageSize, int pageNum)
         {
-            int count = _database.Organizations.GetAll().Count();
+            int count = _database.Organizations.Count();
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Organizations.GetAll().Skip(skipEntities).Take(pageSize);
+            var items = _database.Organizations.GetEntitySkipTake(skipEntities, pageSize);
             var t = _mapper.Map<IEnumerable<OrganizationDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -121,14 +122,13 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
-        {
-            int count = _database.Organizations.GetAll().Count();
+        {            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Organization> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Organizations.GetAll(); }
+            { items = _database.Organizations.FindLike("Name",request); }
             else { items = _database.Organizations.GetAll(); }
-
+            int count = items.Count();
 
             switch (sortOrder)
             {
@@ -154,7 +154,7 @@ namespace BusinessLayer.Services
                     items = items.OrderBy(s => s.Id);
                     break;
             }
-            items.Skip(skipEntities).Take(pageSize);
+            items = items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<OrganizationDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
