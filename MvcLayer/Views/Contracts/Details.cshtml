@@ -1010,7 +1010,7 @@
                     </th>
                     @*Отвественное лицо*@
                     <th>
-                        <span class="table_span-signer">Лицо отв. за договор</span>
+                        <span class="table_span-signer">Подписант договора, лицо ответственное за ведение договора</span>
                     </th>
                     @*Номер и дата договора*@
                     <th>
@@ -1022,7 +1022,7 @@
                     </th>
                     @*Источник финансирования*@
                     <th>
-                        <span class="table_span-fin-source">Источник финансирования</span>
+                        <span class="table_span-fin-source">Источник финанси-рования</span>
                     </th>
                     @*Заказчик*@
                     <th>
@@ -1042,7 +1042,11 @@
                     </th>
                     @*Условия оплаты, без авансов тек. % цел.% отсрочка/в течение*@
                     <th>
-                        <span class="table_span-conditions">Условия оплаты, без авансов</span>
+                        <span class="table_span-conditions">
+                            Условия оплаты, без авансов тек. %<br />
+                            цел.%<br />
+                            отсрочка/ в течение
+                        </span>
                     </th>
                     @*Валюта расчетов*@
                     <th>
@@ -1050,12 +1054,9 @@
                     </th>
                     @*Акт ввода*@
                     <th>
-                        <span class="table_span-remains">Остаток по выполнению</span>
+                        <span class="table_span-action">Объем работ</span>
                     </th>
-                    @*Акт ввода*@
-                    <th>
-                        <span class="table_span-action">Объем работ(план/факт)</span>
-                    </th>
+
                 </tr>
             </thead>
             <tbody>
@@ -1076,9 +1077,9 @@
                                     }
                                     @if (!isEngineering)
                                     {
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" >Oбъем работ</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id" >Авансы</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id" >Акт ввода</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Авансы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id">Акт ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-Id="@Model?.Id">Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@Model?.Id">Форма С-3а</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a>
@@ -1222,22 +1223,23 @@
                             @Model?.Сurrency
                         </span>
                     </td>
-                    <td>
-                        <span class="table_span-remains">
-                            <a>Остаток</a>
-                        </span>
-                    </td>
+                    @*  <td>
+                <span class="table_span-remains">
+                <a>Остаток</a>
+                </span>
+                </td> *@
                     <td>
                         <span class="table_span-act-entering">
                             <span class="icon link_to_page" id="SMR-detail" title="Объем работ генподряда"></span>
                         </span>
                     </td>
+
                 </tr>
                 @foreach (var contractBranch in branchAgreement)
                 {
                     var dropdownid1 = "Dropdown" + contractBranch.Id;
                     var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                <tr style="background-color: #ccf3ff">
+                    <tr style="background-color: #ccf3ff">
                         <td>
                             <div class="table_span-action">
                                 <div class="dropdown">
@@ -1361,15 +1363,16 @@
                                 <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
                             </span>
                         </td>
+
                     </tr>
                 }
                 @foreach (var contractSub in subContract)
                 {
                     var dropdownid3 = "Dropdown" + contractSub.Id;
                     var dropdownid4 = "Dropdown_" + contractSub.Id;
+
                     <tr style="background-color: #d8f3d8">
                         <td>
-
                             <div class="table_span-action">
                                 <div class="dropdown">
                                     <span class="icon view_list_pages dropdown-toggle">
@@ -1402,7 +1405,7 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractSub.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractSub.Id">+ ПСД</a>
                                     </div>
-                                </div>  
+                                </div>
                             </div>
                         </td>
                         <td>

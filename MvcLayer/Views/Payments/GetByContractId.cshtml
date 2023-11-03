@@ -14,9 +14,9 @@
 
     if (id is not null)
     {
-        var sworkId = Scope.Find(x => x.ContractId == id).LastOrDefault().Id;       
-        scopeWork = sw.Find(x => x.ScopeWorkId == sworkId).LastOrDefault().CostNds;
-        form = contract.FormC3as.Where(x => x.ContractId == id).Select(x => x.TotalCost).LastOrDefault();
+        var sworkId = Scope?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;       
+        scopeWork = sw?.Find(x => x.ScopeWorkId == sworkId)?.LastOrDefault()?.CostNds;
+        form = contract?.FormC3as?.Where(x => x.ContractId == id).Select(x => x.TotalCost)?.LastOrDefault();
 
         ViewData["Title"] = $"Денежные средства по договору № {contract?.Number}";
     }

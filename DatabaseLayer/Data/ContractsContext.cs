@@ -89,12 +89,16 @@ public partial class ContractsContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json")
-               .Build();
-            var connectionString = configuration.GetConnectionString("Data");
-            optionsBuilder.UseSqlServer(connectionString);
+            //IConfigurationRoot configuration = new ConfigurationBuilder()
+            //   .SetBasePath(Directory.GetCurrentDirectory())
+            //   .AddJsonFile("appsettings.json")
+            //   .Build();
+            //var connectionString = configuration.GetConnectionString("Data");
+            //optionsBuilder.UseSqlServer(connectionString);
+
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+
         }
     }
 
@@ -846,7 +850,7 @@ public partial class ContractsContext : DbContext
             entity.ToTable("SWCost", tb => tb.HasComment("стоимость объема работ"));
 
             entity.Property(e => e.Period).HasColumnType("datetime");
-            entity.Property(e => e.AdditionalCost)
+            entity.Property(e => e.AdditionalCost).HasDefaultValueSql("0")
                 .HasColumnType("money");
             entity.Property(e => e.CostNds)
                 .HasColumnType("money")
@@ -858,27 +862,27 @@ public partial class ContractsContext : DbContext
                 .HasColumnName("CostNoNDS")
                 .HasComment("стоимость работ без НДС (согласно договору)");
 
-            entity.Property(e => e.EquipmentCost)
+            entity.Property(e => e.EquipmentCost).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("Цена оборудования");
 
             entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
 
-            entity.Property(e => e.MaterialCost)
+            entity.Property(e => e.MaterialCost).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("Цена материалов ");
 
-            entity.Property(e => e.OtherExpensesCost)
+            entity.Property(e => e.OtherExpensesCost).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("Цена остальных работ");
 
-            entity.Property(e => e.GenServiceCost).HasColumnType("money");
+            entity.Property(e => e.GenServiceCost).HasDefaultValueSql("0").HasColumnType("money");
 
-            entity.Property(e => e.PnrCost)
+            entity.Property(e => e.PnrCost).HasDefaultValueSql("0")
                .HasColumnType("money")
                .HasComment("Цена ПНР");
 
-            entity.Property(e => e.SmrCost)
+            entity.Property(e => e.SmrCost).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("стоимость СМР");
 

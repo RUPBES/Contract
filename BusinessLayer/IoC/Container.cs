@@ -18,7 +18,7 @@ namespace BusinessLayer.IoC
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAutoMapper(typeof(MapperBL));
-            services.AddDbContext<ContractsContext>(op => op.UseSqlServer(connectionString));
+            //services.AddDbContext<ContractsContext>(op => op.UseSqlServer(connectionString));
             services.AddScoped<IContractUoW, ContractUoW>();
             services.AddScoped<IConverter, Converter>();
             services.AddScoped<ILoggerContract, LoggerDb>();

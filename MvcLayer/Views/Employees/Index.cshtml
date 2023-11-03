@@ -27,7 +27,7 @@
                                 <button type="button" class="btn btn-success new_emp" onclick="location.href='@Url.Action("Create", "Employees")'">Добавить сотрудника</button>
                                 <form asp-controller="Employees" asp-action="Index" style="search-form">
                                     <input type="text" placeholder="Поиск по ФИО" id="er"/>
-                                    <button type="submit"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
+                                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
                                 </form>
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                                     @Html.ActionLink("Фио", "Index", new { sortOrder = ViewBag.FioSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayFio", @class=""})
                                     </th> *@
                                     <th>
-                                        <span class="column_150">
+                                        <span class="column_200">
                                             @Html.ActionLink("Должность", "Index", new { sortOrder = ViewBag.PositionSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayPosition", @class=""})
                                         </span>
                                     </th>
@@ -60,12 +60,12 @@
                                         </span>
                                     </th>
                                     <th>
-                                        <span class="column_100">
+                                        <span class="column_200">
                                             Организация
                                         </span>
                                     </th>
                                     <th>
-                                        <span class="column_75">
+                                        <span class="column_100">
                                             Отдел
                                         </span>
                                     </th>
@@ -85,7 +85,7 @@
                                     @Html.DisplayFor(modelItem => item.Fio)
                                     </td> *@
                                         <td>
-                                            <span class="column_150">
+                                            <span class="column_200">
                                                 @Html.DisplayFor(modelItem => item.Position)
                                             </span>
                                         </td>
@@ -103,7 +103,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="column_100">
+                                            <span class="column_200">
                                                 @foreach (var department in item.DepartmentEmployees)
                                                 {
                                                     <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Abbr</span>
@@ -111,7 +111,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="column_75">
+                                            <span class="column_100">
                                                 @foreach (var department in item.DepartmentEmployees)
                                                 {
                                                     <span>@Department.GetById(@department.DepartmentId).Name</span>
@@ -180,8 +180,6 @@
     </div>
 </div>
 @section Scripts {
-
-
     <script type="text/javascript">
         addition_nav_bar();
         ////// Pagination
