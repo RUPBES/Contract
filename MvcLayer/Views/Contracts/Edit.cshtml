@@ -1,5 +1,6 @@
 ﻿@using BusinessLayer.Enums;
 @model MvcLayer.Models.ContractViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 
 @{
     ViewData["Title"] = "Редактирование договора";
@@ -12,10 +13,10 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.Id" class="close-btn"></a>
+                    <a asp-controller="Contracts" asp-action="Index" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Edit" class="row" style="max-width:700px;">
+                <form asp-action="Edit" asp-controller="Contracts" class="row" style="max-width:700px;">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="IsAgreementContract" />
@@ -68,7 +69,7 @@
                     </div>
                     <div class="col-3">
                         <label asp-for="ContractPrice" class="control-label"></label>
-                        <input name="ContractPrice" type="number" value="@Model.ContractPrice" class="form-control" />
+                        <input name="ContractPrice" type="price" value="@Model.ContractPrice?.ToString("0.00")" class="form-control" />
                         <span asp-validation-for="ContractPrice" class="text-danger"></span>
                     </div>
 
@@ -82,6 +83,55 @@
                         <label asp-for="FundingSource" class="control-label"></label>
                         <input asp-for="FundingSource" class="form-control" />
                         <span asp-validation-for="FundingSource" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PaymentСonditionsAvans" class="control-label"></label>
+                        <input asp-for="PaymentСonditionsAvans" class="form-control" />
+                        <span asp-validation-for="PaymentСonditionsAvans" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PaymentСonditionsRaschet" class="control-label"></label>
+                        <input asp-for="PaymentСonditionsRaschet" class="form-control" />
+                        <span asp-validation-for="PaymentСonditionsRaschet" class="text-danger"></span>
+                    </div>
+                    <div class="col-12">
+                        <label>Заказчик</label>
+                        <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
+                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
+                            @if (Model?.ContractOrganizations[0].OrganizationId != 0)
+                            {
+                                var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId);
+                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                            }
+                            @if (Model?.ContractOrganizations[0].OrganizationId == 0)
+                            {
+                                <option selected>Выберите организацию</option>
+                            }
+
+                            @foreach (var item in Organization.GetAll())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label>Генподрядчик</label>
+                        <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
+                        <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
+                            @if (Model?.ContractOrganizations[1].OrganizationId != 0)
+                            {
+                                var item = Organization.GetById((int)Model?.ContractOrganizations[1]?.OrganizationId);
+                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                            }
+                            @if (Model?.ContractOrganizations[1].OrganizationId == 0)
+                            {
+                                <option selected>Выберите организацию</option>
+                            }
+                            @foreach (var item in Organization.GetAll())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
                     </div>
                     <div class="form-group mt-5">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
