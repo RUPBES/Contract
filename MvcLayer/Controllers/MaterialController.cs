@@ -261,20 +261,27 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetCostDeviation()
         {
-            var maxPeriod = _materialCostService.GetAll().MaxBy(x => x.Period).Period;
-            var minPeriod = _materialCostService.GetAll().MinBy(x => x.Period).Period;
+            var maxPeriod = _materialCostService?.GetAll()?.MaxBy(x => x.Period)?.Period;
+            var minPeriod = _materialCostService?.GetAll()?.MinBy(x => x.Period)?.Period;
 
-            List<DateTime> listDate = new List<DateTime>();
-            DateTime startDate = (DateTime)minPeriod;
-
-            while (startDate <= maxPeriod)
+            if (maxPeriod != null &&minPeriod != null)
             {
-                listDate.Add(startDate);
-                startDate = startDate.AddMonths(1);
-            }
-            
-            ViewBag.ListDate = listDate;
+                List<DateTime> listDate = new List<DateTime>();
+                DateTime startDate = (DateTime)minPeriod;
 
+                while (startDate <= maxPeriod)
+                {
+                    listDate.Add(startDate);
+                    startDate = startDate.AddMonths(1);
+                }
+
+                ViewBag.ListDate = listDate;
+            }
+            else
+            {
+                ViewBag.ListDate = new List<DateTime>();
+               
+            }
             return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.GetAll()));
         }
 

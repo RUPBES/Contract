@@ -2,7 +2,8 @@
 @model MvcLayer.Models.ContractViewModel
 
 @{
-    ViewData["Title"] = "Редактирование контракта";
+    ViewData["Title"] = "Редактирование договора";
+    var d = Model;
 }
 
 <div class="dm-overlay">
@@ -14,62 +15,63 @@
                     <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.Id" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Edit">
+                <form asp-action="Edit" class="row" style="max-width:700px;">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input type="hidden" asp-for="Id" />
-                    <div class="row">
-                        <div class="col">
-                            <label asp-for="Number" class="control-label"></label>
-                            <input asp-for="Number" class="form-control" />
-                            <span asp-validation-for="Number" class="text-danger"></span>
-                        </div>
-                        <div class="col">
-                            <label asp-for="Date" class="control-label"></label>
-                            <input asp-for="Date" class="form-control" />
-                            <span asp-validation-for="Date" class="text-danger"></span>
-                        </div>
+                    <input type="hidden" asp-for="IsAgreementContract" />
+                    <input type="hidden" asp-for="IsEngineering" />
+                    <input type="hidden" asp-for="IsSubContract" />
+                    <input type="hidden" asp-for="PaymentСonditionsRaschet" />
+                    <input type="hidden" asp-for="PaymentСonditionsAvans" />
+
+                    <div class="col-3">
+                        <label asp-for="Number" class="control-label"></label>
+                        <input asp-for="Number" class="form-control" />
+                        <span asp-validation-for="Number" class="text-danger"></span>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <label asp-for="EnteringTerm" class="control-label"></label>
-                            <input asp-for="EnteringTerm" class="form-control" />
-                            <span asp-validation-for="EnteringTerm" class="text-danger"></span>
-                        </div>
-                        <div class="col">
-                            <label asp-for="ContractTerm" class="control-label"></label>
-                            <input asp-for="ContractTerm" class="form-control" />
-                            <span asp-validation-for="ContractTerm" class="text-danger"></span>
-                        </div>
+                    <div class="col-3">
+                        <label asp-for="Date" class="control-label"></label>
+                        <input asp-for="Date" class="form-control datepickers" />
+                        <span asp-validation-for="Date" class="text-danger"></span>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <label asp-for="DateBeginWork" class="control-label"></label>
-                            <input asp-for="DateBeginWork" class="form-control" />
-                            <span asp-validation-for="DateBeginWork" class="text-danger"></span>
-                        </div>
-                        <div class="col">
-                            <label asp-for="DateEndWork" class="control-label"></label>
-                            <input asp-for="DateEndWork" class="form-control" />
-                            <span asp-validation-for="DateEndWork" class="text-danger"></span>
-                        </div>
+                    <div class="col-3">
+                        <label asp-for="EnteringTerm" class="control-label"></label>
+                        <input asp-for="EnteringTerm" class="form-control datepickers" />
+                        <span asp-validation-for="EnteringTerm" class="text-danger"></span>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <label asp-for="Сurrency" class="control-label"></label>
-                            <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                                <option value="@Model.Сurrency" selected disabled>@Model.Сurrency</option>
-                                @foreach (var item in Enum.GetValues<CurrencyEnum>())
-                                {
-                                    <option value="@item">@item</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col">
-                            <label asp-for="ContractPrice" class="control-label"></label>
-                            <input asp-for="ContractPrice" class="form-control" />
-                            <span asp-validation-for="ContractPrice" class="text-danger"></span>
-                        </div>
+                    <div class="col-3">
+                        <label asp-for="ContractTerm" class="control-label"></label>
+                        <input asp-for="ContractTerm" class="form-control datepickers" />
+                        <span asp-validation-for="ContractTerm" class="text-danger"></span>
                     </div>
+
+                    <div class="col-3">
+                        <label asp-for="DateBeginWork" class="control-label"></label>
+                        <input asp-for="DateBeginWork" class="form-control datepickers" />
+                        <span asp-validation-for="DateBeginWork" class="text-danger"></span>
+                    </div>
+                    <div class="col-3">
+                        <label asp-for="DateEndWork" class="control-label"></label>
+                        <input asp-for="DateEndWork" class="form-control datepickers" />
+                        <span asp-validation-for="DateEndWork" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-3">
+                        <label asp-for="Сurrency" class="control-label"></label>
+                        <select name="Сurrency" class="form-control js-chosen" id="CurDC">
+                            <option value="@Model.Сurrency" selected disabled>@Model.Сurrency</option>
+                            @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-3">
+                        <label asp-for="ContractPrice" class="control-label"></label>
+                        <input name="ContractPrice" type="number" value="@Model.ContractPrice" class="form-control" />
+                        <span asp-validation-for="ContractPrice" class="text-danger"></span>
+                    </div>
+
                     <div class="form-group">
                         <label asp-for="NameObject" class="control-label"></label>
                         <input asp-for="NameObject" class="form-control" />

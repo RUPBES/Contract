@@ -9,6 +9,7 @@ using DatabaseLayer.Data;
 using DatabaseLayer.Models;
 using System.Diagnostics.Contracts;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
@@ -302,6 +303,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts/Edit/5
+        //[Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _contractService.GetAll() == null)
@@ -320,9 +322,10 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
+        //[Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Number,SubContractId,AgreementContractId,Date,EnteringTerm,ContractTerm,DateBeginWork,DateEndWork,Сurrency,ContractPrice,NameObject,Client,FundingSource")] ContractViewModel contract)
+        public async Task<IActionResult> Edit(int id, /*[Bind("Id,Number,Date,EnteringTerm,ContractTerm,DateBeginWork,DateEndWork,Сurrency,ContractPrice,NameObject,FundingSource")]*/ ContractViewModel contract)
         {
             if (id != contract.Id)
             {
@@ -354,6 +357,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _contractService.GetAll() == null)
@@ -370,6 +374,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
+        [Authorize]
         // POST: Contracts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

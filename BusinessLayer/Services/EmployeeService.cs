@@ -114,9 +114,9 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPage(int pageSize, int pageNum)
         {
-            int count = _database.Employees.GetAll().Count();
+            int count = _database.Employees.Count();
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Employees.GetAll().Skip(skipEntities).Take(pageSize);
+            var items = _database.Employees.GetEntitySkipTake(skipEntities,pageSize).OrderBy(x => x.FullName);
             var t = _mapper.Map<IEnumerable<EmployeeDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);

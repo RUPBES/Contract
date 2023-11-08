@@ -281,11 +281,11 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.FundingSource).HasComment("источник финансирования");
 
-            entity.Property(e => e.IsAgreementContract).HasComment("является ли соглашением с филиалом");
+            entity.Property(e => e.IsAgreementContract).HasDefaultValueSql("0").HasComment("является ли соглашением с филиалом");
 
-            entity.Property(e => e.IsEngineering).HasComment("является ли договор инжиниринговыми услугами");
+            entity.Property(e => e.IsEngineering).HasDefaultValueSql("0").HasComment("является ли договор инжиниринговыми услугами");
 
-            entity.Property(e => e.IsSubContract).HasComment("Флаг, является ли договором субподряда");
+            entity.Property(e => e.IsSubContract).HasDefaultValueSql("0").HasComment("Флаг, является ли договором субподряда");
 
             entity.Property(e => e.NameObject).HasComment("Название объекта");
 

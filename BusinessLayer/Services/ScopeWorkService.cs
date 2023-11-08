@@ -194,7 +194,7 @@ namespace BusinessLayer.Services
                 .Find(x => x.ContractId == contractId && x.IsOwnForces == false).ToList();                   
 
             //если и основной объем равен NULL возвращаем NULL
-            if (scope is null)
+            if (scope.Count == 0 || scope is null)
             {
                 return null;
             }

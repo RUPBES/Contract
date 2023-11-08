@@ -151,20 +151,26 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetPayableCash()
         {
-            var maxPeriod = _payment.GetAll().MaxBy(x => x.Period).Period;
-            var minPeriod = _payment.GetAll().MinBy(x => x.Period).Period;
+            var maxPeriod = _payment.GetAll()?.MaxBy(x => x.Period)?.Period;
+            var minPeriod = _payment.GetAll()?.MinBy(x => x.Period)?.Period;
 
-            List<DateTime> listDate = new List<DateTime>();
-            DateTime startDate = (DateTime)minPeriod;
-
-            while (startDate <= maxPeriod)
+            if (maxPeriod != null && minPeriod != null)
             {
-                listDate.Add(startDate);
-                startDate = startDate.AddMonths(1);
+                List<DateTime> listDate = new List<DateTime>();
+                DateTime startDate = (DateTime)minPeriod;
+
+                while (startDate <= maxPeriod)
+                {
+                    listDate.Add(startDate);
+                    startDate = startDate.AddMonths(1);
+                }
+
+                ViewBag.ListDate = listDate;
             }
-
-            ViewBag.ListDate = listDate;
-
+            else
+            {
+                ViewBag.ListDate = new List<DateTime>();
+            }
             return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.GetAll()));
         }
     }

@@ -38,7 +38,11 @@ namespace MvcLayer.Controllers
             {
                 // по объему работ, берем начало и окончание периода
                 var period = _scopeWork.GetFullPeriodRangeScopeWork(contractId);
-                
+
+                if (period is null)
+                {
+                    return RedirectToAction("Details", "Contracts", new { id = contractId });
+                }
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,

@@ -108,7 +108,7 @@ namespace BusinessLayer.Services
         {
             int count = _database.Organizations.Count();
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Organizations.GetEntitySkipTake(skipEntities, pageSize);
+            var items = _database.Organizations.GetEntitySkipTake(skipEntities, pageSize).OrderBy(x=>x.Name);
             var t = _mapper.Map<IEnumerable<OrganizationDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
