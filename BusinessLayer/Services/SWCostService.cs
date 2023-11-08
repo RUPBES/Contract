@@ -7,6 +7,7 @@ using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace BusinessLayer.Services
 {
@@ -163,41 +164,34 @@ namespace BusinessLayer.Services
             return resultPeriod;
         }
 
-        public SWCost? GetValueScopeWorkByPeriod(int contractId, DateTime? period, Boolean IsOwn = false)
+        public List<SWCost>? GetValueScopeWorkByPeriod(int contractId, DateTime? start, DateTime? end, Boolean IsOwn = false)
         {
+            var list = new List<SWCost>();
             var scope = _database.ScopeWorks
                 .Find(x => x.ContractId == contractId && x.IsChange == true && x.IsOwnForces == IsOwn)
-                .LastOrDefault();
-            if (scope is null)
-            {
-                scope = _database.ScopeWorks
-                .Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
-            }
+                .LastOrDefault();            
             if (scope is null)
             {
                 return null;
             }
-            var scopeId = scope?.Id;
-            var answer = _database.SWCosts
-                .Find(x => x.Period == period && x.ScopeWorkId == scopeId).LastOrDefault();
-            while (answer is null && scope != null) 
+            
+            for (var time = start; time <= end; time = time.Value.AddMonths(1))
             {
-                scope = scope.ChangeScopeWork;
-                if (scope != null)
-                {
+                var scopeNow = scope;
+                var answer = _database.SWCosts
+                .Find(x => x.Period == time && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
+                while (answer == null && scopeNow != null)
+                {                    
                     answer = _database.SWCosts
-                    .Find(x => x.Period == period && x.ScopeWorkId == scope.Id).LastOrDefault();
-                    if (answer != null)
-                    {
-                        return answer;
-                    }
+                    .Find(x => x.Period == time && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
+                    scopeNow = scopeNow.ChangeScopeWork;
+                }
+                if (answer != null)
+                {
+                    list.Add(answer);
                 }
             }
-            if (answer != null)
-            {
-                return answer;
-            }
-            return null;
+            return list;
         }
     }
 }
