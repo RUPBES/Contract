@@ -18,7 +18,8 @@ namespace DatabaseLayer
         private AmendmentRepository amendmentRepository;
         private ContractOrganizationRepository contractOrganizationRepository;
         private ContractRepository contractRepository;
-        private DepartmentRepository departmentRepository;
+        private DepartmentRepository departmentRepository; 
+        private DepartmentEmployeeRepository departmentEmployeeRepository;
         private EmployeeRepository employeeRepository;
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
@@ -90,6 +91,18 @@ namespace DatabaseLayer
         #endregion
 
         #region tables
+
+        public IRepository<DepartmentEmployee> DepartmentEmployees
+        {
+            get
+            {
+                if (departmentEmployeeRepository is null)
+                {
+                    departmentEmployeeRepository = new DepartmentEmployeeRepository(_context);
+                }
+                return departmentEmployeeRepository;
+            }
+        }
 
         public IRepository<MaterialCost> MaterialCosts
         {

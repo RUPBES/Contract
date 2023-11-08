@@ -33,6 +33,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<Correspondence> Correspondences { get; set; }
 
     public virtual DbSet<Department> Departments { get; set; }
+    public virtual DbSet<DepartmentEmployee> DepartmentEmployees { get; set; }
 
     public virtual DbSet<Employee> Employees { get; set; }
 

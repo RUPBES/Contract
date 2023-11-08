@@ -2,11 +2,6 @@
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
@@ -43,7 +38,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Employee> Find(Func<Employee, bool> predicate)
         {
-            return _context.Employees.Where(predicate).ToList();
+            return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).Where(predicate).ToList();
         }
 
         public IEnumerable<Employee> GetAll()
@@ -55,7 +50,7 @@ namespace DatabaseLayer.Repositories
         {
             if (id > 0)
             {
-                return _context.Employees.Find(id);
+                return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).FirstOrDefault(x=>x.Id == id);
             }
             else
             {
@@ -90,7 +85,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Employee> GetEntitySkipTake(int skip, int take)
         {
-            return _context.Employees.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+            return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 
         public IEnumerable<Employee> GetEntityWithSkipTake(int skip, int take, int legalPersonId)

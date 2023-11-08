@@ -1,4 +1,5 @@
 ﻿using DatabaseLayer.Models;
+using DatabaseLayer.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<Department> Departments { get; }
         IRepository<Contract> Contracts { get; }
         IRepository<ContractOrganization> ContractOrganizations { get; }
+        IRepository<DepartmentEmployee> DepartmentEmployees { get; }
         IRepository<CommissionAct> CommissionActs { get; }
         IRepository<CommissionActFile> CommissionActFiles { get; }
         IRepository<Correspondence> Correspondences { get; }

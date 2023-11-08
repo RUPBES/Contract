@@ -104,6 +104,13 @@ namespace BusinessLayer.Services
             }
         }
 
+        public OrganizationDTO GetByEmployeeId(int employeeId)
+        {
+            var empDepartments = _database.DepartmentEmployees?.Find(x=>x.EmployeeId == employeeId)?.FirstOrDefault()?.Department?.Organization;
+
+            return _mapper.Map<OrganizationDTO>(empDepartments);
+        }
+
         public IndexViewModel GetPage(int pageSize, int pageNum)
         {
             int count = _database.Organizations.Count();

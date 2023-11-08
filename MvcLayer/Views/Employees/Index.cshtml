@@ -2,6 +2,8 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPhoneService Phone
+
 @using BusinessLayer.Models;
 @{
     ViewData["Title"] = "Cотрудники";
@@ -92,7 +94,7 @@
                                         </td>
                                         <td>
                                             <span class="column_150">
-                                                @foreach (var phone in item.Phones)
+                                                @foreach (var phone in Phone.Find(x=>x.EmployeeId == item.Id))
                                                 {
                                                     <span>@phone.Number</span>
                                                 }
@@ -100,10 +102,11 @@
                                         </td>
                                         <td>
                                             <span class="column_200">
-                                                @foreach (var department in item.DepartmentEmployees)
+                                                @*@foreach (var department in item.DepartmentEmployees)
                                                 {
-                                                    <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Abbr</span>
-                                                }
+                                                     <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Abbr</span> *@
+                                                <span>@Organization?.GetByEmployeeId(item.Id)?.Abbr</span>
+                                                @* } *@
                                             </span>
                                         </td>
                                         <td>

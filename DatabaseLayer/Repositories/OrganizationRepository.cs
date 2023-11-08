@@ -89,7 +89,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Organization> GetEntitySkipTake(int skip, int take)
         {
-            return _context.Organizations.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+            return _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 
         public IEnumerable<Organization> GetEntityWithSkipTake(int skip, int take, int legalPersonId)
