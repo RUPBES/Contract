@@ -60,6 +60,10 @@
                             отсрочка/ в течение
                         </span>
                     </th>
+                    @*Контрактная цена*@
+                    <th>
+                        <span class="table_span-currency">Контрактная цена, с НДС</span>
+                    </th>
                     @*Валюта расчетов*@
                     <th>
                         <span class="table_span-currency">Валюта расчетов</span>
@@ -230,6 +234,12 @@
                         </span>
                     </td>
                     <td>
+                        <span class="table_span-contractprice">
+                            @* ЦЕна - *@
+                            @Model?.ContractPrice
+                        </span>
+                    </td>
+                    <td>
                         <span class="table_span-currency">
                             @* Валюта - *@
                             @Model?.Сurrency
@@ -291,7 +301,7 @@
                         </td>
                         <td>
                             <span>
-                                <a asp-action="">@contractBranch?.SelectionProcedures?.FirstOrDefault(x=>x.ContractId == contractBranch?.Id)?.TypeProcedure</a>
+                                <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractBranch.Id">@contractBranch?.SelectionProcedures?.FirstOrDefault(x=>x.ContractId == contractBranch?.Id)?.TypeProcedure</a>
                             </span>
                         </td>
                         <td>
@@ -361,6 +371,12 @@
                             </span>
                         </td>
                         <td>
+                            <span class="table_span-contractprice">
+                                @* ЦЕна - *@
+                                @Model?.ContractPrice
+                            </span>
+                        </td>
+                        <td>
                             <span class="table_span-currency">
                                 @contractBranch?.Сurrency
                             </span>
@@ -422,7 +438,7 @@
                         </td>
                         <td>
                             <span>
-                                <a asp-action="">@contractSub?.SelectionProcedures?.FirstOrDefault(x=>x.ContractId == contractSub?.Id)?.TypeProcedure</a>
+                                <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractSub.Id">@contractSub?.SelectionProcedures?.FirstOrDefault(x=>x.ContractId == contractSub?.Id)?.TypeProcedure</a>
                             </span>
                         </td>
                         <td>
@@ -489,6 +505,12 @@
                                     @* Оплата *@
                                     @contractSub?.PaymentСonditionsRaschet
                                 </a>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="table_span-contractprice">
+                                @* ЦЕна - *@
+                                @Model?.ContractPrice
                             </span>
                         </td>
                         <td>
