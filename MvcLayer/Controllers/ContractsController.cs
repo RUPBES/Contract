@@ -316,7 +316,12 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
-            
+
+            if (contract.ContractOrganizations.Count < 1)
+            { contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+            } else if (contract.ContractOrganizations.Count<2)
+            { contract.ContractOrganizations.Add(new ContractOrganizationDTO()); }
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
             return View(_mapper.Map<ContractViewModel>(contract));
@@ -325,15 +330,22 @@ namespace MvcLayer.Controllers
         //[Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, /*[Bind("Id,Number,Date,EnteringTerm,ContractTerm,DateBeginWork,DateEndWork,Сurrency,ContractPrice,NameObject,FundingSource")]*/ ContractViewModel contract)
+        public async Task<IActionResult> Edit(int id, ContractViewModel contract)
         {
             if (id != contract.Id)
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
+            if (contract.ContractOrganizations[1].OrganizationId == 0)
             {
+                contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
+            }
+            if (contract.ContractOrganizations[0].OrganizationId == 0)
+            {
+                contract.ContractOrganizations.Remove(contract.ContractOrganizations[0]);
+            }
+            //if (ModelState.IsValid)
+            //{
                 try
                 {
                     _contractService.Update(_mapper.Map<ContractDTO>(contract));
@@ -350,10 +362,10 @@ namespace MvcLayer.Controllers
                     }
                 }
                 return RedirectToAction(nameof(Index));
-            }
+            //}
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", contract.SubContractId);
-            return View(contract);
+            return RedirectToAction(nameof(Index));
         }
 
         //[Authorize]

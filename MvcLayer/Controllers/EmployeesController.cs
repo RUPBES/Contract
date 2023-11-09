@@ -131,7 +131,7 @@ namespace MvcLayer.Controllers
                     {
                         employee.Phones.Clear();
                     }
-                employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
+                    employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
                     employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
                     _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 }

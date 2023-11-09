@@ -1,4 +1,6 @@
-﻿@model MvcLayer.Models.ContractViewModel
+﻿@using BusinessLayer.Models;
+@using DatabaseLayer.Models;
+@model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService FormC3
@@ -46,17 +48,52 @@
     var contractPrice = Model.ContractPrice;
     var amendLast = Amendment.Find(a => a.ContractId == Model.Id).LastOrDefault();
     if (amendLast != null) { contractPrice = amendLast.ContractPrice; }
+
+    var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd);
+    var listScopeWorkOwn = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd, true);
+    var workLastYear = new SWCostDTO();
+    var workLastYearOwn = new SWCostDTO();
+    for (var itYear = PeriodStart; itYear < new DateTime(DateTime.Today.Year, 1, 1); itYear.Value.AddMonths(1))
+    {
+        var ob = listScopeWork.Where(x => x.Period == itYear).FirstOrDefault();
+        if (ob != null)
+        {
+            workLastYear.CostNds = workLastYear.CostNds != null ? workLastYear.CostNds + ob.CostNds : ob.CostNds;
+            workLastYear.CostNoNds = workLastYear.CostNoNds != null ? workLastYear.CostNoNds + ob.CostNoNds : ob.CostNoNds;
+            workLastYear.SmrCost = workLastYear.SmrCost != null ? workLastYear.SmrCost + ob.SmrCost : ob.SmrCost;
+            workLastYear.PnrCost = workLastYear.PnrCost != null ? workLastYear.PnrCost + ob.PnrCost : ob.PnrCost;
+            workLastYear.AdditionalCost = workLastYear.AdditionalCost != null ? workLastYear.AdditionalCost + ob.AdditionalCost : ob.AdditionalCost;
+            workLastYear.EquipmentCost = workLastYear.EquipmentCost != null ? workLastYear.EquipmentCost + ob.EquipmentCost : ob.EquipmentCost;
+            workLastYear.OtherExpensesCost = workLastYear.OtherExpensesCost != null ? workLastYear.OtherExpensesCost + ob.OtherExpensesCost : ob.OtherExpensesCost;
+            workLastYear.MaterialCost = workLastYear.MaterialCost != null ? workLastYear.MaterialCost + ob.MaterialCost : ob.MaterialCost;
+            workLastYear.GenServiceCost = workLastYear.GenServiceCost != null ? workLastYear.GenServiceCost + ob.GenServiceCost : ob.GenServiceCost;
+        }
+        var obOwn = listScopeWorkOwn.Where(x => x.Period == itYear).FirstOrDefault();
+        if (obOwn != null)
+        {
+            workLastYearOwn.CostNds = workLastYearOwn.CostNds != null ? workLastYearOwn.CostNds + obOwn.CostNds : obOwn.CostNds;
+            workLastYearOwn.CostNoNds = workLastYearOwn.CostNoNds != null ? workLastYearOwn.CostNoNds + obOwn.CostNoNds : obOwn.CostNoNds;
+            workLastYearOwn.SmrCost = workLastYearOwn.SmrCost != null ? workLastYearOwn.SmrCost + obOwn.SmrCost : obOwn.SmrCost;
+            workLastYearOwn.PnrCost = workLastYearOwn.PnrCost != null ? workLastYearOwn.PnrCost + obOwn.PnrCost : obOwn.PnrCost;
+            workLastYearOwn.AdditionalCost = workLastYearOwn.AdditionalCost != null ? workLastYearOwn.AdditionalCost + obOwn.AdditionalCost : obOwn.AdditionalCost;
+            workLastYearOwn.EquipmentCost = workLastYearOwn.EquipmentCost != null ? workLastYearOwn.EquipmentCost + obOwn.EquipmentCost : obOwn.EquipmentCost;
+            workLastYearOwn.OtherExpensesCost = workLastYearOwn.OtherExpensesCost != null ? workLastYearOwn.OtherExpensesCost + obOwn.OtherExpensesCost : obOwn.OtherExpensesCost;
+            workLastYearOwn.MaterialCost = workLastYearOwn.MaterialCost != null ? workLastYearOwn.MaterialCost + obOwn.MaterialCost : obOwn.MaterialCost;
+            workLastYearOwn.GenServiceCost = workLastYearOwn.GenServiceCost != null ? workLastYearOwn.GenServiceCost + obOwn.GenServiceCost : obOwn.GenServiceCost;
+        }
+    }
 }
 <div id="ConstructionInstallationWorksByTypes" class="d-none">
     <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
             <button id="ChangeToCategories" onclick="funcChangeToCategories()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table">
+                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky;z-index: 3; width: 30vw;">
                     <thead>
                         <tr class="tr-head-main-table">
                             @*Виды работ по договору*@
-                            <th colspan="2" class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Виды работ по договору</span></th>
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Вид работ</span></th>
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-currency">Категория работ</span></th>
                             @*Контрактная договорная цена*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
                             @*Выполнено на 01.01 текущего года*@
@@ -64,7 +101,254 @@
                             @*Остаток по выполнению от стоимости контрактной цены*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
                             @*Объем на текущий год*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>                            
+                        </tr>
+                    </thead>
+                    <tbody class="tbodyPartialTableModal">
+                        <tr id="all" @*Объем работ - План*@> 
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td class="table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
+                            <td><span class="table_span-realization">@workLastYear.CostNds</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                        </tr>
+                        <tr @*Объем работ - Факт*@>                            
+                            <td class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td><span class="table_span-contractprice">Стоимость</span></td>
+                            <td><span class="table_span-realization">@workLastYear.CostNds?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">остаток</span></td>
+                            <td><span class="table_span-volume">объем</span></td>                            
+                        </tr>
+                        <tr @*Объем работ - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.CostNds?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                        </tr>
+                        <tr @*Объем работ - Факт(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-currency"> Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.CostNds?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>                            
+                        </tr>
+
+                        <tr id="smr" @*СМР - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.SmrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>                           
+                        </tr>
+                        <tr @*СМР - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.SmrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>                           
+                        </tr>
+                        <tr @*СМР - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization" @workLastYearOwn.SmrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>                            
+                        </tr>
+                        <tr @*СМР - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">СМР цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.SmrCost?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">СМР остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>  
+                        </tr>
+
+                        <tr id="pnr" @*ПМР - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td class=" table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.PnrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>                            
+                        </tr>
+                        <tr @*ПМР - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.PnrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                        </tr>
+                        <tr @*ПМР - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.PnrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                        </tr>
+                        <tr @*ПМР - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.PnrCost?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">ПНР остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>                            
+                        </tr>
+
+                        <tr id="equip" @*Оборудование - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Оборудование</span></td>
+                            <td class="table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.EquipmentCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>                            
+                        </tr>
+                        <tr @*Оборудование - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.EquipmentCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>                            
+                        </tr>
+                        <tr @*Оборудование - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.EquipmentCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
+                        </tr>
+                        <tr @*Оборудование - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.EquipmentCost?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>                            
+                        </tr>
+
+                        <tr id="other" @*Другие работы - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Другие работы</span></td>
+                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.OtherExpensesCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
+                        </tr>
+                        <tr @*Другие работы - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.OtherExpensesCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Другие работы - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.OtherExpensesCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Другие работы - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">РАБОТЫ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.OtherExpensesCost?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">РАБОТЫ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>                            
+                        </tr>
+
+                        <tr id="allWithoutNDS" @*Всего, без НДС - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Всего, без НДС</span></td>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.CostNoNds?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>                            
+                        </tr>
+                        <tr @*Всего, без НДС - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.CostNoNds?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>                          
+                        </tr>
+                        <tr @*Всего, без НДС - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.CostNoNds?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>                            
+                        </tr>
+                        <tr @*Всего, без НДС - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">Всего по договору цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.CostNoNds?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">Всего по договору остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">Всего по договору объем</span></td>
+                        </tr>
+
+                        <tr id="optionnaly" @*Доп. работы, без НДС - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">ДОП.РАБОТЫ</span></td>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.AdditionalCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Доп. работы, без НДС - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.AdditionalCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Доп. работы, без НДС - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.AdditionalCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Доп. работы, без НДС - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.AdditionalCost?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                           
+                        </tr>
+
+                        <tr id="material" @*Материалы - План*@>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План</span></td>
+                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.MaterialCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Материалы - Факт*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
+                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYear.MaterialCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>                            
+                        </tr>
+                        <tr @*Материалы - План(свои)*@>
+                            <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
+                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td><span class="table_span-realization">@workLastYearOwn.MaterialCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
+                        </tr>
+                        <tr @*Материалы - Факт(свои)*@>
+                            <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
+                            <td class="table-on-their-own"><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
+                            <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.MaterialCost?.ToString("0.00")</span></td>
+                            <td class="table-on-their-own"><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
+                            <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>                            
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="PartialTable modal__table table table-striped table-hover">
+                    <thead>
+                        <tr class="tr-head-main-table">                           
                             @{
                                 @*Период (месяц)*@
                                 var iterator = PeriodStart;
@@ -78,37 +362,25 @@
                     </thead>
                     <tbody class="tbodyPartialTableModal">
                         <tr id="all">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-work">Вид работ</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость работ общая (месяц)*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
-                            @{
-                                @*Стоимость СМР*@
+                        <tr>                            
+                            @{                                
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -119,42 +391,30 @@
                                         sum = @obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
-                            @{
-                                @*Стоимость ПНР*@
+                        <tr>                            
+                            @{                               
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency"> Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>
-                            @{
-                                @*Стоимость Оборудования*@
+                            @{                              
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -165,44 +425,31 @@
                                         sum = @obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="smr">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
+                        <tr>                           
                             @{
-                                @*Стоимость ????*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -213,42 +460,30 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                @*Стоимость доп.работ*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator,true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">СМР цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">СМР выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">СМР остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>
                             @{
-                                @*Стоимость доп.работ*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -259,41 +494,30 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="pnr">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -305,39 +529,29 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator,true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">ПНР остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -349,41 +563,30 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="equip">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">Оборудование</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-currency">План</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -395,39 +598,29 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -439,41 +632,30 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="other">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                            <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                            <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -485,39 +667,29 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                            <td><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                            <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">РАБОТЫ цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">РАБОТЫ выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -529,41 +701,30 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="allWithoutNDS">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">Всего по договору без учета НДС</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
-                            <td><span class="table_span-realization">Всего по договору выполнено</span></td>
-                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
-                            <td><span class="table_span-realization">Всего по договору выполнено</span></td>
-                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -572,42 +733,32 @@
                                     decimal? sum;
                                     if (obj != null)
                                     {
-                                        sum = @obj.TotalCost/(decimal)(1.2);
+                                        sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">Всего по договору цена</span></td>
-                            <td><span class="table_span-realization">Всего по договору выполнено</span></td>
-                            <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">Всего по договору цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">Всего по договору выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">Всего по договору объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -619,41 +770,30 @@
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="optionnaly">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">ДОП.РАБОТЫ</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                            <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
-                        </tr>
+                        </tr> 
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                            <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -665,39 +805,28 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                            <td><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                            <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
-                                {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                {var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">ДОП.РАБОТЫ выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -709,41 +838,30 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="material">
-                            <td rowspan="4" class="table-th-background-color Partialtable-sticky-left-one table-th-background-color"><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План</span></td>
-                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                            <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
-                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                            <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -755,39 +873,29 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
-                            <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                            <td><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                            <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="table-on-their-own Partialtable-sticky-left-two table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
-                            <td class="table-on-their-own"><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
-                            <td class="table-on-their-own"><span class="table_span-realization">МАТЕРИАЛЫ выполнено</span></td>
-                            <td class="table-on-their-own"><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -799,7 +907,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -817,11 +925,12 @@
         <div class="modal-body">
             <button id="ChangeToType" onclick="funcChangeToType()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table table table-striped table-hover">
+                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky;left: 30px;z-index: 3; width: 30vw;">
                     <thead>
                         <tr class="tr-head-main-table">
                             @*Виды работ по договору*@
-                            <th colspan="2" class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Виды работ по договору</span></th>
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-currency">Категория работ</span></th>
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Вид работ</span></th>
                             @*Контрактная договорная цена*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
                             @*Выполнено на 01.01 текущего года*@
@@ -830,54 +939,283 @@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
                             @*Объем на текущий год*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbodyPartialTableModal">
+                        <tr id="plan">
+                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">План</span></td>
+                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice</span></td>
+                            <td><span class="table_span-realization">@workLastYear.CostNds?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                        </tr>
+                        <tr>
+                            <td class=" table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice</span></td>
+                            <td><span class="table_span-realization">@workLastYear.SmrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice</span></td>
+                            <td><span class="table_span-realization">@workLastYear.PnrCost?.ToString("0.00")</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>   
+                      
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                         
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                        </tr>
+
+                        <tr id="fact">
+                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
+                            <td class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                        
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>                         
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>                            
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>                          
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>                            
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>                         
+                        </tr>
+
+                        <tr id="planOur">
+                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">План cвоими силами</span></td>
+                            <td class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>                          
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>                          
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>                      
+                        </tr>
+
+                        <tr id="factOur">
+                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
+                            <td class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
+                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
+                            <td><span class="table_span-remains">Вид работ остаток</span></td>
+                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
+                            <td><span class="table_span-contractprice">СМР цена</span></td>
+                            <td><span class="table_span-realization">СМР выполнено</span></td>
+                            <td><span class="table_span-remains">СМР остаток</span></td>
+                            <td><span class="table_span-volume">СМР объем</span></td>                         
+                        </tr>
+                        <tr>
+                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
+                            <td><span class="table_span-contractprice">ПНР цена</span></td>
+                            <td><span class="table_span-realization">ПНР выполнено</span></td>
+                            <td><span class="table_span-remains">ПНР остаток</span></td>
+                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Оборудование</span></td>
+                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
+                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
+                            <td><span class="table_span-remains">Оборудование остаток</span></td>
+                            <td><span class="table_span-volume">Оборудование объем</span></td>                          
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
+                            <td><span class="table_span-contractprice">Работы цена</span></td>
+                            <td><span class="table_span-realization">Работы выполнено</span></td>
+                            <td><span class="table_span-remains">Работы остаток</span></td>
+                            <td><span class="table_span-volume">Работы объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Всего по договору, без НДС</span></td>
+                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
+                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
+                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
+                            <td><span class="table_span-volume">Договор без НДС объем</span></td>                           
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Доп. работы</span></td>
+                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
+                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
+                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
+                            <td><span class="table_span-volume">Доп. работы объем</span></td>                          
+                        </tr>
+                        <tr>
+                            <td><span class="table_span-work">Материалы</span></td>
+                            <td><span class="table_span-contractprice">Материалы цена</span></td>
+                            <td><span class="table_span-realization">Материалы выполнено</span></td>
+                            <td><span class="table_span-remains">Материалы остаток</span></td>
+                            <td><span class="table_span-volume">Материалы объем</span></td>                           
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="PartialTable modal__table table table-striped table-hover">
+                    <thead>
+                        <tr class="tr-head-main-table">
+                            @*Период (месяц)*@
                             @{
-                                @*Период (месяц)*@
-                                iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
-                                {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
-                                    iterator = iterator.Value.AddMonths(1);
-                                }
+                            iterator = PeriodStart;
+                            while (iterator <= PeriodEnd)
+                            {
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
+                            iterator = iterator.Value.AddMonths(1);
+                            }
                             }
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="plan">                            
-                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План</span></td>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>          
+                        <tr id="plan">
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice"></span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
@@ -891,150 +1229,114 @@
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator);
+                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum </span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="fact">
-                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">Факт</span></td>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Период*@
                                 iterator = PeriodStart;
@@ -1047,17 +1349,12 @@
                                         sum = @obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
@@ -1070,17 +1367,12 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
@@ -1093,17 +1385,12 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
@@ -1116,17 +1403,12 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1139,17 +1421,12 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1159,20 +1436,15 @@
                                     decimal? sum;
                                     if (obj != null)
                                     {
-                                        sum = @obj.TotalCost/(decimal)(1.2);
+                                        sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
@@ -1185,17 +1457,12 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
@@ -1208,205 +1475,158 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="planOur">
-                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">План cвоими силами</span></td>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator,true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
 
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    var obj = SWCosts.GetValueScopeWorkByPeriod(Model.Id, iterator, true);
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum </span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
                         <tr id="factOur">
-                            <td rowspan="8" class="table-th-background-color Partialtable-sticky-left-one"><span class="table_span-currency">Факт своими силами</span></td>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
                             @{
                                 @*Период*@
                                 iterator = PeriodStart;
@@ -1419,17 +1639,12 @@
                                         sum = obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
@@ -1442,17 +1657,12 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
@@ -1465,17 +1675,12 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
@@ -1488,17 +1693,12 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1511,17 +1711,12 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1531,20 +1726,15 @@
                                     decimal? sum;
                                     if (obj != null)
                                     {
-                                        sum = @obj.TotalCost/(decimal)(1.2);
+                                        sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
@@ -1557,17 +1747,12 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            <td class="Partialtable-sticky-left-three"><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
@@ -1580,7 +1765,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum</span></td>
+                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1596,8 +1781,8 @@
 
 
 <script>
-        
-    function funcChangeToCategories (){
+
+    function funcChangeToCategories() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
@@ -1605,9 +1790,9 @@
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable1.classList.remove('d-none')
         elementTable1.classList.add('show')
-    } 
-    
-    function funcChangeToType (){
+    }
+
+    function funcChangeToType() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
@@ -1616,16 +1801,16 @@
         elementTable1.classList.remove('d-none')
         elementTable1.classList.add('show')
     }
-        
-    function funcCloseByTableCategories (){
+
+    function funcCloseByTableCategories() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
         $('#modDialog').modal('toggle');
     }
 
-    
-    function funcCloseByTableType (){
+
+    function funcCloseByTableType() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')

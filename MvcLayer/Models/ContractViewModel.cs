@@ -107,11 +107,13 @@ namespace MvcLayer.Models
         /// <summary>
         /// условия оплаты (авансы)
         /// </summary>
+        [DisplayName("Условия авансирования")]
         public string? PaymentСonditionsAvans { get; set; }
 
         /// <summary>
         /// условия оплаты (расчеты за выполненные работы)
         /// </summary>
+        [DisplayName("Расчет за выполненные работы")]
         public string? PaymentСonditionsRaschet { get; set; }
         public int? PaymentСonditionsDaysRaschet { get; set; }
         public int? PaymentСonditionsDaysRaschet2 { get; set; }
