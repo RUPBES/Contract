@@ -236,7 +236,7 @@
                     <td>
                         <span class="table_span-contractprice">
                             @* ЦЕна - *@
-                            @Model?.ContractPrice
+                            @Model?.ContractPrice?.ToString("0.00")
                         </span>
                     </td>
                     <td>
@@ -296,6 +296,9 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractBranch.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractBranch.Id">+ ПСД</a>
                                     </div>
+                                </div>
+                                <div class="icon delete">
+                                    <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
                                 </div>
                             </div>
                         </td>
@@ -373,7 +376,7 @@
                         <td>
                             <span class="table_span-contractprice">
                                 @* ЦЕна - *@
-                                @Model?.ContractPrice
+                                @contractBranch?.ContractPrice?.ToString("0.00")
                             </span>
                         </td>
                         <td>
@@ -433,6 +436,9 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractSub.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractSub.Id">+ ПСД</a>
                                     </div>
+                                </div>
+                                <div class="icon delete">
+                                    <a asp-action="Delete" asp-route-id="@contractSub.Id"></a>
                                 </div>
                             </div>
                         </td>
@@ -510,7 +516,7 @@
                         <td>
                             <span class="table_span-contractprice">
                                 @* ЦЕна - *@
-                                @Model?.ContractPrice
+                                @contractSub?.ContractPrice?.ToString("0.00")
                             </span>
                         </td>
                         <td>

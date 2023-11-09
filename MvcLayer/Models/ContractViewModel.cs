@@ -28,7 +28,7 @@ namespace MvcLayer.Models
         /// <summary>
         /// Дата договора
         /// </summary>
-        [DisplayName("Дата договора")]
+        [DisplayName("Дата заключения договора")]
         public DateTime? Date { get; set; }
 
         /// <summary>

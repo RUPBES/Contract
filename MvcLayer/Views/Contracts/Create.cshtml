@@ -191,7 +191,7 @@
             <label asp-for="Date" for="DateDC"></label>
             <div class="input-group">
                 <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                <input asp-for="Date" type="date" class="form-control" id="DateDC">
+                <input asp-for="Date" type="date" class="form-control " id="DateDC">
             </div>
         </div>
         <div class="form-group">
@@ -207,21 +207,25 @@
         </div>
         <fieldset class="border rounded-1 p-3">
             <legend class="float-none w-auto px-3">Условия авансирования</legend>
+            @{
+                int numberCheckbox = 0;
+            }
             @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
             {
                 var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
                 var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
+                string idCh = "check" + @numberCheckbox;
                 <div>
                     <div class="input-group mb-2">
                         <div class="input-group-prepend">
                             <div class="input-group-text" style="display: block;">
                                 @if (valueArray is not null)
                                 {
-                                    <input type="checkbox" name="PaymentCA" value="@value" checked>
+                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
                                 }
                                 @if (valueArray is null)
                                 {
-                                    <input type="checkbox" name="PaymentCA" value="@value">
+                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
                                 }
                             </div>
                         </div>
@@ -229,6 +233,7 @@
 
                     </div>
                 </div>
+                numberCheckbox++;
             }
         </fieldset>
         <fieldset class="border rounded-1 p-3">
@@ -368,6 +373,130 @@
 @section Scripts {
     <script type="text/javascript">
         $(document).ready(function () {
+            
+            ////    проверка вводимых дат /////////********/
+            //////////////////////////////////////********/
+            /*
+
+            Дата договора  -  a / id = DateDC
+            Начало работ   -  b / id = DateBeginWork
+            Окончание работ - c / id = DateEndWork
+            Срок ввода      - d / id = EnteringTerm
+            Срок действия   - e / id = ContractTerm
+
+             a<=b
+             b<c
+             c<=d
+             c<e
+            */
+            let dateContract = document.querySelector("#DateDC");
+            let beginWork = document.querySelector("#DateBeginWork");
+            let endWork = document.querySelector("#DateEndWork");
+            let enteringTm = document.querySelector("#EnteringTerm");
+            let contractTm = document.querySelector("#ContractTerm");
+
+            dateContract.addEventListener('change',(e)=>{
+                let date = dateContract.value; 
+                let dateBeg = beginWork.value;
+
+                if (date > dateBeg && dateBeg.length > 0) {
+                    let datePlusOne = addDays(new Date(date), 0);
+                    $("#DateBeginWork").val(date);
+                }
+
+                beginWork.setAttribute('min', date);
+            });
+
+            beginWork.addEventListener('change', (e) => {
+                let date = beginWork.value;
+                let dateEnd = endWork.value;
+
+                let datePlusOne = addDays(new Date(date), 1);
+
+                if (date > dateEnd && dateEnd.length > 0) {                    
+                    $("#DateEndWork").val(datePlusOne);
+                }
+
+                endWork.setAttribute('min', datePlusOne);
+            });
+
+            endWork.addEventListener('change', (e) => {
+                let dateET = enteringTm.value;
+                let dateCT = contractTm.value;
+                let dateEnd = endWork.value;
+
+                let datePlusOne = addDays(new Date(dateEnd), 1);
+
+                if (dateET < dateEnd && dateET.length > 0) {
+                    $("#EnteringTerm").val(dateEnd);
+                }
+                if (dateCT < dateEnd && dateCT.length > 0) {
+                    $("#ContractTerm").val(datePlusOne);
+                }
+
+                enteringTm.setAttribute('min', dateEnd);
+                contractTm.setAttribute('min', datePlusOne);
+            });
+
+
+
+            function addDays(date, countDays) {
+                let dateOfyear = date.getFullYear() + ""; // год;
+                console.log(dateOfyear);
+                let newDateOfyear = dateOfyear/* .slice(2) */; // год последние две цифры;
+
+                let day = date.getDate(); // текущий день
+                day = day < 10 ? "0" + day + countDays : day + countDays;
+                let month = date.getMonth() + 1; //текущий месяцж
+                month = month < 10 ? "0" + month : month;
+
+                return +newDateOfyear +'-'+ +month + '-'+ +day;
+            }
+            //////////////////////////////////////////
+            //////////////////////////////////////////
+
+
+            
+            ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+
+            let ch1 = document.querySelector("#check0");
+            let ch2 = document.querySelector("#check1");
+            let ch3 = document.querySelector("#check2");
+
+            ch1.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch2.setAttribute("disabled", true);
+                    ch3.setAttribute("disabled", true);
+                }
+
+                if (!e.currentTarget.checked) {
+                    ch2.removeAttribute("disabled");
+                    ch3.removeAttribute("disabled");
+                }               
+            });
+
+            ch2.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch1.setAttribute("disabled", true);
+                }
+                
+                if (!e.currentTarget.checked && !ch3.checked) {
+                    ch1.removeAttribute("disabled");
+                }
+                               
+            });
+
+            ch3.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch1.setAttribute("disabled", true);
+                }
+
+                if (!e.currentTarget.checked && !ch2.checked) {
+                    ch1.removeAttribute("disabled");
+                }
+            });
+
+            ///////
 
              let styleName = "border:solid red 4px;";
 
