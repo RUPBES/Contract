@@ -29,7 +29,7 @@ namespace DatabaseLayer.Repositories
         public void Delete(int id, int? secondId = null)
         {
             Organization organization = _context.Organizations.Find(id);
-            
+
             if (organization is not null)
             {
                 _context.Organizations.Remove(organization);
@@ -53,8 +53,8 @@ namespace DatabaseLayer.Repositories
                 return _context.Organizations
                     .Include(x => x.Addresses)
                     .Include(x => x.Departments)
-                    .Include(x=>x.Phones)
-                    .FirstOrDefault(x=>x.Id == id);
+                    .Include(x => x.Phones)
+                    .FirstOrDefault(x => x.Id == id);
             }
             else
             {
@@ -76,6 +76,23 @@ namespace DatabaseLayer.Repositories
                     orgnization.Email = entity.Email;
                     orgnization.PaymentAccount = entity.PaymentAccount;
                     orgnization.Addresses = entity.Addresses;
+
+
+                    var phone = _context.Phones.FirstOrDefault(x => x.OrganizationId == entity.Id);
+                    if (phone != null)
+                    {
+                        _context.Phones.Remove(phone);
+                        _context.SaveChanges();
+                    }
+                    
+                    if (entity.Phones.FirstOrDefault().Number is not null)
+                    {
+                        _context.Phones.Add(new Phone
+                        {
+                            Number = entity.Phones.FirstOrDefault().Number,
+                            OrganizationId = entity.Id
+                        });
+                    }
 
                     _context.Organizations.Update(orgnization);
                 }

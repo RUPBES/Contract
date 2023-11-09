@@ -15,65 +15,58 @@
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Edit">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input type="hidden" asp-for="Id" />
-                        <div class="form-group">
-                            <label asp-for="LastName" class="control-label"></label>
-                            <input asp-for="LastName" class="form-control" />
-                            <span asp-validation-for="LastName" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="FirstName" class="control-label"></label>
-                            <input asp-for="FirstName" class="form-control" />
-                            <span asp-validation-for="FirstName" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="FatherName" class="control-label"></label>
-                            <input asp-for="FatherName" class="form-control" />
-                            <span asp-validation-for="FatherName" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Организация</label>
-                            <select id="organizationNameSelect" class="form-control js-chosen">
-                                @if (Model.DepartmentEmployees[0].DepartmentId != 0)
-                                {
-                                    <option value="@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId" selected>@Organization.GetById((int)Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId).Abbr</option>
-                                }
+                    <div class="form-group">
+                        <label asp-for="LastName" class="control-label"></label>
+                        <input name="LastName" value="@Model.LastName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="FirstName" class="control-label"></label>
+                        <input name="FirstName" value="@Model.FirstName" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="FatherName" class="control-label"></label>
+                        <input asp-for="FatherName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Организация</label>
+                        <select id="organizationNameSelect" class="form-control js-chosen">
+                            @if (Model.DepartmentEmployees[0].DepartmentId != 0)
+                            {
+                                <option value="@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId" selected>@Organization.GetById((int)Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId).Name</option>
+                            }
                             else
                             {
                                 <option disabled selected>Выберите организацию</option>
                             }
-                                @foreach (var item in Organization.GetAll())
-                                {
-                                    <option value="@item.Id">@item.Name</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Отдел</label>
-                            <select id="departmentNameSelect" asp-for="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen">
+                            @foreach (var item in Organization.GetAll())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Отдел</label>
+                        <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen" aria-required="false">
                             @if (Model.DepartmentEmployees[0].DepartmentId != 0)
                             {
-                                    <option value="@Model.DepartmentEmployees[0].DepartmentId" selected>@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).Name</option>
+                                <option value="@Model.DepartmentEmployees[0].DepartmentId" selected>@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).Name</option>
                             }
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Position" class="control-label"></label>
-                            <input asp-for="Position" class="form-control" />
-                            <span asp-validation-for="Position" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="Email" class="control-label"></label>
-                            <input asp-for="Email" class="form-control" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-                        <div class="form-group">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Position" class="control-label"></label>
+                        <input asp-for="Position" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Email" class="control-label"></label>
+                        <input asp-for="Email" type="email" class="form-control" />
+                    </div>
+                    <div class="form-group">
                         <input asp-for="Phones[0].Id" value="@Model.Phones[0].Id" class="form-control" hidden>
-                            <label asp-for="Phones[0].Number" class="control-label">Телефон</label>
-                            <input asp-for="Phones[0].Number" class="form-control" required />
-                            <span asp-validation-for="Phones[0].Number" class="text-danger"></span>
-                        </div>
+                        <label class="control-label">Телефон</label>
+                        <input asp-for="Phones[0].Number" value="@Model.Phones[0]?.Number" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" required/>
+                    </div>
                     <div class="form-group mt-3">
                         <input type="submit" value="Изменить" class="btn btn-primary" />
                     </div>
@@ -88,6 +81,7 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script type="text/javascript">
+        fillPhoneInput();
         $("#organizationNameSelect").change(function () {
             $.ajax({
                 type: 'POST',

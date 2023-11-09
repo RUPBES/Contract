@@ -19,19 +19,19 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость СМР")]
         public decimal? SmrCost { get; set; }
 
-        [DisplayName("Цена ПНР")]
+        [DisplayName("Cтоимость ПНР")]
         public decimal? PnrCost { get; set; }
 
-        [DisplayName("Цена оборудования")]
+        [DisplayName("Cтоимость оборудования")]
         public decimal? EquipmentCost { get; set; }
 
-        [DisplayName("Цена остальных работ")]
+        [DisplayName("Cтоимость остальных работ")]
         public decimal? OtherExpensesCost { get; set; }
 
-        [DisplayName("Цена доп. работ")]
+        [DisplayName("Cтоимость доп. работ")]
         public decimal? AdditionalCost { get; set; }
 
-        [DisplayName("Цена материалов")]
+        [DisplayName("Cтоимость материалов")]
         public decimal? MaterialCost { get; set; }
 
         [DisplayName("Сумма услуг генподрядчика")]

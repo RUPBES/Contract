@@ -20,25 +20,25 @@
                     }
                 </div>
                 <hr class="modal-line">
-                <form asp-action="Create" class="row" enctype="multipart/form-data">
+                <form asp-action="Create" method="post" class="row" enctype="multipart/form-data">
                     <input asp-for="ContractId" value="@Model.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model.IsOwnForces" hidden />
                     <input asp-for="Period" type="datetime" value="@Model.Period" hidden />
 
                     <div class="form-group col-6">
                         <label asp-for="Period" class="control-label"></label>
-                        <input type="text" value="@Model.Period" class="form-control" disabled />
+                        <input type="text" value="@Model.Period?.ToShortDateString()" class="form-control" disabled />
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateSigning" class="control-label"></label>
-                        <input asp-for="DateSigning" type="date" class="form-control" />
+                        <input asp-for="DateSigning" type="datetime" class="form-control datepickers" />
                         <span asp-validation-for="DateSigning" class="text-danger"></span>
                     </div>
-                    <div class="form-group col-6">
+                    @* <div class="form-group col-6">
                         <label asp-for="TotalCost" class="control-label"></label>
                         <input asp-for="TotalCost" class="form-control" />
                         <span asp-validation-for="TotalCost" class="text-danger"></span>
-                    </div>
+                    </div> *@
                     <div class="form-group col-6">
                         <label asp-for="SmrCost" class="control-label"></label>
                         <input asp-for="SmrCost" class="form-control" />
@@ -75,13 +75,13 @@
                         <span asp-validation-for="GenServiceCost" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
-                        <label asp-for="FilesEntity" class="control-label"></label>
+                        <label asp-for="FilesEntity" class="control-label">Файл</label>
                         <input asp-for="FilesEntity" type="file" class="form-control" />
                         <span asp-validation-for="FilesEntity" class="text-danger"></span>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mt-3 col-8">
                         <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.ContractId">Вернуться назад</a>
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                        <input type="submit" value="Добавить" class="btn btn-primary" />
                     </div>
                 </form>
             </div>

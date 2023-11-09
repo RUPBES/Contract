@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class EmployeeRepository: IEntityWithPagingRepository<Employee>
+    internal class EmployeeRepository : IEntityWithPagingRepository<Employee>
     {
         private readonly ContractsContext _context;
         public EmployeeRepository(ContractsContext context)
@@ -50,7 +50,7 @@ namespace DatabaseLayer.Repositories
         {
             if (id > 0)
             {
-                return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).FirstOrDefault(x=>x.Id == id);
+                return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).FirstOrDefault(x => x.Id == id);
             }
             else
             {
@@ -70,7 +70,29 @@ namespace DatabaseLayer.Repositories
                     employee.Fio = entity.Fio;
                     employee.Position = entity.Position;
                     employee.Email = entity.Email;
-                    employee.DepartmentEmployees = entity.DepartmentEmployees;
+                    var depEmp = _context.DepartmentEmployees.FirstOrDefault(x => x.EmployeeId == entity.Id);
+
+                    if (depEmp != null)
+                    {
+                        _context.DepartmentEmployees.Remove(depEmp);
+                        _context.SaveChanges();
+
+                        depEmp.EmployeeId = entity.Id;
+                        depEmp.DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId;
+                        _context.DepartmentEmployees.Add(depEmp);
+                    }
+                    else
+                    {
+                        depEmp.EmployeeId = entity.Id;
+                        depEmp.DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId;
+                        _context.DepartmentEmployees.Add(new DepartmentEmployee
+                        {
+                            DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId,
+                            EmployeeId = entity.Id
+                        });
+                    }
+
+                    //employee.DepartmentEmployees = entity.DepartmentEmployees;
                     employee.Phones = entity.Phones;
                     _context.Employees.Update(employee);
                 }
@@ -97,7 +119,7 @@ namespace DatabaseLayer.Repositories
         {
             "FullName" => _context.Employees.Where(x => EF.Functions.Like(x.FullName, $"%{queryString}%")).OrderBy(x => x.FullName).ToList(),
             "Position" => _context.Employees.Where(x => EF.Functions.Like(x.Position, $"%{queryString}%")).OrderBy(x => x.Position).ToList(),
-            "Email" => _context.Employees.Where(x => EF.Functions.Like(x.Email, $" %{queryString}%")).OrderBy(x => x.Email).ToList(),            
+            "Email" => _context.Employees.Where(x => EF.Functions.Like(x.Email, $" %{queryString}%")).OrderBy(x => x.Email).ToList(),
             _ => new List<Employee>()
         };
     }

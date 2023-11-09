@@ -75,3 +75,19 @@ function addition_nav_bar() {
         new_emp.classList.toggle('btn_new_emp_active');
     });
 }
+
+function fillPhoneInput() {
+    document.querySelector(".phone-number-pattern-fill").addEventListener("keydown", function (e) {
+        const txt = this.value;
+        // больше чем 14 символов нельзя ввести, игнорируем ввод, разрешаем удалить символ
+        if ((txt.length == 14 || e.which == 32) & e.which !== 8) e.preventDefault();
+
+        if (txt.length == 4 && e.which !== 8) {
+            this.value = this.value + " ";
+        }
+        else if ((txt.length == 8 || txt.length == 11) && e.which !== 8) {
+            this.value = this.value + "-";
+        }
+
+    });
+}

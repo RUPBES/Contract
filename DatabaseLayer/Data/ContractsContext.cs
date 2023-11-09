@@ -410,13 +410,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Department)
                 .WithMany(p => p.DepartmentEmployees)
                 .HasForeignKey(d => d.DepartmentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_DepartmentEmployee_Department_Id");
 
             entity.HasOne(d => d.Employee)
                 .WithMany(p => p.DepartmentEmployees)
                 .HasForeignKey(d => d.EmployeeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_DepartmentEmployee_Employee_Id");
         });
 
@@ -448,13 +448,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.EmployeeContracts)
                 .HasForeignKey(d => d.ContractId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_EmployeeContract_Contract_Id");
 
             entity.HasOne(d => d.Employee)
                 .WithMany(p => p.EmployeeContracts)
                 .HasForeignKey(d => d.EmployeeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_EmployeeContract_Employee_Id");
         });
 
@@ -574,6 +574,7 @@ public partial class ContractsContext : DbContext
                 .HasComment("стоимость СМР");
 
             entity.Property(e => e.TotalCost)
+            .HasComputedColumnSql()
                 .HasColumnType("money")
                 .HasComment("Объем выполненных работ");
 

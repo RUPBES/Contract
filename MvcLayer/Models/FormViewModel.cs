@@ -25,13 +25,13 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость оборудования")]
         public decimal? EquipmentCost { get; set; }
 
-        [DisplayName("Стоимость остальных работ")]
+        [DisplayName("Стоимость прочих работ")]
         public decimal? OtherExpensesCost { get; set; }
 
         [DisplayName("Стоимость доп. работ")]
         public decimal? AdditionalCost { get; set; }
 
-        [DisplayName("Стоимость материалов")]
+        [DisplayName("Материалы заказчика (справочно)")]
         public decimal? MaterialCost { get; set; }
 
         [DisplayName("Стоимость ген.услуг")]

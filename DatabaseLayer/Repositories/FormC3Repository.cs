@@ -68,7 +68,7 @@ namespace DatabaseLayer.Repositories
                 {
                     form.Period = entity.Period;
                     form.DateSigning = entity.DateSigning;
-                    form.TotalCost = entity.TotalCost;
+                    //form.TotalCost = entity.TotalCost;
                     form.SmrCost = entity.SmrCost;
                     form.PnrCost = entity.PnrCost;
                     form.EquipmentCost = entity.EquipmentCost;

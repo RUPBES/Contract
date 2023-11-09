@@ -356,8 +356,7 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
-        // GET: Contracts/Delete/5
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _contractService.GetAll() == null)
@@ -374,8 +373,8 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
-        [Authorize]
-        // POST: Contracts/Delete/5
+        //[Authorize]
+       
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
