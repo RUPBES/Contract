@@ -53,7 +53,7 @@
     var listScopeWorkOwn = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd, true);
     var workLastYear = new SWCostDTO();
     var workLastYearOwn = new SWCostDTO();
-    for (var itYear = PeriodStart; itYear < new DateTime(DateTime.Today.Year, 1, 1); itYear.Value.AddMonths(1))
+    for (var itYear = PeriodStart; itYear < new DateTime(DateTime.Today.Year, 1, 1); itYear = itYear.Value.AddMonths(1))
     {
         var ob = listScopeWork.Where(x => x.Period == itYear).FirstOrDefault();
         if (ob != null)
@@ -88,7 +88,7 @@
         <div class="modal-body">
             <button id="ChangeToCategories" onclick="funcChangeToCategories()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky;z-index: 3; width: 30vw;">
+                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: 0px; z-index: 3; width: 30vw;">
                     <thead>
                         <tr class="tr-head-main-table">
                             @*Виды работ по договору*@
@@ -925,7 +925,7 @@
         <div class="modal-body">
             <button id="ChangeToType" onclick="funcChangeToType()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky;left: 30px;z-index: 3; width: 30vw;">
+                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: 0px; z-index: 3; width: 30vw;">
                     <thead>
                         <tr class="tr-head-main-table">
                             @*Виды работ по договору*@
@@ -994,7 +994,7 @@
                             <td><span class="table_span-volume">Вид работ объем</span></td>                         
                         </tr>
                         <tr>
-                            <td class="table-th-background-color"><span class="table_span-work">Материалы</span></td>
+                            <td class="table-th-background-color"><span class="table_span-work">Материалы заказчика (справочно)</span></td>
                             <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
                             <td><span class="table_span-realization">Вид работ выполнено</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>

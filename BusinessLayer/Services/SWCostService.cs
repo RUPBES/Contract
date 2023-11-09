@@ -172,7 +172,7 @@ namespace BusinessLayer.Services
                 .LastOrDefault();            
             if (scope is null)
             {
-                return null;
+                return new List<SWCost>();
             }
             
             for (var time = start; time <= end; time = time.Value.AddMonths(1))
