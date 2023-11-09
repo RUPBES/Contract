@@ -168,7 +168,7 @@ namespace BusinessLayer.Services
         {
             var list = new List<SWCost>();
             var scope = _database.ScopeWorks
-                .Find(x => x.ContractId == contractId && x.IsChange == true && x.IsOwnForces == IsOwn)
+                .Find(x => x.ContractId == contractId && x.IsOwnForces == IsOwn)
                 .LastOrDefault();            
             if (scope is null)
             {
