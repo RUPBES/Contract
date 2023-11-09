@@ -35,7 +35,7 @@ window.onclick = function (event) {
         }
     }
 }
-
+//Разбиение строки по разрядам числа
 function digits_float(target) {
     val = $(target).val().replace(/[^0-9,]/g, '');
     if (val.indexOf(",") != '-1') {

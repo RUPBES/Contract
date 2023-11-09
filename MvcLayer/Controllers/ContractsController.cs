@@ -332,14 +332,14 @@ namespace MvcLayer.Controllers
         //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(/*int id, */ContractViewModel contract)
         {            
-            if (contract.ContractOrganizations[1].OrganizationId == 0)
-            {
-                contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
-            }
-            if (contract.ContractOrganizations[0].OrganizationId == 0)
-            {
-                contract.ContractOrganizations.Remove(contract.ContractOrganizations[0]);
-            }
+            //if (contract.ContractOrganizations[1].OrganizationId == 0)
+            //{
+            //    contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
+            //}
+            //if (contract.ContractOrganizations[0].OrganizationId == 0)
+            //{
+            //    contract.ContractOrganizations.Remove(contract.ContractOrganizations[0]);
+            //}
             
                 try
                 {
