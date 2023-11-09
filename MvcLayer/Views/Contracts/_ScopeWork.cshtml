@@ -43,44 +43,77 @@
                 PeriodEnd = (DateTime)item2.Period;
             }
         }
-    }
-
-    var contractPrice = Model.ContractPrice;
-    var amendLast = Amendment.Find(a => a.ContractId == Model.Id).LastOrDefault();
-    if (amendLast != null) { contractPrice = amendLast.ContractPrice; }
+    }     
 
     var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd);
     var listScopeWorkOwn = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd, true);
-    var workLastYear = new SWCostDTO();
+
+    var workLastYear = new SWCostDTO();    
+    var allScope = new SWCostDTO();
+    var todayYearScope = new SWCostDTO();
+    var todayScope = new SWCostDTO();
+
     var workLastYearOwn = new SWCostDTO();
-    for (var itYear = PeriodStart; itYear < new DateTime(DateTime.Today.Year, 1, 1); itYear = itYear.Value.AddMonths(1))
+    var allScopeOwn = new SWCostDTO();
+    var todayYearScopeOwn = new SWCostDTO();
+    var todayScopeOwn = new SWCostDTO();
+
+    foreach (var item in FormC3.Find(f => f.ContractId == Model.Id))
     {
-        var ob = listScopeWork.Where(x => x.Period == itYear).FirstOrDefault();
-        if (ob != null)
+        if (item.Period < new DateTime(DateTime.Today.Year, 1, 1))
         {
-            workLastYear.CostNds = workLastYear.CostNds != null ? workLastYear.CostNds + ob.CostNds : ob.CostNds;
-            workLastYear.CostNoNds = workLastYear.CostNoNds != null ? workLastYear.CostNoNds + ob.CostNoNds : ob.CostNoNds;
-            workLastYear.SmrCost = workLastYear.SmrCost != null ? workLastYear.SmrCost + ob.SmrCost : ob.SmrCost;
-            workLastYear.PnrCost = workLastYear.PnrCost != null ? workLastYear.PnrCost + ob.PnrCost : ob.PnrCost;
-            workLastYear.AdditionalCost = workLastYear.AdditionalCost != null ? workLastYear.AdditionalCost + ob.AdditionalCost : ob.AdditionalCost;
-            workLastYear.EquipmentCost = workLastYear.EquipmentCost != null ? workLastYear.EquipmentCost + ob.EquipmentCost : ob.EquipmentCost;
-            workLastYear.OtherExpensesCost = workLastYear.OtherExpensesCost != null ? workLastYear.OtherExpensesCost + ob.OtherExpensesCost : ob.OtherExpensesCost;
-            workLastYear.MaterialCost = workLastYear.MaterialCost != null ? workLastYear.MaterialCost + ob.MaterialCost : ob.MaterialCost;
-            workLastYear.GenServiceCost = workLastYear.GenServiceCost != null ? workLastYear.GenServiceCost + ob.GenServiceCost : ob.GenServiceCost;
+            workLastYear = workLastYear + item;
+            todayScope = todayScope + item;
         }
-        var obOwn = listScopeWorkOwn.Where(x => x.Period == itYear).FirstOrDefault();
-        if (obOwn != null)
+        else
         {
-            workLastYearOwn.CostNds = workLastYearOwn.CostNds != null ? workLastYearOwn.CostNds + obOwn.CostNds : obOwn.CostNds;
-            workLastYearOwn.CostNoNds = workLastYearOwn.CostNoNds != null ? workLastYearOwn.CostNoNds + obOwn.CostNoNds : obOwn.CostNoNds;
-            workLastYearOwn.SmrCost = workLastYearOwn.SmrCost != null ? workLastYearOwn.SmrCost + obOwn.SmrCost : obOwn.SmrCost;
-            workLastYearOwn.PnrCost = workLastYearOwn.PnrCost != null ? workLastYearOwn.PnrCost + obOwn.PnrCost : obOwn.PnrCost;
-            workLastYearOwn.AdditionalCost = workLastYearOwn.AdditionalCost != null ? workLastYearOwn.AdditionalCost + obOwn.AdditionalCost : obOwn.AdditionalCost;
-            workLastYearOwn.EquipmentCost = workLastYearOwn.EquipmentCost != null ? workLastYearOwn.EquipmentCost + obOwn.EquipmentCost : obOwn.EquipmentCost;
-            workLastYearOwn.OtherExpensesCost = workLastYearOwn.OtherExpensesCost != null ? workLastYearOwn.OtherExpensesCost + obOwn.OtherExpensesCost : obOwn.OtherExpensesCost;
-            workLastYearOwn.MaterialCost = workLastYearOwn.MaterialCost != null ? workLastYearOwn.MaterialCost + obOwn.MaterialCost : obOwn.MaterialCost;
-            workLastYearOwn.GenServiceCost = workLastYearOwn.GenServiceCost != null ? workLastYearOwn.GenServiceCost + obOwn.GenServiceCost : obOwn.GenServiceCost;
+            todayScope = todayScope + item;
         }
+    }
+    foreach (var item in FormC3.Find(f => f.ContractId == Model.Id && f.IsOwnForces == true))
+    {
+        if (item.Period < new DateTime(DateTime.Today.Year, 1, 1))
+        {
+            workLastYearOwn = workLastYearOwn + item;
+            todayScopeOwn = todayScopeOwn + item;
+        }
+        else
+        {
+            todayScopeOwn = todayScopeOwn + item;
+        }
+    }
+
+    for (var itYear = PeriodStart; itYear < PeriodEnd; itYear = itYear.Value.AddMonths(1))
+    {        
+        if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
+        {
+            var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
+            if (ob != null)
+            {
+                todayYearScope = todayYearScope + ob;
+                allScope = allScope + ob;
+            }
+            var obOwn = listScopeWorkOwn?.Where(x => x.Period == itYear).FirstOrDefault();
+            if (obOwn != null)
+            {
+                todayYearScopeOwn = todayYearScopeOwn + obOwn;
+                allScopeOwn = allScopeOwn + obOwn;
+            }
+        }
+        else
+        {
+            var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
+            if (ob != null)
+            {                
+                allScope = allScope + ob;
+            }
+            var obOwn = listScopeWorkOwn?.Where(x => x.Period == itYear).FirstOrDefault();
+            if (obOwn != null)
+            {                
+                allScopeOwn = allScope + obOwn;
+            }
+        }
+
     }
 }
 <div id="ConstructionInstallationWorksByTypes" class="d-none">
@@ -88,7 +121,7 @@
         <div class="modal-body">
             <button id="ChangeToCategories" onclick="funcChangeToCategories()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: 0px; z-index: 3; width: 30vw;">
+                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: -10px; z-index: 3; width: 30vw;">
                     <thead>
                         <tr class="tr-head-main-table">
                             @*Виды работ по договору*@
@@ -106,10 +139,10 @@
                     </thead>
                     <tbody class="tbodyPartialTableModal">
                         <tr id="all" @*Объем работ - План*@> 
-                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
                             <td class="table-th-background-color"><span class="table_span-currency">План</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
-                            <td><span class="table_span-realization">@workLastYear.CostNds</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.CostNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNds)</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
                             <td><span class="table_span-volume">Вид работ объем</span></td>                            
                         </tr>
@@ -316,7 +349,7 @@
                         </tr>
 
                         <tr id="material" @*Материалы - План*@>
-                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА (СПРАВОЧНО)</span></td>
+                            <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Материалы заказчика (справочно)</span></td>
                             <td class="table-th-background-color"><span class="table_span-contractprice">План</span></td>
                             <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.MaterialCost?.ToString("0.00")</span></td>
@@ -361,7 +394,7 @@
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="all">
+                        <tr id="all" >
                             @{
                                 @*Стоимость работ общая (месяц)*@
                                 iterator = PeriodStart;
@@ -925,7 +958,7 @@
         <div class="modal-body">
             <button id="ChangeToType" onclick="funcChangeToType()">Сменить вид</button>
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: 0px; z-index: 3; width: 30vw;">
+                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: -10px; z-index: 3; width: 30vw;">
                     <thead>
                         <tr class="tr-head-main-table">
                             @*Виды работ по договору*@
@@ -942,237 +975,237 @@
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="plan">
+                        <tr id="plan" @*Объем работ - План*@>
                             <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">План</span></td>
                             <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice</span></td>
-                            <td><span class="table_span-realization">@workLastYear.CostNds?.ToString("0.00")</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.CostNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*СМР - План*@>
                             <td class=" table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice</span></td>
-                            <td><span class="table_span-realization">@workLastYear.SmrCost?.ToString("0.00")</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.SmrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*ПНР - План*@>
                             <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice</span></td>
-                            <td><span class="table_span-realization">@workLastYear.PnrCost?.ToString("0.00")</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.PnrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - План*@>
                             <td class="table-th-background-color"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.EquipmentCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                         </tr>
-                        <tr>
-                            <td class="table-th-background-color"><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>   
-                      
+                        <tr @*Прочие работы и услуги - План*@>
+                            <td class="table-th-background-color"><span class="table_span-work">Прочие работы и услуги</span></td>                            
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
+
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - План*@>
                             <td class="table-th-background-color"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.CostNoNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - План*@>
                             <td class="table-th-background-color"><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                         
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.AdditionalCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Материалы - План*@>
                             <td class="table-th-background-color"><span class="table_span-work">Материалы заказчика (справочно)</span></td>
-                            <td><span class="table_span-contractprice">@contractPrice?.ToString("0.00")</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.MaterialCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                         </tr>
 
-                        <tr id="fact">
+                        <tr id="fact" @*Объем работ - Факт*@>
                             <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                        
+                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.CostNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*СМР - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>                         
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.SmrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*ПНР - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.PnrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - Факт*@>
                             <td><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>                            
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.EquipmentCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                         </tr>
-                        <tr>
-                            <td><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>                           
+                        <tr @*Прочие работы - Факт*@>
+                            <td><span class="table_span-work">Прочие работы и услуги</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - Факт*@>
                             <td><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>                          
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.CostNoNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - Факт*@>
                             <td><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>                            
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.AdditionalCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                         </tr>
-                        <tr>
-                            <td><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>                         
+                        <tr @*Материалы - Факт*@>
+                            <td><span class="table_span-work">Материалы заказчика (справочно)</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.MaterialCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                         </tr>
 
-                        <tr id="planOur">
+                        <tr id="planOur" @*Объем работ - План своими силами*@>
                             <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">План cвоими силами</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.CostNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*СМР - План своими силами*@>
                             <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.SmrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.SmrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*ПНР - План своими силами*@>
                             <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>                          
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.PnrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.PnrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - План своими силами*@>
                             <td><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.EquipmentCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.EquipmentCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                         </tr>
-                        <tr>
-                            <td><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>                           
+                        <tr @*Прочие работы - План своими силами*@>
+                            <td><span class="table_span-work">Прочие работы и услуги</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - План своими силами*@>
                             <td><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.CostNoNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNoNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - План своими силами*@>
                             <td><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>                          
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.AdditionalCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.AdditionalCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                         </tr>
-                        <tr>
-                            <td><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>                      
+                        <tr @*Материалы - План своими силами*@>
+                            <td><span class="table_span-work">Материалы заказчика (справочно)</span></td>
+                            <td><span class="table_span-contractprice">-</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.MaterialCost)</span></td>
+                            <td><span class="table_span-remains">-</span></td>
+                            <td><span class="table_span-volume">-</span></td>                      
                         </tr>
 
-                        <tr id="factOur">
+                        <tr id="factOur" @*Объем работ - Факт своими силами*@>
                             <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Вид работ</span></td>
-                            <td><span class="table_span-contractprice">Вид работ цена</span></td>
-                            <td><span class="table_span-realization">Вид работ выполнено</span></td>
-                            <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.CostNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*СМР - Факт своими силами*@>
                             <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">СМР цена</span></td>
-                            <td><span class="table_span-realization">СМР выполнено</span></td>
-                            <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>                         
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.SmrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.SmrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*ПНР - Факт своими силами*@>
                             <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">ПНР цена</span></td>
-                            <td><span class="table_span-realization">ПНР выполнено</span></td>
-                            <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.PnrCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.PnrCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - Факт своими силами*@>
                             <td><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">Оборудование цена</span></td>
-                            <td><span class="table_span-realization">Оборудование выполнено</span></td>
-                            <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>                          
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.EquipmentCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.EquipmentCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                         </tr>
-                        <tr>
-                            <td><span class="table_span-work">РАБОТЫ И УСЛУГИ</span></td>
-                            <td><span class="table_span-contractprice">Работы цена</span></td>
-                            <td><span class="table_span-realization">Работы выполнено</span></td>
-                            <td><span class="table_span-remains">Работы остаток</span></td>
-                            <td><span class="table_span-volume">Работы объем</span></td>                           
+                        <tr @*Прочие работы - Факт своими силами*@>
+                            <td><span class="table_span-work">Прочие работы и услуги</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - Факт своими силами*@>
                             <td><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">Договор без НДС цена</span></td>
-                            <td><span class="table_span-realization">Договор без НДС выполнено</span></td>
-                            <td><span class="table_span-remains">Договор без НДС остаток</span></td>
-                            <td><span class="table_span-volume">Договор без НДС объем</span></td>                           
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.CostNoNds)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNoNds)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - Факт своими силами*@>
                             <td><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">Доп. работы цена</span></td>
-                            <td><span class="table_span-realization">Доп. работы выполнено</span></td>
-                            <td><span class="table_span-remains">Доп. работы остаток</span></td>
-                            <td><span class="table_span-volume">Доп. работы объем</span></td>                          
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.AdditionalCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.AdditionalCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                         </tr>
-                        <tr>
-                            <td><span class="table_span-work">Материалы</span></td>
-                            <td><span class="table_span-contractprice">Материалы цена</span></td>
-                            <td><span class="table_span-realization">Материалы выполнено</span></td>
-                            <td><span class="table_span-remains">Материалы остаток</span></td>
-                            <td><span class="table_span-volume">Материалы объем</span></td>                           
+                        <tr @*Материалы - Факт своими силами*@>
+                            <td><span class="table_span-work">Материалы заказчика (справочно)</span></td>
+                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.MaterialCost)</span></td>
+                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.MaterialCost)</span></td>
+                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.MaterialCost-todayScopeOwn.MaterialCost)</span></td>
+                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.MaterialCost)</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1181,12 +1214,14 @@
                         <tr class="tr-head-main-table">
                             @*Период (месяц)*@
                             @{
-                            iterator = PeriodStart;
-                            while (iterator <= PeriodEnd)
-                            {
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
-                            iterator = iterator.Value.AddMonths(1);
-                            }
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
+                                {
+                                    <th class="table-th-background-color Partialtable-sticky-top">
+                                        <span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
+                                    </th>
+                                    iterator = iterator.Value.AddMonths(1);
+                                }
                             }
                         </tr>
                     </thead>
@@ -1204,7 +1239,10 @@
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">
+                                            @string.Format("{0:n}",sum)
+                                        </span>
+                                    </td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1222,7 +1260,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
 
@@ -1241,7 +1279,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1259,7 +1297,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1276,7 +1314,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1294,7 +1332,7 @@
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1312,7 +1350,7 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1330,7 +1368,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1349,7 +1387,7 @@
                                         sum = @obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1367,7 +1405,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1385,7 +1423,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1403,7 +1441,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1421,7 +1459,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1439,7 +1477,7 @@
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1457,7 +1495,7 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1475,7 +1513,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1494,7 +1532,7 @@
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1512,7 +1550,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
 
@@ -1531,7 +1569,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1549,7 +1587,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1566,7 +1604,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1584,7 +1622,7 @@
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1602,7 +1640,7 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1620,7 +1658,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1639,7 +1677,7 @@
                                         sum = obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1657,7 +1695,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1675,7 +1713,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1693,7 +1731,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1711,7 +1749,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1729,7 +1767,7 @@
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1747,7 +1785,7 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1765,7 +1803,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("0.00")</span></td>
+                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
