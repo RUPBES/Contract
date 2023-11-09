@@ -105,7 +105,7 @@ namespace DatabaseLayer.Repositories
                     contract.IsEngineering = entity.IsEngineering;
                     contract.IsAgreementContract = entity.IsAgreementContract;  
                     
-                    contract.ContractOrganizations = entity.ContractOrganizations;
+                    contract.ContractOrganizations = entity.ContractOrganizations;                    
 
                     _context.Contracts.Update(contract);
                 }

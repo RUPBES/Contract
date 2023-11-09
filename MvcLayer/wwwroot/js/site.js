@@ -35,3 +35,12 @@ window.onclick = function (event) {
         }
     }
 }
+
+function digits_float(target) {
+    val = $(target).val().replace(/[^0-9,]/g, '');
+    if (val.indexOf(",") != '-1') {
+        val = val.substring(0, val.indexOf(",") + 3);
+    }
+    val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    $(target).val(val);
+}

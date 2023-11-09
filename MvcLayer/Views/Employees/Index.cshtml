@@ -27,8 +27,8 @@
                             <div class="link_add_emp"></div>
                             <div class="btn_panel_search">
                                 <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Employees")'">Добавить сотрудника</button>
-                                <form asp-controller="Employees" asp-action="Index" style="search-form">
-                                    <input type="text" placeholder="Поиск по ФИО" id="er"/>
+                                <form asp-controller="Employees" asp-action="Index" style="search-form" method="get">                                    
+                                    <input type="text" name="searchString" placeholder="Поиск по ФИО" value="@ViewData["CurrentFilter"]" id="er" />
                                     <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
                                 </form>
                             </div>
@@ -245,12 +245,7 @@
             })
         }
         window.onload = function () 
-        {
-            var elementFilter = '@ViewBag.CurrentFilter';
-            if (elementFilter != "") {
-                $(".link_add_emp").click()
-            }
-
+        {           
             let actualUrl = window.location.search;
             let elementArrayFullName = document.getElementById("arrayFullName");
             let elementArrayPosition = document.getElementById("arrayPosition");

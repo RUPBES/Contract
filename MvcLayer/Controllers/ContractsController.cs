@@ -329,13 +329,9 @@ namespace MvcLayer.Controllers
 
         //[Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ContractViewModel contract)
-        {
-            if (id != contract.Id)
-            {
-                return NotFound();
-            }
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(/*int id, */ContractViewModel contract)
+        {            
             if (contract.ContractOrganizations[1].OrganizationId == 0)
             {
                 contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
@@ -344,25 +340,16 @@ namespace MvcLayer.Controllers
             {
                 contract.ContractOrganizations.Remove(contract.ContractOrganizations[0]);
             }
-            //if (ModelState.IsValid)
-            //{
+            
                 try
                 {
                     _contractService.Update(_mapper.Map<ContractDTO>(contract));
                 }
                 catch (DbUpdateConcurrencyException)
-                {
-                    if (_contractService.GetById((int)id) is null)
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                {                  
                 }
                 return RedirectToAction(nameof(Index));
-            //}
+            
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", contract.SubContractId);
             return RedirectToAction(nameof(Index));

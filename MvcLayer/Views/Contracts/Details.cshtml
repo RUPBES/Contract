@@ -252,7 +252,7 @@
                 </td> *@
                     <td>
                         <span class="table_span-act-entering">
-                            <span class="icon link_to_page" id="SMR-detail" title="Объем работ генподряда"></span>
+                            <span class="icon link_to_page" id="SMR-detail" onclick="ShowModalScopeWork(@Model.Id)" title="Объем работ генподряда"></span>
                         </span>
                     </td>
 
@@ -388,7 +388,7 @@
                         </td> *@
                         <td>
                             <span class="table_span-act-entering">
-                                <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
+                                <span class="icon link_to_page" id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)" title="Объем работ"></span>
                             </span>
                         </td>
 
@@ -525,7 +525,7 @@
                         </td> *@
                         <td>
                             <span class="table_span-act-entering">
-                                <span class="icon link_to_page" id="SMR-detail" title="Объем работ"></span>
+                                <span class="icon link_to_page" id="SMR-detail" onclick="ShowModalScopeWork(@contractSub.Id)" title="Объем работ"></span>
                             </span>
                         </td>
                     </tr>
@@ -539,9 +539,6 @@
     </div>
 
     <script>
-
-        let elementButton = document.getElementById("SMR-detail")
-
         function ShowModalScopeWork(id) {           
             $.ajax({
                 type: 'POST',
@@ -558,13 +555,7 @@
                     alert("Ошибка удаления");
                 }
             });
-        };
-
-        elementButton.addEventListener("click", (event) => {
-            ShowModalScopeWork(@Model.Id)            
-        });
-
-        
+        };           
     </script>
     @if (ViewBag.Message != null)
     {
