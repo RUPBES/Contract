@@ -21,9 +21,7 @@
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="IsAgreementContract" />
                     <input type="hidden" asp-for="IsEngineering" />
-                    <input type="hidden" asp-for="IsSubContract" />
-                    <input type="hidden" asp-for="PaymentСonditionsRaschet" />
-                    <input type="hidden" asp-for="PaymentСonditionsAvans" />
+                    <input type="hidden" asp-for="IsSubContract" />                    
 
                     <div class="col-3">
                         <label asp-for="Number" class="control-label"></label>
@@ -60,7 +58,7 @@
                     <div class="col-3">
                         <label asp-for="Сurrency" class="control-label"></label>
                         <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                            <option value="@Model.Сurrency" selected disabled>@Model.Сurrency</option>
+                            <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
                             @foreach (var item in Enum.GetValues<CurrencyEnum>())
                             {
                                 <option value="@item">@item</option>
@@ -69,7 +67,7 @@
                     </div>
                     <div class="col-3">
                         <label asp-for="ContractPrice" class="control-label"></label>
-                        <input name="ContractPrice" type="price" value="@Model.ContractPrice?.ToString("0.00")" class="form-control" />
+                        <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control" />
                         <span asp-validation-for="ContractPrice" class="text-danger"></span>
                     </div>
 
@@ -86,15 +84,15 @@
                     </div>
                     <div class="form-group">
                         <label asp-for="PaymentСonditionsAvans" class="control-label"></label>
-                        <input asp-for="PaymentСonditionsAvans" class="form-control" />
+                        <input type="text" asp-for="PaymentСonditionsAvans" class="form-control" />
                         <span asp-validation-for="PaymentСonditionsAvans" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="PaymentСonditionsRaschet" class="control-label"></label>
-                        <input asp-for="PaymentСonditionsRaschet" class="form-control" />
+                        <input type="text" name="PaymentСonditionsRaschet" value="@Model.PaymentСonditionsRaschet" class="form-control" />
                         <span asp-validation-for="PaymentСonditionsRaschet" class="text-danger"></span>
                     </div>
-                    <div class="col-12">
+                    @* <div class="col-12">
                         <label>Заказчик</label>
                         <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
                         <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
@@ -113,8 +111,8 @@
                                 <option value="@item.Id">@item.Name</option>
                             }
                         </select>
-                    </div>
-                    <div class="col-12">
+                    </div> *@
+                   @*  <div class="col-12">
                         <label>Генподрядчик</label>
                         <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
                         <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
@@ -132,7 +130,7 @@
                                 <option value="@item.Id">@item.Name</option>
                             }
                         </select>
-                    </div>
+                    </div> *@
                     <div class="form-group mt-5">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
@@ -145,5 +143,13 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                $('body').on('input', '#contractPrice', function (e) {
+                    digits_float(this);
+                });
+                digits_float('#contractPrice');
+            });            
+        </script>
     }
 }
