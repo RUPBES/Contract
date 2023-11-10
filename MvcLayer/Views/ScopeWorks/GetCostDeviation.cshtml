@@ -135,7 +135,7 @@
                             </tr>
                         </thead>
                         <tbody style="height:70vh;">
-                            @foreach (var item in Model)
+                            @foreach (var item in Model.Where(x=>x.ContractId != null))
                             {
                                 var contract = @Contract.GetById((int)item?.ContractId);
                                 var cost = item.SWCosts;

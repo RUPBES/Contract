@@ -14,7 +14,7 @@
             </div>
             <div class="modal-body">
                 <form action="@Url.Action("AddNewEmployee","Contracts")" method="post" id="theFormEmp" style="padding-right: 20px; padding-left: 20px; width:350px;">
-                  
+
                     <input asp-for="IsSubContract" hidden />
                     <input asp-for="SubContractId" type="number" hidden />
                     <input asp-for="IsAgreementContract" hidden />
@@ -50,21 +50,21 @@
 
                     <input asp-for="PaymentСonditionsDaysRaschet" hidden />
                     <input asp-for="PaymentСonditionsRaschet" hidden />
-                    <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />    
+                    <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />
                     <input asp-for="TypeWorkContracts[0].TypeWorkId" hidden />
 
 
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.LastName" class="control-label">Фамилия</label>
-                        <input asp-for="EmployeeContracts[2].Employee.LastName" class="form-control" required/>
+                        <input asp-for="EmployeeContracts[2].Employee.LastName" class="form-control" required />
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.FirstName" class="control-label">Имя</label>
-                        <input asp-for="EmployeeContracts[2].Employee.FirstName" class="form-control" required/>
+                        <input asp-for="EmployeeContracts[2].Employee.FirstName" class="form-control" required />
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.FatherName" class="control-label">Отчество</label>
-                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="form-control" required/>
+                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="form-control" required />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Организация</label>
@@ -78,21 +78,20 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Отдел</label>
-                        <select asp-for="EmployeeContracts[2].Employee.DepartmentEmployees[0].DepartmentId" id="departmentNameSelect"  class="form-control js-chosen">
-                            
+                        <select asp-for="EmployeeContracts[2].Employee.DepartmentEmployees[0].DepartmentId" id="departmentNameSelect" class="form-control js-chosen">
                         </select>
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.Position" class="control-label">Должность</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Position" class="form-control" required/>
+                        <input asp-for="EmployeeContracts[2].Employee.Position" class="form-control" required />
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.Email" class="control-label">Электронная почта</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Email" class="form-control" required/>
-                    </div> 
+                        <input asp-for="EmployeeContracts[2].Employee.Email" type="email" class="form-control" required />
+                    </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.Phones[0].Number" class="control-label">Телефон</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Phones[0].Number" class="form-control" required />
+                        <input asp-for="EmployeeContracts[2].Employee.Phones[0].Number" type="text" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" />
                     </div>
                     <button class="btn btn-primary mt-3" type="submit" id="submitForm2">Добавить</button>
                 </form>
@@ -104,8 +103,12 @@
 <script type="text/javascript">
     $('button.btn-close').click(function () {
         $('#modDialog2').modal('hide');
-    }); 
-    
+    });
+
+
+    fillPhoneInput();
+
+
     $("#organizationNameSelect").change(function () {
         $.ajax({
             type: 'POST',
@@ -116,7 +119,7 @@
                 $("#departmentNameSelect").children().remove();
                 if (department.length == 0)
                     return;
-               
+
                 $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
                 $.each(department, function (r, emp) {
                     $("#departmentNameSelect").append('<option value="' + emp.id + '">' + emp.name + '</option>');
