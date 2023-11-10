@@ -1,4 +1,6 @@
-﻿namespace BusinessLayer.Models
+﻿using DatabaseLayer.Models;
+
+namespace BusinessLayer.Models
 {
     public class FileDTO
     {
@@ -31,6 +33,7 @@
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
 
         public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
+        public List<ContractFileDTO> ContractFiles { get; set; } = new List<ContractFileDTO>();
 
         //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
     }

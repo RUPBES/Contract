@@ -1,10 +1,16 @@
-﻿@using BusinessLayer.Models;
+﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
 @model BusinessLayer.Models.IndexViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
+@{
+    bool isAdmin = true;
+    string redirectAction = "Index";
+    string redirectController = "Contracts";
+}
 @section Table{
     <div>
         <h1 style="text-align: center;">Список договоров</h1>
@@ -195,6 +201,15 @@
                                 </div>
                                 <div class="icon edit">
                                     <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                </div>
+                                <div class="icon file-add" title="Добавить файл к договору">
+                                    <a asp-action="AddFile" asp-controller="Files" 
+                                    asp-route-entityId="@item.Id" 
+                                    asp-route-fileCategory="@FolderEnum.Contracts" 
+                                    asp-route-redirectAction=@redirectAction 
+                                    asp-route-redirectController=@redirectController 
+                                    asp-route-contractId="@item.Id">
+                                </a>
                                 </div>
                                 <div class="icon delete">
                                     <a asp-action="Delete" asp-route-id="@item.Id"></a>

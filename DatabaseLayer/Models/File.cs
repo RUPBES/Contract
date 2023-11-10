@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-#nullable disable
+﻿#nullable disable
 
 namespace DatabaseLayer.Models
 {
@@ -14,6 +11,7 @@ namespace DatabaseLayer.Models
             CorrespondenceFiles = new HashSet<CorrespondenceFile>();
             EstimateDocFiles = new HashSet<EstimateDocFile>();
             СommissionActFiles = new HashSet<CommissionActFile>();
+            ContractFiles = new HashSet<ContractFile>();
         }
 
         public int Id { get; set; }
@@ -27,6 +25,7 @@ namespace DatabaseLayer.Models
         public virtual ICollection<AmendmentFile> AmendmentFiles { get; set; }
         public virtual ICollection<CorrespondenceFile> CorrespondenceFiles { get; set; }
         public virtual ICollection<EstimateDocFile> EstimateDocFiles { get; set; }
+        public virtual ICollection<ContractFile> ContractFiles { get; set; }
         public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
     }
 }

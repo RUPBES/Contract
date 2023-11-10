@@ -239,7 +239,6 @@ namespace BusinessLayer.Services
                         _logger.WriteLog(LogLevel.Information, $"attach file to act", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                         break;
 
-
                     case FolderEnum.Amendment:
                         _database.AmendmentFiles.Create(new AmendmentFile { FileId = fileId, AmendmentId = entityId });
                         _database.Save();
@@ -267,6 +266,12 @@ namespace BusinessLayer.Services
                         _database.FormFiles.Create(new FormFile { FileId = fileId, FormId = entityId });
                         _database.Save();
                         _logger.WriteLog(LogLevel.Information, $"attach file to form c-3a", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        break;
+
+                    case FolderEnum.Contracts:
+                        _database.ContractFiles.Create(new ContractFile { FileId = fileId, ContractId = entityId });
+                        _database.Save();
+                        _logger.WriteLog(LogLevel.Information, $"attach file to contract", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
                         break;
 
                     case FolderEnum.Other:

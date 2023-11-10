@@ -130,5 +130,6 @@ namespace BusinessLayer.Models
         public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 
         public List<CommissionActDTO> CommissionActs { get; set; } = new List<CommissionActDTO>();
+        public virtual List<ContractFileDTO> ContractFiles { get; set; } = new List<ContractFileDTO>();
     }
 }

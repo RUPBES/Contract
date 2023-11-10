@@ -27,6 +27,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<Amendment> Amendments { get; set; }
 
     public virtual DbSet<Contract> Contracts { get; set; }
+    public virtual DbSet<ContractFile> ContractFiles { get; set; }
 
     public virtual DbSet<ContractOrganization> ContractOrganizations { get; set; }
 
@@ -97,8 +98,8 @@ public partial class ContractsContext : DbContext
             //var connectionString = configuration.GetConnectionString("Data");
             //optionsBuilder.UseSqlServer(connectionString);
 
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
 
         }
     }
@@ -313,6 +314,24 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.InverseSubContract)
                 .HasForeignKey(d => d.SubContractId)
                 .HasConstraintName("FK_Contract_Contract_Id");
+        }); 
+        
+        modelBuilder.Entity<ContractFile>(entity =>
+        {
+            entity.HasKey(e => new { e.ContractId, e.FileId });
+
+            entity.ToTable("ContractFile");
+
+           
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.ContractFiles)
+                .HasForeignKey(d => d.ContractId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.ContractFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<ContractOrganization>(entity =>

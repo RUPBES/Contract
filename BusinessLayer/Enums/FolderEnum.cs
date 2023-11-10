@@ -8,6 +8,7 @@
         Correspondences,
         EstimateDocumentations, 
         Form3C,
+        Contracts,
         Other
     }
 }

@@ -154,5 +154,6 @@ namespace MvcLayer.Models
         public List<TypeWorkContractDTO> TypeWorkContracts { get; set; } = new List<TypeWorkContractDTO>();
 
         public List<CommissionActDTO> СommissionActs { get; set; } = new List<CommissionActDTO>();
+        public List<ContractFileDTO> ContractFiles { get; set; } = new List<ContractFileDTO>();
     }
 }

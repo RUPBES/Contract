@@ -182,5 +182,28 @@ namespace BusinessLayer.Services
 
             return stringBuilder.ToString();
         }
+
+        public void AddFile(int contractId, int fileId)
+        {
+            if (fileId > 0 && contractId > 0)
+            {
+                if (_database.ContractFiles.GetById(contractId, fileId) is null)
+                {
+                    _database.ContractFiles.Create(new ContractFile
+                    {
+                        ContractId = contractId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(LogLevel.Information, $"create file of contract", typeof(ContractService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                }
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not create file of contract, object is null", typeof(ContractService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+            }
+        }
     }
 }

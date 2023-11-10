@@ -8,5 +8,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     {
         List<ContractDTO>? ExistContractAndReturnListSameContracts(string numberContract, DateTime? dateContract);
         bool ExistContractByNumber(string numberContract);
+
+        void AddFile(int contractId, int fileId);
     }
 }

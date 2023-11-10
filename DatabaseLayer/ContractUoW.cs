@@ -18,6 +18,7 @@ namespace DatabaseLayer
         private AmendmentRepository amendmentRepository;
         private ContractOrganizationRepository contractOrganizationRepository;
         private ContractRepository contractRepository;
+        private ContractFileRepository contractFileRepository;
         private DepartmentRepository departmentRepository; 
         private DepartmentEmployeeRepository departmentEmployeeRepository;
         private EmployeeRepository employeeRepository;
@@ -101,6 +102,18 @@ namespace DatabaseLayer
                     departmentEmployeeRepository = new DepartmentEmployeeRepository(_context);
                 }
                 return departmentEmployeeRepository;
+            }
+        }
+
+        public IRepository<ContractFile> ContractFiles
+        {
+            get
+            {
+                if (contractFileRepository is null)
+                {
+                    contractFileRepository = new ContractFileRepository(_context);
+                }
+                return contractFileRepository;
             }
         }
 
