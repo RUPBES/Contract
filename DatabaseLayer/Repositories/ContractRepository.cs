@@ -105,7 +105,63 @@ namespace DatabaseLayer.Repositories
                     contract.IsEngineering = entity.IsEngineering;
                     contract.IsAgreementContract = entity.IsAgreementContract;  
                     
-                    contract.ContractOrganizations = entity.ContractOrganizations;                    
+                    foreach (var item in entity.ContractOrganizations)
+                    {
+                        var target = item.IsGenContractor != null ? "Gen" : "Client";
+                        var sameObject = _context.ContractOrganizations.Where(x => 
+                        x.ContractId == item.ContractId &&
+                        x.OrganizationId == item.OrganizationId).FirstOrDefault();
+                        ContractOrganization? objectWithSameContractandType = new ContractOrganization();
+                        objectWithSameContractandType = item.IsGenContractor != null ?
+                            _context.ContractOrganizations.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsGenContractor == item.IsGenContractor).
+                            FirstOrDefault()
+                            :
+                            _context.ContractOrganizations.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsClient == item.IsClient).
+                            FirstOrDefault();
+                        if (sameObject != null)
+                        {
+                            if (objectWithSameContractandType != null)
+                            {
+                                _context.ContractOrganizations.Remove(objectWithSameContractandType);                                
+                            }
+                            switch (target)
+                            {
+                                case "Gen":
+                                    sameObject.IsGenContractor = true; break;
+                                case "Client":
+                                    sameObject.IsClient = true; break;
+                            }
+                            _context.ContractOrganizations.Update(sameObject);
+                        }
+                        else if (objectWithSameContractandType != null)
+                        {
+                            if (objectWithSameContractandType.IsClient == true && objectWithSameContractandType.IsGenContractor == true)
+                            {
+                                switch (target)
+                                {
+                                    case "Gen":
+                                        objectWithSameContractandType.IsGenContractor = false; break;
+                                    case "Client":
+                                        objectWithSameContractandType.IsClient = false; break;
+                                }
+                                _context.ContractOrganizations.Update(objectWithSameContractandType);
+                                _context.ContractOrganizations.Add(item);
+                            }
+                            else
+                            {
+                                _context.ContractOrganizations.Remove(objectWithSameContractandType);
+                                _context.SaveChanges(); 
+                                objectWithSameContractandType.OrganizationId = item.OrganizationId;
+                                _context.ContractOrganizations.Add(objectWithSameContractandType);
+                            }
+                        }
+                        else { _context.ContractOrganizations.Add(item); }
+                        _context.SaveChanges();
+                    }                                   
 
                     _context.Contracts.Update(contract);
                 }
