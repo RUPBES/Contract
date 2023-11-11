@@ -21,7 +21,7 @@
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="IsAgreementContract" />
                     <input type="hidden" asp-for="IsEngineering" />
-                    <input type="hidden" asp-for="IsSubContract" />                    
+                    <input type="hidden" asp-for="IsSubContract" />
 
                     <div class="col-3">
                         <label asp-for="Number" class="control-label"></label>
@@ -30,28 +30,28 @@
                     </div>
                     <div class="col-3">
                         <label asp-for="Date" class="control-label"></label>
-                        <input asp-for="Date" class="form-control datepickers" />
+                        <input type="datetime" asp-for="Date" class="form-control datepickersNull" />
                         <span asp-validation-for="Date" class="text-danger"></span>
                     </div>
                     <div class="col-3">
                         <label asp-for="EnteringTerm" class="control-label"></label>
-                        <input asp-for="EnteringTerm" class="form-control datepickers" />
+                        <input type="datetime" asp-for="EnteringTerm" class="form-control datepickersNull" />
                         <span asp-validation-for="EnteringTerm" class="text-danger"></span>
                     </div>
                     <div class="col-3">
                         <label asp-for="ContractTerm" class="control-label"></label>
-                        <input asp-for="ContractTerm" class="form-control datepickers" />
+                        <input type="datetime" asp-for="ContractTerm" class="form-control datepickersNull" />
                         <span asp-validation-for="ContractTerm" class="text-danger"></span>
                     </div>
 
                     <div class="col-3">
                         <label asp-for="DateBeginWork" class="control-label"></label>
-                        <input asp-for="DateBeginWork" class="form-control datepickers" />
+                        <input type="datetime" asp-for="DateBeginWork" class="form-control datepickersNull" />
                         <span asp-validation-for="DateBeginWork" class="text-danger"></span>
                     </div>
                     <div class="col-3">
                         <label asp-for="DateEndWork" class="control-label"></label>
-                        <input asp-for="DateEndWork" class="form-control datepickers" />
+                        <input type="datetime" asp-for="DateEndWork" class="form-control datepickersNull" />
                         <span asp-validation-for="DateEndWork" class="text-danger"></span>
                     </div>
 
@@ -92,45 +92,79 @@
                         <input type="text" name="PaymentСonditionsRaschet" value="@Model.PaymentСonditionsRaschet" class="form-control" />
                         <span asp-validation-for="PaymentСonditionsRaschet" class="text-danger"></span>
                     </div>
-                    @* <div class="col-12">
-                        <label>Заказчик</label>
-                        <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
-                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
-                            @if (Model?.ContractOrganizations[0].OrganizationId != 0)
+                    @foreach (var contrOrg in Model.ContractOrganizations)
+                    {
+                        if ( contrOrg.IsGenContractor == true)
+                        {
+                            <div class="col-12">
+                                <label>Генподрядчик</label>
+                                <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
+                                <input name="ContractOrganizations[1].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
+                                    @if (contrOrg.OrganizationId != 0)
+                                    {
+                                        var item = Organization.GetById((int)contrOrg?.OrganizationId);
+                                        <option disabled selected value="@item?.Id">@item?.Name</option>
+                                    }
+                                    @if (contrOrg.OrganizationId == 0)
+                                    {
+                                        <option selected>Выберите организацию</option>
+                                    }
+                                    @foreach (var item in Organization.GetAll())
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            if (contrOrg.IsClient == true)
                             {
-                                var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
-                            }
-                            @if (Model?.ContractOrganizations[0].OrganizationId == 0)
-                            {
-                                <option selected>Выберите организацию</option>
-                            }
+                                <div class="col-12">
+                                    <label>Заказчик</label>
+                                    <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
+                                    <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                    <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
+                                        @if (contrOrg.OrganizationId != 0)
+                                        {
+                                            var item = Organization.GetById((int)contrOrg?.OrganizationId);
+                                            <option disabled selected value="@item?.Id">@item?.Name</option>
+                                        }
+                                        @if (contrOrg.OrganizationId == 0)
+                                        {
+                                            <option selected>Выберите организацию</option>
+                                        }
 
-                            @foreach (var item in Organization.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
+                                        @foreach (var item in Organization.GetAll())
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
                             }
-                        </select>
-                    </div> *@
-                   @*  <div class="col-12">
-                        <label>Генподрядчик</label>
-                        <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
-                        <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
-                            @if (Model?.ContractOrganizations[1].OrganizationId != 0)
-                            {
-                                var item = Organization.GetById((int)Model?.ContractOrganizations[1]?.OrganizationId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
-                            }
-                            @if (Model?.ContractOrganizations[1].OrganizationId == 0)
-                            {
-                                <option selected>Выберите организацию</option>
-                            }
-                            @foreach (var item in Organization.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div> *@
+                        }else
+                        {
+                            <div class="col-12">
+                                <label>Заказчик</label>
+                                <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
+                                <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
+                                    @if (contrOrg.OrganizationId != 0)
+                                    {
+                                        var item = Organization.GetById((int)contrOrg?.OrganizationId);
+                                        <option disabled selected value="@item?.Id">@item?.Name</option>
+                                    }
+                                    @if (contrOrg.OrganizationId == 0)
+                                    {
+                                        <option selected>Выберите организацию</option>
+                                    }
+
+                                    @foreach (var item in Organization.GetAll())
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    }
                     <div class="form-group mt-5">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
@@ -149,7 +183,7 @@
                     digits_float(this);
                 });
                 digits_float('#contractPrice');
-            });            
+            });
         </script>
     }
 }

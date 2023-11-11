@@ -13,11 +13,11 @@
                     <label class="my-modal-title">@ViewData["Title"] @Model?.Number</label>
                     @if (Model?.Id != null && @Model?.Id > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.Id" class="close-btn"></a>
+                        <a asp-controller="Amendments" asp-action="GetByContractId" asp-route-id="@Model?.ContractId" class="close-btn"></a>
                     }
                     @if (@Model?.Id == null || @Model?.Id == 0)
                     {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        <a asp-controller="Amendments" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
@@ -43,7 +43,7 @@
                             <label asp-for="ContractPrice" class="control-label" for="contr"></label>
                             <div class="input-group">
                                 <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                                <input asp-for="ContractPrice" type="number" min="0" class="form-control" value="@Model?.ContractPrice" id="contr" />
+                                <input id="contractP" asp-for="ContractPrice" min="0" class="form-control" value="@Model?.ContractPrice" id="contr" />
                             </div>
                         </div>
                         <div class="form-group col-6">
@@ -86,3 +86,17 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+        <script>
+            $(function ($) {
+                $('body').on('input', '#contractP', function (e) {
+                    digits_float(this);
+                });
+                digits_float('#contractP');
+            });
+        </script>
+    }
+}
