@@ -20,6 +20,7 @@ namespace MvcLayer.Mapper
             CreateMap<AmendmentViewModel, AmendmentDTO>().ReverseMap();
             CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();
             CreateMap<EstimateDocDTO, EstimateDocViewModel>().ReverseMap();
+            CreateMap<FileDTO, FileViewModel>().ReverseMap();
             CreateMap<FormDTO, FormViewModel>().ReverseMap();
             CreateMap<EmployeeViewModel, EmployeeDTO>().ReverseMap();
 

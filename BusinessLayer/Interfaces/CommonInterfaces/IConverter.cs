@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BusinessLayer.Interfaces.CommonInterfaces
+﻿namespace BusinessLayer.Interfaces.CommonInterfaces
 {
     public interface IConverter
     {
@@ -13,5 +7,6 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
         string? GetTypeOfPrepaymentCondition(int number);
         string? GetTypeOfPaymentForWork(int number);
         string? GetTypeOfContract(int number);
+        string GetFileClass(string type);
     }
 }

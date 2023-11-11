@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
+using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -41,8 +43,20 @@ namespace MvcLayer.Controllers
             int fileId = (int)_file.Create(collection.Files, fileCategory);
             _file.AttachFileToEntity(fileId, entityId, fileCategory);
 
-            return RedirectToAction(redirectAction, redirectController, new { id = contractId });
+            return RedirectToAction("GetByContractId", "Files", new { id = contractId, redirectAction = redirectAction, redirectController= redirectController, fileCategory = fileCategory });
         }
+
+        [HttpGet]
+        public ActionResult GetByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
+        {
+            ViewBag.redirectAction = redirectAction;
+            ViewBag.redirectController = redirectController;
+            ViewBag.entityId = id;
+            ViewBag.contractId = contractId;
+            var files = _file.GetFilesOfEntity(id, fileCategory).ToList();
+            return View(files);
+        }
+
 
         public ActionResult Create()
         {
@@ -64,7 +78,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Delete(int id, string redirectAction = null, string redirectController = null, int? contractId = null)
+        public ActionResult Delete(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
             try
             {
@@ -72,7 +86,7 @@ namespace MvcLayer.Controllers
 
                 if (redirectController is not null && redirectAction is not null)
                 {
-                    return RedirectToAction(redirectAction, redirectController, new {id = contractId });
+                    return RedirectToAction(redirectAction, redirectController, new {id = contractId, fileCategory = fileCategory });
                 }
                 return RedirectToAction(nameof(Index));
             }

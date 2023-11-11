@@ -2,7 +2,7 @@
 
 namespace BusinessLayer.Helpers
 {
-    internal class Converter: IConverter
+    internal class Converter : IConverter
     {
         /// <summary>
         /// Получить по номеру ENUM тип финансирования
@@ -12,7 +12,7 @@ namespace BusinessLayer.Helpers
         public string? GetTypeOfFundingSource(int number) => number switch
         {
             0 => "Собственные средства",
-            1 => "Средства республиканского бюджета",            
+            1 => "Средства республиканского бюджета",
             _ => null
         };
 
@@ -67,5 +67,27 @@ namespace BusinessLayer.Helpers
             2 => "Соглашение с филиалом",
             _ => null
         };
+
+        /// <summary>
+        /// Получить по тип файла и вернуть название класса
+        /// </summary>
+        /// <param name="type">Тип</param>
+        /// <returns>строка с названием класса типа</returns>
+        public string GetFileClass(string type) => type switch
+        {
+            "jpg" => "img-file",
+            "png" => "img-file",
+            "gif" => "img-file",
+            "doc" => "doc-file",
+            "docx" => "doc-file",
+            "xls" => "xls-file",
+            "xlsx" => "xls-file",
+            "pdf" => "pdf-file",
+            "zip" => "zip-file",
+            "rar" => "zip-file",
+            _ => "default-file"
+        };
+
+
     }
 }

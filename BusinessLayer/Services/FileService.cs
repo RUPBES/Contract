@@ -213,6 +213,7 @@ namespace BusinessLayer.Services
                         result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
+
                 case FolderEnum.Form3C:
 
                     var filesForm = _database.FormFiles.Find(x => x.FormId == entityId);
@@ -222,6 +223,14 @@ namespace BusinessLayer.Services
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
+                case FolderEnum.Contracts:
+
+                    var filesContract = _database.ContractFiles.Find(x => x.ContractId == entityId);
+                    foreach (var file in filesContract)
+                    {
+                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                    }
+                    return _mapper.Map<IEnumerable<FileDTO>>(result);
             }
 
             return _mapper.Map<IEnumerable<FileDTO>>(result);

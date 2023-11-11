@@ -1,9 +1,12 @@
-﻿@model MvcLayer.Models.ContractViewModel
+﻿@using BusinessLayer.Enums;
+@model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 @{
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
     var isEngineering = Model.IsEngineering == true ? true : false;
+    string redirectAction = "Details";
+    string redirectController = "Contracts";
 }
 
 @section Table{
@@ -60,6 +63,10 @@
                             отсрочка/ в течение
                         </span>
                     </th>
+                    @*Виды работ по договору*@
+                    <th>
+                        <span class="table_span-work">Виды работ по договору</span>
+                    </th>
                     @*Контрактная цена*@
                     <th>
                         <span class="table_span-currency">Контрактная цена, с НДС</span>
@@ -105,6 +112,8 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@Model?.Id">Акт приостановки/возобновления</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">ПСД</a>
                                     }
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@Model.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@Model?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
+
                                 </div>
                             </div>
                             <div class="dropdown">
@@ -144,6 +153,8 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-contractId="@Model?.Id">+ Акт ввода</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-contractId="@Model?.Id">+ Переписка с заказчиком</a>
                                     }
+                                    <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@Model?.Id" asp-route-contractId="@Model?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
+
                                 </div>
                             </div>
                         </div>
@@ -184,13 +195,7 @@
                     </td>
                     <td>
                         <span class="table_span-customer">
-                            @* Заказчик -
-                        @foreach (var item in Model.ContractOrganizations)
-                        if (@item.IsClient == true)
-                        {
-                        @item.Organization.Abbr
-                        }
-                        *@
+                            @* Заказчик *@
                             @Model.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsClient == true)?.Organization?.Name
                         </span>
                     </td>
@@ -231,6 +236,13 @@
                                 @Model?.PaymentСonditionsRaschet
                             </a>
                             @* @Html.ActionLink("Расчет P7","","") *@
+                        </span>
+                    </td>
+                    
+                    @* Вид работ- *@
+                    <td>
+                        <span class="table_span-work">                           
+                            @Model?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
                         </span>
                     </td>
                     <td>
@@ -276,6 +288,8 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch?.Id">Стоимость материалов</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id">Оплату договора</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@contractBranch?.Id">Акт приостановки/возобновления</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@contractBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
+
                                     </div>
                                 </div>
                                 <div class="dropdown">
@@ -295,7 +309,12 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@contractBranch.Id">+ Акт ввода</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractBranch.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractBranch.Id">+ ПСД</a>
+                                        <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractBranch?.Id" asp-route-contractId="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
+
                                     </div>
+                                </div>
+                                <div class="icon edit">
+                                    <a asp-action="Edit" asp-route-id="@contractBranch.Id"></a>
                                 </div>
                                 <div class="icon delete">
                                     <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
@@ -372,6 +391,12 @@
                                     @contractBranch?.PaymentСonditionsRaschet
                                 </a>
                             </span>
+                        </td> 
+                        @* Вид работ- *@
+                        <td>
+                            <span class="table_span-work">
+                                @contractBranch?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
+                            </span>
                         </td>
                         <td>
                             <span class="table_span-contractprice">
@@ -385,10 +410,10 @@
                             </span>
                         </td>
                         @* <td>
-                            <span class="table_span-remains">
-                                <a>Остаток</a>
-                            </span>
-                        </td> *@
+                <span class="table_span-remains">
+                <a>Остаток</a>
+                </span>
+                </td> *@
                         <td>
                             <span class="table_span-act-entering">
                                 <span class="icon link_to_page" id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)" title="Объем работ"></span>
@@ -416,6 +441,8 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractSub?.Id">Услуги генподряда</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractSub?.Id">Стоимость материалов</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractSub?.Id">Оплату договора</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractSub?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@contractSub?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
+
                                     </div>
                                 </div>
                                 <div class="dropdown">
@@ -435,7 +462,11 @@
                                         <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@contractSub.Id">+ Акт ввода</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractSub.Id">+ Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractSub.Id">+ ПСД</a>
+                                        <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractSub?.Id" asp-route-contractId="@contractSub?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
                                     </div>
+                                </div>
+                                <div class="icon edit">
+                                    <a asp-action="Edit" asp-route-id="@contractSub.Id"></a>
                                 </div>
                                 <div class="icon delete">
                                     <a asp-action="Delete" asp-route-id="@contractSub.Id"></a>
@@ -513,6 +544,12 @@
                                 </a>
                             </span>
                         </td>
+                        @* Вид работ- *@
+                        <td>
+                            <span class="table_span-work">
+                                @contractSub?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
+                            </span>
+                        </td>
                         <td>
                             <span class="table_span-contractprice">
                                 @* ЦЕна - *@
@@ -524,11 +561,11 @@
                                 @contractSub?.Сurrency
                             </span>
                         </td>
-                       @*  <td>
-                            <span class="table_span-remains">
-                                <a>Остаток</a>
-                            </span>
-                        </td> *@
+                        @*  <td>
+                <span class="table_span-remains">
+                <a>Остаток</a>
+                </span>
+                </td> *@
                         <td>
                             <span class="table_span-act-entering">
                                 <span class="icon link_to_page" id="SMR-detail" onclick="ShowModalScopeWork(@contractSub.Id)" title="Объем работ"></span>
@@ -539,13 +576,21 @@
             </tbody>
         </table>
     </div>
-
-    <div>
-        <a class="btn btn-success" asp-action="Index">Вернуться</a>
-    </div>
+    @if (!isEngineering)
+    {
+        <div>
+            <a class="btn btn-success" asp-action="Index">Вернуться</a>
+        </div>
+    }
+    @if (isEngineering)
+    {
+        <div>
+            <a class="btn btn-success" asp-action="Engineerings">Вернуться</a>
+        </div>
+    }
 
     <script>
-        function ShowModalScopeWork(id) {           
+        function ShowModalScopeWork(id) {
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("ShowScopeWorks")',
@@ -561,7 +606,7 @@
                     alert("Ошибка удаления");
                 }
             });
-        };           
+        };
     </script>
     @if (ViewBag.Message != null)
     {

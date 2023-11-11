@@ -69,7 +69,7 @@
                             <label class="control-label">Выбрать доп.соглашение</label>
                             <select name="AmendmentId" id="AmendId" class="form-control select">
                                 <option disabled selected>Выберите</option>
-                                @foreach (AmendmentDTO org in Amendment.GetAll())
+                                @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == Model?.ContractId && x.ContractId != null))
                                 {
                                     <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
                                 }
