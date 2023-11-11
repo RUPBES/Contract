@@ -162,8 +162,83 @@ namespace DatabaseLayer.Repositories
                         }
                         else { _context.ContractOrganizations.Add(item); }
                         _context.SaveChanges();
-                    }                                   
+                    }
 
+                    foreach (var item in entity.EmployeeContracts)
+                    {
+                        var target = item.IsSignatory != null ? "Signatory" : "Responsible";
+                        var sameObject = _context.EmployeeContracts.Where(x =>
+                        x.ContractId == item.ContractId &&
+                        x.EmployeeId == item.EmployeeId).FirstOrDefault();
+                        EmployeeContract? objectWithSameContractandType = new EmployeeContract();
+                        objectWithSameContractandType = item.IsSignatory != null ?
+                            _context.EmployeeContracts.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsSignatory == item.IsSignatory).
+                            FirstOrDefault()
+                            :
+                            _context.EmployeeContracts.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsResponsible == item.IsResponsible).
+                            FirstOrDefault();
+                        if (sameObject != null)
+                        {
+                            if (objectWithSameContractandType != null)
+                            {
+                                _context.EmployeeContracts.Remove(objectWithSameContractandType);
+                            }
+                            switch (target)
+                            {
+                                case "Signatory":
+                                    sameObject.IsSignatory = true; break;
+                                case "Responsible":
+                                    sameObject.IsResponsible = true; break;
+                            }
+                            _context.EmployeeContracts.Update(sameObject);
+                        }
+                        else if (objectWithSameContractandType != null)
+                        {
+                            if (objectWithSameContractandType.IsResponsible == true && objectWithSameContractandType.IsSignatory == true)
+                            {
+                                switch (target)
+                                {
+                                    case "Signatory":
+                                        objectWithSameContractandType.IsSignatory = false; break;
+                                    case "Responsible":
+                                        objectWithSameContractandType.IsResponsible = false; break;
+                                }
+                                _context.EmployeeContracts.Update(objectWithSameContractandType);
+                                _context.EmployeeContracts.Add(item);
+                            }
+                            else
+                            {
+                                _context.EmployeeContracts.Remove(objectWithSameContractandType);
+                                _context.SaveChanges();
+                                objectWithSameContractandType.EmployeeId = item.EmployeeId;
+                                _context.EmployeeContracts.Add(objectWithSameContractandType);
+                            }
+                        }
+                        else { _context.EmployeeContracts.Add(item); }
+                        _context.SaveChanges();
+                    }
+
+                    foreach (var item in entity.TypeWorkContracts) 
+                    {
+                        var currentObject = _context.TypeWorkContracts.Where(x => x.ContractId == item.ContractId).FirstOrDefault();
+                        if (currentObject != null)
+                        {
+                            if (item.TypeWorkId != currentObject.TypeWorkId)
+                            {
+                                _context.TypeWorkContracts.Remove(currentObject);
+                                _context.SaveChanges();
+                                _context.TypeWorkContracts.Add(item);
+                            }
+                        }
+                        else
+                        {
+                            _context.TypeWorkContracts.Add(item);
+                        }
+                    }
                     _context.Contracts.Update(contract);
                 }
             }

@@ -331,6 +331,28 @@ namespace MvcLayer.Controllers
                     });
                 }
             }
+
+            if (contract.EmployeeContracts.Count < 1)
+            {
+                contract.EmployeeContracts.Add(new EmployeeContractDTO { ContractId = (int)id, IsSignatory = true });
+                contract.EmployeeContracts.Add(new EmployeeContractDTO { ContractId = (int)id, IsResponsible = true });
+            }
+            else if (contract.EmployeeContracts.Count < 2)
+            {
+                if (contract.EmployeeContracts[0].IsSignatory != true || contract.EmployeeContracts[0].IsResponsible != true)
+                {
+                    contract.EmployeeContracts.Add(new EmployeeContractDTO
+                    {
+                        ContractId = (int)id,
+                        IsResponsible = contract.EmployeeContracts[0].IsResponsible == true ? false : true,
+                        IsSignatory = contract.EmployeeContracts[0].IsResponsible == true ? true : false
+                    });
+                }
+            }
+            if (contract.TypeWorkContracts.Count < 1)
+            {
+                contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id});                
+            }
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
             return View(_mapper.Map<ContractViewModel>(contract));
@@ -350,8 +372,22 @@ namespace MvcLayer.Controllers
                 contract.ContractOrganizations.Remove(contract.ContractOrganizations[0]);
             }
 
+            if (contract.EmployeeContracts[1].EmployeeId == 0)
+            {
+                contract.EmployeeContracts.Remove(contract.EmployeeContracts[1]);
+            }
+            if (contract.EmployeeContracts[0].EmployeeId == 0)
+            {
+                contract.EmployeeContracts.Remove(contract.EmployeeContracts[0]);
+            }
+
+            if (contract.TypeWorkContracts[0].TypeWorkId == 0)
+            {
+                contract.TypeWorkContracts.Remove(contract.TypeWorkContracts[0]);
+            }
+
             try
-                {
+            {
                     _contractService.Update(_mapper.Map<ContractDTO>(contract));
                 }
                 catch (DbUpdateConcurrencyException)

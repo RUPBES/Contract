@@ -1,7 +1,8 @@
 ﻿@using BusinessLayer.Enums;
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
-
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
+@inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 @{
     ViewData["Title"] = "Редактирование договора";
     var d = Model;
@@ -165,6 +166,103 @@
                             </div>
                         }
                     }
+
+                    @foreach (var empContract in Model.EmployeeContracts)
+                    {
+                        if (empContract.IsResponsible == true)
+                        {
+                            <div class="col-12">
+                                <label>Ответственный за ведение договора</label>
+                                <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
+                                <input name="EmployeeContracts[1].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
+                                    @if (empContract.EmployeeId != 0)
+                                    {
+                                        var item = Employee.GetById(empContract.EmployeeId);
+                                        <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                    }
+                                    @if (empContract.EmployeeId == 0)
+                                    {
+                                        <option selected>Выберите сотрудника</option>
+                                    }
+                                    @foreach (var item in Employee.GetAll())
+                                    {
+                                        <option value="@item.Id">@item.FullName</option>
+                                    }
+                                </select>
+                            </div>
+                            if (empContract.IsSignatory == true)
+                            {
+                                <div class="col-12">
+                                    <label>Подписант договора</label>
+                                    <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
+                                    <input name="EmployeeContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                    <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
+                                        @if (empContract.EmployeeId != 0)
+                                        {
+                                            var item = Employee.GetById(empContract.EmployeeId);
+                                            <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                        }
+                                        @if (empContract.EmployeeId == 0)
+                                        {
+                                            <option selected>Выберите сотрудника</option>
+                                        }
+
+                                        @foreach (var item in Employee.GetAll())
+                                        {
+                                            <option value="@item.Id">@item.FullName</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <label>Подписант договора</label>
+                                <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
+                                <input name="EmployeeContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
+                                    @if (empContract.EmployeeId != 0)
+                                    {
+                                        var item = Employee.GetById(empContract.EmployeeId);
+                                        <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                    }
+                                    @if (empContract.EmployeeId == 0)
+                                    {
+                                        <option selected>Выберите сотрудника</option>
+                                    }
+
+                                    @foreach (var item in Employee.GetAll())
+                                    {
+                                        <option value="@item.Id">@item.FullName</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    }
+
+                    <div class="col-12">
+                        <label>Вид работ</label>
+                        <input name="TypeWorkContracts[0].TypeWork" hidden />
+                        <input name="TypeWorkContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                        <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
+                            @if (Model?.TypeWorkContracts[0].TypeWorkId != 0)
+                            {
+                                var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
+                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                            }
+                            @if (Model?.TypeWorkContracts[0].TypeWorkId == 0)
+                            {
+                                <option selected>Выберите вид работ</option>
+                            }
+
+                            @foreach (var item in TypeWork.GetAll())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
                     <div class="form-group mt-5">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
