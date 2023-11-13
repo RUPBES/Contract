@@ -389,8 +389,10 @@ namespace MvcLayer.Controllers
             contract.PaymentСonditionsAvans = "";
             foreach (var str in contract.PaymentCA)
             { contract.PaymentСonditionsAvans += str+" "; }
-
-                try
+            contract.PaymentСonditionsRaschet = "";
+            foreach (var str in contract.FundingFS)
+            { contract.PaymentСonditionsRaschet += str + " "; }
+            try
             {
                     _contractService.Update(_mapper.Map<ContractDTO>(contract));
                 }
