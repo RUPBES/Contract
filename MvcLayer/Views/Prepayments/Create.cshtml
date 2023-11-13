@@ -69,7 +69,7 @@
                                     <th>Текущие авансы</th>
                                     @foreach (var item in d.PrepaymentPlans)
                                     {
-                                        <td><input asp-for="@Model.PrepaymentPlans[index].CurrentValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        <td><input asp-for="@Model.PrepaymentPlans[index].CurrentValue" class="form-control cost" min="0" /></td>
                                         index++;
                                     }
                                     @{
@@ -80,7 +80,7 @@
                                     <th>Целевые авансы</th>
                                     @foreach (var item in d.PrepaymentPlans)
                                     {
-                                        <td><input asp-for="@Model.PrepaymentPlans[index].TargetValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        <td><input asp-for="@Model.PrepaymentPlans[index].TargetValue" class="form-control cost" min="0" /></td>
                                         index++;
                                     }
                                     @{
@@ -91,7 +91,7 @@
                                     <th>Отработка целевых авансов</th>
                                     @foreach (var item in d.PrepaymentPlans)
                                     {
-                                        <td><input asp-for="@Model.PrepaymentPlans[index].WorkingOutValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        <td><input asp-for="@Model.PrepaymentPlans[index].WorkingOutValue" class="form-control cost" min="0" /></td>
                                         index++;
                                     }
                                     @{
@@ -119,7 +119,7 @@
                                     <th>Текущие авансы по факту</th>
                                     @foreach (var item in d.PrepaymentFacts)
                                     {
-                                        <td><input asp-for="@Model.PrepaymentFacts[index].CurrentValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        <td><input asp-for="@Model.PrepaymentFacts[index].CurrentValue" class="form-control cost" min="0" /></td>
                                         index++;
                                     }
                                     @{
@@ -130,7 +130,7 @@
                                     <th>Текущие авансы по факту</th>
                                     @foreach (var item in d.PrepaymentFacts)
                                     {
-                                        <td><input asp-for="@Model.PrepaymentFacts[index].TargetValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        <td><input asp-for="@Model.PrepaymentFacts[index].TargetValue" class="form-control cost" min="0" /></td>
                                         index++;
                                     }
                                     @{
@@ -141,7 +141,7 @@
                                     <th>Отработка целевых по факту</th>
                                     @foreach (var item in d.PrepaymentFacts)
                                     {
-                                        <td><input asp-for="@Model.PrepaymentFacts[index].WorkingOutValue" class="form-control" type="number" step="0.01" min="0" /></td>
+                                        <td><input asp-for="@Model.PrepaymentFacts[index].WorkingOutValue" class="form-control cost" min="0" /></td>
                                         index++;
                                     }
                                     @{
@@ -170,7 +170,7 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                        <input type="submit" value="Создать" class="btn btn-primary" />
                     </div>
                 </form>
             </div>
@@ -182,5 +182,13 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+                digits_float('.cost');
+            });
+        </script>
     }
 }

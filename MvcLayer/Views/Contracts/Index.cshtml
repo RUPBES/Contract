@@ -203,30 +203,30 @@
                                 </td>
                             }
                             @*Контрактная цена*@
-                            <td>
+                            <td class ="text-end">
                                 <span class="table_span-contractprice">
-                                    @item.ContractPrice?.ToString("0.00")
+                                    @string.Format("{0:n}",item.ContractPrice)                                    
                                 </span>
                             </td>
                             @*Выполнено на начало года*@
-                            <td>
+                            <td class="text-end">
                                 <span class="table_span-realization">
-                                    @sumPreviusYear?.ToString("0.00")
+                                @string.Format("{0:n}",sumPreviusYear)                                    
                                 </span>
                             </td>
                             @*Остаток*@
-                            <td>
+                            <td class="text-end">
                                 <span class="table_span-remains">
                                     @{
                                         var ostatok = @item.ContractPrice
                                         - @sumPreviusYear - sumThisYear;
                                     }
-                                    @ostatok?.ToString("0.00")
+                                    @string.Format("{0:n}",ostatok)                                    
                                 </span>
                             </td>
                             @*Объем*@
-                            <td>
-                                <span class="table_span-volume">@sumThisYear?.ToString("0.00")</span>
+                            <td class="text-end">
+                                <span class="table_span-volume"> @string.Format("{0:n}",sumThisYear)</span>
                             </td>
                             @*Действия с договором*@
                             <td>

@@ -72,26 +72,26 @@
                             @foreach (var item in Model)
                             {
                                 <tr>
-                                    <td>
+                                    <td>                                        
                                         @item.Period?.ToString("MMM yyyy")
                                     </td>
-                                    <td>
+                                    <td>                                        
                                         @item.DateSigning?.ToShortDateString()
                                     </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TotalCost)
+                                    <td class="text-end">
+                                        @string.Format("{0:n}",item.TotalCost)                                        
                                     </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.SmrCost)
+                                    <td class="text-end">
+                                        @string.Format("{0:n}",item.SmrCost)                                        
                                     </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.PnrCost)
+                                    <td class="text-end">
+                                        @string.Format("{0:n}",item.PnrCost)                                        
                                     </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.EquipmentCost)
+                                    <td class="text-end">
+                                        @string.Format("{0:n}",item.EquipmentCost)
                                     </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.OtherExpensesCost)
+                                    <td class="text-end">
+                                        @string.Format("{0:n}",item.OtherExpensesCost)
                                     </td>
                                     <td>
                                         @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))

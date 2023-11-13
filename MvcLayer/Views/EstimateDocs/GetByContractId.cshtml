@@ -9,7 +9,7 @@
     bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "EstimateDocs";
-    var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
+    var contract = Contract.GetById((int)ViewBag.contractId);
 }
 
 <div class="dm-overlay">

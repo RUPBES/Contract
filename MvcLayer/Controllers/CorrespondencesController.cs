@@ -29,6 +29,7 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int id, bool isEngineering)
         {
             ViewBag.IsEngineering = isEngineering;
+            ViewData["contractId"] = id;
             return View(_mapper.Map<IEnumerable<CorrespondenceViewModel>>(_correspondenceService.Find(x => x.ContractId == id)));
         }
 

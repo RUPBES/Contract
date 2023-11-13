@@ -11,7 +11,7 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость")]
         public decimal? Price { get; set; }
 
-        
+        [DisplayName("Фактическая стоимость")]
         public decimal? FactPrice { get; set; }
 
         [DisplayName("Период")]
