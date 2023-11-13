@@ -56,91 +56,6 @@
                         <input type="datetime" asp-for="DateEndWork" class="form-control datepickersNull" />
                         <span asp-validation-for="DateEndWork" class="text-danger"></span>
                     </div>
-
-                    <div class="col-3">
-                        <label asp-for="Сurrency" class="control-label"></label>
-                        <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                            <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
-                            @foreach (var item in Enum.GetValues<CurrencyEnum>())
-                            {
-                                <option value="@item">@item</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-3">
-                        <label asp-for="ContractPrice" class="control-label"></label>
-                        <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control" />
-                        <span asp-validation-for="ContractPrice" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="NameObject" class="control-label"></label>
-                        <input asp-for="NameObject" class="form-control" />
-                        <span asp-validation-for="NameObject" class="text-danger"></span>
-                    </div>
-                    <fieldset class="border rounded-1 p-3">
-                        <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                        @foreach (var item in Enum.GetValues<FundingSourceEnum>())
-                        {
-                            var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
-                            var valueArray = Model?.PaymentСonditionsRaschet;
-                            if (valueArray == null) {valueArray = ""; }
-                            <div>
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text" style="display: block;">
-                                            @if (valueArray.Contains(value))
-                                            {
-                                                <input type="checkbox" name="FundingFS" value="@value" checked>
-                                            }
-                                            else
-                                            {
-                                                <input type="checkbox" name="FundingFS" value="@value">
-                                            }
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control" value="@value" disabled>
-                                </div>
-                            </div>
-                        }
-                    </fieldset>                    
-                    <fieldset class="border rounded-1 p-3">
-                        <legend class="float-none w-auto px-3">Условия авансирования</legend>
-                        @{
-                            int numberCheckbox = 0;
-                        }
-                        @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
-                        {
-                            var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
-                            var valueArray = Model?.PaymentСonditionsAvans;
-                            if (valueArray == null) { valueArray = ""; }
-                            string idCh = "check" + @numberCheckbox;
-                            <div>
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text" style="display: block;">
-                                            @if (valueArray.Contains(value))
-                                            {
-                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
-                                            }
-                                            else
-                                            {
-                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
-                                            }
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control" value="@value" disabled>
-
-                                </div>
-                            </div>
-                            numberCheckbox++;
-                        }
-                    </fieldset>
-                    <div class="form-group">
-                        <label asp-for="FundingSource" class="control-label"></label>
-                        <input asp-for="FundingSource" class="form-control" />
-                        <span asp-validation-for="FundingSource" class="text-danger"></span>
-                    </div>
                     @foreach (var contrOrg in Model.ContractOrganizations)
                     {
                         if (contrOrg.IsGenContractor == true)
@@ -290,7 +205,6 @@
                             </div>
                         }
                     }
-
                     <div class="col-6">
                         <label>Вид работ</label>
                         <input name="TypeWorkContracts[0].TypeWork" hidden />
@@ -327,30 +241,77 @@
                         <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control" />
                         <span asp-validation-for="ContractPrice" class="text-danger"></span>
                     </div>
-
                     <div class="form-group">
                         <label asp-for="NameObject" class="control-label"></label>
                         <input asp-for="NameObject" class="form-control" />
                         <span asp-validation-for="NameObject" class="text-danger"></span>
                     </div>
+                    <fieldset class="border rounded-1 p-3">
+                        <legend class="float-none w-auto px-3">Источник финансирования</legend>
+                        @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                        {
+                            var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
+                            var valueArray = Model?.PaymentСonditionsRaschet;
+                            if (valueArray == null) {valueArray = ""; }
+                            <div>
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text" style="display: block;">
+                                            @if (valueArray.Contains(value))
+                                            {
+                                                <input type="checkbox" name="FundingFS" value="@value" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" name="FundingFS" value="@value">
+                                            }
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control" value="@value" disabled>
+                                </div>
+                            </div>
+                        }
+                    </fieldset>                    
+                    <fieldset class="border rounded-1 p-3">
+                        <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                        @{
+                            int numberCheckbox = 0;
+                        }
+                        @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                        {
+                            var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                            var valueArray = Model?.PaymentСonditionsAvans;
+                            if (valueArray == null) { valueArray = ""; }
+                            string idCh = "check" + @numberCheckbox;
+                            <div>
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text" style="display: block;">
+                                            @if (valueArray.Contains(value))
+                                            {
+                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                            }
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control" value="@value" disabled>
 
-                    <div class="form-group">
-                        <label asp-for="FundingSource" class="control-label"></label>
-                        <input asp-for="FundingSource" class="form-control" />
-                        <span asp-validation-for="FundingSource" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="PaymentСonditionsAvans" class="control-label"></label>
-                        <input type="text" asp-for="PaymentСonditionsAvans" class="form-control" />
-                        <span asp-validation-for="PaymentСonditionsAvans" class="text-danger"></span>
-                    </div>
+                                </div>
+                            </div>
+                            numberCheckbox++;
+                        }
+                    </fieldset>
+                   
                     <div class="form-group">
                         <label asp-for="PaymentСonditionsRaschet" class="control-label"></label>
                         <input type="text" name="PaymentСonditionsRaschet" value="@Model.PaymentСonditionsRaschet" class="form-control" />
                         <span asp-validation-for="PaymentСonditionsRaschet" class="text-danger"></span>
                     </div>
                    
-                    <div class="form-group mt-5">
+                    <div class="form-group mt-3">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
                 </form>
