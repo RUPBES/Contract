@@ -10,6 +10,7 @@ using DatabaseLayer.Models;
 using System.Diagnostics.Contracts;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
+using AngleSharp.Dom;
 
 namespace MvcLayer.Controllers
 {
@@ -385,7 +386,12 @@ namespace MvcLayer.Controllers
             {
                 contract.TypeWorkContracts.Remove(contract.TypeWorkContracts[0]);
             }
-
+            contract.PaymentСonditionsAvans = "";
+            foreach (var str in contract.PaymentCA)
+            { contract.PaymentСonditionsAvans += str+" "; }
+            contract.PaymentСonditionsRaschet = "";
+            foreach (var str in contract.FundingFS)
+            { contract.PaymentСonditionsRaschet += str + " "; }
             try
             {
                     _contractService.Update(_mapper.Map<ContractDTO>(contract));
