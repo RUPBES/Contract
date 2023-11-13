@@ -97,7 +97,7 @@ namespace DatabaseLayer.Repositories
                     contract.DateEndWork = entity.DateEndWork;
                     contract.Сurrency = entity.Сurrency;
                     contract.ContractPrice = entity.ContractPrice;
-                    contract.NameObject = entity.NameObject;
+                    contract.NameObject = entity.NameObject;                    
                     contract.PaymentСonditionsAvans = entity.PaymentСonditionsAvans;
                     contract.PaymentСonditionsRaschet = entity.PaymentСonditionsRaschet;
 

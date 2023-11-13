@@ -3,6 +3,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @{
     ViewData["Title"] = "Редактирование договора";
     var d = Model;
@@ -83,11 +84,38 @@
                         <input asp-for="FundingSource" class="form-control" />
                         <span asp-validation-for="FundingSource" class="text-danger"></span>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="PaymentСonditionsAvans" class="control-label"></label>
-                        <input type="text" asp-for="PaymentСonditionsAvans" class="form-control" />
-                        <span asp-validation-for="PaymentСonditionsAvans" class="text-danger"></span>
-                    </div>
+                    <fieldset class="border rounded-1 p-3">
+                        <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                        @{
+                            int numberCheckbox = 0;
+                        }
+                        @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                        {
+                            var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                            var valueArray = Model?.PaymentСonditionsAvans;
+                            if (valueArray == null) { valueArray = ""; }
+                            string idCh = "check" + @numberCheckbox;
+                            <div>
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text" style="display: block;">
+                                            @if (valueArray.Contains(value))
+                                            {
+                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                            }
+                                            else
+                                            {
+                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                            }
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control" value="@value" disabled>
+
+                                </div>
+                            </div>
+                            numberCheckbox++;
+                        }
+                    </fieldset>
                     <div class="form-group">
                         <label asp-for="PaymentСonditionsRaschet" class="control-label"></label>
                         <input type="text" name="PaymentСonditionsRaschet" value="@Model.PaymentСonditionsRaschet" class="form-control" />
@@ -95,7 +123,7 @@
                     </div>
                     @foreach (var contrOrg in Model.ContractOrganizations)
                     {
-                        if ( contrOrg.IsGenContractor == true)
+                        if (contrOrg.IsGenContractor == true)
                         {
                             <div class="col-12">
                                 <label>Генподрядчик</label>
@@ -141,7 +169,8 @@
                                     </select>
                                 </div>
                             }
-                        }else
+                        }
+                        else
                         {
                             <div class="col-12">
                                 <label>Заказчик</label>
@@ -275,13 +304,68 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script>
-            $(function ($) {
-                $('body').on('input', '#contractPrice', function (e) {
-                    digits_float(this);
-                });
-                digits_float('#contractPrice');
-            });
-        </script>
+    <script>
+                    $(function ($) {
+                        $('body').on('input', '#contractPrice', function (e) {
+                            digits_float(this);
+                        });
+                        digits_float('#contractPrice');
+                    });
+
+                    //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+
+                    let ch1 = document.querySelector("#check0");
+                    let ch2 = document.querySelector("#check1");
+                    let ch3 = document.querySelector("#check2");
+
+            let mod = @Html.Raw(Json.Serialize(Model.PaymentСonditionsAvans))
+            
+                    window.onload = function () {                        
+                        if (mod != null) {
+                            if (ch1.checked) {
+                                ch2.setAttribute("disabled", true);
+                                ch3.setAttribute("disabled", true);
+                            }
+                            else {
+                                ch1.setAttribute("disabled", true)
+                            }
+                        }
+                    }
+                    ch1.addEventListener('change', (e) => {
+                        if (e.currentTarget.checked) {
+                            ch2.setAttribute("disabled", true);
+                            ch3.setAttribute("disabled", true);
+                        }
+
+                        if (!e.currentTarget.checked) {
+                            ch2.removeAttribute("disabled");
+                            ch3.removeAttribute("disabled");
+                        }
+                    });
+
+                    ch2.addEventListener('change', (e) => {
+                        if (e.currentTarget.checked) {
+                            ch1.setAttribute("disabled", true);
+                        }
+
+                        if (!e.currentTarget.checked && !ch3.checked) {
+                            ch1.removeAttribute("disabled");
+                        }
+
+                    });
+
+                    ch3.addEventListener('change', (e) => {
+                        if (e.currentTarget.checked) {
+                            ch1.setAttribute("disabled", true);
+                        }
+
+                        if (!e.currentTarget.checked && !ch2.checked) {
+                            ch1.removeAttribute("disabled");
+                        }
+                    });
+
+
+
+    </script>
     }
 }
