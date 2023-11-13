@@ -5,10 +5,12 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.IServiceGCService ServiceGc
 
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 
 @{
+    var isEngineering = (bool)ViewData["IsEngineering"];
     bool isAdmin = true;
     string redirectAction = "Index";
     string redirectController = "Contracts";
@@ -52,7 +54,7 @@
                                 Номер и дата договора
                                 @Html.ActionLink(" ", "Index", new { sortOrder = ViewData["DateSortParm"], currentFilter=ViewData["CurrentFilter"] } , new {id="arrayNumberanddate", @class="up"})
                             </span>
-                        </th>                        
+                        </th>
                         <th>
                             <span class="table_span-nameobject">
                                 Наименование объекта
@@ -68,7 +70,14 @@
                         </th>
                         <th>
                             <span class="table_span-contractor">
-                                Генподрядчик
+                                @if (isEngineering == true)
+                                {
+                                    <span>Генподрядчик</span>
+                                }
+                                @if (isEngineering != true)
+                                {
+                                    <span>Исполнитель</span>
+                                }
                                 @Html.ActionLink("", "Index", new { sortOrder = ViewData["GenSortParm"], currentFilter=ViewData["CurrentFilter"] }, new {id="arrayGeneralContractor", @class="up"})
                             </span>
                         </th>
@@ -79,13 +88,21 @@
                             </span>
                         </th>
                         <th><span class="table_span-conditions">    Условия оплаты              </span></th>
-                       @*  <th><span class='table_span-material'>      Материалы (факт или смета)  </span></th> *@
                         <th><span class="table_span-currency">      Валюта                      </span></th>
-                        <th><span class="table_span-work">          Виды работ по договору      </span></th>
+                        @if (isEngineering)
+                        {
+                            <th>
+                                <span class="table_span-work">    Условия формирования договорной цены, %      </span>
+                            </th>
+                        }
+                        @if (!isEngineering)
+                        {
+                            <th><span class="table_span-work">          Виды работ по договору      </span></th>
+                        }
                         <th><span class="table_span-contractprice"> Контрактная цена, с НДС     </span></th>
                         <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
                         <th><span class="table_span-remains">       Остаток                     </span></th>
-                        <th><span class="table_span-volume">        Объем на текущий год        </span></th>                        
+                        <th><span class="table_span-volume">        Объем на текущий год        </span></th>
                         <th><span class="table_span-action">        Действия с договором        </span></th>
                     </tr>
                 </thead>
@@ -99,7 +116,7 @@
 
                         var sumPreviusYear = SWCost.Find(x => x.ScopeWorkId == resultScopeWork?.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.CostNds);
                         var sumThisYear = SWCost.Find(x => x.ScopeWorkId != null && x.ScopeWorkId == resultScopeWork?.Id && x.Period >= new DateTime(dateRange, 1, 1) && x.Period <= new DateTime(dateRange, 12, 31)).Sum(x => x.CostNds);
-                        
+
                         <tr>
                             @*Номер и дата договора*@
                             <td>
@@ -107,11 +124,11 @@
                                     <a asp-action="Details" asp-route-id="@item.Id">
                                         @item.Number от
                                         @item.Date?.ToShortDateString()
-                                    </a>                                    
-                                </span>                             
-                               
+                                    </a>
+                                </span>
+
                             </td>
-                            
+
                             @*Наименование объекта*@
                             <td>
                                 <span class="table_span-nameobject">
@@ -154,24 +171,37 @@
                             </td>
                             @*Материалы*@
                             @* <td>
-                                <span class="table_span-material">
-                                    <span class="icon link_to_page">
-                                        <a asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@item?.Id"></a>
-                                    </span>
-                                </span>
-                            </td> *@
+                    <span class="table_span-material">
+                    <span class="icon link_to_page">
+                    <a asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@item?.Id"></a>
+                    </span>
+                    </span>
+                    </td> *@
                             @*Валюта*@
                             <td>
                                 <span class="table_span-currency">
                                     @item.Сurrency
                                 </span>
                             </td>
+
+                            @*Условия формирования договорной цены*@
+                            @if (isEngineering)
+                            {
+                                <td>
+                                    <span class="table_span-work">
+                                        @ServiceGc?.Find(x=>x.ContractId == item?.Id)?.LastOrDefault()?.ServicePercent
+                                    </span>
+                                </td>
+                            }
                             @*Виды работ по договору*@
-                            <td>
-                                <span class="table_span-work">
-                                    @TypeWork?.Find(x=>x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
-                                </span>
-                            </td>
+                            @if (!isEngineering)
+                            {
+                                <td>
+                                    <span class="table_span-work">
+                                        @TypeWork?.Find(x=>x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                    </span>
+                                </td>
+                            }
                             @*Контрактная цена*@
                             <td>
                                 <span class="table_span-contractprice">
@@ -197,7 +227,7 @@
                             @*Объем*@
                             <td>
                                 <span class="table_span-volume">@sumThisYear?.ToString("0.00")</span>
-                            </td>                           
+                            </td>
                             @*Действия с договором*@
                             <td>
                                 <div class="icon view">
@@ -207,14 +237,14 @@
                                     <a asp-action="Edit" asp-route-id="@item.Id"></a>
                                 </div>
                                 @* <div class="icon file-add" title="Добавить файл к договору">
-                                    <a asp-action="AddFile" asp-controller="Files" 
-                                    asp-route-entityId="@item.Id" 
-                                    asp-route-fileCategory="@FolderEnum.Contracts" 
-                                    asp-route-redirectAction=@redirectAction 
-                                    asp-route-redirectController=@redirectController 
-                                    asp-route-contractId="@item.Id">
-                                </a>
-                                </div> *@
+                        <a asp-action="AddFile" asp-controller="Files"
+                        asp-route-entityId="@item.Id"
+                        asp-route-fileCategory="@FolderEnum.Contracts"
+                        asp-route-redirectAction=@redirectAction
+                        asp-route-redirectController=@redirectController
+                        asp-route-contractId="@item.Id">
+                        </a>
+                        </div> *@
                                 <div class="icon delete">
                                     <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                 </div>
@@ -308,7 +338,7 @@
                 this.element = element;
                 this.urlDoun = urlDown;
                 this.urlUp = urlUp;
-            }         
+            }
         }
         window.onload = function () {
 

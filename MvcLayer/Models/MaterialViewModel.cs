@@ -8,10 +8,10 @@ namespace MvcLayer.Models
     {
         public int Id { get; set; }
 
-        [DisplayName("Сметная стоимость по плану")]
+        [DisplayName("Стоимость")]
         public decimal? Price { get; set; }
 
-        [DisplayName("Сметная стоимость факт")]
+        
         public decimal? FactPrice { get; set; }
 
         [DisplayName("Период")]

@@ -15,12 +15,12 @@
         var number = Contract.GetById((int)id).Number;
         ViewData["Title"] = $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договора № {number}";
     }
-    else
-    {
-        string url = Context.Request.HttpContext.Request.QueryString.Value;
-        //TODO: пересмотреть все VIEW чтобы такого не было как ниже!!!!!!!!!!!!!!!!
-        id = int.Parse(url.Substring(url.LastIndexOf("=") + 1));
-    }
+    // else
+    // {
+    //     string url = Context.Request.HttpContext.Request.QueryString.Value;
+    //     //TODO: пересмотреть все VIEW чтобы такого не было как ниже!!!!!!!!!!!!!!!!
+    //     id = int.Parse(url.Substring(url.LastIndexOf("=") + 1));
+    // }
 }
 
 <div class="dm-overlay">
@@ -64,7 +64,7 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.OtherExpensesCost)
                                 </th>                               
-                                <th>Файлы ДС</th>
+                                <th>Файлы справок</th>
                                 <th ></th>
                             </tr>                            
                         </thead>
@@ -76,7 +76,7 @@
                                         @item.Period?.ToString("MMM yyyy")
                                     </td>
                                     <td>
-                                        @Html.DisplayFor(modelItem => item.DateSigning)
+                                        @item.DateSigning?.ToShortDateString()
                                     </td>
                                     <td>
                                         @Html.DisplayFor(modelItem => item.TotalCost)
@@ -107,7 +107,7 @@
                                     </td>
                                     <td>                                       
                                         <span class="icon file-add" title="Добавить файл к форме">
-                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
+                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
                                         </span>
                                         <span class="icon edit" title="Редактировать форму">
                                             <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
