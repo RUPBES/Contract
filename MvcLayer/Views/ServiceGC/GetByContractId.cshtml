@@ -59,7 +59,7 @@
                             @foreach (var item3 in ServiceCost.Find(x => x.IsFact != true && x.ServiceGCId == item.Id))
                             {
                                 <td>
-                                    @Html.DisplayFor(modelItem => item3.Price)
+                                    @item3.Price?.ToString("N2")
                                 </td>
                             }
                         </tr>
@@ -73,7 +73,7 @@
                             @foreach (var item3 in ServiceCost.Find(x => x.IsFact == true && x.ServiceGCId == item.Id))
                             {
                                 <td>
-                                    @Html.DisplayFor(modelItem => item3.Price)
+                                    @item3.Price?.ToString("N2")
                                 </td>
                             }
                         </tr>

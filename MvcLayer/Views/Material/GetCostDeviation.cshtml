@@ -141,26 +141,26 @@
                                                 var resultPlan = cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2) != null ?
                                                 cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2).Price : null;
                                             }
-                                            @resultPlan
+                                            @resultPlan?.ToString("N2")
                                         </td>
                                         <td>
                                             @{
                                                 var resultFact = cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2) != null ?
                                                 cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2).Price : null;
                                             }
-                                            @resultFact
+                                            @resultFact?.ToString("N2")
                                         </td>
                                         <td>
                                             @{
                                                 var deviation = resultPlan - resultFact;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation
+                                            @deviation?.ToString("N2")
                                         </td>
                                     }
 
                                     <td>
-                                        @deviationTotal
+                                        @deviationTotal.ToString("N2")
                                     </td>
                                     @*  <td>
                                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

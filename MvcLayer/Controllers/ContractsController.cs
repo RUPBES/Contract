@@ -296,7 +296,10 @@ namespace MvcLayer.Controllers
                 }
 
                 _contractService.Create(_mapper.Map<ContractDTO>(contract));
-
+                if (contract.IsEngineering == true)
+                {
+                    return RedirectToAction(nameof(Engineerings));
+                }
                 return RedirectToAction(nameof(Index));
             }
 

@@ -71,14 +71,14 @@
                         <tr>
                             @if (Model.Count() > 0)
                             {
-                                <td><span class="table_span-contractprice">@contract?.ContractPrice</span></td>
+                                <td><span class="table_span-contractprice">@contract?.ContractPrice?.ToString("N2")</span></td>
                                 <td><span class="table_span-remains">???</span></td>
-                                <td><span class="table_span-volume">@scopeWork</span></td>
-                                <td><span class="table_span-volume">@form</span></td>
+                                <td><span class="table_span-volume">@scopeWork?.ToString("N2")</span></td>
+                                <td><span class="table_span-volume">@form?.ToString("N2")</span></td>
                                 @foreach (var item in Model)
                                 {
-                                    <td><span class="span-50-per">@item.PaySum</span></td>
-                                    <td><span class="span-50-per">@item.PaySumForRupBes</span></td>
+                                    <td><span class="span-50-per">@item.PaySum?.ToString("N2")</span></td>
+                                    <td><span class="span-50-per">@item.PaySumForRupBes?.ToString("N2")</span></td>
                                 }
                             }
                         </tr>
