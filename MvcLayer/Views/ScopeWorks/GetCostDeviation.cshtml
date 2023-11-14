@@ -65,6 +65,13 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     <a asp-controller="Home" asp-action="" class="close-btn"></a>
                 </div>
+                @using (Html.BeginForm("GetCostDeviation", "ScopeWorks", FormMethod.Get))
+                {
+                    <form style="search-form" method="get">
+                        <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                        <input type="submit" value="Найти" />
+                    </form>
+                }
                 <hr class="modal-line" />
                 <div class="wrapper-table">
                     <table class="table table-bordered table-main table-main-short">
@@ -140,7 +147,7 @@
                                 var contract = @Contract.GetById((int)item?.ContractId);
                                 var cost = item.SWCosts;
                                 var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsClient == true);
-                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsGenContractor == true);
+                                var genContractor = contract.ContractOrganizations.FirstOrDefault( x => x.ContractId == item.ContractId && x.IsGenContractor == true);
                                 var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
 
                                 var deviationTotal = 0M;
