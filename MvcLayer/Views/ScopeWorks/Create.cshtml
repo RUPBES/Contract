@@ -55,23 +55,12 @@
                                 @{
                                     index = 0;
                                 }
-                            </tr>
-                            @*<tr>
-                            <th>Cтоимость работ с НДС</th>
-                            @foreach (var item in d.SWCosts)
-                            {
-                            <td><input asp-for="SWCosts[index].CostNds" class="form-control" type="number" step="0.001" min="0" /></td>
-                            index++;
-                            }
-                            @{
-                            index = 0;
-                            }
-                            </tr>*@
+                            </tr>                            
                             <tr>
                                 <th>Стоимость СМР</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].SmrCost" class="form-control costs_contract" type="еу" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].SmrCost" class="form-control costs_contract cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -82,7 +71,7 @@
                                 <th>Стоимость ПНР</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].PnrCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].PnrCost" class="form-control cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -93,7 +82,7 @@
                                 <th>Стоимость оборудования</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].EquipmentCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].EquipmentCost" class="form-control cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -104,7 +93,7 @@
                                 <th>Стоимость прочих работ и услуг</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].OtherExpensesCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].OtherExpensesCost" class="form-control cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -115,7 +104,7 @@
                                 <th>Стоимость доп. работ</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].AdditionalCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].AdditionalCost" class="form-control cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -126,7 +115,7 @@
                                 <th>Стоимость материалов заказчика (справочно)</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].MaterialCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].MaterialCost" class="form-control cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -138,7 +127,7 @@
                                 <th>Сумма генуслуг</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].GenServiceCost" class="form-control" type="number" step="0.001" min="0" /></td>
+                                    <td><input asp-for="SWCosts[index].GenServiceCost" class="form-control cost"/></td>
                                     index++;
                                 }
                                 @{
@@ -159,7 +148,7 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                        <input type="submit" value="Создать" class="btn btn-primary" />
                     </div>
                 </form>
             </div>
@@ -173,24 +162,11 @@
        
     } 
     <script>
-        // const costs_contract = document.querySelectorAll('.costs_contract');
-        // costs_contract.forEach((e) => {
-        //     e.addEventListener("keyup", function (e) {
-        //         let txt = this.value.replace(/\D/g, '');
-        //         let newtxt = '';
-                
-
-        //         for (let i = 0; i < Math.min(txt.length, 20); i++) {
-        //             newtxt += txt[i];
-        //             if ((i == 2) || (i == 5)) {
-        //                 newtxt += ' ';
-        //             }
-        //         }
-        //         if (newtxt[newtxt.length - 1] == ' ') newtxt = newtxt.substring(0, newtxt.length - 1);
-        //         this.value = newtxt;
-        //     });
-        // });
-       
-
+        $(function ($) {
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
+            });
+            digits_float('.cost');
+        });        
     </script>
 }

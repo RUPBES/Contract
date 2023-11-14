@@ -63,7 +63,7 @@
                                 <th>Всего к оплате</th>
                                 @foreach (var item in d)
                                 {
-                                    <td><input asp-for="@Model[index].PaySum" class="form-control" type="number" step="0.01" min="0" /></td>
+                                    <td><input asp-for="@Model[index].PaySum" class="form-control cost" min="0" /></td>
                                     index++;
                                 }
                                 @{
@@ -74,7 +74,7 @@
                                 <th>из них на счет РУП "БЭС"-УКХ"</th>
                                 @foreach (var item in d)
                                 {
-                                    <td><input asp-for="@Model[index].PaySumForRupBes" class="form-control" type="number" step="0.01" min="0" /></td>
+                                    <td><input asp-for="@Model[index].PaySumForRupBes" class="form-control cost" min="0" /></td>
                                     index++;
                                 }
                                 @{
@@ -108,5 +108,13 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+                digits_float('.cost');
+            });
+        </script>
     }
 }

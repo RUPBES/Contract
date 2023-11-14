@@ -31,6 +31,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId)
         {
+            ViewData["contractId"] = contractId;
             return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
         }
 

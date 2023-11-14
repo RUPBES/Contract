@@ -7,7 +7,7 @@
 
 @{
     ViewData["Title"] = string.Empty;
-    var id = Model.FirstOrDefault()?.ContractId is null || Model.FirstOrDefault()?.ContractId == 0 ? 0 : Model?.FirstOrDefault()?.ContractId;
+    int? id = ViewBag.contractId;
     var contract = Contract.GetById((int)id);
     decimal? form = 0;
     decimal? scopeWork = 0;

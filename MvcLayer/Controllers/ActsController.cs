@@ -29,6 +29,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int id)
         {
+            ViewData["contractId"] = id;
             return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == id)));
         }
 

@@ -17,7 +17,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" >
+            <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (@id != null && @id > 0)
@@ -34,22 +34,22 @@
                     <table class="table">
                         @*!!!план без изменений!!*@
                         @foreach (var item in Model)
-                    {
-                        <tr>
-                            <th>
-                                Период
-                            </th>
-                            @foreach (var item1 in MaterialCost.Find(x => x.IsFact != true && x.MaterialId == item.Id))
-                            {
+                        {
+                            <tr>
                                 <th>
-                                    @item1.Period?.ToString("MMM yyyy")
+                                    Период
                                 </th>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.Price)
-                            </th>
+                                @foreach (var item1 in MaterialCost.Find(x => x.IsFact != true && x.MaterialId == item.Id))
+                                {
+                                    <th>
+                                        @item1.Period?.ToString("MMM yyyy")
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Price)
+                                </th>
                                 @foreach (var item1 in MaterialCost.Find(x => x.IsFact != true && x.MaterialId == item.Id))
                             {
                                 <td>
@@ -73,7 +73,6 @@
                         }
                     </table>
                 </div>
-               
             </div>
         </div>
     </div>

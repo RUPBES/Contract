@@ -27,6 +27,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int id)
         {
+            ViewData["contractId"] = id;
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == id)));
         }
 

@@ -9,7 +9,7 @@
     bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Correspondences";
-    var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
+    var contract = Contract.GetById((int)ViewData["contractId"]);
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
 }
 <style>
@@ -30,7 +30,7 @@
                     <label class="my-modal-title">@ViewData["Title"] согласно договора @contract?.Number</label>
                     @if (@contract?.Id != null && @contract?.Id > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewData["contractId"]" class="close-btn"></a>
                     }
                     @if (@contract?.Id == null || @contract?.Id == 0)
                     {
