@@ -7,6 +7,7 @@ using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace BusinessLayer.Services
@@ -205,5 +206,35 @@ namespace BusinessLayer.Services
 
             }
         }
+
+        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, out int count)
+        {
+
+            int skipEntities = (pageNum - 1) * pageSize;
+            IEnumerable<Contract> items;
+            if (!String.IsNullOrEmpty(request))
+            {
+                items = _database.Contracts.Find(x =>
+                (x.NameObject != null && x.NameObject.Contains(request) || x.Number.Contains(request)) && x.ScopeWorks.Count() > 0); 
+            }
+            else { items = _database.Contracts.GetAll(); }
+            count = items.Count();
+            items = items.OrderBy(s => s.NameObject);                       
+            items = items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);            
+            return t;
+        }
+
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, out int count)
+        {            
+            int skipEntities = (pageNum - 1) * pageSize;
+            var items = _database.Contracts.Find(x => x.ScopeWorks.Count() > 0);
+            items = items.OrderBy(s => s.NameObject);
+            count = items.Count();
+            items = items.Skip(skipEntities).Take(pageSize);            
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);            
+            return t;
+        }
+
     }
 }

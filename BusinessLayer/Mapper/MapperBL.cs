@@ -47,7 +47,7 @@ namespace BusinessLayer.Mapper
             CreateMap<SWCost, SWCostDTO>().ReverseMap();
             CreateMap<TypeWork, TypeWorkDTO>().ReverseMap();
             CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
-
+            CreateMap<VContract, ContractDTO>().ReverseMap();
             CreateMap<VContract, VContractDTO>().ReverseMap();
             CreateMap<VContractEngin, VContractDTO>().ReverseMap();
 
