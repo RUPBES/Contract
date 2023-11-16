@@ -6,7 +6,7 @@
 
 @{
     ViewData["Title"] = string.Empty;
-    var id = Model.FirstOrDefault()?.ContractId;
+    var id = ViewBag.contractId;
     bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Forms";
@@ -79,19 +79,19 @@
                                     <td>                                        
                                         @item.DateSigning?.ToShortDateString()
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.TotalCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.SmrCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.PnrCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.EquipmentCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.OtherExpensesCost?.ToString("N2")
                                     </td>
                                     <td>
@@ -124,99 +124,4 @@
                 </div>
             </div>
         </div>
-    </div>
-
-
-                        @*
-
-                        <table class="table table-bordered">
-                       
-                        
-                        <tr>
-                            <th>
-                                <span class="table_span-contractprice">Период</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-contractprice">@item.Period?.ToString("MMM yyyy")</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-remains">Дата подписания</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-remains">@item.DateSigning?.ToString("dd MMM yyyy")</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-volume">Общая стоимость выполненных работ</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-volume">@item.TotalCost</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-volume">Стоимость СМР</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-volume">@item.SmrCost</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-volume">Стоимость ПНР</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-volume">@item.PnrCost</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-volume">Стоимость оборудования</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-volume">@item.EquipmentCost</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-volume">Стоимость прочих работ</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td><span class="table_span-volume">@item.AdditionalCost</span></td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                <span class="table_span-volume">Файл</span>
-                            </th>
-                            @foreach (var item in Model)
-                            {
-                                <td style="word-wrap:anywhere">
-                                    <span class="table_span-volume">
-                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
-                                        {
-                                             <div>
-                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                @if (isAdmin)
-                                                {
-                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
-                                                }
-                                            </div>
-                                        }
-                                    </span>
-                                </td>
-                            }
-                        </tr>
-                    </table>
-
-                        *@
+    </div>                     

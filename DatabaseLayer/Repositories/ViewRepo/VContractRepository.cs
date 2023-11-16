@@ -41,7 +41,7 @@ namespace DatabaseLayer.Repositories.ViewRepo
         }
 
         public IEnumerable<VContract> GetEntitySkipTake(int skip, int take)
-        {
+        {           
             return _context.VContracts.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 

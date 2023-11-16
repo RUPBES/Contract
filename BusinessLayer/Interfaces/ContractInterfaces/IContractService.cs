@@ -10,5 +10,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         bool ExistContractByNumber(string numberContract);
 
         void AddFile(int contractId, int fileId);
+        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, out int count);
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, out int count);
     }
 }
