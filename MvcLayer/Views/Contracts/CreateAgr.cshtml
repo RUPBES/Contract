@@ -42,11 +42,11 @@
                 <div class="input-group">
                     <div class="input-group-text">№</div>
                     <input asp-for="Number" class="form-control" id="NumDC">
-                    <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли договор с таким номером"></button>
+                    <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли соглашение с таким номером"></button>
                 </div>
             </div>
             <div class="col-12">
-                <label asp-for="Date" for="DateDC"></label>
+                <label asp-for="Date" for="DateDC">Дата заключения соглашения</label>
                 <div class="input-group">
                     <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
                     <input asp-for="Date" type="date" class="form-control" id="DateDC">
@@ -68,7 +68,7 @@
                             @if (Model?.ContractOrganizations[0] is not null)
                             {
                                 var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                                <option selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.ContractOrganizations[0] is null)
                             {
@@ -97,14 +97,14 @@
                         </a>
                     </legend>
                     <div class="col-12">
-                        <label>Подписант договора</label>
+                        <label>Подписант соглашения</label>
                         @* <input name="EmployeeContracts[0].Employee" hidden /> *@
                         <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
                         <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
                             @if (Model?.EmployeeContracts[0] is not null)
                             {
                                 var item = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
-                                <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                <option selected value="@item?.Id">@item?.FullName</option>
                             }
                             @if (Model?.EmployeeContracts[0] is null)
                             {
@@ -118,13 +118,13 @@
                         </select>
                     </div>
                     <div class="col-12">
-                        <label>Ответственный за ведение договора</label>
+                        <label>Ответственный за ведение соглашения</label>
                         <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
                         <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
                             @if (Model?.EmployeeContracts[1] is not null)
                             {
                                 var item = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
-                                <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                <option selected value="@item?.Id">@item?.FullName</option>
                             }
                             @if (Model?.EmployeeContracts[1] is null)
                             {
@@ -156,7 +156,7 @@
                             @if (Model?.TypeWorkContracts[0] is not null)
                             {
                                 var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                                <option selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.TypeWorkContracts[0] is null)
                             {
@@ -183,12 +183,20 @@
                 <input asp-for="ContractPrice" class="form-control" id="CDC">
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group mt-1">
             <label asp-for="Сurrency" for="CurDC"></label>
             <div class="input-group">
                 <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
                 <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                    <option selected disabled>Выбрать валюту</option>
+                    @if (Model?.Сurrency is null)
+                    {
+                        <option selected disabled>Выбрать валюту</option>
+                    }
+                    @if (Model?.Сurrency is not null)
+                    {
+                        <option selected value="@Model?.Сurrency">@Model?.Сurrency</option>
+                    }
+
                     @foreach (var item in Enum.GetValues<CurrencyEnum>())
                     {
                         <option value="@item">@item</option>
@@ -196,12 +204,12 @@
                 </select>
             </div>
         </div>
-        <div class="col-12">
+        <div class="col-12 mt-2">
             <label>Наименование объекта</label>
             <textarea asp-for="NameObject" class="form-control" rows="2" disabled></textarea>
         </div>
 
-        <fieldset class="border rounded-3 p-3">
+        <fieldset class="border rounded-3 p-3 mt-2">
             <legend class="float-none w-auto px-3">Источник финансирования</legend>
             @foreach (var item in Enum.GetValues<FundingSourceEnum>())
             {
@@ -230,21 +238,26 @@
 
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Условия авансирования</legend>
+            @{
+                int numberCheckbox = 0;
+            }
             @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
             {
                 var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
                 var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
+                string idCh = "check" + @numberCheckbox;
+
                 <div>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <div class="input-group-text" style="display: block;">
                                 @if (valueArray is not null)
                                 {
-                                    <input type="checkbox" name="PaymentCA" value="@value" checked>
+                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
                                 }
                                 @if (valueArray is null)
                                 {
-                                    <input type="checkbox" name="PaymentCA" value="@value">
+                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
                                 }
                             </div>
                         </div>
@@ -252,6 +265,7 @@
 
                     </div>
                 </div>
+                numberCheckbox++;
             }
         </fieldset>
 
@@ -335,6 +349,10 @@
 
                             </div>
                         </div>
+                        @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true && @Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
+                        {
+                            <div class="col-1" id="inpValueRaschet"><input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@Model?.PaymentСonditionsDaysRaschet.Value" min="1"></div>
+                        }
                         <div class="col-9">
                             <input type="text" class="form-control" value="@name" disabled>
                         </div>
@@ -361,6 +379,133 @@
         });
 
         $(document).ready(function () {
+
+            ////    проверка вводимых дат /////////********/
+            //////////////////////////////////////********/
+            /*
+
+            Дата договора  -  a / id = DateDC
+            Начало работ   -  b / id = DateBeginWork
+            Окончание работ - c / id = DateEndWork
+            Срок ввода      - d / id = EnteringTerm
+            Срок действия   - e / id = ContractTerm
+
+             a<=b
+             b<c
+             c<=d
+             c<e
+            */
+            let dateContract = document.querySelector("#DateDC");
+            let beginWork = document.querySelector("#DateBeginWork");
+            let endWork = document.querySelector("#DateEndWork");
+            let enteringTm = document.querySelector("#EnteringTerm");
+            let contractTm = document.querySelector("#ContractTerm");
+
+            dateContract.addEventListener('change', (e) => {
+                let date = dateContract.value;
+                let dateBeg = beginWork.value;
+
+                if (date > dateBeg && dateBeg.length > 0) {
+                    let datePlusOne = addDays(new Date(date), 0);
+                    $("#DateBeginWork").val(date);
+                }
+
+                beginWork.setAttribute('min', date);
+            });
+
+            beginWork.addEventListener('change', (e) => {
+                let date = beginWork.value;
+                let dateEnd = endWork.value;
+
+                let datePlusOne = addDays(new Date(date), 1);
+
+                if (date > dateEnd && dateEnd.length > 0) {
+                    $("#DateEndWork").val(datePlusOne);
+                }
+
+                endWork.setAttribute('min', datePlusOne);
+            });
+
+            endWork.addEventListener('change', (e) => {
+                let dateET = enteringTm.value;
+                let dateCT = contractTm.value;
+                let dateEnd = endWork.value;
+
+                let datePlusOne = addDays(new Date(dateEnd), 1);
+
+                if (dateET < dateEnd && dateET.length > 0) {
+                    $("#EnteringTerm").val(dateEnd);
+                }
+                if (dateCT < dateEnd && dateCT.length > 0) {
+                    $("#ContractTerm").val(datePlusOne);
+                }
+
+                enteringTm.setAttribute('min', dateEnd);
+                contractTm.setAttribute('min', datePlusOne);
+            });
+
+            function addDays(date, countDays) {
+                let dateOfyear = date.getFullYear() + ""; // год;
+                console.log(dateOfyear);
+                let newDateOfyear = dateOfyear/* .slice(2) */; // год последние две цифры;
+
+                let day = date.getDate(); // текущий день
+                day = day < 10 ? "0" + day + countDays : day + countDays;
+                let month = date.getMonth() + 1; //текущий месяцж
+                month = month < 10 ? "0" + month : month;
+
+                return +newDateOfyear + '-' + +month + '-' + +day;
+            }
+            //////////////////////////////////////////
+            //////////////////////////////////////////
+
+
+
+            ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+
+            let ch1 = document.querySelector("#check0");
+            let ch2 = document.querySelector("#check1");
+            let ch3 = document.querySelector("#check2");
+
+            ch1.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch2.setAttribute("disabled", true);
+                    ch3.setAttribute("disabled", true);
+                }
+
+                if (!e.currentTarget.checked) {
+                    ch2.removeAttribute("disabled");
+                    ch3.removeAttribute("disabled");
+                }
+            });
+
+            ch2.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch1.setAttribute("disabled", true);
+                }
+
+                if (!e.currentTarget.checked && !ch3.checked) {
+                    ch1.removeAttribute("disabled");
+                }
+
+            });
+
+            ch3.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch1.setAttribute("disabled", true);
+                }
+
+                if (!e.currentTarget.checked && !ch2.checked) {
+                    ch1.removeAttribute("disabled");
+                }
+            });
+
+            ///////
+
+
+
+
+
             let isCheckNumberContract = false;
 
             let styleName = "border:solid red 4px;";
@@ -371,6 +516,7 @@
             // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
             $(".checkChoise").click(function (e) {
                 let elemNumber = $("#dayInput");
+                $("#inpValueRaschet").remove();
                 if (elemNumber !== null || elemNumber !== undefined) {
                     //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                     $("#dayInput").parent().remove();
@@ -388,13 +534,13 @@
                     data: { contractNumber: $("#NumDC").val() },
                     success: function (resultChecking) {
                         if (resultChecking === true) {
-                            alert(`Договор с данным номером существует!`)
+                            alert(`Соглашение с данным номером существует!`)
                             console.log(resultChecking);
                         }
                         else {
                             // isCheckNumberContract = true;
                             // changeButtonType("#subBtn", "#NumDC");
-                            alert(`Договор с данным номером не существует!`)
+                            alert(`Соглашение с данным номером не существует!`)
                         }
                     },
                     error: function (ex) {

@@ -39,16 +39,19 @@ namespace MvcLayer.Controllers
         [HttpPost]
         public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
-            int fileId = (int)_file.Create(collection.Files, fileCategory);
-            _file.AttachFileToEntity(fileId, entityId, fileCategory);
+            int fileId = (int)_file.Create(collection.Files, fileCategory, entityId);
+            //_file.AttachFileToEntity(fileId, entityId, fileCategory);
 
             if (redirectAction.Equals("Details", StringComparison.OrdinalIgnoreCase) && redirectController.Equals("Contracts", StringComparison.OrdinalIgnoreCase))
             {
-                return RedirectToAction("GetByContractId", "Files", new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
+                return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
+
+                //return RedirectToAction("GetByContractId", "Files", new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
             }
             else
             {
-                return RedirectToAction(redirectAction, redirectController, new { contractId = contractId });
+                return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
+
             }
         }
 
@@ -74,7 +77,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                _file.Create(collection.Files, folder: FolderEnum.Other);
+                //_file.Create(collection.Files, folder: FolderEnum.Other);
 
                 return Redirect($"/Home/Index");
             }
@@ -91,14 +94,15 @@ namespace MvcLayer.Controllers
                 _file.Delete(id);
                 if (redirectController is not null && redirectAction is not null)
                 {
-                    if (redirectAction.Equals("GetByContractId", StringComparison.OrdinalIgnoreCase) && redirectAction.Equals("Files", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return RedirectToAction("GetByContractId", "Files", new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
-                    }
-                    else
-                    {
-                        return RedirectToAction(redirectAction, redirectController, new { contractId = contractId });
-                    }
+                    //if (redirectAction.Equals("GetByContractId", StringComparison.OrdinalIgnoreCase) && redirectAction.Equals("Files", StringComparison.OrdinalIgnoreCase))
+                    //{
+                    return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
+                        //return RedirectToAction(redirectAction, redirectController, new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
+                    //}
+                    //else
+                    //{
+                    //    return RedirectToAction(redirectAction, redirectController, new { contractId = contractId });
+                    //}
                 }
                 return RedirectToAction(nameof(Index));
             }

@@ -61,11 +61,11 @@
                     <div class="col-12">
                         <label>Заказчик</label>
                         <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
-                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
+                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgOne">
                             @if (Model?.ContractOrganizations[0] is not null)
                             {
                                 var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                                <option selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.ContractOrganizations[0] is null)
                             {
@@ -81,11 +81,11 @@
                     <div class="col-12">
                         <label>Генподрядчик</label>
                         <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
-                        <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
+                        <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgTwo">
                             @if (Model?.ContractOrganizations[1] is not null)
                             {
                                 var item = Organization.GetById((int)Model?.ContractOrganizations[1]?.OrganizationId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                                <option selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.ContractOrganizations[1] is null)
                             {
@@ -116,7 +116,7 @@
                             @if (Model?.EmployeeContracts[0] is not null)
                             {
                                 var item = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
-                                <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                <option selected value="@item?.Id">@item?.FullName</option>
                             }
                             @if (Model?.EmployeeContracts[0] is null)
                             {
@@ -136,7 +136,7 @@
                             @if (Model?.EmployeeContracts[1] is not null)
                             {
                                 var item = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
-                                <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                <option selected value="@item?.Id">@item?.FullName</option>
                             }
                             @if (Model?.EmployeeContracts[1] is null)
                             {
@@ -167,7 +167,7 @@
                             @if (Model?.TypeWorkContracts[0] is not null)
                             {
                                 var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
+                                <option selected value="@item?.Id">@item?.Name</option>
                             }
                             @if (Model?.TypeWorkContracts[0] is null)
                             {
@@ -271,7 +271,15 @@
             <div class="input-group">
                 <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>                
                 <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                    <option selected disabled>Выбрать валюту</option>
+                    @if (Model?.Сurrency is null)
+                    {
+                        <option selected disabled>Выбрать валюту</option>
+                    }
+                    @if (Model?.Сurrency is not null)
+                    {
+                        <option selected value="@Model?.Сurrency">@Model?.Сurrency</option>
+                    }
+
                     @foreach (var item in Enum.GetValues<CurrencyEnum>())
                     {
                         <option value="@item">@item</option>
@@ -325,10 +333,7 @@
                     </div>
                 </div>
             }
-        </fieldset>
-        
-
-
+        </fieldset>   
     </div>
     <div class="col-8 mt-1">
         <fieldset class="border rounded-1 p-3">
@@ -354,6 +359,10 @@
 
                             </div>
                         </div>
+                        @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true && @Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
+                        {
+                            <div class="col-1" id="inpValueRaschet"><input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@Model?.PaymentСonditionsDaysRaschet.Value" min="1"></div>
+                        }
                         <div class="col-9">
                             <input type="text" class="form-control" value="@name" disabled>
                         </div>
@@ -406,7 +415,6 @@
 
                 beginWork.setAttribute('min', date);
             });
-
             beginWork.addEventListener('change', (e) => {
                 let date = beginWork.value;
                 let dateEnd = endWork.value;
@@ -419,7 +427,6 @@
 
                 endWork.setAttribute('min', datePlusOne);
             });
-
             endWork.addEventListener('change', (e) => {
                 let dateET = enteringTm.value;
                 let dateCT = contractTm.value;
@@ -437,8 +444,6 @@
                 enteringTm.setAttribute('min', dateEnd);
                 contractTm.setAttribute('min', datePlusOne);
             });
-
-
 
             function addDays(date, countDays) {
                 let dateOfyear = date.getFullYear() + ""; // год;
@@ -474,7 +479,6 @@
                     ch3.removeAttribute("disabled");
                 }               
             });
-
             ch2.addEventListener('change', (e) => {
                 if (e.currentTarget.checked) {
                     ch1.setAttribute("disabled", true);
@@ -485,7 +489,6 @@
                 }
                                
             });
-
             ch3.addEventListener('change', (e) => {
                 if (e.currentTarget.checked) {
                     ch1.setAttribute("disabled", true);
@@ -499,13 +502,16 @@
             ///////
 
              let styleName = "border:solid red 4px;";
-
             checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
             checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
+
+            checkTwoSelectValues("#selectOrgOne", "#selectOrgTwo", "#subBtn", styleName);
+            checkTwoSelectValues("#selectOrgTwo", "#selectOrgOne", "#subBtn", styleName);
 
             // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
             $(".checkChoise").click(function (e) {
                 let elemNumber = $("#dayInput");
+                $("#inpValueRaschet").remove();
                 if (elemNumber !== null || elemNumber !== undefined){
                     //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                 $("#dayInput").parent().remove();
@@ -584,6 +590,7 @@
 
             });
         });
+
         $(function ($) {
             $('body').on('input', '#CDC', function (e) {
                 digits_float(this);

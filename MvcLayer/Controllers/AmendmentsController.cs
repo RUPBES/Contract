@@ -17,11 +17,11 @@ namespace MvcLayer.Controllers
 
         public AmendmentsController(IAmendmentService amendment, IMapper mapper, IFileService fileService)
         {
-           _amendment = amendment;
+            _amendment = amendment;
             _mapper = mapper;
             _fileService = fileService;
         }
-              
+
         [HttpGet]
         public ActionResult Index()
         {
@@ -31,7 +31,7 @@ namespace MvcLayer.Controllers
         [HttpGet]
         public ActionResult GetByContractId(int id)
         {
-            return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x=>x.ContractId == id)));
+            return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id)));
         }
 
         public ActionResult Create(int contractId)
@@ -46,10 +46,11 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                int fileId = (int) _fileService.Create(amendment.FilesEntity, BusinessLayer.Enums.FolderEnum.Amendment);                
-                int amendId = (int) _amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
+                int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
+                int fileId = (int)_fileService.Create(amendment.FilesEntity, FolderEnum.Amendment, amendId);
+
                 _amendment.AddFile(amendId, fileId);
-                
+
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -101,12 +102,12 @@ namespace MvcLayer.Controllers
                 _amendment.Delete(id);
                 if (contractId is not null && contractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new {id = contractId});
+                    return RedirectToAction(nameof(GetByContractId), new { id = contractId });
                 }
                 else
                 {
                     return RedirectToAction(nameof(Index));
-                }                
+                }
             }
             catch
             {

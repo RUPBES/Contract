@@ -6,8 +6,8 @@
 @{
     ViewData["Title"] =  $"Файлы договора";
     var isAdmin = true;
-    string controller = ViewBag.redirectController is not null ? ViewBag.redirectController : "Home";
-    string action = !controller.Equals("Home", StringComparison.OrdinalIgnoreCase) && ViewBag.redirectAction is not null ? ViewBag.redirectAction : "Index";
+    string controller = ViewBag.redirectController is not null || ViewBag.redirectController == "Files"? ViewBag.redirectController : "Contracts";
+    string action = ViewBag.redirectAction is not null ? ViewBag.redirectAction : "Index";
     var routeValue = !action.Equals("Index", StringComparison.OrdinalIgnoreCase) && ViewBag.entityId is not null ? ViewBag.entityId : null;
 }
 

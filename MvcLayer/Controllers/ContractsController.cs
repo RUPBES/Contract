@@ -27,7 +27,7 @@ namespace MvcLayer.Controllers
         private readonly IMapper _mapper;
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork, 
+            IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
             IVContractService vContractService, IVContractEnginService vContractEnginService)
         {
             _contractService = contractService;
@@ -41,9 +41,9 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts
-        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString , string sortOrder)
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
-            if(pageNum < 1)
+            if (pageNum < 1)
             {
                 pageNum = 1;
             }
@@ -101,7 +101,7 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
-            
+
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -322,11 +322,14 @@ namespace MvcLayer.Controllers
             }
 
             if (contract.ContractOrganizations.Count < 1)
-            { contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsClient = true });
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsGenContractor = true });
-            } else if (contract.ContractOrganizations.Count<2)
             {
-                if (contract.ContractOrganizations[0].IsGenContractor != true || contract.ContractOrganizations[0].IsClient != true) {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsClient = true });
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsGenContractor = true });
+            }
+            else if (contract.ContractOrganizations.Count < 2)
+            {
+                if (contract.ContractOrganizations[0].IsGenContractor != true || contract.ContractOrganizations[0].IsClient != true)
+                {
                     contract.ContractOrganizations.Add(new ContractOrganizationDTO
                     {
                         ContractId = (int)id,
@@ -355,11 +358,18 @@ namespace MvcLayer.Controllers
             }
             if (contract.TypeWorkContracts.Count < 1)
             {
-                contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id});                
+                contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id });
             }
+
+
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
-            return View(_mapper.Map<ContractViewModel>(contract));
+
+            var viewContract = _mapper.Map<ContractViewModel>(contract);
+            viewContract.FundingFS.AddRange(contract.FundingSource.Split(", "));
+
+
+            return View(viewContract);
         }
 
         //[Authorize]
@@ -389,23 +399,21 @@ namespace MvcLayer.Controllers
             {
                 contract.TypeWorkContracts.Remove(contract.TypeWorkContracts[0]);
             }
-            contract.PaymentСonditionsAvans = "";
-            foreach (var str in contract.PaymentCA)
-            { contract.PaymentСonditionsAvans += str+" "; }
-            contract.PaymentСonditionsRaschet = "";
-            foreach (var str in contract.FundingFS)
-            { contract.PaymentСonditionsRaschet += str + " "; }
+
+            contract.FundingSource = string.Join(", ", contract.FundingFS);
+            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+
             try
             {
-                    _contractService.Update(_mapper.Map<ContractDTO>(contract));
-                }
-                catch (DbUpdateConcurrencyException)
-                {                  
-                }
-                return RedirectToAction(nameof(Index));
-            
-            ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", contract.AgreementContractId);
-            ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Name", contract.SubContractId);
+                _contractService.Update(_mapper.Map<ContractDTO>(contract));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+            }
+            if (contract.IsEngineering == true)
+            {
+                return RedirectToAction(nameof(Engineerings));
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -427,7 +435,7 @@ namespace MvcLayer.Controllers
         }
 
         //[Authorize]
-       
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -456,7 +464,7 @@ namespace MvcLayer.Controllers
         }
 
         public async Task<ActionResult> AddTypeWork(ContractViewModel model)
-        {  
+        {
             if (model.NameObject is null && model.IsSubContract == true)
             {
                 model.NameObject = _contractService.GetById((int)model.SubContractId).NameObject;
@@ -543,6 +551,10 @@ namespace MvcLayer.Controllers
                 if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
                 {
                     return $"Расчет за выполненные работы производится в течение {days} дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ";
+                }
+                if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"Расчет за выполненные работы производится в течение {days} банковских дней с момента подписания актов сдачи-приемки выполненных работ";
                 }
                 if (payment.Equals("числа месяца следующего за отчетным", StringComparison.OrdinalIgnoreCase))
                 {

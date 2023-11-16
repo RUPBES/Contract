@@ -156,10 +156,23 @@
                             @*Сроки: выполнения работ - ввода *@
                             <td>
                                 <span class="table_span-deadlines">
-                                    <b>выполнения работ:</b><br>
-                                    @item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()<br>
-                                    <b>ввода:</b><br>
-                                    @item.EnteringTerm?.ToShortDateString()<br>
+                                    @if (@item.DateBeginWork?.ToShortDateString() is not null || @item.DateEndWork?.ToShortDateString() is not null)
+                                    {
+                                        <b>выполнения работ:</b>
+
+                                        <br>
+                                        <span>@item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()</span>
+
+                                        <br>
+                                    }
+                                    @if (@item.EnteringTerm?.ToShortDateString() is not null)
+                                    {
+                                        <b>ввода:</b>
+                                        <span>@item.EnteringTerm?.ToShortDateString()</span>
+                                        <br>
+                                        <br>
+                                    }
+                                    
                                 </span>
                             </td>
                             @*Условия оплаты: Аванс - Оплата*@
@@ -209,7 +222,7 @@
                                 </td>
                             }
                             @*Контрактная цена*@
-                            <td class ="text-end">
+                            <td class="text-end">
                                 <span class="table_span-contractprice">
                                     @item.ContractPrice?.ToString("N2")
                                 </span>
@@ -236,22 +249,13 @@
                             </td>
                             @*Действия с договором*@
                             <td>
-                                <div class="icon view">
+                                <div class="icon view" title="Просмотр детальной информации по договору">
                                     <a asp-action="Details" asp-route-id="@item.Id"></a>
                                 </div>
-                                <div class="icon edit">
+                                <div class="icon edit" title="Редактировать договор">
                                     <a asp-action="Edit" asp-route-id="@item.Id"></a>
                                 </div>
-                                @* <div class="icon file-add" title="Добавить файл к договору">
-                        <a asp-action="AddFile" asp-controller="Files"
-                        asp-route-entityId="@item.Id"
-                        asp-route-fileCategory="@FolderEnum.Contracts"
-                        asp-route-redirectAction=@redirectAction
-                        asp-route-redirectController=@redirectController
-                        asp-route-contractId="@item.Id">
-                        </a>
-                        </div> *@
-                                <div class="icon delete">
+                                <div class="icon delete" title="Удалить договор">
                                     <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                 </div>
                             </td>

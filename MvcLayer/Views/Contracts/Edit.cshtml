@@ -21,6 +21,8 @@
                 <form asp-action="Edit" asp-controller="Contracts" class="row" style="max-width:700px;">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="SubContractId" />
+                    <input type="hidden" asp-for="AgreementContractId" />
                     <input type="hidden" asp-for="IsAgreementContract" />
                     <input type="hidden" asp-for="IsEngineering" />
                     <input type="hidden" asp-for="IsSubContract" />
@@ -250,18 +252,21 @@
                         <legend class="float-none w-auto px-3">Источник финансирования</legend>
                         @foreach (var item in Enum.GetValues<FundingSourceEnum>())
                         {
+                            @* var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
+                            var valueArray = Model?.FundingFS;
+                            if (valueArray == null) {valueArray = ""; } *@
                             var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
-                            var valueArray = Model?.PaymentСonditionsRaschet;
-                            if (valueArray == null) {valueArray = ""; }
+                            var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
+
                             <div>
                                 <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text" style="display: block;">
-                                            @if (valueArray.Contains(value))
+                                            @if (valueArray is not null)
                                             {
                                                 <input type="checkbox" name="FundingFS" value="@value" checked>
                                             }
-                                            else
+                                            @if (valueArray is null)
                                             {
                                                 <input type="checkbox" name="FundingFS" value="@value">
                                             }

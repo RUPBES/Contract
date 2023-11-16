@@ -45,10 +45,11 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                int fileId = (int)_fileService.Create(commissionAct.FilesEntity, FolderEnum.CommissionActs);
                 int commissionActId = (int)_commissionActService.Create(_mapper.Map<CommissionActDTO>(commissionAct));
+                int fileId = (int)_fileService.Create(commissionAct.FilesEntity, FolderEnum.CommissionActs, commissionActId);
+
                 _commissionActService.AddFile(commissionActId, fileId);
-               
+
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же, если нет - на список всех
                 if (commissionAct.ContractId is not null && commissionAct.ContractId > 0)
                 {
@@ -57,7 +58,7 @@ namespace MvcLayer.Controllers
                 else
                 {
                     return RedirectToAction(nameof(Index));
-                }               
+                }
             }
             catch
             {

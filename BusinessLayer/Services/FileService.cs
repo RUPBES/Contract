@@ -30,7 +30,7 @@ namespace BusinessLayer.Services
             _env = env;
         }
 
-        public int? Create(IFormFileCollection files, FolderEnum folder)
+        public int? Create(IFormFileCollection files, FolderEnum folder, int entityId)
         {
             int id = default;
             if (files != null /*&& item != null*/)
@@ -77,6 +77,8 @@ namespace BusinessLayer.Services
                     _logger.WriteLog(LogLevel.Information, $"create file ID={fileNew.Id}", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
                     id = fileNew.Id;
+                    
+                    AttachFileToEntity(fileNew.Id, entityId, folder);
                 }
             }
             else

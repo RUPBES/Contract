@@ -15,7 +15,7 @@
                     <a asp-controller="@ViewBag.redirectController" asp-action="@ViewBag.redirectAction" asp-route-id="@ViewBag.contractId" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" >
                     <input name=redirectAction value=@ViewBag.redirectAction hidden />
                     <input name=redirectController value=@ViewBag.redirectController hidden />
                     <input name=fileCategory value=@ViewBag.fileCategory hidden />
@@ -24,10 +24,10 @@
 
                     <div id="example" style="min-width:400px; max-width: 800px;">
                         <div class="demo-section">
-                            <input name="files" id="files" type="file" aria-label="files" />
+                            <input name="files" id="files" type="file" aria-label="files" multiple="multiple" />
                             <p style="padding-top: 1em; text-align: right">
                                 <button type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md">Загрузить</button>
-                            </p>
+                            </p>                           
                         </div>
                     </div>
                 </form>
@@ -37,11 +37,11 @@
 </div>
 
 
-@section Scripts {
+@section Scripts {   
     <script>
         $(document).ready(function () {
             $("#files").kendoUpload({
-                multiple: false,
+                multiple: true,
                 template: kendo.template($('#fileTemplate').html())
             });
 

@@ -7,7 +7,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IFileService
     {
-        int? Create(IFormFileCollection files, FolderEnum folder);
+        int? Create(IFormFileCollection files, FolderEnum folder, int entityId);
         IEnumerable<FileDTO> GetAll();
         IEnumerable<FileDTO> Find(Func<File, bool> predicate);
         FileDTO? GetById(int id);

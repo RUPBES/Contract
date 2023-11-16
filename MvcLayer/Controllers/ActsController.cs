@@ -45,8 +45,9 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                int fileId = (int)_fileService.Create(actViewModel.FilesEntity, FolderEnum.Acts);
                 int actId = (int)_actService.Create(_mapper.Map<ActDTO>(actViewModel));
+                int fileId = (int)_fileService.Create(actViewModel.FilesEntity, FolderEnum.Acts, actId);
+                
                 _actService.AddFile(actId, fileId);
                 
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же

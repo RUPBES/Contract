@@ -27,8 +27,9 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int contractId, bool isEngineering)
         {
+            ViewBag.IsEngineering = isEngineering;
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == contractId)));
         }
 
@@ -64,7 +65,7 @@ namespace MvcLayer.Controllers
                     .Find(x => x.ContractId == contractId && x.IsOwnForces == isOwnForces);
 
                 if (formExist.Count() > 0)
-                {                   
+                {
 
                     //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
                     while (startDate <= period?.Item2)
@@ -100,22 +101,18 @@ namespace MvcLayer.Controllers
             return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
         }
 
-        //public ActionResult Create()
-        //{
-        //    return View();
-        //}
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(FormViewModel formViewModel)
         {
             try
             {
-                int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C);
                 int formId = (int)_formService.Create(_mapper.Map<FormDTO>(formViewModel));
+                int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
+
                 _formService.AddFile(formId, fileId);
 
-                return RedirectToAction(nameof(GetByContractId), new { contractId = formViewModel.ContractId});
+                return RedirectToAction(nameof(GetByContractId), new { contractId = formViewModel.ContractId });
             }
             catch
             {

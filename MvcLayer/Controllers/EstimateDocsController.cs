@@ -43,8 +43,9 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, FolderEnum.EstimateDocumentations);
                 int estimateDocId = (int)_estimateDocService.Create(_mapper.Map<EstimateDocDTO>(estimateDoc));
+                int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, FolderEnum.EstimateDocumentations, estimateDocId);
+
                 _estimateDocService.AddFile(estimateDocId, fileId);
 
                 if (estimateDoc?.ContractId is not null && estimateDoc.ContractId > 0)

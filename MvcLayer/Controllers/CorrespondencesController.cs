@@ -45,8 +45,9 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                int fileId = (int)_fileService.Create(correspondenceViewModel.FilesEntity, FolderEnum.Correspondences);
                 int correspondenceId = (int)_correspondenceService.Create(_mapper.Map<CorrespondenceDTO>(correspondenceViewModel));
+                int fileId = (int)_fileService.Create(correspondenceViewModel.FilesEntity, FolderEnum.Correspondences, correspondenceId);
+
                 _correspondenceService.AddFile(correspondenceId, fileId);
 
                 if (correspondenceViewModel?.ContractId is not null && correspondenceViewModel.ContractId > 0)

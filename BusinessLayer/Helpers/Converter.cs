@@ -51,7 +51,8 @@ namespace BusinessLayer.Helpers
         public string? GetTypeOfPaymentForWork(int number) => number switch
         {
             0 => "календарных дней после подписания акта сдачи-приемки выполненных работ",
-            1 => "числа месяца следующего за отчетным",
+            1 => "банковских дней с момента подписания актов сдачи-приемки выполненных работ",
+            2 => "числа месяца следующего за отчетным",
             _ => null
         };
 
@@ -87,7 +88,6 @@ namespace BusinessLayer.Helpers
             "rar" => "zip-file",
             _ => "default-file"
         };
-
 
     }
 }
