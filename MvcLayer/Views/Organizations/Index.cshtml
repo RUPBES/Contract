@@ -162,7 +162,7 @@
                                            @* <span class="icon delete" title="Удалить">
                                                 <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                             </span>*@
-                                            <a class="icon delete" onclick="confirm(@item.Id)"></a>
+                                            <a class="icon delete" onclick="confirmI(@item.Id)"></a>
                                         </td>
                                     </tr>
                                 }
@@ -275,7 +275,7 @@
                     elementArrayUnp.classList.add("up-down-active")
                  }
         }
-        function confirm(val) {
+        function confirmI(val) {
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("ShowDelete","Employees")',

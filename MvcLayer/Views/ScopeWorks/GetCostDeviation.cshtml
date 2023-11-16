@@ -8,8 +8,8 @@
 
 @{
     ViewData["Title"] = "Мониторинг выполнения графика производства работ";
-    DateTime startPeriod = new DateTime(4000,1,1);
-    DateTime endPeriod = new DateTime(1000,1,1);
+    DateTime startPeriod = new DateTime(4000, 1, 1);
+    DateTime endPeriod = new DateTime(1000, 1, 1);
     foreach (var item in Model)
     {
         foreach (var item2 in item.ScopeWorks)
@@ -58,7 +58,6 @@
             z-index: 20;
             left: -1px;
             top: 0;
-            
         }
 
         .wrapper-table thead {
@@ -67,11 +66,11 @@
             left: 0;
             top: 0;
             opacity: 1;
-            border-color: #373b3e ;
+            border-color: #373b3e;
         }
 
     .second-td-elem {
-        z-index: 5 !important;
+        /* z-index: 5 !important; */        
         box-shadow: inset 0 0 0 9999px #bdbac3 !important;
         background-color: grey !important;
     }
@@ -164,7 +163,7 @@
                         <tbody style="height:70vh;">
                             @foreach (var item in Model)
                             {
-                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, startPeriod);
+                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
                                 var client = item.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
                                 var genContractor = item.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
                                 var subContractor = item.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
@@ -172,7 +171,7 @@
                                 var todayScope = 0M;
                                 var deviationTotal = 0M;
                                 var allScope = 0M;
-                                for (var itYear = startPeriod; itYear < startPeriod; itYear = itYear.AddMonths(1))
+                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
                                 {
                                     if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
                                     {
@@ -181,7 +180,7 @@
                                         {
                                             todayYearScope += (decimal)ob.CostNds;
                                             allScope += (decimal)ob.CostNds;
-                                        }                                       
+                                        }
                                     }
                                     else
                                     {
@@ -189,21 +188,19 @@
                                         if (ob != null)
                                         {
                                             allScope += (decimal)ob.CostNds;
-                                        }                                        
+                                        }
                                     }
 
                                 }
-                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id))
+                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
                                 {
-                                    if (item2.Period < new DateTime(DateTime.Today.Year, 1, 1))
-                                    {
-                                        todayScope += (decimal)item2.TotalCost;
-                                    }
+                                    todayScope += (decimal)item2.TotalCost;
+
                                 }
                                 var balanceScope = allScope - todayScope;
 
                                 <tr>
-                                    <td rowspan="7">
+                                    <td id="example" rowspan="7">
                                         @item?.Number <br>
                                         от<br>
                                         @item?.Date?.ToShortDateString()
@@ -244,7 +241,7 @@
                                     <td class="second-td-elem">
                                         СМР
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1) )
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
@@ -252,30 +249,46 @@
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
-                                            @resultPlan?.ToString("N2")
-                                        </td>
-                                        <td class ="text-end">
-                                            @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator).Select(x => x.SmrCost).FirstOrDefault();
-                                                if (resultFact == null)
-                                                    resultFact = 0;
+                                            @if (resultPlan != 0)
+                                            {
+                                                <span>@resultPlan?.ToString("N2")</span>
                                             }
-                                            @resultFact?.ToString("N2")
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var deviation = resultPlan - resultFact;
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.SmrCost).FirstOrDefault();
+                                                if (resultFact == null)
+                                                    resultFact = 0;
+                                            }
+                                            @if (resultFact != 0)
+                                            {
+                                                <span>@resultFact?.ToString("N2")</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            @{
+                                                decimal? deviation = 0;
+                                                if (resultPlan != 0 && resultFact != 0)
+                                                    deviation = resultPlan - resultFact;
+                                                else deviation = 0;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation?.ToString("N2")
+                                            @if (deviation != 0)
+                                            {
+                                                <span>@deviation?.ToString("N2")</span>
+                                            }
                                         </td>
                                     }
 
                                     <td class="text-end">
-                                        @deviationTotal.ToString("N2")
+                                        @if (deviationTotal != 0)
+                                        {
+                                            <span>@deviationTotal.ToString("N2")</span>
+                                        }
                                     </td>
 
                                 </tr>
+                                deviationTotal = 0M;
                                 <tr>
                                     <td class="second-td-elem">
                                         ДОП. РАБОТЫ
@@ -288,33 +301,49 @@
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
-                                            @resultPlan?.ToString("N2")
+                                            @if (resultPlan != 0)
+                                            {
+                                                <span>@resultPlan?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator).Select(x => x.AdditionalCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.AdditionalCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
-                                            @resultFact?.ToString("N2")
+                                            @if (resultFact != 0)
+                                            {
+                                                <span>@resultFact?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var deviation = resultPlan - resultFact;
+                                                decimal? deviation = 0;
+                                                if (resultPlan != 0 && resultFact != 0)
+                                                    deviation = resultPlan - resultFact;
+                                                else deviation = 0;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation?.ToString("N2")
+                                            @if (deviation != 0)
+                                            {
+                                                <span>@deviation?.ToString("N2")</span>
+                                            }
                                         </td>
                                     }
 
                                     <td class="text-end">
-                                        @deviationTotal.ToString("N2")
+                                        @if (deviationTotal != 0)
+                                        {
+                                            <span>@deviationTotal.ToString("N2")</span>
+                                        }
                                     </td>
 
                                 </tr>
+                                deviationTotal = 0M;
                                 <tr>
                                     <td class="second-td-elem">
-                                       ПНР
+                                        ПНР
                                     </td>
                                     @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                     {
@@ -324,30 +353,46 @@
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
-                                            @resultPlan?.ToString("N2")
+                                            @if (resultPlan != 0)
+                                            {
+                                                <span>@resultPlan?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator).Select(x => x.PnrCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.PnrCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
-                                            @resultFact?.ToString("N2")
+                                            @if (resultFact != 0)
+                                            {
+                                                <span>@resultFact?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var deviation = resultPlan - resultFact;
+                                                decimal? deviation = 0;
+                                                if (resultPlan != 0 && resultFact != 0)
+                                                    deviation = resultPlan - resultFact;
+                                                else deviation = 0;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation?.ToString("N2")
+                                            @if (deviation != 0)
+                                            {
+                                                <span>@deviation?.ToString("N2")</span>
+                                            }
                                         </td>
                                     }
 
                                     <td class="text-end">
-                                        @deviationTotal.ToString("N2")
+                                        @if (deviationTotal != 0)
+                                        {
+                                            <span>@deviationTotal.ToString("N2")</span>
+                                        }
                                     </td>
 
                                 </tr>
+                                deviationTotal = 0M;
                                 <tr>
                                     <td class="second-td-elem">
                                         ОБОРУДОВАНИЕ
@@ -360,30 +405,46 @@
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
-                                            @resultPlan?.ToString("N2")
+                                            @if (resultPlan != 0)
+                                            {
+                                                <span>@resultPlan?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator).Select(x => x.EquipmentCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.EquipmentCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
-                                            @resultFact?.ToString("N2")
+                                            @if (resultFact != 0)
+                                            {
+                                                <span>@resultFact?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var deviation = resultPlan - resultFact;
+                                                decimal? deviation = 0;
+                                                if (resultPlan != 0 && resultFact != 0)
+                                                    deviation = resultPlan - resultFact;
+                                                else deviation = 0;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation?.ToString("N2")
+                                            @if (deviation != 0)
+                                            {
+                                                <span>@deviation?.ToString("N2")</span>
+                                            }
                                         </td>
                                     }
 
                                     <td class="text-end">
-                                        @deviationTotal.ToString("N2")
+                                        @if (deviationTotal != 0)
+                                        {
+                                            <span>@deviationTotal.ToString("N2")</span>
+                                        }
                                     </td>
 
                                 </tr>
+                                deviationTotal = 0M;
                                 <tr>
                                     <td class="second-td-elem">
                                         ПРОЧИЕ РАБОТЫ И УСЛУГИ
@@ -396,30 +457,45 @@
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
-                                            @resultPlan?.ToString("N2")
+                                            @if (resultPlan != 0)
+                                            {
+                                                <span>@resultPlan?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator).Select(x => x.OtherExpensesCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.OtherExpensesCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
-                                            @resultFact?.ToString("N2")
+                                            @if (resultFact != 0)
+                                            {
+                                                <span>@resultFact?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var deviation = resultPlan - resultFact;
+                                                decimal? deviation = 0;
+                                                if (resultPlan != 0 && resultFact != 0)
+                                                    deviation = resultPlan - resultFact;
+                                                else deviation = 0;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation?.ToString("N2")
+                                            @if (deviation != 0)
+                                            {
+                                                <span>@deviation?.ToString("N2")</span>
+                                            }
                                         </td>
                                     }
-
                                     <td class="text-end">
-                                        @deviationTotal.ToString("N2")
+                                        @if (deviationTotal != 0)
+                                        {
+                                            <span>@deviationTotal.ToString("N2")</span>
+                                        }
                                     </td>
 
                                 </tr>
+                                deviationTotal = 0M;
                                 <tr>
                                     <td class="second-td-elem">
                                         СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА
@@ -432,27 +508,42 @@
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
-                                            @resultPlan?.ToString("N2")
+                                            @if (resultPlan != 0)
+                                            {
+                                                <span>@resultPlan?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator).Select(x => x.MaterialCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.MaterialCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
-                                            @resultFact?.ToString("N2")
+                                            @if (resultFact != 0)
+                                            {
+                                                <span>@resultFact?.ToString("N2")</span>
+                                            }
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var deviation = resultPlan - resultFact;
+                                                decimal? deviation = 0;
+                                                if (resultPlan != 0 && resultFact != 0)
+                                                    deviation = resultPlan - resultFact;
+                                                else deviation = 0;
                                                 deviationTotal += deviation is not null ? (decimal)deviation : 0M;
                                             }
-                                            @deviation?.ToString("N2")
+                                            @if (deviation != 0)
+                                            {
+                                                <span>@deviation?.ToString("N2")</span>
+                                            }
                                         </td>
                                     }
 
                                     <td class="text-end">
-                                        @deviationTotal.ToString("N2")
+                                        @if (deviationTotal != 0)
+                                        {
+                                            <span>@deviationTotal.ToString("N2")</span>
+                                        }
                                     </td>
 
                                 </tr>
@@ -467,14 +558,14 @@
                                 @if (PageNumber > 1)
                                 {
                                     <a class="page-link" asp-action="GetCostDeviation"
-                                       asp-route-pageNum="@(PageNumber - 1)"                                       
+                                       asp-route-pageNum="@(PageNumber - 1)"
                                        asp-route-currentFilter="@ViewData["CurrentFilter"]">
                                         &lt;
                                     </a>
                                 }
-                                else 
+                                else
                                 {
-                                    <a class="page-link disabled" href="#"                                       
+                                    <a class="page-link disabled" href="#"
                                        tabindex="-1">
                                         &lt;
                                     </a>
@@ -484,24 +575,24 @@
                         </li>
                         @{
                             int counter = 1;
-                            int index = PageNumber <= 3 ? 1 : PageNumber-2;
+                            int index = PageNumber <= 3 ? 1 : PageNumber - 2;
                             int end = 0;
                             if (PageNumber <= 3) end = ViewBag.TotalPages > 5 ? 5 : ViewBag.TotalPages;
                             else if (ViewBag.TotalPages <= 5)
                                 end = ViewBag.TotalPages;
                             else if (ViewBag.TotalPages >= PageNumber + 2)
                                 end = PageNumber + 2;
-                            else 
-                            { 
+                            else
+                            {
                                 end = ViewBag.TotalPages;
                                 index = ViewBag.TotalPages - 4;
                             }
 
-                            for (int i = index; i <= end ; i++)
+                            for (int i = index; i <= end; i++)
                             {
                                 <li class="page-item pag_btn_num">
                                     <a class="page-link " asp-action="GetCostDeviation"
-                                       asp-route-pageNum="@i"                                       
+                                       asp-route-pageNum="@i"
                                        asp-route-currentFilter="@ViewData["CurrentFilter"]"
                                        value="@i">@i</a>
                                 </li>
@@ -518,7 +609,7 @@
                                 @if (PageNumber < ViewBag.TotalPages)
                                 {
                                     <a class="page-link" asp-action="GetCostDeviation"
-                                       asp-route-pageNum="@(ViewBag.PageNum + 1)"                                       
+                                       asp-route-pageNum="@(ViewBag.PageNum + 1)"
                                        asp-route-currentFilter="@ViewData["CurrentFilter"]">
                                         &gt;
                                     </a>
@@ -538,3 +629,13 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script type="text/javascript">
+        var width = document.getElementById('example').offsetWidth;        
+        var all = $(".second-td-elem")
+        width = width - 2;
+        for (var i = 0; i < all.length; i++) {
+            all[i].style.left = width+"px";
+        }        
+    </script>
+}
