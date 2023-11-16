@@ -72,7 +72,7 @@ namespace DatabaseLayer.Repositories
                     employee.Email = entity.Email;
                     var depEmp = _context.DepartmentEmployees.FirstOrDefault(x => x.EmployeeId == entity.Id);
 
-                    if (depEmp != null)
+                    if (depEmp != null && entity.DepartmentEmployees.Count>0)
                     {
                         _context.DepartmentEmployees.Remove(depEmp);
                         _context.SaveChanges();
@@ -81,10 +81,8 @@ namespace DatabaseLayer.Repositories
                         depEmp.DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId;
                         _context.DepartmentEmployees.Add(depEmp);
                     }
-                    else
-                    {
-                        depEmp.EmployeeId = entity.Id;
-                        depEmp.DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId;
+                    else if (entity.DepartmentEmployees.Count > 0)
+                    {                        
                         _context.DepartmentEmployees.Add(new DepartmentEmployee
                         {
                             DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId,
