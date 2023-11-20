@@ -1,6 +1,7 @@
 ﻿using BusinessLayer.IoC;
 using DatabaseLayer.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using MvcLayer.Data;
 using MvcLayer.Mapper;
@@ -24,6 +25,12 @@ namespace MvcLayer
             string connectionData = Configuration.GetConnectionString("Data");
             string connectionIdentity = Configuration.GetConnectionString("Identity");
             Container.RegisterContainer(services, connectionData);
+
+            services.Configure<FormOptions>(options =>
+            {
+                // Set the limit to 512 MB
+                options.MultipartBodyLengthLimit = 536870912;
+            });
 
             services.AddAutoMapper(typeof(MapperViewModel));
             services.AddDbContext<ContractsContext>(options =>

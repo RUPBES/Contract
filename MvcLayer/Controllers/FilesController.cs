@@ -97,7 +97,7 @@ namespace MvcLayer.Controllers
                     //if (redirectAction.Equals("GetByContractId", StringComparison.OrdinalIgnoreCase) && redirectAction.Equals("Files", StringComparison.OrdinalIgnoreCase))
                     //{
                     return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
-                        //return RedirectToAction(redirectAction, redirectController, new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
+                    //return RedirectToAction(redirectAction, redirectController, new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
                     //}
                     //else
                     //{
@@ -124,5 +124,33 @@ namespace MvcLayer.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+        [HttpGet]
+        public ActionResult TUT()
+        { 
+            return View(); 
+        }
+
+        //[HttpPost]
+        //public ActionResult TUT(MemoryStream streamReader)
+        //{
+        //    //byte[] bytes = streamReader.ToArray();
+        //    //if (bytes == null)
+        //    //{
+
+        //    //}
+
+        //    using (Stream responseStream = response.GetResponseStream())
+        //    {
+        //        Response.BufferOutput = false;   // to prevent buffering 
+        //        byte[] buffer = new byte[1024];
+        //        int bytesRead = 0;
+        //        while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
+        //        {
+        //            Response.OutputStream.Write(buffer, 0, bytesRead);
+        //        }
+        //    }
+
+        //    return Content($"ХАйй");
+        //}
     }
 }
