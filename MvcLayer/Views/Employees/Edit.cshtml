@@ -18,15 +18,18 @@
                     <input type="hidden" asp-for="Id" />
                     <div class="form-group">
                         <label asp-for="LastName" class="control-label"></label>
-                        <input name="LastName" value="@Model.LastName" class="form-control" required />
+                        <input name="LastName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
+                               title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group">
                         <label asp-for="FirstName" class="control-label"></label>
-                        <input name="FirstName" value="@Model.FirstName" class="form-control" required />
+                        <input name="FirstName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
+                               title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group">
                         <label asp-for="FatherName" class="control-label"></label>
-                        <input asp-for="FatherName" class="form-control" />
+                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
+                               title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Организация</label>
@@ -48,7 +51,7 @@
                     <div class="form-group">
                         <label class="form-label">Отдел</label>
                         <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen" aria-required="false">
-                            @if (Model.DepartmentEmployees[0].DepartmentId != 0)
+                            @if (Model.DepartmentEmployees[0] != null && Model.DepartmentEmployees[0].DepartmentId != 0)
                             {
                                 <option value="@Model.DepartmentEmployees[0].DepartmentId" selected>@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).Name</option>
                             }

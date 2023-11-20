@@ -123,7 +123,7 @@ namespace MvcLayer.Controllers
             //{
                 try
                 {
-                    if (employee.DepartmentEmployees[0].DepartmentId == 0)
+                    if (employee.DepartmentEmployees.Count > 0 && employee.DepartmentEmployees[0].DepartmentId == 0)
                     {
                     employee.DepartmentEmployees.Clear();
                     }
@@ -131,7 +131,10 @@ namespace MvcLayer.Controllers
                     {
                         employee.Phones.Clear();
                     }
-                    employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
+                    employee.LastName = employee.LastName.Trim();
+                    employee.FirstName = employee.FirstName.Trim();
+                    employee.FatherName = employee.FatherName.Trim();
+                employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
                     employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
                     _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 }
