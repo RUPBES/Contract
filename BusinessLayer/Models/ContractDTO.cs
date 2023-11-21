@@ -61,7 +61,7 @@ namespace BusinessLayer.Models
         /// <summary>
         /// Цена СМР
         /// </summary>
-        public string? NameObject { get; set; }       
+        public string? NameObject { get; set; }
 
         /// <summary>
         /// источник финансирования
@@ -93,6 +93,11 @@ namespace BusinessLayer.Models
         /// </summary>
         public string? PaymentСonditionsRaschet { get; set; }
 
+        public bool IsMultiple { get; set; }
+        public int? MultipleContractId { get; set; }
+        public bool IsOneOfMultiple { get; set; }
+        public virtual ContractDTO MultipleContract { get; set; }
+
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
         public virtual ContractDTO? AgreementContract { get; set; }
@@ -108,7 +113,7 @@ namespace BusinessLayer.Models
         public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
 
         public List<FormDTO> FormC3as { get; set; } = new List<FormDTO>();
-
+        public List<ContractDTO> InverseMultipleContract { get; set; } = new List<ContractDTO>();
         public List<ContractDTO> InverseAgreementContract { get; set; } = new List<ContractDTO>();
 
         public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();

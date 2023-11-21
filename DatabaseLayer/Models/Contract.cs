@@ -26,8 +26,13 @@ namespace DatabaseLayer.Models
         public string PaymentСonditionsAvans { get; set; }
         public string PaymentСonditionsRaschet { get; set; }
 
+        public bool IsMultiple { get; set; }
+        public int? MultipleContractId { get; set; }
+        public bool IsOneOfMultiple { get; set; }
+        public virtual Contract MultipleContract { get; set; }
+
         public virtual Contract AgreementContract { get; set; }
-        public virtual Contract SubContract { get; set; }
+        public virtual Contract SubContract { get; set; }        
         public virtual List<Act> Acts { get; set; } = new List<Act>();
         public virtual List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public virtual List<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
@@ -37,6 +42,7 @@ namespace DatabaseLayer.Models
         public virtual List<FormC3a> FormC3as { get; set; } = new List<FormC3a>();
         public virtual List<Contract> InverseAgreementContract { get; set; } = new List<Contract>();
         public virtual List<Contract> InverseSubContract { get; set; } = new List<Contract>();
+        public virtual List<Contract> InverseMultipleContract { get; set; } = new List<Contract>();
         public virtual List<MaterialGc> MaterialGcs { get; set; } = new List<MaterialGc>();
         public virtual List<Payment> Payments { get; set; } = new List<Payment>();
         public virtual List<Prepayment> Prepayments { get; set; } = new List<Prepayment>();

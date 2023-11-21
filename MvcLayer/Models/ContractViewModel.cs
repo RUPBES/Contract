@@ -119,12 +119,17 @@ namespace MvcLayer.Models
         public int? PaymentСonditionsDaysRaschet2 { get; set; }
         public int? ContractType { get; set; }
 
+        public bool IsMultiple { get; set; }
+        public int? MultipleContractId { get; set; }
+        public bool IsOneOfMultiple { get; set; }
+        public ContractViewModel? MultipleContract { get; set; }
+
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
         public ContractViewModel? AgreementContract { get; set; }
 
         public List<AmendmentDTO> Amendments { get; set; } = new List<AmendmentDTO>();
-        
+
         public List<ContractOrganizationDTO> ContractOrganizations { get; set; } = new List<ContractOrganizationDTO>();
 
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
@@ -136,7 +141,7 @@ namespace MvcLayer.Models
         public List<FormDTO> FormC3as { get; set; } = new List<FormDTO>();
         public List<SelectionProcedureDTO> SelectionProcedures { get; set; } = new List<SelectionProcedureDTO>();
         public List<ContractViewModel> InverseAgreementContract { get; set; } = new List<ContractViewModel>();
-
+        public List<ContractViewModel> InverseMultipleContract { get; set; } = new List<ContractViewModel>();
         public List<ContractViewModel> InverseSubContract { get; set; } = new List<ContractViewModel>();
 
         public List<MaterialDTO> MaterialGcs { get; set; } = new List<MaterialDTO>();

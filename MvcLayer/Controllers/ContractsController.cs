@@ -109,7 +109,20 @@ namespace MvcLayer.Controllers
         {
             return View();
         }
+        public IActionResult CreateSubObj(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            ContractViewModel contract = new ContractViewModel();
+            contract.IsOneOfMultiple = true;
+            contract.MultipleContractId = id;
+
+
+            return View(contract);
+        }
 
         /// <summary>
         /// Создание соглашения с филиалом
@@ -366,8 +379,10 @@ namespace MvcLayer.Controllers
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
 
             var viewContract = _mapper.Map<ContractViewModel>(contract);
-            viewContract.FundingFS.AddRange(contract.FundingSource.Split(", "));
-
+            if (contract?.FundingSource is not null)
+            {
+                viewContract.FundingFS.AddRange(contract?.FundingSource?.Split(", "));
+            }
 
             return View(viewContract);
         }

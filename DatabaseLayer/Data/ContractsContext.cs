@@ -288,6 +288,8 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.IsEngineering).HasDefaultValueSql("0").HasComment("является ли договор инжиниринговыми услугами");
 
             entity.Property(e => e.IsSubContract).HasDefaultValueSql("0").HasComment("Флаг, является ли договором субподряда");
+            entity.Property(e => e.IsMultiple).HasDefaultValueSql("0").HasComment("является составным договором");
+            entity.Property(e => e.IsOneOfMultiple).HasDefaultValueSql("0").HasComment("является подобъектом");
 
             entity.Property(e => e.NameObject).HasComment("Название объекта");
 
@@ -314,6 +316,11 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.InverseSubContract)
                 .HasForeignKey(d => d.SubContractId)
                 .HasConstraintName("FK_Contract_Contract_Id");
+           
+            entity.HasOne(d => d.MultipleContract)
+               .WithMany(p => p.InverseMultipleContract)
+               .HasForeignKey(d => d.MultipleContractId)
+               .HasConstraintName("FK_MultipleContract_Contract_Id");
         }); 
         
         modelBuilder.Entity<ContractFile>(entity =>
@@ -1067,12 +1074,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.TypeWorkContracts)
                 .HasForeignKey(d => d.ContractId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_TypeWork_Contract_Id");
 
             entity.HasOne(d => d.TypeWork)
                 .WithMany(p => p.TypeWorkContracts)
                 .HasForeignKey(d => d.TypeWorkId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_TypeWork_GuideTypeWork_Id");
         });
 
