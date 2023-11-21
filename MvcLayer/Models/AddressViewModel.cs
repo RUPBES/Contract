@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Models;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Models
 {
@@ -20,14 +21,15 @@ namespace MvcLayer.Models
         /// <summary>
         /// сайт
         /// </summary>
-        public string? SiteAddress { get; set; }     
+        public string? SiteAddress { get; set; }
 
-       
+
 
         /// <summary>
         /// Почтовый индекс
         /// </summary>
         [DisplayName("Почтовый индекс")]
+        [RegularExpression("[0-9]{6}", ErrorMessage = "Введите 6 цифр")]
         public string? PostIndex { get; set; }
 
         public int? OrganizationId { get; set; }

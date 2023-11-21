@@ -21,20 +21,23 @@
                     <input type="hidden" asp-for="Id" />
                     <div class="form-group col-4">
                         <label asp-for="LastName" class="control-label"></label>
-                        <input name="LastName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" value="ПАПА" required/>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
                     <div class="form-group col-4">
                         <label asp-for="FirstName" class="control-label"></label>
-                        <input name="FirstName" pattern="^[А-Яа-яЁё\s]+$" value="@Model.FirstName" class="form-control" required
-                               title="Прописные и строчные буквы русского алфавита" />
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
                     <div class="form-group col-4">
                         <label asp-for="FatherName" class="control-label"></label>
-                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" value="@Model.FatherName" class="form-control" title="Прописные и строчные буквы русского алфавита" />
+                        <input asp-for="FatherName" class="form-control" />
+                        <span asp-validation-for="FatherName" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label class="form-label">Организация</label>
-                        <select id="organizationNameSelect" class="form-control js-chosen">
+                        <select id="organizationNameSelect" class="form-control js-chosen" 
+                        required>
                             @if (Model.DepartmentEmployees[0].DepartmentId != 0)
                             {
                                 <option value="@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId" selected>@Organization.GetById((int)Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId).Name</option>
@@ -47,12 +50,11 @@
                             {
                                 <option value="@item.Id">@item.Name</option>
                             }
-                        </select>
-                        <span asp-validation-for="Unp" class="text-danger"></span>
+                        </select>                        
                     </div>
                     <div class="form-group col-6">
                         <label class="form-label">Отдел</label>
-                        <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen" aria-required="false">
+                        <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen">
                             @if (Model.DepartmentEmployees[0] != null && Model.DepartmentEmployees[0].DepartmentId != 0)
                             {
                                 var orgId = @Model.DepartmentEmployees[0].Department?.OrganizationId;
@@ -63,6 +65,7 @@
                                 }
                             }                           
                         </select>
+                        <span asp-validation-for="DepartmentEmployees[0].DepartmentId" class="text-danger"></span>
                     </div>
                     <div class="form-group col-4">
                         <label asp-for="Position" class="control-label"></label>

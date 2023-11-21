@@ -49,7 +49,7 @@ namespace MvcLayer.Models
         public List<ContractOrganizationDTO> ContractOrganizations { get; set; } = new List<ContractOrganizationDTO>();
 
         public List<DepartmentViewModel> Departments { get; set; } = new List<DepartmentViewModel>();
-
+        
         public List<PhoneViewModel> Phones { get; set; } = new List<PhoneViewModel>();
     }
 }

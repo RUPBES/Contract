@@ -1,10 +1,12 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations;
+
 namespace MvcLayer.Models
 {
     public class PhoneViewModel
     {
-        public int Id { get; set; }
 
+        public int Id { get; set; }
+        [Required(ErrorMessage = "Заполните 11 цифр телефона")]
         public string? Number { get; set; }
 
         public int? OrganizationId { get; set; }
