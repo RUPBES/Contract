@@ -1,6 +1,7 @@
 ﻿
 using BusinessLayer.Models;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Models
 {
@@ -9,12 +10,18 @@ namespace MvcLayer.Models
         public int Id { get; set; }
 
         [DisplayName("Имя")]
+        [RegularExpression("^[А-Яа-яЁё\\s]+$", ErrorMessage = "Прописные и строчные буквы русского алфавита")]
+        [Required(ErrorMessage = "Необходимо заполнить Имя")]
         public string? FirstName { get; set; }
 
         [DisplayName("Фамилия")]
+        [RegularExpression("^[А-Яа-яЁё\\s]+$", ErrorMessage = "Прописные и строчные буквы русского алфавита")]
+        [Required(ErrorMessage = "Необходимо заполнить Фамилию")]
         public string? LastName { get; set; }
 
         [DisplayName("Отчество")]
+        [RegularExpression("^[А-Яа-яЁё\\s]+$", ErrorMessage = "Прописные и строчные буквы русского алфавита")]
+        [Required(ErrorMessage = "Необходимо заполнить Отчество")]
         public string? FatherName { get; set; }
 
         [DisplayName("Фамилия, имя, отчество")]

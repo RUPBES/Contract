@@ -42,13 +42,14 @@
                             <div class="input-group-text"><img src="~/icons/alternate_email.svg" /></div>
                             <input asp-for="Email" type="email" class="form-control" id="em">
                         </div>
-                    </div>
+                    </div>                    
                     <div class="form-group col-6">
-                        <label asp-for="PaymentAccount" for="ac"></label>
+                        <label asp-for="PaymentAccount" pattern="^[А-Яа-яЁё\s]+$" for="ac"></label>
                         <div class="input-group">
-                            <div class="input-group-text"><img src="~/icons/account_balance_wallet.svg" /></div>
-                            <input asp-for="PaymentAccount" class="form-control" id="ac">
+                            <div class="input-group-text"><img src="~/icons/account_balance_wallet.svg" /></div>                            
+                            <input asp-for="PaymentAccount" type="text" class="form-control" id="ac" placeholder="AABBCCCCDDDDEEEEEEEEEEEEEEEE">
                         </div>
+                        <span asp-validation-for="PaymentAccount" class="text-danger"></span>
                     </div>        
                     <input asp-for="Addresses[0].Id" value="@Model.Addresses[0].Id" class="form-control" hidden>
                     <div class="form-group col-6">

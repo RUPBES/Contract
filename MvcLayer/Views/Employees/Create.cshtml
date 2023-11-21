@@ -15,17 +15,18 @@
                 <form asp-action="Create" class="row">                    
                     <div class="form-group col-4">
                         <label asp-for="LastName" class="control-label"></label>
-                        <input name="LastName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
-                               title="Прописные и строчные буквы русского алфавита" />
+                        <input asp-for="LastName" class="form-control"/>
+                        <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
                     <div class="form-group col-4">
-                        <label asp-for="FirstName" class="control-label"></label>
-                        <input name="FirstName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
-                               title="Прописные и строчные буквы русского алфавита" />
+                        <label asp-for="FirstName" class="control-label"></label>                        
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
                     <div class="form-group col-4">
-                        <label asp-for="FatherName" class="control-label"></label>
-                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" title="Прописные и строчные буквы русского алфавита" />
+                        <label asp-for="FatherName" class="control-label"></label>                        
+                        <input asp-for="FatherName" class="form-control" />
+                        <span asp-validation-for="FatherName" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label class="form-label">Организация</label>
@@ -39,7 +40,7 @@
                     </div>
                     <div class="form-group col-6">
                         <label class="form-label">Отдел</label>
-                        <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen" aria-required="false">
+                        <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen" required>
                         </select>
                     </div>
                     <div class="form-group col-4">

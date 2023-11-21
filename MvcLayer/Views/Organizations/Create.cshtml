@@ -26,8 +26,8 @@
                         </div>
                         <div class="form-group">
                             <label asp-for="Unp" class="control-label"></label>
-                            <input asp-for="Unp" class="form-control" />
-
+                            <input asp-for="Unp" class="form-control"/>
+                            <span asp-validation-for="Unp" class="text-danger"></span>
                         </div>
                         <div class="form-group">
                             <label asp-for="Phones[0].Number" class="control-label">Номер телефона</label>
@@ -50,11 +50,12 @@
                             </div>
                             <div class="form-group">
                                 <label asp-for="Addresses[0].PostIndex" class="control-label">Почтовый индекс</label>
-                                <input asp-for="Addresses[0].PostIndex" class="form-control" />
+                                <input asp-for="Addresses[0].PostIndex" pattern="[0-9]{6}" class="form-control"
+                                       title="6 цифр" />
                             </div>
                             <div class="form-group">
                                 <label asp-for="Addresses[0].SiteAddress" class="control-label">Сайт организации</label>
-                                <input asp-for="Addresses[0].SiteAddress" type="email" class="form-control" />
+                                <input asp-for="Addresses[0].SiteAddress" pattern="[\x1F-\xBF]*" class="form-control" />
                             </div>
                         </div>
                     </div>
