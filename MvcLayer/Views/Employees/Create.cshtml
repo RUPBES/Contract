@@ -25,8 +25,7 @@
                     </div>
                     <div class="form-group col-4">
                         <label asp-for="FatherName" class="control-label"></label>
-                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
-                               title="Прописные и строчные буквы русского алфавита" />
+                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group col-6">
                         <label class="form-label">Организация</label>
@@ -85,9 +84,10 @@
                     if (department.length == 0)
                         return;
 
-                    $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
+                    // $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
                     $.each(department, function (r, emp) {
-                        $("#departmentNameSelect").append('<option value="' + emp.id + '">' + emp.name + '</option>');
+                        let nameDep = emp.name === null ? '' : emp.name;
+                        $("#departmentNameSelect").append('<option value="' + emp.id + '" selected>' + nameDep + '</option>');
                     });
                 },
                 error: function (ex) {

@@ -38,7 +38,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Employee> Find(Func<Employee, bool> predicate)
         {
-            return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).Where(predicate).ToList();
+            return _context.Employees.Include(x => x.DepartmentEmployees).ThenInclude(x=>x.Department).Include(x => x.Phones).Where(predicate).ToList();
         }
 
         public IEnumerable<Employee> GetAll()
@@ -50,7 +50,7 @@ namespace DatabaseLayer.Repositories
         {
             if (id > 0)
             {
-                return _context.Employees.Include(x => x.DepartmentEmployees).Include(x => x.Phones).FirstOrDefault(x => x.Id == id);
+                return _context.Employees.Include(x => x.DepartmentEmployees).ThenInclude(x => x.Department).Include(x => x.Phones).FirstOrDefault(x => x.Id == id);
             }
             else
             {

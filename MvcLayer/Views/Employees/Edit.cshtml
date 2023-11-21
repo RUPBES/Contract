@@ -18,18 +18,17 @@
                     <input type="hidden" asp-for="Id" />
                     <div class="form-group">
                         <label asp-for="LastName" class="control-label"></label>
-                        <input name="LastName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
+                        <input name="LastName" pattern="^[А-Яа-яЁё\s]+$" value="@Model.LastName" class="form-control" required
                                title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group">
                         <label asp-for="FirstName" class="control-label"></label>
-                        <input name="FirstName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
+                        <input name="FirstName" pattern="^[А-Яа-яЁё\s]+$" value="@Model.FirstName" class="form-control" required
                                title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group">
                         <label asp-for="FatherName" class="control-label"></label>
-                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" class="form-control" required
-                               title="Прописные и строчные буквы русского алфавита" />
+                        <input name="FatherName" pattern="^[А-Яа-яЁё\s]+$" value="@Model.FatherName" class="form-control" title="Прописные и строчные буквы русского алфавита" />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Организация</label>
@@ -53,13 +52,18 @@
                         <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control js-chosen" aria-required="false">
                             @if (Model.DepartmentEmployees[0] != null && Model.DepartmentEmployees[0].DepartmentId != 0)
                             {
+                                var orgId = @Model.DepartmentEmployees[0].Department?.OrganizationId;
                                 <option value="@Model.DepartmentEmployees[0].DepartmentId" selected>@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).Name</option>
-                            }
+                                foreach (var item in Department.Find(x => x.OrganizationId == orgId))
+                                {
+                                    <option value="@item?.Id">@item?.Name</option>
+                                }
+                            }                           
                         </select>
                     </div>
                     <div class="form-group">
                         <label asp-for="Position" class="control-label"></label>
-                        <input asp-for="Position" class="form-control" required />
+                        <input asp-for="Position" class="form-control"/>
                     </div>
                     <div class="form-group">
                         <label asp-for="Email" class="control-label"></label>
@@ -68,7 +72,7 @@
                     <div class="form-group">
                         <input asp-for="Phones[0].Id" value="@Model.Phones[0].Id" class="form-control" hidden>
                         <label class="control-label">Телефон</label>
-                        <input asp-for="Phones[0].Number" value="@Model.Phones[0]?.Number" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" required/>
+                        <input asp-for="Phones[0].Number" value="@Model.Phones[0]?.Number" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}"/>
                     </div>
                     <div class="form-group mt-3">
                         <input type="submit" value="Изменить" class="btn btn-primary" />
@@ -98,7 +102,8 @@
 
                     $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
                     $.each(department, function (r, emp) {
-                        $("#departmentNameSelect").append('<option value="' + emp.id + '">' + emp.name + '</option>');
+                        let nameDep = emp.name === null ? '' : emp.name;
+                        $("#departmentNameSelect").append('<option value="' + emp.id + '" selected>' + nameDep + '</option>');
                     });
                 },
                 error: function (ex) {

@@ -133,7 +133,7 @@ namespace MvcLayer.Controllers
                     }
                     employee.LastName = employee.LastName.Trim();
                     employee.FirstName = employee.FirstName.Trim();
-                    employee.FatherName = employee.FatherName.Trim();
+                    employee.FatherName = employee?.FatherName?.Trim();
                 employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
                     employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
                     _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
