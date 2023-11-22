@@ -4,6 +4,8 @@
 
 @{
     ViewData["Title"] = "Редактирование объема работ";     
+    if (ViewBag.returnContractId == 0)
+        ViewBag.returnContractId = ViewBag.contractId;
 }
 
 <style>
@@ -22,17 +24,17 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (ViewData["contractId"] != null && (int)ViewData["contractId"] > 0)
+                    @if (ViewBag.contractId != null && ViewBag.contractId > 0)
                     {
-                        <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@ViewData["contractId"]" class="close-btn"></a>
+                        <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId class="close-btn"></a>
                     }
-                    @if (ViewData["contractId"] == null || (int)ViewData["contractId"] == 0)
+                    @if (ViewBag.returnContractId == null || ViewBag.returnContractId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" style="width:980px" />
-                <form asp-action="Edit" asp-route-contractId="@ViewData["contractId"]" class="row">
+                <form asp-action="Edit" asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                     <div class="cont-table">
                         <table class="table table-bordered table-striped">
                             <tr>
