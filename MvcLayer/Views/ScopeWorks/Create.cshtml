@@ -60,7 +60,7 @@
                                 <th>Стоимость СМР</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].SmrCost" class="form-control costs_contract cost"/></td>
+                                    <td class="text-end"><input asp-for="SWCosts[index].SmrCost" data-value="123" type="text" class="form-control costs_contract cost" value=""/></td>
                                     index++;
                                 }
                                 @{
@@ -71,7 +71,7 @@
                                 <th>Стоимость ПНР</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].PnrCost" class="form-control cost"/></td>
+                                    <td class="text-end"><input asp-for="SWCosts[index].PnrCost" class="form-control cost" value="" /></td>
                                     index++;
                                 }
                                 @{
@@ -82,7 +82,7 @@
                                 <th>Стоимость оборудования</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].EquipmentCost" class="form-control cost"/></td>
+                                    <td class="text-end"><input asp-for="SWCosts[index].EquipmentCost" class="form-control cost" value="" /></td>
                                     index++;
                                 }
                                 @{
@@ -93,7 +93,7 @@
                                 <th>Стоимость прочих работ и услуг</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].OtherExpensesCost" class="form-control cost"/></td>
+                                    <td class="text-end"><input asp-for="SWCosts[index].OtherExpensesCost" class="form-control cost" value="" /></td>
                                     index++;
                                 }
                                 @{
@@ -104,7 +104,7 @@
                                 <th>Стоимость доп. работ</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].AdditionalCost" class="form-control cost"/></td>
+                                    <td class="text-end"><input asp-for="SWCosts[index].AdditionalCost" class="form-control cost" value="" /></td>
                                     index++;
                                 }
                                 @{
@@ -115,25 +115,13 @@
                                 <th>Стоимость материалов заказчика (справочно)</th>
                                 @foreach (var item in d.SWCosts)
                                 {
-                                    <td><input asp-for="SWCosts[index].MaterialCost" class="form-control cost"/></td>
+                                    <td class="text-end"><input asp-for="SWCosts[index].MaterialCost" class="form-control cost" value="" /></td>
                                     index++;
                                 }
                                 @{
                                     index = 0;
                                 }
                             </tr>
-
-                            @* <tr>
-                                <th>Сумма генуслуг</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    <td><input asp-for="SWCosts[index].GenServiceCost" class="form-control cost"/></td>
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr> *@
                             @foreach (var item in d.SWCosts)
                             {
                                 <input asp-for="SWCosts[index].IsOwnForces" hidden />
@@ -162,11 +150,11 @@
        
     } 
     <script>
-        // $(function ($) {
-        //     $('body').on('input', '.cost', function (e) {
-        //         digits_float(this);
-        //     });
-        //     digits_float('.cost');
-        // });        
+        $(function ($) {
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
+            });
+            digits_float('.cost');
+        });        
     </script>
 }

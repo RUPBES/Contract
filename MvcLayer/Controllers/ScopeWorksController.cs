@@ -40,6 +40,7 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId, bool isEngineering)
         {
             ViewBag.IsEngineering = isEngineering;
+            ViewData["contractId"] = contractId;
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId)));
         }
 
@@ -212,6 +213,21 @@ namespace MvcLayer.Controllers
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+        }
+
+        public IActionResult Edit(int id, int contractId)
+        {            
+            ViewData["contractId"] = contractId;
+            var obj = _swCostService.GetById(id);
+            return View(obj);
+        }
+
+        public IActionResult Edit(SWCostDTO model)
+        {            
+            var obj = _swCostService.GetById(model.Id);
+            obj = model;
+            _swCostService.Update(obj);
+            return RedirectToAction(nameof(Index));
         }
     }
 }
