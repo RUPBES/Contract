@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Объем работ";
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
+    var contractId = ViewBag.contractId;
 }
 
 <div class="dm-overlay">
@@ -12,13 +13,13 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (Model?.FirstOrDefault()?.ContractId != null && Model?.FirstOrDefault()?.ContractId > 0)
+                    @if (contractId != null && contractId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.FirstOrDefault()?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contractId" class="close-btn"></a>
                     }
-                    @if (Model?.FirstOrDefault()?.ContractId == null || Model?.FirstOrDefault()?.ContractId == 0)
+                    @if (contractId == null || contractId == 0)
                     {
-                        <a asp-controller="Contracts" asp-action="@actionReturn"  class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
@@ -55,51 +56,55 @@
                             <th>
                                 @Html.DisplayNameFor(model => model.GenServiceCost)
                             </th>
-                            
+
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var scope in Model)
-                        {                           
+                        {
                             @foreach (var item in SWCosts.Find(x => x.ScopeWorkId == scope.Id))
                             {
                                 <tr>
                                     <td>
                                         @item.Period?.ToString("MMMM-yyyy")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.CostNoNds?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.CostNds?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.SmrCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.PnrCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.EquipmentCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.OtherExpensesCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.AdditionalCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.MaterialCost?.ToString("N2")
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @item.GenServiceCost?.ToString("N2")
-                                    </td>
-                                    
+                                    </td>                                    
                                     @* <td>
-                                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                                        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                        <div class="icon edit" title="Редактировать договор">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId"></a>
+                                        </div>
+                                    </td> *@
+                                    @* <td>
+                                        <div class="icon delete" title="Удалить договор">
+                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                        </div>
                                     </td> *@
                                 </tr>
                             }

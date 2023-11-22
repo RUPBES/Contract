@@ -1,0 +1,102 @@
+﻿@using MvcLayer.Models;
+@using Newtonsoft.Json;
+@model BusinessLayer.Models.SWCostDTO
+
+@{
+    ViewData["Title"] = "Объем работ";
+    int index = 0;
+
+    var d = new ScopeWorkViewModel();
+    if (TempData["scopeW"] is string s)
+    {
+        d = JsonConvert.DeserializeObject<ScopeWorkViewModel>(s);
+    }
+}
+
+<style>
+    .cont-table {
+        overflow-x: scroll;
+    }
+
+    th,
+    td {
+        min-width: 250px;
+    }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (ViewData["contractId"] != null && (int)ViewData["contractId"] > 0)
+                    {
+                        <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-id="@ViewData["contractId"]" class="close-btn"></a>
+                    }
+                    @if (ViewData["contractId"] == null || (int)ViewData["contractId"] == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" style="width:980px" />
+                <form asp-action="Create" class="row">
+                    <div class="cont-table">
+                        <table class="table table-bordered table-striped">
+                            <tr>
+                                <th>Период</th>
+                                <td>
+                                    @Model.Period?.ToString("MMM yyyy")
+                                    <input asp-for="Period" type="text" class="form-control" hidden />
+                                </td>                                
+                            </tr>
+                            <tr>
+                                <th>Стоимость СМР</th>
+                                <td class="text-end"><input asp-for="SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                            </tr>
+                            <tr>
+                                <th>Стоимость ПНР</th>
+                                <td class="text-end"><input asp-for="PnrCost" class="form-control cost" value="" /></td>
+                            </tr>
+                            <tr>
+                                <th>Стоимость оборудования</th>
+                                <td class="text-end"><input asp-for="EquipmentCost" class="form-control cost" value="" /></td>
+                            </tr>
+                            <tr>
+                                <th>Стоимость прочих работ и услуг</th>
+                                <td class="text-end"><input asp-for="OtherExpensesCost" class="form-control cost" value="" /></td>
+                            </tr>
+                            <tr>
+                                <th>Стоимость доп. работ</th>
+                                <td class="text-end"><input asp-for="AdditionalCost" class="form-control cost" value="" /></td>
+                            </tr>
+                            <tr>
+                                <th>Стоимость материалов заказчика (справочно)</th>
+                                <td class="text-end"><input asp-for="MaterialCost" class="form-control cost" value="" /></td>
+                            </tr>
+                            <input asp-for="IsOwnForces" hidden />
+                            <input asp-for="ScopeWorkId" hidden />
+                        </table>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Редактировать" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+    <script>
+        $(function ($) {
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
+            });
+            digits_float('.cost');
+        });
+    </script>
+}
