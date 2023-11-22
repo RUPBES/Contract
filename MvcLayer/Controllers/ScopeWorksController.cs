@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using MvcLayer.Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Drawing.Printing;
 
@@ -184,7 +185,7 @@ namespace MvcLayer.Controllers
             return View(scopeWork);
         }
 
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, int contractId)
         {
             if (id == null || _scopeWork.GetAll() == null)
             {
@@ -192,7 +193,19 @@ namespace MvcLayer.Controllers
             }
 
             _scopeWork.Delete((int)id);
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("GetByContractId", new { contractId = contractId });
+        }
+
+        public async Task<IActionResult> ShowDelete(int? id)
+        {            
+            return PartialView("_ViewDelete");
+        }
+
+        public async Task<IActionResult> ShowResultDelete(int? id)
+        {            
+            _swCostService.Delete((int)id);
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", "Запись успешно удалена.");
         }
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
@@ -219,15 +232,13 @@ namespace MvcLayer.Controllers
         {            
             ViewData["contractId"] = contractId;
             var obj = _swCostService.GetById(id);
-            return View(obj);
+            return View(_mapper.Map<SWCostViewModel>(obj));
         }
-
-        public IActionResult Edit(SWCostDTO model)
-        {            
-            var obj = _swCostService.GetById(model.Id);
-            obj = model;
-            _swCostService.Update(obj);
-            return RedirectToAction(nameof(Index));
+        [HttpPost]
+        public IActionResult Edit(SWCostViewModel model, int contractId)
+        {   
+            _swCostService.Update(_mapper.Map<SWCostDTO>(model));
+            return RedirectToAction("GetByContractId", new { contractId = contractId });
         }
     }
 }
