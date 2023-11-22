@@ -4,6 +4,7 @@
 @{
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
+    var subObjectsOfContract = Contracts.Find(x => x.MultipleContractId == Model?.Id && x.IsOneOfMultiple == true);
     var isEngineering = Model.IsEngineering == true ? true : false;
     string redirectAction = "Details";
     string redirectController = "Contracts";
@@ -137,10 +138,11 @@
                                     {
                                         <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
                                         <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
-                                        @* <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id">+ Подобъект</a> *@
+                                        <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id">+ Подобъект</a>
 
                                         <div class="dropdown-divider"></div>
                                         <h6 class="dropdown-header">План</h6>
+                                        //TODO: проверка! если этот договор имеет подобъекты, то ему не нужны заполнение собственных обемов работ
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isOwnForces="true">+ Oбъем работ собственными силами</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
@@ -317,6 +319,179 @@
                     }
 
                 </tr>
+                @* @if (subObjectsOfContract.Count() > 0)
+                {
+                    <tr><td class="text-center text-uppercase" colspan="15">Соглашения с филиалами</td></tr>
+                } *@
+                @foreach (var contractBranch in subObjectsOfContract)
+                {
+                    var dropdownid1 = "Dropdown" + contractBranch.Id;
+                    var dropdownid2 = "Dropdown_" + contractBranch.Id;
+                    <tr style="background-color: #ccf3ff">
+                        <td>
+                            <div class="table_span-action" title="Просмотр информации">
+                                <div class="dropdown">
+                                    <span class="icon view_list_pages dropdown-toggle">
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id">Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id">Авансы</a>
+                                        @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-Id="@contractBranch?.Id">Переписка с заказчиком</a> *@
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-contractId="@contractBranch?.Id">Форма С-3а</a>
+                                        @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@contractBranch?.Id">Услуги генподряда</a> *@
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch?.Id">Стоимость материалов</a>
+                                        @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id">Оплату договора</a> *@
+                                        @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@contractBranch?.Id">Акт приостановки/возобновления</a> *@
+                                        @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@contractBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a> *@
+
+                                    </div>
+                                </div>
+                                <div class="dropdown" title="Добавление информации">
+                                    <span class="icon view_to_add_pages dropdown-toggle">
+                                    </span>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch.Id">+ Oбъем работ</a>
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractBranch.Id">+ Авансы</a>
+                                        @* <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@contractBranch.Id">+ Услуги генподряда</a> *@
+                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Material" asp-route-contractId="@contractBranch.Id">+ Стоимость материалов</a>
+                                        @* <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Payments" asp-route-contractId="@contractBranch.Id">+ Оплату договора</a> *@
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Forms" asp-route-Id="@contractBranch.Id">+ Форму С-3а</a>
+                                        @* <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@contractBranch.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a> *@
+                                        @* <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@contractBranch.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a> *@
+                                        @* <a class="dropdown-item" asp-action="Create" asp-controller="Amendments" asp-route-Id="@contractBranch.Id">+ Изменения к договору</a> *@
+                                        @* <a class="dropdown-item" asp-action="Create" asp-controller="Acts" asp-route-Id="@contractBranch.Id">+ Акт приостановки/возобновления</a> *@
+                                        @* <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-Id="@contractBranch.Id">+ Акт ввода</a> *@
+                                        @* <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-Id="@contractBranch.Id">+ Переписка с заказчиком</a> *@
+                                        @* <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-Id="@contractBranch.Id">+ ПСД</a> *@
+                                        @* <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractBranch?.Id" asp-route-contractId="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a> *@
+
+                                    </div>
+                                </div>
+                               @*  <div class="icon edit" title="Редактировать">
+                                    <a asp-action="Edit" asp-route-id="@contractBranch.Id"></a>
+                                </div> *@
+                                <div class="icon delete" title="Удалить">
+                                    <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
+                                </div>
+                            </div>
+                        </td>
+                        <td colspan="3">
+                            <div class="text-center text-uppercase">Подобъект:</div>
+                           @*  <span>
+                                <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractBranch.Id">@contractBranch?.SelectionProcedures?.FirstOrDefault(x=>x.ContractId == contractBranch?.Id)?.TypeProcedure</a>
+                            </span> *@
+                        </td>
+                    @*<td>
+                             <span class="table_span-signer">
+                                @{
+                                    var empSignBr = contractBranch?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsSignatory == true)?.Employee;
+                                    var empResponBr = contractBranch?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsResponsible == true)?.Employee;
+                                }
+                                Подписант - @empSignBr?.Position @empSignBr?.Fio
+                                <br><br>
+                                Лицо ответственное за ведение договора - @empResponBr?.Fio, тел.@empResponBr?.Phones?.FirstOrDefault()?.Number
+                            </span> 
+                        </td>*@
+                    @*<td>
+                             <span class="table_span-numberanddate">
+                                @contractBranch?.Number от
+                                @contractBranch?.Date?.ToShortDateString()
+                            </span> 
+                        </td>*@
+                        <td>
+                            <span class="table_span-nameobject">
+                                @contractBranch?.NameObject
+                            </span>
+                        </td>
+                        <td>
+                            @*Источник финансирования*@
+                            @* <span class="table_span-fin-source">
+                                @contractBranch?.FundingSource
+                            </span> *@
+                        </td>
+                        <td>
+                            @*Заказчик*@
+                            @* <span class="table_span-customer">
+                            </span> *@
+                        </td>
+                        <td>
+                            @*Генподрядчик*@
+                            @* <span class="table_span-contractor">
+                            </span> *@
+                        </td>
+                        <td>
+                            @* <span class="table_span-subcontractor">
+                                @contractBranch?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsGenContractor == false && x.IsClient == false)?.Organization?.Name
+                            </span> *@
+                        </td>
+                        <td>
+                            @* <span class="table_span-deadlines">
+                                Сроки-
+                                @if (@contractBranch?.DateBeginWork?.ToShortDateString() is not null || @contractBranch?.DateEndWork?.ToShortDateString() is not null)
+                                {
+                                    <b>выполнения работ:</b>
+                                    <br>
+                                    <span> @contractBranch?.DateBeginWork?.ToShortDateString() - @contractBranch?.DateEndWork?.ToShortDateString()</span>
+                                    <br>
+                                }
+                                @if (@contractBranch?.EnteringTerm?.ToShortDateString() is not null)
+                                {
+                                    <b>ввода:</b>
+
+                                    <br>
+                                    <span>@contractBranch?.EnteringTerm?.ToShortDateString()</span>
+                                    <br>
+                                }
+                                @if (@contractBranch?.ContractTerm?.ToShortDateString() is not null)
+                                {
+                                    <b>действия договора по взаиморасчетам:</b>
+
+                                    <br>
+                                    <span> @contractBranch?.ContractTerm?.ToShortDateString()</span>
+                                    <br>
+                                }
+                            </span> *@
+                        </td>
+                    <td>
+                        @* Условия оплаты - *@
+                           @*  <span class="table_span-conditions">
+                                
+                                <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id">
+                                    @contractBranch?.PaymentСonditionsAvans
+                                </a>
+                                <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id">
+                                    @* Оплата 
+                                    @contractBranch?.PaymentСonditionsRaschet
+                                </a>
+                            </span> *@
+                        </td>
+                        @* Вид работ- *@
+                        <td>
+                          @*   <span class="table_span-work">
+                                @contractBranch?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
+                            </span> *@
+                        </td>
+                        <td class="text-end">
+                            <span class="table_span-contractprice">
+                                @* ЦЕна - *@
+                                @contractBranch?.ContractPrice?.ToString("N2")
+                            </span>
+                        </td>
+                        <td>
+                            <span class="table_span-currency">
+                                @contractBranch?.Сurrency
+                            </span>
+                        </td>
+                            <td>
+                                <span class="table_span-act-entering">
+                                    <span class="icon link_to_page" id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)" title="Объем работ"></span>
+                                </span>
+                            </td>
+                        
+                       
+                    </tr>
+                }
+
                 @if (branchAgreement.Count() > 0)
                 {
                     <tr><td class="text-center text-uppercase" colspan="15">Соглашения с филиалами</td></tr>
@@ -499,6 +674,7 @@
 
                     </tr>
                 }
+                
                 @if (subContract.Count() > 0)
                 {
                     <tr><td class="text-center text-uppercase" colspan="15">Договоры субподряда</td></tr>

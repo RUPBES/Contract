@@ -1,49 +1,55 @@
 ﻿@using BusinessLayer.Enums;
 @model MvcLayer.Models.ContractViewModel
 
-<h4>Договор субподряда</h4>
-<hr />
+@{
+    ViewData["Title"] = "Добавление подобъекта";
+}
 
 
-<form class="row align-content-start" asp-action=Create method="post" id="MainForm" enctype="multipart/form-data">
-    <input asp-for="IsOneOfMultiple" value="true" hidden />
-    <input asp-for="MultipleContractId" hidden>
-
-    <div >
-       @*  <div class="col-12">
-            <label asp-for="Number" for="NumDC"></label>
-            <div class="input-group">
-                <div class="input-group-text">№</div>
-                <input asp-for="Number" class="form-control" id="NumDC">
-                <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли договор с таким номером"></button>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Employees" asp-action="Index" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form class="row align-content-start" method="post" enctype="multipart/form-data">
+                    <input asp-for="Id" value="null" hidden />                    
+                    <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>
+                    <div>                       
+                        <div class="form-group">
+                            <label asp-for="ContractPrice" for="CDC"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                                <input asp-for="ContractPrice" class="form-control" id="CDC">
+                            </div>
+                        </div>
+                        <div class="form-group mt-1">
+                            <label asp-for="Сurrency" for="CurDC"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
+                                <select name="Сurrency" class="form-control js-chosen" id="CurDC">
+                                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                                    {
+                                        <option value="@item">@item</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <label>Наименование объекта</label>
+                            <textarea asp-for="NameObject" class="form-control" rows="3" ></textarea>
+                        </div>
+                    </div>
+                    <div class="col-8 mt-3">
+                        <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
+                    </div>
+                </form>
             </div>
-        </div> 
-        <div class="col-12">
-            <label asp-for="Date" for="DateDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                <input asp-for="Date" type="date" class="form-control" id="DateDC">
-            </div>
-        </div>
-        *@
-        <div class="form-group">
-            <label asp-for="ContractPrice" for="CDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                <input asp-for="ContractPrice" class="form-control" id="CDC">
-            </div>
-        </div>
-        <div class="col-12 mt-2">
-            <label>Наименование объекта</label>
-            <textarea asp-for="NameObject" class="form-control" rows="2" disabled></textarea>
         </div>
     </div>
-    <div class="col-8 mt-3">
-        <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
-    </div>
-</form>
-<div>
-    <a asp-action="Index">Вернуться</a>
 </div>
 
 @section Scripts {

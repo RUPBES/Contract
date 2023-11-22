@@ -104,8 +104,12 @@ namespace DatabaseLayer.Repositories
                     contract.FundingSource = entity.FundingSource;
                     contract.IsSubContract = entity.IsSubContract;
                     contract.IsEngineering = entity.IsEngineering;
-                    contract.IsAgreementContract = entity.IsAgreementContract;  
-                    
+                    contract.IsAgreementContract = entity.IsAgreementContract;
+
+                    contract.MultipleContractId = entity.MultipleContractId;
+                    contract.IsMultiple = entity.IsMultiple;
+                    contract.IsOneOfMultiple = entity.IsOneOfMultiple;
+
                     foreach (var item in entity.ContractOrganizations)
                     {
                         var target = item.IsGenContractor != null ? "Gen" : "Client";

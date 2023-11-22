@@ -116,12 +116,24 @@ namespace MvcLayer.Controllers
                 return NotFound();
             }
 
-            ContractViewModel contract = new ContractViewModel();
-            contract.IsOneOfMultiple = true;
-            contract.MultipleContractId = id;
+            ViewBag.MultipleContractId = id;
 
+            return View();
+        }
 
-            return View(contract);
+        [HttpPost]
+        public IActionResult CreateSubObj(ContractViewModel viewModel)
+        {
+            if (viewModel is not null)
+            {
+                var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
+                oldContract.IsMultiple = true;
+                _contractService.Update(oldContract);
+                viewModel.IsOneOfMultiple = true;
+                _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
+                return RedirectToAction(nameof(Details),new { id = viewModel.MultipleContractId });
+            }
+            return View();
         }
 
         /// <summary>
