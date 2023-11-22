@@ -28,6 +28,7 @@ namespace MvcLayer.Mapper
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
             CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap();
             CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
+            CreateMap<SWCostViewModel, SWCostDTO>().ReverseMap();
 
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
             CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();

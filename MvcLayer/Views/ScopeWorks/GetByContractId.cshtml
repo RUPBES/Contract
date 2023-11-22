@@ -96,16 +96,14 @@
                                     <td class="text-end">
                                         @item.GenServiceCost?.ToString("N2")
                                     </td>                                    
-                                    @* <td>
+                                    <td>
                                         <div class="icon edit" title="Редактировать договор">
                                             <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId"></a>
                                         </div>
-                                    </td> *@
-                                    @* <td>
-                                        <div class="icon delete" title="Удалить договор">
-                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                        </div>
-                                    </td> *@
+                                    </td>
+                                    <td>
+                                        <a class="icon delete" onclick="confirm(@item.Id)"></a>
+                                    </td>
                                 </tr>
                             }
                         }
@@ -115,3 +113,48 @@
         </div>
     </div>
 </div>
+<script>
+    function confirm(val) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ShowDelete","ScopeWorks")',
+            contentType: "application/html; charset=utf-8",
+            dataType: 'html',
+            success: function (result) {
+                $('#dialogContent').html(result);
+                $('#modDialog').modal({ backdrop: false });
+                $('#modDialog').modal('show');
+
+                let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                elementDeleteButton[0].addEventListener('click', () => {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowResultDelete","ScopeWorks")',
+                        dataType: 'html',
+                        data: { id: val },
+                        success: function (result) {
+                            let buttonElement = document.querySelectorAll('#dialogContent')
+                            $('#dialogContent').html(result);
+                        },
+                        error: function (result) {
+                            console.log(result, 'Ошибка удаления');
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("Message","Home")',
+                                dataType: 'html',
+                                data: { message: "Во время удаления произошла ошибка" },
+                                success: function (result) {
+                                    $('#dialogContent').html(result);
+                                }
+                            });
+                        }
+                    });
+                })
+            },
+            error: function (result) {
+                console.log(result, 'error 2');
+                alert("Ошибка отображения");
+            }
+        })
+    }
+</script>

@@ -1,16 +1,9 @@
 ﻿@using MvcLayer.Models;
 @using Newtonsoft.Json;
-@model BusinessLayer.Models.SWCostDTO
+@model MvcLayer.Models.SWCostViewModel
 
 @{
-    ViewData["Title"] = "Объем работ";
-    int index = 0;
-
-    var d = new ScopeWorkViewModel();
-    if (TempData["scopeW"] is string s)
-    {
-        d = JsonConvert.DeserializeObject<ScopeWorkViewModel>(s);
-    }
+    ViewData["Title"] = "Редактирование объема работ";     
 }
 
 <style>
@@ -31,7 +24,7 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (ViewData["contractId"] != null && (int)ViewData["contractId"] > 0)
                     {
-                        <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-id="@ViewData["contractId"]" class="close-btn"></a>
+                        <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@ViewData["contractId"]" class="close-btn"></a>
                     }
                     @if (ViewData["contractId"] == null || (int)ViewData["contractId"] == 0)
                     {
@@ -39,7 +32,7 @@
                     }
                 </div>
                 <hr class="modal-line" style="width:980px" />
-                <form asp-action="Create" class="row">
+                <form asp-action="Edit" asp-route-contractId="@ViewData["contractId"]" class="row">
                     <div class="cont-table">
                         <table class="table table-bordered table-striped">
                             <tr>
@@ -51,30 +44,32 @@
                             </tr>
                             <tr>
                                 <th>Стоимость СМР</th>
-                                <td class="text-end"><input asp-for="SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                <td class="text-end"><input name="SmrCost" value="@Model.SmrCost" type="text" class="form-control costs_contract cost" data-autonumeric /></td>
                             </tr>
                             <tr>
                                 <th>Стоимость ПНР</th>
-                                <td class="text-end"><input asp-for="PnrCost" class="form-control cost" value="" /></td>
+                                <td class="text-end"><input name="PnrCost" value="@Model.PnrCost" class="form-control cost" data-autonumeric /></td>
                             </tr>
                             <tr>
                                 <th>Стоимость оборудования</th>
-                                <td class="text-end"><input asp-for="EquipmentCost" class="form-control cost" value="" /></td>
+                                <td class="text-end"><input name="EquipmentCost" value="@Model.EquipmentCost" class="form-control cost" data-autonumeric /></td>
                             </tr>
                             <tr>
                                 <th>Стоимость прочих работ и услуг</th>
-                                <td class="text-end"><input asp-for="OtherExpensesCost" class="form-control cost" value="" /></td>
+                                <td class="text-end"><input name="OtherExpensesCost" value="@Model.OtherExpensesCost" class="form-control cost" data-autonumeric /></td>
                             </tr>
                             <tr>
                                 <th>Стоимость доп. работ</th>
-                                <td class="text-end"><input asp-for="AdditionalCost" class="form-control cost" value="" /></td>
+                                <td class="text-end"><input name="AdditionalCost" value="@Model.AdditionalCost" class="form-control cost" data-autonumeric /></td>
                             </tr>
                             <tr>
                                 <th>Стоимость материалов заказчика (справочно)</th>
-                                <td class="text-end"><input asp-for="MaterialCost" class="form-control cost" value="" /></td>
+                                <td class="text-end"><input name="MaterialCost" value="@Model.MaterialCost" class="form-control cost" data-autonumeric /></td>
                             </tr>
+                            <input asp-for="GenServiceCost" hidden />
                             <input asp-for="IsOwnForces" hidden />
                             <input asp-for="ScopeWorkId" hidden />
+                            <input asp-for="Id" hidden />
                         </table>
                     </div>
                     <div class="form-group">
@@ -93,10 +88,13 @@
     }
     <script>
         $(function ($) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
             $('body').on('input', '.cost', function (e) {
                 digits_float(this);
-            });
-            digits_float('.cost');
+            });            
         });
     </script>
 }
