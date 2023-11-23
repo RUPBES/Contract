@@ -164,6 +164,7 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ScopeWorkViewModel scopeWork, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
             if (scopeWork is not null)
             {
                 var scopeWorkId = (int)_scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
@@ -176,10 +177,8 @@ namespace MvcLayer.Controllers
 
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же, если нет - на список всех объемов работ
                 if (scopeWork.ContractId is not null)
-                {
-                    if (returnContractId == 0)
-                    return RedirectToAction("Details", "Contracts", new { id = scopeWork.ContractId });
-                    else return RedirectToAction("Details", "Contracts", new { id = returnContractId });
+                {                    
+                    return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = scopeWork.ContractId, returnContractId = returnContractId });
                 }
                 else
                 {
@@ -207,7 +206,7 @@ namespace MvcLayer.Controllers
 
         public async Task<IActionResult> ShowResultDelete(int? id)
         {            
-            _swCostService.Delete((int)id);
+            _swCostService.Delete((int)id);            
             ViewData["reload"] = "Yes";
             return PartialView("_Message", "Запись успешно удалена.");
         }
@@ -242,10 +241,8 @@ namespace MvcLayer.Controllers
         [HttpPost]
         public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
         {   
-            _swCostService.Update(_mapper.Map<SWCostDTO>(model));
-            if (returnContractId == 0)
-                return RedirectToAction("GetByContractId", new { contractId = contractId });
-            else return RedirectToAction("GetByContractId", new { contractId = returnContractId });
+            _swCostService.Update(_mapper.Map<SWCostDTO>(model));            
+            return RedirectToAction("GetByContractId", new { contractId = returnContractId, returnContractId = returnContractId });
         }
     }
 }
