@@ -880,7 +880,7 @@ public partial class ContractsContext : DbContext
         {
             entity.HasKey(e => e.Id);
 
-            entity.ToTable("SWCost", tb => tb.HasComment("стоимость объема работ"));
+            entity.ToTable("SWCost", tg => tg.HasTrigger("TGR_Update_SWCosts_Multiple_Contract"));
 
             entity.Property(e => e.Period).HasColumnType("datetime");
             entity.Property(e => e.AdditionalCost).HasDefaultValueSql("0")
