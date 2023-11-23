@@ -135,6 +135,7 @@ namespace MvcLayer.Controllers
                 try
                 {
                     _formService.Update(_mapper.Map<FormDTO>(formViewModel));
+                    return RedirectToAction("Details", "Contracts", new { id = formViewModel.ContractId });
                 }
                 catch
                 {
