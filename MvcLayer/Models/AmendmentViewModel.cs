@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Models;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Models
 {
@@ -15,6 +16,7 @@ namespace MvcLayer.Models
         public DateTime? Date { get; set; }
 
         [DisplayName("Причина")]
+        [Required(ErrorMessage ="Не указана причина")]
         public string Reason { get; set; }
 
         [DisplayName("Договорная (контрактная) цена, с НДС")]
@@ -30,6 +32,7 @@ namespace MvcLayer.Models
         public DateTime? DateEntryObject { get; set; }
 
         [DisplayName("Существенные изменения пунктов договора")]
+        [Required(ErrorMessage = "Не указаны существенные изменения")]
         public string ContractChanges { get; set; }
 
         [DisplayName("Коментарии к изменениям")]

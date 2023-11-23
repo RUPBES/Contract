@@ -87,8 +87,13 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<PrepaymentAmendment> PrepaymentAmendments { get; set; }
     #endregion
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Conventions.Add(_ => new BlankTriggerAddingConvention());
+    }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+
         if (!optionsBuilder.IsConfigured)
         {
             //IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -185,7 +190,7 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<Amendment>(entity =>
         {
-            entity.ToTable("Amendment");
+            entity.ToTable("Amendment", tg=>tg.HasTrigger("TGR_Change_Contract_Price_After_Amendment"));
 
             entity.HasComment("Изменения к договору");
 
