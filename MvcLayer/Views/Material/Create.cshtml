@@ -64,25 +64,17 @@
                                 <th>Планируемая стоимость материалов</th>
                                 @foreach (var item in d.MaterialCosts)
                                 {
-                                    <td><input asp-for="MaterialCosts[index].Price" class="form-control cost" type="number" step="0.01" min="0" /></td>
+                                    <td><input name="MaterialCosts[@index].Price" class="form-control cost" type="text"/></td>
                                     index++;
                                 }
                                 @{
                                     index = 0;
                                 }
                             </tr>
-
-                            @* @foreach (var item in d.MaterialCosts)
-                            { *@
-
                                 <input asp-for="AmendmentId" hidden />
                                 <input asp-for="ContractId" hidden />
                                 <input asp-for="IsChange" hidden />
                                 <input asp-for="ChangeMaterialId" hidden />
-@* 
-                                index++;
-                            } *@
-
                         </table>
                     </div>
                     <div class="form-group">
@@ -99,10 +91,13 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
         <script>
             $(function ($) {
+                var allCost = $(".cost")
+                for (let el of allCost) {
+                    digits_float(el)
+                }
                 $('body').on('input', '.cost', function (e) {
                     digits_float(this);
                 });
-                digits_float('.cost');
             });
         </script>
     }

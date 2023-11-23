@@ -251,10 +251,7 @@
                     <fieldset class="border rounded-1 p-3">
                         <legend class="float-none w-auto px-3">Источник финансирования</legend>
                         @foreach (var item in Enum.GetValues<FundingSourceEnum>())
-                        {
-                            @* var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
-                            var valueArray = Model?.FundingFS;
-                            if (valueArray == null) {valueArray = ""; } *@
+                        {                            
                             var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
                             var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
 
