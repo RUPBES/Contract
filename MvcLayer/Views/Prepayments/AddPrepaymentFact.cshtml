@@ -20,8 +20,7 @@
                 </div>
                 <hr class="modal-line" />
                 
-                <form asp-action="Create" class="row" enctype="multipart/form-data">
-                    <input asp-for="Id" value="@Model?.Id" hidden />
+                <form asp-action="Create" class="row" enctype="multipart/form-data">           
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="@Model.PrepaymentFacts[0].PrepaymentId" value="@Model?.Id" hidden />
                     <input asp-for="Period" value="@Model?.Period" hidden />
@@ -33,28 +32,39 @@
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="CurrentValueFact" class="control-label"></label>
-                        <input asp-for="@Model.PrepaymentFacts[0].CurrentValue" class="form-control" />
+                        <input name="PrepaymentFacts[0].CurrentValue" type="text" class="form-control cost" />
 
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="TargetValueFact" class="control-label"></label>
-                        <input asp-for="@Model.PrepaymentFacts[0].TargetValue" class="form-control" />
+                        <input name="PrepaymentFacts[0].TargetValue" type="text" class="form-control cost" />
 
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="WorkingOutValueFact" class="control-label"></label>
-                        <input asp-for="@Model.PrepaymentFacts[0].WorkingOutValue" class="form-control" />
+                        <input name="PrepaymentFacts[0].WorkingOutValue" type="text" class="form-control cost" />
                     </div>
-                    @*  <div class="form-group col-6">
-                    <label asp-for="PnrCost" class="control-label"></label>
-                    <input asp-for="@Model.PrepaymentFacts[0].PrepaymentId" value="@Model." class="form-control" />
-                    </div> *@
-
-                    <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                    <div class="form-group mt-1">
+                        <input type="submit" value="Создать" class="btn btn-primary" />
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                var allCost = $(".cost")
+                for (let el of allCost) {
+                    digits_float(el)
+                }
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+            });
+        </script>
+    }
+}

@@ -5,7 +5,8 @@
 @{
     ViewData["Title"] = "Объем работ";
     int index = 0;
-
+    if (ViewBag.returnContractId == 0)
+        ViewBag.returnContractId = ViewBag.contractId;
     var d = new ScopeWorkViewModel();
     if (TempData["scopeW"] is string s)
     {
@@ -29,17 +30,17 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (Model?.ContractId != null && Model?.ContractId > 0)
+                    @if (ViewBag.returnContractId != null && ViewBag.returnContractId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewBag.returnContractId" class="close-btn"></a>
                     }
-                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    @if (ViewBag.returnContractId == null || ViewBag.returnContractId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" style="width:980px" />
-                <form asp-action="Create" class="row">
+                <form asp-action="Create" class="row" asp-route-returnContractId="@ViewBag.returnContractId">
                     <div class="cont-table">
                         <table class="table table-bordered table-striped">
                             <tr>

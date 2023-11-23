@@ -38,8 +38,9 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId, bool isEngineering)
+        public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
             ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = contractId;
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId)));
@@ -144,8 +145,9 @@ namespace MvcLayer.Controllers
             return View(scopeWork);
         }
 
-        public IActionResult Create(int contractId)
+        public IActionResult Create(int contractId, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
             if (TempData["scopeW"] is string s)
             {
                 return View(JsonConvert.DeserializeObject<ScopeWorkViewModel>(s));
@@ -160,7 +162,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ScopeWorkViewModel scopeWork)
+        public IActionResult Create(ScopeWorkViewModel scopeWork, int returnContractId = 0)
         {
             if (scopeWork is not null)
             {
@@ -175,7 +177,9 @@ namespace MvcLayer.Controllers
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же, если нет - на список всех объемов работ
                 if (scopeWork.ContractId is not null)
                 {
+                    if (returnContractId == 0)
                     return RedirectToAction("Details", "Contracts", new { id = scopeWork.ContractId });
+                    else return RedirectToAction("Details", "Contracts", new { id = returnContractId });
                 }
                 else
                 {
@@ -228,17 +232,20 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
 
-        public IActionResult Edit(int id, int contractId)
-        {            
+        public IActionResult Edit(int id, int contractId, int returnContractId = 0)
+        {
+            ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
             var obj = _swCostService.GetById(id);
             return View(_mapper.Map<SWCostViewModel>(obj));
         }
         [HttpPost]
-        public IActionResult Edit(SWCostViewModel model, int contractId)
+        public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
         {   
             _swCostService.Update(_mapper.Map<SWCostDTO>(model));
-            return RedirectToAction("GetByContractId", new { contractId = contractId });
+            if (returnContractId == 0)
+                return RedirectToAction("GetByContractId", new { contractId = contractId });
+            else return RedirectToAction("GetByContractId", new { contractId = returnContractId });
         }
     }
 }

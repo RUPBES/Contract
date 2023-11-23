@@ -74,7 +74,7 @@
                                 <th>Сумма генуслуг</th>
                                 @foreach (var item in d.ServiceCosts)
                                 {
-                                    <td><input asp-for="ServiceCosts[index].Price" class="form-control" type="number" step="0.01" min="0" /></td>
+                                    <td><input name="ServiceCosts[@index].Price" class="form-control cost" type="text"/></td>
                                     index++;
                                 }
                                 @{
@@ -100,10 +100,19 @@
         </div>
     </div>
 </div>
-
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(function ($) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
+            });
+        });
+    </script>
 }

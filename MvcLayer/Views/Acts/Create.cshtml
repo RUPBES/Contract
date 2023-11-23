@@ -2,7 +2,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
     ViewData["Title"] = "Добавить акт приостановки/возобновления";
-    var contid = ViewData["contractId"];
+    var contid = ViewBag.contractId;
     var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
 <div class="dm-overlay">
@@ -11,11 +11,11 @@
             <div class="dm-modal" style="max-width:960px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
-                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    @if (@contid != null && @contid > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contid" class="close-btn"></a>
                     }
-                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    @if (@contid == null || @contid == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
