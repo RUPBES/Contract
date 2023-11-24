@@ -3,16 +3,13 @@
 @model MvcLayer.Models.SWCostViewModel
 
 @{
-    ViewData["Title"] = "Редактирование объема работ";     
-    if (ViewBag.returnContractId == 0)
-        ViewBag.returnContractId = ViewBag.contractId;
+    ViewData["Title"] = "Редактирование объема работ";  
 }
 
 <style>
     .cont-table {
         overflow-x: scroll;
     }
-
     th,
     td {
         min-width: 250px;
@@ -28,7 +25,7 @@
                     {
                         <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId class="close-btn"></a>
                     }
-                    @if (ViewBag.returnContractId == null || ViewBag.returnContractId == 0)
+                    @if (ViewBag.contractId == null || ViewBag.contractId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }

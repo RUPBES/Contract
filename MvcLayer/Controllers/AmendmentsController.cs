@@ -51,7 +51,7 @@ namespace MvcLayer.Controllers
 
                 _amendment.AddFile(amendId, fileId);
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId });
             }
             catch
             {

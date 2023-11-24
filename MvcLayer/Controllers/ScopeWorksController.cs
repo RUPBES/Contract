@@ -46,10 +46,12 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId)));
         }
 
-        public IActionResult ChoosePeriod(int contractId, bool isOwnForces)
-        {
+        public IActionResult ChoosePeriod(int contractId, bool isOwnForces, int returnContractId = 0)
+        {            
             if (contractId > 0)
             {
+                TempData["returnContractId"] = returnContractId;
+                TempData["contractId"] = contractId;
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
@@ -105,7 +107,6 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-
         public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork)
         {
             if (scopeWork is not null)
@@ -145,14 +146,12 @@ namespace MvcLayer.Controllers
             return View(scopeWork);
         }
 
-        public IActionResult Create(int contractId, int returnContractId = 0)
-        {
-            ViewData["returnContractId"] = returnContractId;
+        public IActionResult Create(int contractId)
+        {                        
             if (TempData["scopeW"] is string s)
             {
                 return View(JsonConvert.DeserializeObject<ScopeWorkViewModel>(s));
             }
-
             if (contractId > 0)
             {
                 return View(new ScopeWorkViewModel { ContractId = contractId });

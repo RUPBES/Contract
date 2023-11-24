@@ -8,8 +8,10 @@
 @{
     ViewData["Title"] = string.Empty;
     var contractId = ViewBag.contractId;
+    int backId = 0;
     if (ViewBag.returnContractId == 0)
-        ViewBag.returnContractId = ViewBag.contractId;
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
     if (contractId is not null)
     {
         var number = Contract.GetById((int)contractId).Number;
@@ -26,91 +28,145 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (@ViewBag.returnContractId != null && @ViewBag.returnContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewBag.returnContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contractId == null || @contractId == 0)
-                    {                       
+                    @if (backId == null || backId == 0)
+                    {
                         <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
-                <table class="table table-striped table-bordered">
-                    @*!!!план без изменений!!*@
-                    @foreach (var prepayment in Model.Where(x => x.IsChange != true))
-                    {
-                        var plansNoChange = PrepPlan.Find(x => x.PrepaymentId == prepayment.Id);
-                        <tr>
-                            <th>
-                                Основание
-                            </th>
-
-                            @foreach (var item in plansNoChange)
-                            {
+                <div class="modal-overflow-70%">
+                    <table class="table table-striped table-bordered">
+                        @*!!!план без изменений!!*@
+                        @foreach (var prepayment in Model.Where(x => x.IsChange != true))
+                        {
+                            var plansNoChange = PrepPlan.Find(x => x.PrepaymentId == prepayment.Id);
+                            <tr>
                                 <th>
-                                    @item.Period?.ToString("MMM yyyy")
+                                    Основание
                                 </th>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.CurrentValue)
-                            </th>
-                            @foreach (var item in plansNoChange)
-                            {
-                                <td class="text-end">
-                                    @item.CurrentValue?.ToString("N2")
-                                </td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.TargetValue)
-                            </th>
-                            @foreach (var item in plansNoChange)
-                            {
-                                <td class="text-end">
-                                    @item.TargetValue?.ToString("N2")
-                                </td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.WorkingOutValue)
-                            </th>
-                            @foreach (var item in plansNoChange)
-                            {
-                                <td class="text-end">
-                                    @item.WorkingOutValue?.ToString("N2")
-                                </td>
-                            }
-                        </tr>
-                    }
+
+                                @foreach (var item in plansNoChange)
+                                {
+                                    <th>
+                                        @item.Period?.ToString("MMM yyyy")
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.CurrentValue)
+                                </th>
+                                @foreach (var item in plansNoChange)
+                                {
+                                    <td class="text-end">
+                                        @item.CurrentValue?.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TargetValue)
+                                </th>
+                                @foreach (var item in plansNoChange)
+                                {
+                                    <td class="text-end">
+                                        @item.TargetValue?.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.WorkingOutValue)
+                                </th>
+                                @foreach (var item in plansNoChange)
+                                {
+                                    <td class="text-end">
+                                        @item.WorkingOutValue?.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+                        }
 
 
-                    @foreach (var item2 in Model.Where(x => x.IsChange == true))
-                    {
-                        var plansChange = PrepPlan.Find(x => x.PrepaymentId == item2.Id);
+                        @foreach (var item2 in Model.Where(x => x.IsChange == true))
+                        {
+                            var plansChange = PrepPlan.Find(x => x.PrepaymentId == item2.Id);
 
+                            <tr>
+                                <th class="text-uppercase fw-light">
+                                    cогласно графику платежей в редакции ДС <b>@Prepayment?.GetAmendmentByPrepaymentId(item2.Id)?.Number </b>к договору
+                                </th>
+                                @foreach (var item in plansChange)
+                                {
+                                    <th>
+                                        @item.Period?.ToString("MMM yyyy")
+                                    </th>
+                                }
+
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.CurrentValue)
+                                </th>
+                                @foreach (var item in plansChange)
+                                {
+                                    <td class="text-end">
+                                        @item.CurrentValue?.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TargetValue)
+                                </th>
+                                @foreach (var item in plansChange)
+                                {
+                                    <td class="text-end">
+                                        @item.TargetValue?.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.WorkingOutValue)
+                                </th>
+                                @foreach (var item in plansChange)
+                                {
+                                    <td class="text-end">
+                                        @item.WorkingOutValue?.ToString("N2")
+                                    </td>
+                                }
+                            </tr>
+                        }
+
+                        @*!!!факт!!*@
+                        @{
+                            var prepaymentId = Model?.FirstOrDefault(x => x.IsChange != true)?.Id;
+                        }
                         <tr>
                             <th class="text-uppercase fw-light">
-                                cогласно графику платежей в редакции ДС <b>@Prepayment?.GetAmendmentByPrepaymentId(item2.Id)?.Number </b>к договору
+                                Получено фактически
                             </th>
-                            @foreach (var item in plansChange)
+                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
                             {
+
                                 <th>
-                                    @item.Period?.ToString("MMM yyyy")
+                                    @item.Period?.ToString("MMM yyyy")                                    
+                                    <a class="icon edit" asp-action="EditFact" asp-route-id="@item.Id"></a>                                   
                                 </th>
                             }
-
                         </tr>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.CurrentValue)
+                                @Html.DisplayNameFor(model => model.CurrentValueFact)
                             </th>
-                            @foreach (var item in plansChange)
+                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
                             {
+
                                 <td class="text-end">
                                     @item.CurrentValue?.ToString("N2")
                                 </td>
@@ -118,10 +174,11 @@
                         </tr>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.TargetValue)
+                                @Html.DisplayNameFor(model => model.TargetValueFact)
                             </th>
-                            @foreach (var item in plansChange)
+                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
                             {
+
                                 <td class="text-end">
                                     @item.TargetValue?.ToString("N2")
                                 </td>
@@ -129,70 +186,18 @@
                         </tr>
                         <tr>
                             <th>
-                                @Html.DisplayNameFor(model => model.WorkingOutValue)
+                                @Html.DisplayNameFor(model => model.WorkingOutValueFact)
                             </th>
-                            @foreach (var item in plansChange)
+                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
                             {
+
                                 <td class="text-end">
                                     @item.WorkingOutValue?.ToString("N2")
                                 </td>
                             }
                         </tr>
-                    }
-
-                    @*!!!факт!!*@
-                    @{
-                        var prepaymentId = Model?.FirstOrDefault(x => x.IsChange != true)?.Id;
-                    }
-                    <tr>
-                        <th class="text-uppercase fw-light">
-                            Получено фактически
-                        </th>
-                        @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                        {
-
-                            <th>
-                                @item.Period?.ToString("MMM yyyy")
-                            </th>
-                        }
-                    </tr>
-                    <tr>
-                        <th>
-                            @Html.DisplayNameFor(model => model.CurrentValueFact)
-                        </th>
-                        @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                        {
-
-                            <td class="text-end">
-                                @item.CurrentValue?.ToString("N2")
-                            </td>
-                        }
-                    </tr>
-                    <tr>
-                        <th>
-                            @Html.DisplayNameFor(model => model.TargetValueFact)
-                        </th>
-                        @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                        {
-
-                            <td class="text-end">
-                                @item.TargetValue?.ToString("N2")
-                            </td>
-                        }
-                    </tr>
-                    <tr>
-                        <th>
-                            @Html.DisplayNameFor(model => model.WorkingOutValueFact)
-                        </th>
-                        @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                        {
-
-                            <td class="text-end">
-                                @item.WorkingOutValue?.ToString("N2")
-                            </td>
-                        }
-                    </tr>
-                </table>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

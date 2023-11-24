@@ -50,10 +50,10 @@ namespace MvcLayer.Controllers
         /// <param name="contractId"></param>
         /// <param name="isFact"></param>
         /// <returns></returns>
-        public IActionResult ChoosePeriod(int contractId, bool isFact)
-        {
+        public IActionResult ChoosePeriod(int contractId, bool isFact, int returnContractId = 0)
+        {            
             if (contractId > 0)
-            {
+            {                
                 //находим  по объему работ начало и окончание периода
                 var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
@@ -61,7 +61,8 @@ namespace MvcLayer.Controllers
                 {
                     return RedirectToAction("Details", "Contracts", new { id = contractId });
                 }
-
+                TempData["returnContractId"] = returnContractId;
+                TempData["contractId"] = contractId;
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
@@ -163,9 +164,13 @@ namespace MvcLayer.Controllers
 
                 while (prepaymentViewModel.PeriodStart <= prepaymentViewModel.PeriodEnd)
                 {
+                    var prev = _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentViewModel.ChangePrepaymentId && p.Period == prepaymentViewModel.PeriodStart).FirstOrDefault();
                     plan.Add(new PrepaymentPlanDTO
                     {
                         Period = prepaymentViewModel.PeriodStart,
+                        CurrentValue = prev.CurrentValue,
+                        TargetValue = prev.TargetValue,
+                        WorkingOutValue = prev.WorkingOutValue,
                     });
 
                     prepaymentViewModel.PeriodStart = prepaymentViewModel.PeriodStart.AddMonths(1);
@@ -206,11 +211,11 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(PrepaymentViewModel prepayment)
+        public IActionResult Create(PrepaymentViewModel prepayment, int returnContractId = 0)
         {
             if (prepayment is not null)
-            {
-                if(prepayment.PrepaymentFacts.Count() > 0 && prepayment.PrepaymentFacts is not null)
+            {                
+                if (prepayment.PrepaymentFacts.Count() > 0 && prepayment.PrepaymentFacts is not null)
                 {
                     _prepaymentFact.Create(prepayment?.PrepaymentFacts?.FirstOrDefault());
                     return RedirectToAction(nameof(GetByContractId), new { contractId = prepayment.ContractId });
@@ -223,7 +228,7 @@ namespace MvcLayer.Controllers
                     _prepayment.AddAmendmentToPrepayment((int)prepayment?.AmendmentId, prepaymentId);
                 }
               
-                return RedirectToAction(nameof(GetByContractId), new { contractId  = prepayment.ContractId});
+                return RedirectToAction(nameof(GetByContractId), new { contractId  = prepayment.ContractId, returnContractId = returnContractId });
             }
             return View(prepayment);
         }
@@ -237,7 +242,7 @@ namespace MvcLayer.Controllers
                 {
                     _prepayment.Update(_mapper.Map<PrepaymentDTO>(item));
                 }
-                return RedirectToAction("Details", "Contracts", new { id = prepayment.FirstOrDefault().ContractId });
+                return RedirectToAction("GetByContractId", "Prepayments", new { contractId = prepayment.FirstOrDefault().ContractId });
             }
 
             return RedirectToAction("Index", "Contracts");
@@ -268,6 +273,17 @@ namespace MvcLayer.Controllers
             }
 
             _prepayment.Delete((int)id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> EditFact(int id)
+        {
+            var item = _prepaymentFact.GetById(id);            
+            return View(item);
+        }
+
+        public async Task<IActionResult> EditFact(PrepaymentFactDTO factDTO)
+        {            
             return RedirectToAction(nameof(Index));
         }
     }

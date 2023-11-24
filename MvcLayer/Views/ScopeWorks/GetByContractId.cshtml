@@ -5,8 +5,10 @@
     ViewData["Title"] = "Объем работ";
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
     var contractId = ViewBag.contractId;
+    int backId = 0;
     if (ViewBag.returnContractId == 0)
-        ViewBag.returnContractId = ViewBag.contractId;
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
 }
 
 <div class="dm-overlay">
@@ -15,11 +17,11 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (ViewBag.returnContractId != null && ViewBag.returnContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewBag.returnContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (contractId == null || contractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
@@ -97,7 +99,7 @@
                                     </td>
                                     <td class="text-end">
                                         @item.GenServiceCost?.ToString("N2")
-                                    </td>                                    
+                                    </td>
                                     <td>
                                         <div class="icon edit" title="Редактировать договор">
                                             <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
