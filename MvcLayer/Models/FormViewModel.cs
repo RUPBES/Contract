@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Models;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Models
 {
@@ -44,7 +45,6 @@ namespace MvcLayer.Models
         public bool? IsOwnForces { get; set; }
        
         public int? ContractId { get; set; }
-
         public IFormFileCollection FilesEntity { get; set; }
 
         [DisplayName("Договор")]

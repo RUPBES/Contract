@@ -130,9 +130,9 @@ namespace MvcLayer.Controllers
                     var prepaymentId = (int)_payment.Create(_mapper.Map<PaymentDTO>(item));
 
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("GetByContractId", new { contractId = payment.FirstOrDefault().ContractId });
             }
-            return View(payment);
+            return RedirectToAction("Index","Contracts");
         }
 
         [HttpPost]
@@ -144,7 +144,7 @@ namespace MvcLayer.Controllers
                 {
                     _payment.Update(_mapper.Map<PaymentDTO>(item));
                 }
-                return RedirectToAction("Details", "Contracts", new { id = payment.FirstOrDefault().ContractId });
+                return RedirectToAction("GetByContractId", new { contractId = payment.FirstOrDefault().ContractId });
             }
 
             return RedirectToAction("Index", "Contracts");

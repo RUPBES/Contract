@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
@@ -59,7 +60,9 @@ namespace MvcLayer.Controllers
 
                 if (period is null)
                 {
-                    return RedirectToAction("Details", "Contracts", new { id = contractId });
+                    TempData["Message"] = "Заполните объем работ";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
                 TempData["returnContractId"] = returnContractId;
                 TempData["contractId"] = contractId;
@@ -165,6 +168,12 @@ namespace MvcLayer.Controllers
                 while (prepaymentViewModel.PeriodStart <= prepaymentViewModel.PeriodEnd)
                 {
                     var prev = _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentViewModel.ChangePrepaymentId && p.Period == prepaymentViewModel.PeriodStart).FirstOrDefault();
+                    if (prev == null)
+                    {
+                        TempData["Message"] = "Заполните объем работ";
+                        var urlReturn = (int)TempData["returnContractId"] == 0 ? (int)TempData["contractId"] : (int)TempData["returnContractId"];
+                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    }
                     plan.Add(new PrepaymentPlanDTO
                     {
                         Period = prepaymentViewModel.PeriodStart,
@@ -276,15 +285,18 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> EditFact(int id)
+        public async Task<IActionResult> EditFact(int id, int contractId, int returnContractId = 0)
         {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             var item = _prepaymentFact.GetById(id);            
             return View(item);
         }
-
-        public async Task<IActionResult> EditFact(PrepaymentFactDTO factDTO)
-        {            
-            return RedirectToAction(nameof(Index));
+        [HttpPost]
+        public async Task<IActionResult> EditFact(PrepaymentFactDTO factDTO, int contractId, int returnContractId = 0)
+        {
+            _prepaymentFact.Update(factDTO);
+            return RedirectToAction("GetByContractId", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
         }
     }
 }

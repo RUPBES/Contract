@@ -14,7 +14,7 @@
 
     if (id is not null)
     {
-        var sworkId = Scope?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;       
+        var sworkId = Scope?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
         scopeWork = sw?.Find(x => x.ScopeWorkId == sworkId)?.LastOrDefault()?.CostNds;
         form = contract?.FormC3as?.Where(x => x.ContractId == id).Select(x => x.TotalCost)?.LastOrDefault();
 
@@ -38,47 +38,49 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <table class="table table-bordered" style="overflow-x: scroll;display: block;height: 190px;">
-                    <thead>
-                        <tr>
-                            <th rowspan="2"><span> Контрактная цена, с НДС </span></th>
-                            <th rowspan="2"><span>Остаток по выполнению</span></th>
-                            <th rowspan="2"><span>Объем на текущий год</span></th>
-                            <th rowspan="2"><span>Выполнено с-3а</span></th>
-                            @{
-                                foreach (var item in Model)
-                                {
-                                    <th colspan="2"><span class="span-month-double text-center">@item?.Period?.ToShortDateString()</span></th>
+                <div class="modal-overflow-70">
+                    <table class="table table-bordered" style="overflow-x: scroll;display: block;height: 190px;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2"><span> Контрактная цена, с НДС </span></th>
+                                <th rowspan="2"><span>Остаток по выполнению</span></th>
+                                <th rowspan="2"><span>Объем на текущий год</span></th>
+                                <th rowspan="2"><span>Выполнено с-3а</span></th>
+                                @{
+                                    foreach (var item in Model)
+                                    {
+                                        <th colspan="2"><span class="span-month-double text-center">@item?.Period?.ToString("MMMM-yyyy")</span></th>
+                                    }
                                 }
-                            }
-                        </tr>
-                        <tr>
-                            @{
-                                for (int i = 0; i < Model.Count(); i++)
-                                {
-                                    <th><span class="span-50-per">к оплате </span></th>
-                                    <th><span class="span-50-per">на счет РУП "БЭС" - УКХ"</span></th>
+                            </tr>
+                            <tr>
+                                @{
+                                    for (int i = 0; i < Model.Count(); i++)
+                                    {
+                                        <th><span class="span-50-per">к оплате </span></th>
+                                        <th><span class="span-50-per">на счет РУП "БЭС" - УКХ"</span></th>
+                                    }
                                 }
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            @if (Model.Count() > 0)
-                            {
-                                <td class="text-end"><span>@contract?.ContractPrice?.ToString("N2")</span></td>
-                                <td class="text-end"><span>???</span></td>
-                                <td class="text-end"><span>@scopeWork?.ToString("N2")</span></td>
-                                <td class="text-end"><span>@form?.ToString("N2")</span></td>
-                                @foreach (var item in Model)
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                @if (Model.Count() > 0)
                                 {
-                                    <td class="text-end"><span>@item.PaySum?.ToString("N2")</span></td>
-                                    <td class="text-end"><span>@item.PaySumForRupBes?.ToString("N2")</span></td>
+                                    <td class="text-end"><span>@contract?.ContractPrice?.ToString("N2")</span></td>
+                                    <td class="text-end"><span>???</span></td>
+                                    <td class="text-end"><span>@scopeWork?.ToString("N2")</span></td>
+                                    <td class="text-end"><span>@form?.ToString("N2")</span></td>
+                                    @foreach (var item in Model)
+                                    {
+                                        <td class="text-end"><span>@item.PaySum?.ToString("N2")</span></td>
+                                        <td class="text-end"><span>@item.PaySumForRupBes?.ToString("N2")</span></td>
+                                    }
                                 }
-                            }
-                        </tr>
-                    </tbody>
-                </table>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

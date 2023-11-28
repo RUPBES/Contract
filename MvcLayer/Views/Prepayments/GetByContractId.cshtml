@@ -19,7 +19,16 @@
     }
     bool isAdmin = true;
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
-}
+    DateTime startPeriod = new DateTime(4000, 1, 1);
+    DateTime endPeriod = new DateTime(1000, 1, 1);
+    foreach (var item in Model)
+    {
+        foreach (var item2 in item.PrepaymentPlans)
+        {
+            if (item2.Period < startPeriod) startPeriod = (DateTime)item2.Period;
+            if (item2.Period > endPeriod) endPeriod = (DateTime)item2.Period;
+        }
+    }
 }
 
 <div class="dm-overlay">
@@ -38,7 +47,7 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <div class="modal-overflow-70%">
+                <div class="modal-overflow-70">
                     <table class="table table-striped table-bordered">
                         @*!!!план без изменений!!*@
                         @foreach (var prepayment in Model.Where(x => x.IsChange != true))
@@ -49,10 +58,10 @@
                                     Основание
                                 </th>
 
-                                @foreach (var item in plansNoChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <th>
-                                        @item.Period?.ToString("MMM yyyy")
+                                        @iterator.ToString("MMM yyyy")
                                     </th>
                                 }
                             </tr>
@@ -60,10 +69,16 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.CurrentValue)
                                 </th>
-                                @foreach (var item in plansNoChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <td class="text-end">
-                                        @item.CurrentValue?.ToString("N2")
+                                        @{
+                                            var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.CurrentValue?.ToString("N2")</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -71,10 +86,16 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.TargetValue)
                                 </th>
-                                @foreach (var item in plansNoChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <td class="text-end">
-                                        @item.TargetValue?.ToString("N2")
+                                        @{
+                                            var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.TargetValue?.ToString("N2")</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -82,10 +103,16 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.WorkingOutValue)
                                 </th>
-                                @foreach (var item in plansNoChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <td class="text-end">
-                                        @item.WorkingOutValue?.ToString("N2")
+                                        @{
+                                            var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -100,10 +127,10 @@
                                 <th class="text-uppercase fw-light">
                                     cогласно графику платежей в редакции ДС <b>@Prepayment?.GetAmendmentByPrepaymentId(item2.Id)?.Number </b>к договору
                                 </th>
-                                @foreach (var item in plansChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <th>
-                                        @item.Period?.ToString("MMM yyyy")
+                                        @iterator.ToString("MMM yyyy")
                                     </th>
                                 }
 
@@ -112,10 +139,16 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.CurrentValue)
                                 </th>
-                                @foreach (var item in plansChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <td class="text-end">
-                                        @item.CurrentValue?.ToString("N2")
+                                        @{
+                                            var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.CurrentValue?.ToString("N2")</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -123,10 +156,16 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.TargetValue)
                                 </th>
-                                @foreach (var item in plansChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <td class="text-end">
-                                        @item.TargetValue?.ToString("N2")
+                                        @{
+                                            var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.TargetValue?.ToString("N2")</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -134,10 +173,16 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.WorkingOutValue)
                                 </th>
-                                @foreach (var item in plansChange)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <td class="text-end">
-                                        @item.WorkingOutValue?.ToString("N2")
+                                        @{
+                                            var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -147,55 +192,82 @@
                         @{
                             var prepaymentId = Model?.FirstOrDefault(x => x.IsChange != true)?.Id;
                         }
-                        <tr>
-                            <th class="text-uppercase fw-light">
-                                Получено фактически
-                            </th>
-                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                            {
-
-                                <th>
-                                    @item.Period?.ToString("MMM yyyy")                                    
-                                    <a class="icon edit" asp-action="EditFact" asp-route-id="@item.Id"></a>                                   
+                        @{
+                            var fact = PrepFact.Find(x => x.PrepaymentId == prepaymentId);
+                            <tr>
+                                <th class="text-uppercase fw-light">
+                                    Получено фактически
                                 </th>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.CurrentValueFact)
-                            </th>
-                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                            {
-
-                                <td class="text-end">
-                                    @item.CurrentValue?.ToString("N2")
-                                </td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.TargetValueFact)
-                            </th>
-                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                            {
-
-                                <td class="text-end">
-                                    @item.TargetValue?.ToString("N2")
-                                </td>
-                            }
-                        </tr>
-                        <tr>
-                            <th>
-                                @Html.DisplayNameFor(model => model.WorkingOutValueFact)
-                            </th>
-                            @foreach (var item in PrepFact.Find(x => x.PrepaymentId == prepaymentId))
-                            {
-
-                                <td class="text-end">
-                                    @item.WorkingOutValue?.ToString("N2")
-                                </td>
-                            }
-                        </tr>
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                {
+                                    <th>
+                                        @iterator.ToString("MMM yyyy")
+                                        @if (fact.Any(f => f.Period == iterator))
+                                        {
+                                            var item = fact.Where(x => x.Period == iterator).FirstOrDefault();
+                                            <a class="icon edit" asp-action="EditFact" asp-controller="Prepayments"
+                                               asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                        }
+                                        else
+                                        {
+                                            <a class="icon view_to_add_pages" asp-action="ChoosePeriod" asp-controller="Prepayments"
+                                               asp-route-contractId="@contractId" asp-route-isFact="true" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                        }
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.CurrentValueFact)
+                                </th>
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                {
+                                    <td class="text-end">
+                                        @{
+                                            var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.CurrentValue?.ToString("N2")</span>
+                                            }
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TargetValueFact)
+                                </th>
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                {
+                                    <td class="text-end">
+                                        @{
+                                            var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.TargetValue?.ToString("N2")</span>
+                                            }
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.WorkingOutValueFact)
+                                </th>
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                {
+                                    <td class="text-end">
+                                        @{
+                                            var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                            }
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
                     </table>
                 </div>
             </div>
