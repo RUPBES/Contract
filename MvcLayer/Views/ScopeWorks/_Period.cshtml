@@ -1,0 +1,17 @@
+﻿@model int
+@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
+@{
+    var amendment = Amendment.GetById(Model);
+}
+<div class="row mt-3" id="date-box">
+    <div class="form-group col-6 mb-3">
+        <label for="amendCheck1">Начало периода</label>
+        <input name=PeriodStart type="datetime" value="@amendment.DateBeginWork" hidden/>
+        <input type="datetime" value="@amendment.DateBeginWork.Value.ToString("MMMM-yyyy")" id="amendCheck1" class="monthYearPickers" readonly />
+    </div>
+    <div class="form-group col-6 mb-3">
+        <label for="amendCheck2">Окончание периода</label>
+        <input name=PeriodEnd type="datetime" value="@amendment.DateEndWork" hidden/>
+        <input type="datetime" value="@amendment.DateEndWork.Value.ToString("MMMM-yyyy")" id="amendCheck2" class="monthYearPickers" readonly/>
+    </div>
+</div>

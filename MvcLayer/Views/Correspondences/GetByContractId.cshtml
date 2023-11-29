@@ -6,6 +6,10 @@
 
 @{
     ViewData["Title"] = "Переписка с заказчиком";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
     bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Correspondences";
@@ -28,11 +32,11 @@
             <div class="dm-modal" @* style="width: 860px;" *@>
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] согласно договора @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewData["contractId"]" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
@@ -83,7 +87,7 @@
                                             <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Correspondences" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
                                         </span>
                                         <span class="icon edit" title="Редактировать письмо">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                         </span>
                                         <span class="icon delete" title="Удалить письмо">
                                             <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
@@ -137,7 +141,7 @@
                                             <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Correspondences" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
                                         </span>
                                         <span class="icon edit" title="Редактировать письмо">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                         </span>
                                         <span class="icon delete" title="Удалить письмо">
                                             <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>

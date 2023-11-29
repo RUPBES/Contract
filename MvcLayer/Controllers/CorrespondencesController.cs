@@ -26,22 +26,24 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<CorrespondenceViewModel>>(_correspondenceService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int id, bool isEngineering)
+        public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
             ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<CorrespondenceViewModel>>(_correspondenceService.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int contractId)
+        public ActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(CorrespondenceViewModel correspondenceViewModel)
+        public ActionResult Create(CorrespondenceViewModel correspondenceViewModel, int returnContractId = 0)
         {
             try
             {
@@ -52,7 +54,7 @@ namespace MvcLayer.Controllers
 
                 if (correspondenceViewModel?.ContractId is not null && correspondenceViewModel.ContractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = correspondenceViewModel.ContractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = correspondenceViewModel.ContractId, returnContractId = returnContractId });
                 }
                 else
                 {
@@ -65,15 +67,16 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id, int? contractId = null)
+        public ActionResult Edit(int id, int? contractId = 0, int returnContractId = 0)
         {
             ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             return View(_mapper.Map<CorrespondenceViewModel>(_correspondenceService.GetById(id)));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(CorrespondenceViewModel correspondence)
+        public ActionResult Edit(CorrespondenceViewModel correspondence, int returnContractId = 0)
         {
             if (correspondence is not null)
             {
@@ -83,17 +86,17 @@ namespace MvcLayer.Controllers
                 }
                 catch
                 {
-                    return View();
+                    return RedirectToAction("Index", "Contracts");
                 }
             }
 
             if (correspondence?.ContractId is not null && correspondence.ContractId > 0)
             {
-                return RedirectToAction(nameof(GetByContractId), new { id = correspondence.ContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = correspondence.ContractId, returnContractId = returnContractId });
             }
             else
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Contracts");
             }
         }
 

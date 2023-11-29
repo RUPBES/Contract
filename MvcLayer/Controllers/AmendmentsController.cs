@@ -34,9 +34,10 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int contractId)
+        public ActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View();
         }
 

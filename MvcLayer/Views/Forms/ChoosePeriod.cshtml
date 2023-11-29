@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Выбор периода";
+    int backId = 0;
+    if ((int)TempData["returnContractId"] == 0)
+        backId = (int)TempData["contractId"];
+    else backId = (int)TempData["returnContractId"];
 }
 
 
@@ -11,11 +15,11 @@
             <div class="dm-modal" style="width:500px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (Model?.ContractId != null && Model?.ContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }

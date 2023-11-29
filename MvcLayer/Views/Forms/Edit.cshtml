@@ -1,6 +1,10 @@
 ﻿@model MvcLayer.Models.FormViewModel
 @{
     ViewData["Title"] = "Редактирование";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
 }
 
 <div class="dm-overlay">
@@ -9,17 +13,17 @@
             <div class="dm-modal" style="width:850px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (Model?.ContractId != null && Model?.ContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line">
-                <form asp-action="Edit" method="post" class="row" enctype="multipart/form-data">
+                <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" method="post" class="row" enctype="multipart/form-data">
                     <input asp-for="ContractId" value="@Model.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model.IsOwnForces" hidden />
                     <input asp-for="Period" type="datetime" value="@Model.Period" hidden />
@@ -68,8 +72,7 @@
                         <input name="GenServiceCost" type="text" value="@Model.GenServiceCost" class="form-control cost" />
                         <span asp-validation-for="GenServiceCost" class="text-danger"></span>
                     </div>
-                    <div class="form-group mt-3 col-8">
-                        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model.ContractId">Вернуться назад</a>
+                    <div class="form-group mt-3 col-8">                        
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
                 </form>
