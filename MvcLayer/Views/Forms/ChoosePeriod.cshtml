@@ -3,9 +3,9 @@
 @{
     ViewData["Title"] = "Выбор периода";
     int backId = 0;
-    if ((int)TempData["returnContractId"] == 0)
-        backId = (int)TempData["contractId"];
-    else backId = (int)TempData["returnContractId"];
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
 }
 
 
@@ -25,7 +25,7 @@
                     }
                 </div>
                 <hr class="modal-line">
-                <form id="target" asp-action="CreateForm" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                <form id="target" asp-action="CreateForm" class="row" asp-route-returnContractId="@ViewData["returnContractId"]" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
                     <input name="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <div class="form-group col-12">                        

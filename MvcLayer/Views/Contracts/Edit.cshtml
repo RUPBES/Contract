@@ -7,6 +7,10 @@
 @{
     ViewData["Title"] = "Редактирование договора";
     var d = Model;
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = Model.Id;
+    else backId = (int)ViewData["returnContractId"];
 }
 
 <div class="dm-overlay">
@@ -15,10 +19,17 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Contracts" asp-action="Index" class="close-btn"></a>
+                    @if ((int)ViewData["returnContractId"] != 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Contracts" asp-action="Index" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Edit" asp-controller="Contracts" class="row" style="max-width:700px;">
+                <form asp-action="Edit" asp-controller="Contracts" asp-route-returnContractId="@ViewBag.returnContractId" class="row" style="max-width:700px;">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="SubContractId" />

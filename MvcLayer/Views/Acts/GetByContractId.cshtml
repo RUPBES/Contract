@@ -8,6 +8,10 @@
 @{
     var contract = Contract.GetById((int)ViewBag.contractId);
     ViewData["Title"] = "Акты приостановления/возобновления работ (услуг)";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
     bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Acts";
@@ -19,11 +23,11 @@
             <div class="dm-modal" style="width: 860px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
@@ -101,7 +105,7 @@
                                         <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Acts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
                                     </span>
                                     <span class="icon edit" title="Редактировать акт">
-                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                     </span>
                                     <span class="icon delete" title="Удалить акт">
                                         <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>

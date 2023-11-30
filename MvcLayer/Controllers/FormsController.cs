@@ -62,8 +62,8 @@ namespace MvcLayer.Controllers
 
                 var formExist = _formService
                     .Find(x => x.ContractId == contractId && x.IsOwnForces == isOwnForces);
-                TempData["contractId"] = contractId;
-                TempData["returnContractId"] = returnContractId;
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
                 if (formExist.Count() > 0)
                 {
                     //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
