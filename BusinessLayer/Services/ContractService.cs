@@ -75,6 +75,45 @@ namespace BusinessLayer.Services
             }            
         }
 
+        public void DeleteAfterScopeWork(int id)
+        {
+            if (id > 0)
+            {
+                var contract = _database.Contracts.GetById(id);
+
+                if (contract is not null)
+                {
+                    try
+                    {
+                        var scopes = _database.ScopeWorks.Find(x=>x.ContractId == id);
+                        
+                        foreach (var item in scopes)
+                        {
+                            foreach (var item1 in item.SWCosts)
+                            {
+                                _database.SWCosts.Delete(item1.Id);
+                            }
+                            _database.Save();
+                        }
+                       
+
+                        _database.Contracts.Delete(id);
+                        _database.Save();
+                        _logger.WriteLog(LogLevel.Information, $"delete contract, ID={id}", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    }
+                }
+            }
+            else
+            {
+                _logger.WriteLog(LogLevel.Warning, $"not delete contract, ID is not more than zero", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            }
+        }
+
         public IEnumerable<ContractDTO> GetAll()
         {
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.GetAll());

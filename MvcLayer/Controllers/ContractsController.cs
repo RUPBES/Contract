@@ -471,10 +471,19 @@ namespace MvcLayer.Controllers
             {
                 return Problem("Entity set 'ContractsContext.Contracts'  is null.");
             }
+           
             var contract = _contractService.GetById(id);
+
             if (contract != null)
             {
-                _contractService.Delete(id);
+                if (contract.IsOneOfMultiple)
+                {
+                    _contractService.DeleteAfterScopeWork(id);
+                }
+                else
+                {
+                    _contractService.Delete(id);
+                }                
             }
 
             return RedirectToAction(nameof(Index));

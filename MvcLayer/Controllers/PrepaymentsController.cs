@@ -64,8 +64,10 @@ namespace MvcLayer.Controllers
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
+
                 TempData["returnContractId"] = returnContractId;
                 TempData["contractId"] = contractId;
+
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
@@ -122,8 +124,7 @@ namespace MvcLayer.Controllers
                        
                         startDate = startDate.AddMonths(1);
                     }
-
-                   
+                                       
                     TempData["prepaymentId"] = prepaymentId;
                     return View("ChooseDate", periodChoose);
                 }
@@ -174,6 +175,7 @@ namespace MvcLayer.Controllers
                         var urlReturn = (int)TempData["returnContractId"] == 0 ? (int)TempData["contractId"] : (int)TempData["returnContractId"];
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
+
                     plan.Add(new PrepaymentPlanDTO
                     {
                         Period = prepaymentViewModel.PeriodStart,
@@ -292,6 +294,7 @@ namespace MvcLayer.Controllers
             var item = _prepaymentFact.GetById(id);            
             return View(item);
         }
+
         [HttpPost]
         public async Task<IActionResult> EditFact(PrepaymentFactDTO factDTO, int contractId, int returnContractId = 0)
         {

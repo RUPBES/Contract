@@ -1,11 +1,14 @@
 ﻿@using BusinessLayer.Enums;
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
+
 @{
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
     var subObjectsOfContract = Contracts.Find(x => x.MultipleContractId == Model?.Id && x.IsOneOfMultiple == true);
     var isEngineering = Model.IsEngineering == true ? true : false;
+    var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple == false ? true : false;
     string redirectAction = "Details";
     string redirectController = "Contracts";
 }
@@ -139,12 +142,18 @@
                                     {
                                         <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
                                         <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
-                                        <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id">+ Подобъект</a>
+                                        if (isThereScopeWorks)
+                                        {
+                                            <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id">+ Подобъект</a>
+                                        }
 
                                         <div class="dropdown-divider"></div>
                                         <h6 class="dropdown-header">План</h6>
                                         //TODO: проверка! если этот договор имеет подобъекты, то ему не нужны заполнение собственных обемов работ
-                                        <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
+                                        @if (Model?.IsMultiple == true)
+                                        {
+                                            <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
+                                        }
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isOwnForces="true">+ Oбъем работ собственными силами</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">+ Услуги генподряда</a>
@@ -765,9 +774,9 @@
             <a class="btn btn-success" asp-action="Engineerings">Вернуться</a>
         </div>
     }
-   @*  @{
+    @*  @{
         if (TempData["Message"] != null)
-        {            
+        {
             var mes = (string)TempData["Message"];
             <input id="messageInput" value="@mes" hidden/>
             <script type="text/javascript">

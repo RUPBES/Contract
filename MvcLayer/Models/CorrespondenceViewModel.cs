@@ -20,6 +20,7 @@ namespace MvcLayer.Models
         public bool IsInBox { get; set; }
 
         public int? ContractId { get; set; }
+
         [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }
 

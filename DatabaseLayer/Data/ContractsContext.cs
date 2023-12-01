@@ -873,6 +873,7 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.ScopeWorks)
                 .HasForeignKey(d => d.ContractId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_ScopeWork_Contract_Id");
         });
 
@@ -880,7 +881,7 @@ public partial class ContractsContext : DbContext
         {
             entity.HasKey(e => e.Id);
 
-            entity.ToTable("SWCost", tg => tg.HasTrigger("TGR_Update_SWCosts_Multiple_Contract"));
+            entity.ToTable("SWCost", tg => tg.HasTrigger("TGR_INSERT_SWCosts_Multiple_Contract"));
 
             entity.Property(e => e.Period).HasColumnType("datetime");
             entity.Property(e => e.AdditionalCost).HasDefaultValueSql("0")
