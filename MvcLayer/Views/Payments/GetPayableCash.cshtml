@@ -1,9 +1,27 @@
-﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+﻿@model IEnumerable<MvcLayer.Models.ContractViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @{
     ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
-    List<DateTime> listDate = ViewBag.ListDate;
+    DateTime startPeriod = new DateTime(4000, 1, 1);
+    DateTime endPeriod = new DateTime(1000, 1, 1);
+    foreach (var item in Model)
+    {
+        foreach (var item2 in item.Payments)
+        {
+            if (startPeriod > item2.Period)
+            {
+                startPeriod = (DateTime)item2.Period;
+            }
+            if (endPeriod < item2.Period)
+            {
+                endPeriod = (DateTime)item2.Period;
+            }
+        }
+    }
+    int PageNumber = ViewBag.PageNum;
 }
 <style>
     table {
@@ -25,14 +43,14 @@
         .wrapper-table table td:first-child {
             position: sticky;
             z-index: 10;
-            left: 0;
+            left: -1px;
             background-color: #adadad;
         }
 
-        .wrapper-table table th:first-child {
+        .wrapper-table table tr:first-child th:first-child {
             position: sticky;
             z-index: 20;
-            left: 0;
+            left: -1px;
             top: 0;
         }
 
@@ -42,7 +60,7 @@
             left: 0;
             top: 0;
             opacity: 1;
-            /* border-color: #373b3e; */
+            border-color: #373b3e;
         }
 
     .second-td-elem {
@@ -60,6 +78,13 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     <a asp-controller="Home" asp-action="" class="close-btn"></a>
                 </div>
+                @using (Html.BeginForm("GetPayableCash", "Payments", FormMethod.Get))
+                {
+                    <form style="search-form" method="get">
+                        <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                        <input type="submit" value="Найти" />
+                    </form>
+                }
                 <hr class="modal-line" />
                 <div class="wrapper-table">
                     <table class="table table-bordered table-main table-main-short">
@@ -101,16 +126,16 @@
                                 <th rowspan="2">
                                     Фактическое выполнение по справке С-3а, в т.ч.
                                 </th>
-                                @foreach (var item in listDate)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <th colspan="2">
-                                        @item.ToString("MMMM yyyy")
+                                        @iterator.ToString("MMMM-yyyy")
                                     </th>
                                 }
                             </tr>
 
                             <tr>
-                                @foreach (var item in listDate)
+                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                 {
                                     <th>
                                         к оплате
@@ -124,11 +149,42 @@
                         <tbody style="height:70vh;">
                             @foreach (var item in Model)
                             {
-                                var contract = @Contract.GetById((int)item?.ContractId);
-                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsClient == true);
-                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsGenContractor == true);
-                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.ContractId && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
+                                var contract = @Contract.GetById((int)item?.Id);
+                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
+                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
+                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
+                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
+                                var todayYearScope = 0M;
+                                var todayScope = 0M;
+                                var deviationTotal = 0M;
+                                var allScope = 0M;
+                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
+                                {
+                                    if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
+                                    {
+                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
+                                        if (ob != null)
+                                        {
+                                            todayYearScope += (decimal)ob.CostNds;
+                                            allScope += (decimal)ob.CostNds;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
+                                        if (ob != null)
+                                        {
+                                            allScope += (decimal)ob.CostNds;
+                                        }
+                                    }
 
+                                }
+                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
+                                {
+                                    todayScope += (decimal)item2.TotalCost;
+
+                                }
+                                var balanceScope = allScope - todayScope;
                                 <tr>
                                     <td>
                                         @contract?.Number <br>
@@ -158,39 +214,116 @@
                                     <td class="text-end">
                                         @contract?.ContractPrice?.ToString("N2")
                                     </td>
-                                    <td>
-                                        jc
+                                    <td class="text-end">
+                                        @balanceScope.ToString("N2")
                                     </td>
-                                    <td>
-                                        jd
+                                    <td class="text-end">
+                                        @todayYearScope.ToString("N2")
                                     </td>
-                                    <td>
-                                        jd
+                                    <td class="text-end">
+                                        @todayScope.ToString("N2")
                                     </td>
 
-                                    @foreach (var item2 in listDate)
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = item.Period?.Date == item2 && item.Period?.Date != null ?
-                                                item.PaySum : null;
+                                                var resultPlan = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySum).FirstOrDefault();
+                                                if (resultPlan != null)
+                                                {
+                                                    <span>@resultPlan?.ToString("N2")</span>
+                                                }
                                             }
-                                            @resultPlan?.ToString("N2")
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = item.Period?.Date == item2 && item.Period?.Date != null ?
-                                                item.PaySumForRupBes : null;
+                                                var resultFact = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySumForRupBes).FirstOrDefault();
+                                                if (resultFact != null)
+                                                {
+                                                    <span>@resultFact?.ToString("N2")</span>
+                                                }
                                             }
-                                            @resultFact?.ToString("N2")
                                         </td>
                                     }
-
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
+                <nav aria-label="Page navigation example" style="margin-top:10px;">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item previous_btn">
+                            @{
+                                @if (PageNumber > 1)
+                                {
+                                    <a class="page-link" asp-action="GetPayableCash"
+                                       asp-route-pageNum="@(PageNumber - 1)"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                                        &lt;
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="page-link disabled" href="#"
+                                       tabindex="-1">
+                                        &lt;
+                                    </a>
+                                }
+                            }
+
+                        </li>
+                        @{
+                            int counter = 1;
+                            int index = PageNumber <= 3 ? 1 : PageNumber - 2;
+                            int end = 0;
+                            if (PageNumber <= 3) end = ViewBag.TotalPages > 5 ? 5 : ViewBag.TotalPages;
+                            else if (ViewBag.TotalPages <= 5)
+                                end = ViewBag.TotalPages;
+                            else if (ViewBag.TotalPages >= PageNumber + 2)
+                                end = PageNumber + 2;
+                            else
+                            {
+                                end = ViewBag.TotalPages;
+                                index = ViewBag.TotalPages - 4;
+                            }
+
+                            for (int i = index; i <= end; i++)
+                            {
+                                <li class="page-item pag_btn_num">
+                                    <a class="page-link " asp-action="GetPayableCash"
+                                       asp-route-pageNum="@i"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                       value="@i">@i</a>
+                                </li>
+                                if (counter == 5)
+                                {
+                                    counter = 1;
+                                    break;
+                                }
+                            }
+                        }
+
+                        <li class="page-item next_btn">
+                            @{
+                                @if (PageNumber < ViewBag.TotalPages)
+                                {
+                                    <a class="page-link" asp-action="GetPayableCash"
+                                       asp-route-pageNum="@(ViewBag.PageNum + 1)"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                                        &gt;
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="page-link disabled" href="#"
+                                       tabindex="-1">
+                                        &gt;
+                                    </a>
+                                }
+                            }
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>

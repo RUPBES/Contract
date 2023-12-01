@@ -54,6 +54,7 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.CommissionActs)
                 .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(c => c.FormC3as)
+                .Include(c => c.Payments)
                 .ToList();
         }
 

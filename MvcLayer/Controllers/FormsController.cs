@@ -27,12 +27,12 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
+        public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
             ViewBag.IsEngineering = isEngineering;
-            ViewData["contractId"] = contractId;
+            ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
-            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id)));
         }
 
         public IActionResult ChoosePeriod(int contractId, bool isOwnForces, int returnContractId = 0)
@@ -117,7 +117,7 @@ namespace MvcLayer.Controllers
 
                 _formService.AddFile(formId, fileId);
 
-                return RedirectToAction(nameof(GetByContractId), new { contractId = formViewModel.ContractId, returnContractId = returnContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = formViewModel.ContractId, returnContractId = returnContractId });
             }
             catch
             {

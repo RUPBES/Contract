@@ -29,7 +29,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetByContractId(int id)
+        public ActionResult GetByContractId(int id, int returnContractId = 0)
         {
             return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id)));
         }
@@ -43,7 +43,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(AmendmentViewModel amendment)
+        public ActionResult Create(AmendmentViewModel amendment, int returnContractId = 0)
         {
             try
             {
@@ -52,7 +52,7 @@ namespace MvcLayer.Controllers
 
                 _amendment.AddFile(amendId, fileId);
 
-                return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
             }
             catch
             {
@@ -60,15 +60,16 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id, int? contractId = null)
+        public ActionResult Edit(int id, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             return View(_mapper.Map<AmendmentViewModel>(_amendment.GetById(id)));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(AmendmentViewModel amendment)
+        public ActionResult Edit(AmendmentViewModel amendment, int returnContractId = 0)
         {
             if (amendment is not null)
             {
@@ -83,7 +84,7 @@ namespace MvcLayer.Controllers
             }
             if (amendment.ContractId is not null && amendment.ContractId > 0)
             {
-                return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
             }
             else
             {

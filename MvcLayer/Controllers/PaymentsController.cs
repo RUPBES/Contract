@@ -163,29 +163,24 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-        public IActionResult GetPayableCash()
+        public IActionResult GetPayableCash(string currentFilter, int? pageNum, string searchString)
         {
-            var maxPeriod = _payment.GetAll()?.MaxBy(x => x.Period)?.Period;
-            var minPeriod = _payment.GetAll()?.MinBy(x => x.Period)?.Period;
-
-            if (maxPeriod != null && minPeriod != null)
-            {
-                List<DateTime> listDate = new List<DateTime>();
-                DateTime startDate = (DateTime)minPeriod;
-
-                while (startDate <= maxPeriod)
-                {
-                    listDate.Add(startDate);
-                    startDate = startDate.AddMonths(1);
-                }
-
-                ViewBag.ListDate = listDate;
-            }
+            int pageSize = 20;
+            if (searchString != null)
+            { pageNum = 1; }
             else
-            {
-                ViewBag.ListDate = new List<DateTime>();
-            }
-            return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.GetAll()));
+            { searchString = currentFilter; }
+            ViewData["CurrentFilter"] = searchString;
+            var list = new List<ContractDTO>();
+            int count;
+
+            if (!String.IsNullOrEmpty(searchString))
+                list = _contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, "Payment", out count).ToList();
+            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Payment", out count).ToList();
+
+            ViewData["PageNum"] = pageNum ?? 1;
+            ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
+            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
     }
 }

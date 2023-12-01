@@ -221,8 +221,8 @@ namespace MvcLayer.Controllers
             int count;
             
             if (!String.IsNullOrEmpty(searchString))
-                list =_contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, out count).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, out count).ToList();
+                list =_contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString,"Scope", out count).ToList();
+            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Scope", out count).ToList();
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
