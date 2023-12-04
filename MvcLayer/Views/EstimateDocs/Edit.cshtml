@@ -12,7 +12,7 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (Model?.ContractId != null && @Model?.ContractId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="EstimateDocs" asp-action="GetByContractId" asp-route-id="@Model?.ContractId" class="close-btn"></a>
                     }
                     @if (@Model?.ContractId == null || @Model?.ContractId == 0)
                     {
@@ -21,36 +21,38 @@
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Edit" class="row">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <input type="hidden" asp-for="Id" />
-                        <input asp-for="ContractId" value="@Model?.ContractId" hidden>
-                        <div class="form-group col-6">
-                            <label asp-for="Number" class="control-label"></label>
-                            <input asp-for="Number" class="form-control" />
-                            <span asp-validation-for="Number" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateChange" class="control-label"></label>
-                            <input asp-for="DateChange" type="datetime" class="form-control datepickers" />
-                            <span asp-validation-for="DateChange" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateOutput" class="control-label"></label>
-                            <input asp-for="DateOutput" type="datetime" class="form-control datepickers" />
-                            <span asp-validation-for="DateOutput" class="text-danger"></span>
-                        </div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden>
+                    <div class="form-group col-6">
+                        <label asp-for="Number" class="control-label"></label>
+                        <input asp-for="Number" class="form-control" />
+                        <span asp-validation-for="Number" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="DateChange" class="control-label"></label>
+                        <input asp-for="DateChange" type="datetime" class="form-control datepickersNull" />
+                        <span asp-validation-for="DateChange" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="DateOutput" class="control-label"></label>
+                        <input asp-for="DateOutput" type="datetime" class="form-control datepickersNull" />
+                        <span asp-validation-for="DateOutput" class="text-danger"></span>
+                    </div>
+                    @if (ViewBag.Edit != null)
+                    {
                         <div class="form-group col-6">
                             <label asp-for="Reason" class="control-label"></label>
                             <input asp-for="Reason" class="form-control" />
                             <span asp-validation-for="Reason" class="text-danger"></span>
-                        </div>                       
-                        <div class="form-group">
-                            <a class="btn btn-success mt-3" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId">Вернуться</a>
-                            <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
                         </div>
-                    </form>
-                </div>
-
+                    }
+                    <div class="form-group">
+                        <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
+                    </div>
+                </form>
             </div>
+
         </div>
     </div>
+</div>

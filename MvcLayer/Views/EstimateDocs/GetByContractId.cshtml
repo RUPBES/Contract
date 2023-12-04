@@ -32,10 +32,10 @@
                     <thead>
                         <tr>
                             <th class="text-center" colspan="4">
-                               Проектно-сметная документация
+                                Проектно-сметная документация
                             </th>
                             <th class="text-center">
-                               Файлы ПСД
+                                Файлы ПСД
                             </th>
                             <th rowspan="2"></th>
                         </tr>
@@ -51,8 +51,8 @@
                             </th>
                             <th>
                                 @Html.DisplayNameFor(model => model.Reason)
-                            </th>                           
-                            <th>Файлы изменений</th>                            
+                            </th>
+                            <th>Файлы изменений</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,14 +63,17 @@
                                     @Html.DisplayFor(modelItem => item.Number)
                                 </td>
                                 <td>
-                                    @item.DateChange?.ToShortDateString()
+                                    @if (item.Reason.Equals("Первоночальная проектно-сметная документация договора") == false)
+                                    {
+                                        <span>@item.DateChange?.ToShortDateString()</span>
+                                    }
                                 </td>
                                 <td>
                                     @item.DateOutput?.ToShortDateString()
                                 </td>
                                 <td>
                                     @Html.DisplayFor(modelItem => item.Reason)
-                                </td>                               
+                                </td>
                                 <td>
                                     @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.EstimateDocumentations))
                                     {

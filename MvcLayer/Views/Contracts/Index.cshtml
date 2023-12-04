@@ -5,6 +5,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @inject BusinessLayer.Interfaces.ContractInterfaces.IServiceGCService ServiceGc
 
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
@@ -117,7 +118,8 @@
                         var resultScopeWork = ds is null ? ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange != true).LastOrDefault() : ds;
                         var dateRange = DateTime.Now.Date.Year;
 
-                        var sumPreviusYear = SWCost.Find(x => x.ScopeWorkId == resultScopeWork?.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.CostNds);
+                        var sumPreviusYear = Form.Find(x => x.ContractId == item.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.TotalCost);
+                        var factWork = Form.Find(x => x.ContractId == item.Id).Sum(x => x.TotalCost);
                         var sumThisYear = SWCost.Find(x => x.ScopeWorkId != null && x.ScopeWorkId == resultScopeWork?.Id && x.Period >= new DateTime(dateRange, 1, 1) && x.Period <= new DateTime(dateRange, 12, 31)).Sum(x => x.CostNds);
 
                         <tr>
@@ -187,15 +189,7 @@
                                         @item?.PaymentСonditionsRaschet@*  Оплата *@
                                     </a>
                                 </span>
-                            </td>
-                            @*Материалы*@
-                            @* <td>
-                    <span class="table_span-material">
-                    <span class="icon link_to_page">
-                    <a asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@item?.Id"></a>
-                    </span>
-                    </span>
-                    </td> *@
+                            </td>                            
                             @*Валюта*@
                             <td>
                                 <span class="table_span-currency">
@@ -237,8 +231,7 @@
                             <td class="text-end">
                                 <span class="table_span-remains">
                                     @{
-                                        var ostatok = item.ContractPrice
-                                        - sumPreviusYear - sumThisYear;
+                                        var ostatok = item.ContractPrice - factWork;
                                     }
                                     @ostatok?.ToString("N2")
                                 </span>
@@ -251,10 +244,10 @@
                             <td>
                                 <div class="icon view" title="Просмотр детальной информации по договору">
                                     <a asp-action="Details" asp-route-id="@item.Id"></a>
-                                </div>
+                                </div>                                
                                 <div class="icon edit" title="Редактировать договор">
                                     <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                </div>
+                                </div>                                
                                 <div class="icon delete" title="Удалить договор">
                                     <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                 </div>

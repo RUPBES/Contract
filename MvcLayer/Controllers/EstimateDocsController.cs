@@ -33,6 +33,9 @@ namespace MvcLayer.Controllers
 
         public ActionResult Create(int contractId)
         {
+            var obj = _estimateDocService.Find(e => e.ContractId == contractId).FirstOrDefault();
+            if (obj != null)
+                ViewData["Edit"] = "true";
             ViewData["contractId"] = contractId;
             return View();
         }
@@ -65,6 +68,9 @@ namespace MvcLayer.Controllers
 
         public ActionResult Edit(int id, int? contractId = null)
         {
+            var obj = _estimateDocService.GetById(id);
+            if (obj.Reason.Equals("Первоночальная проектно-сметная документация договора") == false)
+                ViewData["Edit"] = "true";
             ViewBag.contractId = contractId;
             return View(_mapper.Map<EstimateDocViewModel>(_estimateDocService.GetById(id)));
         }

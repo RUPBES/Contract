@@ -40,6 +40,21 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
+            var contract = _contractService.GetById(contractId);
+            if (contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            {
+                TempData["Message"] = "У контракта условие - без авансов";
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            }            
+            if (contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+            {
+                ViewData["Current"] = "true";
+            }
+            if (contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+            {
+                ViewData["Target"] = "true";
+            }
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             ViewBag.IsEngineering = isEngineering;
@@ -58,7 +73,13 @@ namespace MvcLayer.Controllers
             {                
                 //находим  по объему работ начало и окончание периода
                 var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
-
+                var contract = _contractService.GetById(contractId);
+                if (contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "У контракта условие - без авансов";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
                 if (period is null)
                 {
                     TempData["Message"] = "Заполните объем работ";
@@ -223,6 +244,15 @@ namespace MvcLayer.Controllers
         {
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
+            var contract = _contractService.GetById(contractId);
+            if (contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+            {
+                ViewData["Current"] = "true";
+            }
+            if (contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+            {
+                ViewData["Target"] = "true";
+            }
             if (TempData["prepayment"] is string s)
             {
                 return View(JsonConvert.DeserializeObject<PrepaymentViewModel>(s));
