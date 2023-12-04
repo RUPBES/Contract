@@ -32,32 +32,42 @@
                             <input asp-for="Number" class="form-control" />
                             <span asp-validation-for="Number" class="text-danger"></span>
                         </div>
-                        <div class="form-group">
-                            <label asp-for="DateChange" class="control-label"></label>
-                            <input asp-for="DateChange" type="datetime" class="form-control datepickers" />
-                            <span asp-validation-for="DateChange" class="text-danger"></span>
-                        </div>
+                        @if (ViewBag.Edit != null)
+                        {
+                            <div class="form-group">
+                                <label asp-for="DateChange" class="control-label"></label>
+                                <input asp-for="DateChange" type="datetime" class="form-control datepickers" />
+                                <span asp-validation-for="DateChange" class="text-danger"></span>
+                            </div>
+                        }
                         <div class="form-group">
                             <label asp-for="DateOutput" class="control-label"></label>
                             <input asp-for="DateOutput" type="datetime" class="form-control datepickers" />
                             <span asp-validation-for="DateOutput" class="text-danger"></span>
                         </div>
                     </div>
+
                     <div class="col-6">
-                        <div class="form-group">
-                            <label asp-for="Reason" class="control-label"></label>
-                            <textarea asp-for="Reason" class="form-control"></textarea>
-                            <span asp-validation-for="Reason" class="text-danger"></span>
-                        </div>
+                        @if (ViewBag.Edit != null)
+                        {
+                            <div class="form-group">
+                                <label asp-for="Reason" class="control-label"></label>
+                                <textarea asp-for="Reason" class="form-control"></textarea>
+                                <span asp-validation-for="Reason" class="text-danger"></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <input name="Reason" value="Первоночальная проектно-сметная документация договора" hidden />
+                        }
 
                         <div class="form-group">
                             <label asp-for="FilesEntity" class="control-label"></label>
                             <input asp-for="FilesEntity" type="file" class="form-control" />
                             <span asp-validation-for="FilesEntity" class="text-danger"></span>
                         </div>
-                    </div>                    
+                    </div>
                     <div class="form-group mt-3">
-                        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id">Вернуться</a>
                         <input type="submit" value="Добавить" class="btn btn-primary col-3" />
                     </div>
                 </form>

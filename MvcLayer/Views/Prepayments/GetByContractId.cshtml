@@ -65,57 +65,63 @@
                                     </th>
                                 }
                             </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.CurrentValue)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.CurrentValue?.ToString("N2")</span>
+                            @if (ViewBag.Current != null)
+                            {
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CurrentValue)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.CurrentValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TargetValue)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.TargetValue?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            @if (ViewBag.Target != null)
+                            {
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.TargetValue)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.TargetValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.WorkingOutValue)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.WorkingOutValue)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                         }
 
 
@@ -135,57 +141,63 @@
                                 }
 
                             </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.CurrentValue)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.CurrentValue?.ToString("N2")</span>
+                            @if (ViewBag.Current != null)
+                            {
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CurrentValue)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.CurrentValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TargetValue)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.TargetValue?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            @if (ViewBag.Target != null)
+                            {
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.TargetValue)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.TargetValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.WorkingOutValue)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.WorkingOutValue)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                         }
 
                         @*!!!факт!!*@
@@ -216,57 +228,63 @@
                                     </th>
                                 }
                             </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.CurrentValueFact)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.CurrentValue?.ToString("N2")</span>
+                            @if (ViewBag.Current != null)
+                            {
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CurrentValueFact)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.CurrentValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TargetValueFact)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.TargetValue?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            @if (ViewBag.Target != null)
+                            {
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.TargetValueFact)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.TargetValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.WorkingOutValueFact)
-                                </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
-                                {
-                                    <td class="text-end">
-                                        @{
-                                            var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
-                                            if (obj != null)
-                                            {
-                                                <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.WorkingOutValueFact)
+                                    </th>
+                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    {
+                                        <td class="text-end">
+                                            @{
+                                                var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                                if (obj != null)
+                                                {
+                                                    <span>@obj.WorkingOutValue?.ToString("N2")</span>
+                                                }
                                             }
-                                        }
-                                    </td>
-                                }
-                            </tr>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                         }
                     </table>
                 </div>
