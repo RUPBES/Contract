@@ -333,8 +333,9 @@ namespace MvcLayer.Controllers
 
         // GET: Contracts/Edit/5
         //[Authorize]
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
             if (id == null || _contractService.GetAll() == null)
             {
                 return NotFound();
@@ -402,7 +403,7 @@ namespace MvcLayer.Controllers
         //[Authorize]
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ContractViewModel contract)
+        public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
         {
             if (contract.ContractOrganizations[1].OrganizationId == 0)
             {
@@ -441,7 +442,14 @@ namespace MvcLayer.Controllers
             {
                 return RedirectToAction(nameof(Engineerings));
             }
-            return RedirectToAction(nameof(Index));
+            if (returnContractId != 0)
+            {
+                return RedirectToAction("Details", new { id = returnContractId });
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         //[Authorize]

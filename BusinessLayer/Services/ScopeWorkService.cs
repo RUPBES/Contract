@@ -199,8 +199,8 @@ namespace BusinessLayer.Services
                 return null;
             }
 
-            resultPeriod.start = (DateTime)scope[0].SWCosts.FirstOrDefault().Period;
-            resultPeriod.end = (DateTime)scope[0].SWCosts.FirstOrDefault().Period;
+            resultPeriod.start = new DateTime(4000, 1, 1);
+            resultPeriod.end = new DateTime(1000, 1, 1);
             foreach ( var item in scope)
             {
                 foreach (var item2 in item.SWCosts) 
@@ -210,6 +210,8 @@ namespace BusinessLayer.Services
                 }
             }
 
+            if (resultPeriod.end == new DateTime(1000, 1, 1) || resultPeriod.start == new DateTime(4000, 1, 1))
+                return null;
             return resultPeriod;
         }
     }

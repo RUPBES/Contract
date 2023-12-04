@@ -27,21 +27,23 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int id)
+        public IActionResult GetByContractId(int id, int returnContractId = 0)
         {
             ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int contractId)
+        public ActionResult Create(int contractId, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(ActViewModel actViewModel)
+        public ActionResult Create(ActViewModel actViewModel, int returnContractId = 0)
         {
             try
             {
@@ -53,7 +55,7 @@ namespace MvcLayer.Controllers
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же
                 if (actViewModel.ContractId is not null &&  actViewModel.ContractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = actViewModel.ContractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = actViewModel.ContractId, returnContractId = returnContractId });
                 }
                 else
                 {
@@ -66,15 +68,16 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id, int? contractId = null)
+        public ActionResult Edit(int id, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             return View(_mapper.Map<ActViewModel>(_actService.GetById(id)));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(ActViewModel act)
+        public ActionResult Edit(ActViewModel act, int returnContractId = 0)
         {
             if (act is not null)
             {
@@ -89,7 +92,7 @@ namespace MvcLayer.Controllers
             }
             if (act?.ContractId is not null && act.ContractId > 0)
             {
-                return RedirectToAction(nameof(GetByContractId), new { id = act.ContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = act.ContractId, returnContractId = returnContractId });
             }
             else
             {

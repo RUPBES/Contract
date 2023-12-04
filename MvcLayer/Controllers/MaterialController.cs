@@ -35,8 +35,10 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId)
+        public IActionResult GetByContractId(int contractId, int returnContractId = 0)
         {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.Find(x => x.ContractId == contractId)));
         }
 
@@ -46,7 +48,7 @@ namespace MvcLayer.Controllers
         /// <param name="contractId"></param>
         /// <param name="isFact"></param>
         /// <returns></returns>
-        public IActionResult ChoosePeriod(int contractId, bool isFact)
+        public IActionResult ChoosePeriod(int contractId, bool isFact, int returnContractId = 0)
         {
             if (contractId > 0)
             {
@@ -55,8 +57,12 @@ namespace MvcLayer.Controllers
 
                 if (period is null)
                 {
-                    return RedirectToAction("Details", "Contracts", new { id = contractId });
+                    TempData["Message"] = "Заполните объем работ";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
+                ViewData["returnContractId"] = returnContractId;
+                ViewData["contractId"] = contractId;
 
                 var periodChoose = new PeriodChooseViewModel
                 {
@@ -84,6 +90,8 @@ namespace MvcLayer.Controllers
                     if (materialMain is null || materialMain?.Count() < 1)
                     {
                         periodChoose.IsChange = false;
+                        TempData["contractId"] = contractId;
+                        TempData["returnContractId"] = returnContractId;
                         return RedirectToAction(nameof(CreatePeriods), periodChoose);
                     }
 
@@ -98,7 +106,9 @@ namespace MvcLayer.Controllers
                     //если нет материалов, заполнять факт невозможно, перенаправляем обратно на договор
                     if (materialMain is null || materialMain?.Count() < 1)
                     {
-                        return RedirectToAction("Details", "Contracts", new { id = contractId });
+                        TempData["Message"] = "Заполните объем работ";
+                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
 
                     if (_materialCostService.Find(x => x.IsFact != true && x.MaterialId == сhangeMaterialId).FirstOrDefault() is null)
@@ -142,16 +152,21 @@ namespace MvcLayer.Controllers
                 ContractId = model.ContractId,
                 IsFact = model.IsFact,
                 ChangeMaterialId = model.ChangeMaterialId,
-                MaterialCosts = new List<MaterialCostDTO>{
-                new MaterialCostDTO{
-                    MaterialId = id
-                }
-                }
+                MaterialCosts = new List<MaterialCostDTO>
+                { new MaterialCostDTO{ MaterialId = id } }
             });
         }
 
-        public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel)
+        public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel, int? contractId = 0, int? returnContractId = 0)
         {
+            if (TempData["contractId"] != null)
+            {
+                contractId = TempData["contractId"] as int?;
+            }
+            if (TempData["returnContractId"] != null)
+            {
+                returnContractId = TempData["returnContractId"] as int?;
+            }
             if (periodViewModel is not null)
             {
                 MaterialViewModel model = new MaterialViewModel();
@@ -169,17 +184,6 @@ namespace MvcLayer.Controllers
                     {
                         Period = periodViewModel.PeriodStart,
                     });
-
-
-                    //model.Add(new MaterialViewModel
-                    //{
-                    //    Period = periodViewModel.PeriodStart,
-                    //    IsChange = periodViewModel.IsChange,
-                    //    ContractId = periodViewModel.ContractId,
-                    //    AmendmentId = periodViewModel.AmendmentId,
-                    //    ChangeMaterialId = periodViewModel.ChangeMaterialId
-                    //});
-
                     periodViewModel.PeriodStart = periodViewModel.PeriodStart.AddMonths(1);
                 }
 
@@ -192,13 +196,15 @@ namespace MvcLayer.Controllers
                 var service = JsonConvert.SerializeObject(model);
                 TempData["material"] = service;
 
-                return RedirectToAction("Create");
+                return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
             }
             return View(periodViewModel);
         }
 
-        public IActionResult Create(int contractId)
+        public IActionResult Create(int contractId, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["contractId"] = contractId;
             if (TempData["material"] is string s)
             {
                 return View(JsonConvert.DeserializeObject<MaterialViewModel>(s));
@@ -216,7 +222,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(MaterialViewModel material)
+        public IActionResult Create(MaterialViewModel material, int returnContractId = 0)
         {
             if (material is not null)
             {
@@ -227,8 +233,8 @@ namespace MvcLayer.Controllers
                 {
                     _materialService.AddAmendmentToMaterial((int)material?.AmendmentId, materialId);
                 }
-
-                return RedirectToAction("Details", "Contracts", new { id = material?.ContractId });
+                var urlReturn = returnContractId == 0 ? material.ContractId : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
             }
             return View(material);
         }
@@ -264,7 +270,7 @@ namespace MvcLayer.Controllers
             var maxPeriod = _materialCostService?.GetAll()?.MaxBy(x => x.Period)?.Period;
             var minPeriod = _materialCostService?.GetAll()?.MinBy(x => x.Period)?.Period;
 
-            if (maxPeriod != null &&minPeriod != null)
+            if (maxPeriod != null && minPeriod != null)
             {
                 List<DateTime> listDate = new List<DateTime>();
                 DateTime startDate = (DateTime)minPeriod;
@@ -280,7 +286,7 @@ namespace MvcLayer.Controllers
             else
             {
                 ViewBag.ListDate = new List<DateTime>();
-               
+
             }
             return View(_mapper.Map<IEnumerable<MaterialViewModel>>(_materialService.GetAll()));
         }

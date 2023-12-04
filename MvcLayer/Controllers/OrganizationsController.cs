@@ -40,7 +40,7 @@ namespace MvcLayer.Controllers
             ViewBag.CurrentFilter = searchString;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return View(_organizationService .GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
+                return View(_organizationService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
             else return View(_organizationService.GetPage(100, pageNum ?? 1));
         }
 

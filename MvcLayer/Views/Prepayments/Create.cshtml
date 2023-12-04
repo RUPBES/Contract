@@ -7,6 +7,11 @@
     ViewData["Title"] = "Авансы";
     int index = 0;
 
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+
     var d = new PrepaymentViewModel();
     if (TempData["prepayment"] is string s)
     {
@@ -35,17 +40,17 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action=@actionName class="row">
+                <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                     <div class="cont-table">
                         <table class="table table-bordered table-striped">
 
@@ -202,7 +207,7 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <input type="submit" value="Создать" class="btn btn-primary" />
+                        <input type="submit" value="Создать" class="btn btn-primary mt-1" />
                     </div>
                 </form>
             </div>

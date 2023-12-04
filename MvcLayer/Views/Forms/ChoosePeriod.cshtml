@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Выбор периода";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
 }
 
 
@@ -11,17 +15,17 @@
             <div class="dm-modal" style="width:500px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (Model?.ContractId != null && Model?.ContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (Model?.ContractId == null || Model?.ContractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line">
-                <form id="target" asp-action="CreateForm" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                <form id="target" asp-action="CreateForm" class="row" asp-route-returnContractId="@ViewData["returnContractId"]" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
                     <input name="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <div class="form-group col-12">                        

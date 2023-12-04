@@ -4,6 +4,10 @@
 
 @{
     ViewData["Title"] = "Выбрать период оплаты";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
 }
 <style>
     .title-warning {
@@ -40,17 +44,17 @@
             <div class="dm-modal" style="width: 850px; height:440px">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                     <div class="form-group col-6 mb-3">
                         <label asp-for="PeriodStart" class="control-label">Укажите начало периода</label>

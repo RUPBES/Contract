@@ -25,43 +25,41 @@ namespace MvcLayer.Controllers
             return View(_file.GetAll());
         }
 
-        public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
+        public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
             ViewBag.fileCategory = fileCategory;
             ViewBag.entityId = entityId;
             ViewBag.contractId = contractId;
-
+            ViewBag.returnContractId = returnContractId;
             return View();
         }
 
         [HttpPost]
-        public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
+        public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             int fileId = (int)_file.Create(collection.Files, fileCategory, entityId);
             //_file.AttachFileToEntity(fileId, entityId, fileCategory);
 
             if (redirectAction.Equals("Details", StringComparison.OrdinalIgnoreCase) && redirectController.Equals("Contracts", StringComparison.OrdinalIgnoreCase))
             {
-                return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
-
-                //return RedirectToAction("GetByContractId", "Files", new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
+                return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");                
             }
             else
             {
-                return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
-
+                return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");
             }
         }
 
         [HttpGet]
-        public ActionResult GetByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
+        public ActionResult GetByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
             ViewBag.entityId = id;
             ViewBag.contractId = contractId;
+            ViewBag.returnContractId = returnContractId;
             var files = _file.GetFilesOfEntity(id, fileCategory).ToList();
             return View(files);
         }

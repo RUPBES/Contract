@@ -50,8 +50,8 @@ namespace MvcLayer.Controllers
         {            
             if (contractId > 0)
             {
-                TempData["returnContractId"] = returnContractId;
-                TempData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
+                ViewData["contractId"] = contractId;
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
@@ -101,19 +101,16 @@ namespace MvcLayer.Controllers
                 {
                     return View(periodChoose);
                 }
-
-
             }
             return View();
         }
 
-        public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork)
+        public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork, int contractId, int returnContractId = 0)
         {
             if (scopeWork is not null)
             {
                 ScopeWorkViewModel scope = new ScopeWorkViewModel();
-                List<SWCostDTO> costs = new List<SWCostDTO>();
-
+                List<SWCostDTO> costs = new List<SWCostDTO>();                
                 if (scopeWork.AmendmentId > 0)
                 {
                     scope.IsChange = true;
@@ -141,13 +138,15 @@ namespace MvcLayer.Controllers
 
                 TempData["scopeW"] = scopeEntity;
 
-                return RedirectToAction("Create");
+                return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
             }
             return View(scopeWork);
         }
 
-        public IActionResult Create(int contractId)
-        {                        
+        public IActionResult Create(int contractId, int returnContractId = 0)
+        {
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["contractId"] = contractId;
             if (TempData["scopeW"] is string s)
             {
                 return View(JsonConvert.DeserializeObject<ScopeWorkViewModel>(s));
@@ -222,8 +221,8 @@ namespace MvcLayer.Controllers
             int count;
             
             if (!String.IsNullOrEmpty(searchString))
-                list =_contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, out count).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, out count).ToList();
+                list =_contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString,"Scope", out count).ToList();
+            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Scope", out count).ToList();
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
@@ -242,6 +241,11 @@ namespace MvcLayer.Controllers
         {   
             _swCostService.Update(_mapper.Map<SWCostDTO>(model));            
             return RedirectToAction("GetByContractId", new { contractId = returnContractId, returnContractId = returnContractId });
+        }
+
+        public IActionResult GetPeriodAmendment(int Id)
+        {            
+            return PartialView("_Period", Id);
         }
     }
 }

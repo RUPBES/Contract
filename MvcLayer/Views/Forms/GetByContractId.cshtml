@@ -7,6 +7,10 @@
 @{
     ViewData["Title"] = string.Empty;
     var id = ViewBag.contractId;
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
     bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Forms";
@@ -30,11 +34,11 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (@id != null && id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@id" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (id == null || id == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="@actionName" class="close-btn"></a>
                     }
@@ -108,10 +112,10 @@
                                     </td>
                                     <td>                                       
                                         <span class="icon file-add" title="Добавить файл к форме">
-                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
+                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                         </span>
                                         <span class="icon edit" title="Редактировать форму">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                         </span>
                                         <span class="icon delete" title="Удалить форму">
                                             <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
@@ -124,4 +128,5 @@
                 </div>
             </div>
         </div>
-    </div>                     
+    </div>
+</div>  

@@ -5,6 +5,10 @@
 
 @{
     ViewData["Title"] = "Добавление объема работ";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
     bool hasScope = false;
     // ищем есть ли изменения, выбираем последние. если изменения есть то ID последнего помечаем что изменяем
     var scopes = @Scope.Find(x => x.ContractId == Model.ContractId && x.IsOwnForces == Model.IsOwnForces)?.LastOrDefault();
@@ -47,11 +51,11 @@
             <div class="dm-modal" />
             <div class="top-modal-block">
                 <label class="my-modal-title">@ViewData["Title"]</label>
-                @if (Model?.ContractId != null && Model?.ContractId > 0)
+                @if (backId != null && backId > 0)
                 {
-                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                 }
-                @if (Model?.ContractId == null || Model?.ContractId == 0)
+                @if (backId == null || backId == 0)
                 {
                     <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                 }
@@ -61,7 +65,7 @@
 
             @if (hasScope)
             {
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
@@ -89,7 +93,10 @@
                         }
                         @if (Model?.IsOwnForces == false)
                         {
-                            <div class="row mt-3" id="date-box" hidden>
+                            <div id="amendPartial">
+
+                            </div>
+                            @* <div class="row mt-3" id="date-box" hidden>
                                 <div class="form-group col-6 mb-3">
                                     <label for="amendCheck1">Начало периода</label>
                                     <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
@@ -98,10 +105,9 @@
                                     <label for="amendCheck2">Окончание периода</label>
                                     <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
                                 </div>
-
-                            </div>
+                            </div> *@
                         }
-                        <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
+                        <button id="butSubmit" class="btn btn-primary btn-sm mt-1" disabled type="submit">Выбрать</button>
                     </div>
                 </form>
             }
@@ -134,16 +140,28 @@
     }
     <script type="text/javascript">
         $("#AmendId").on("change", function () {
-            console.log("sdfgsd")
+            var AmendId = $('#AmendId').val();
+            $('#butSubmit').prop("disabled", false);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetPeriodAmendment", "ScopeWorks")',
+                dataType: 'html',
+                data: { Id: AmendId },
+                success: function (result) {
+                    $('#amendPartial').html(result);
+                },
+                error: function (result) {
+                    console.log(result, 'Ошибка при вызове сообщения');
+                }
+            })
+            // let divDates = document.querySelector("#date-box");
 
-            let divDates = document.querySelector("#date-box");
-
-            if (divDates.hidden != true) {
-                divDates.hidden = true;
-            }
-            else {
-                divDates.hidden = null;
-            }
+            // if (divDates.hidden != true) {
+            //     divDates.hidden = true;
+            // }
+            // else {
+            //     divDates.hidden = null;
+            // }
         });
 
         $("#amendCheck").on("change", function () {

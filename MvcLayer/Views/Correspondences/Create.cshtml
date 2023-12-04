@@ -3,6 +3,10 @@
 
 @{
     ViewData["Title"] = "Добавить переписку с заказчиком";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
     var contid = ViewData["contractId"];
     var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
@@ -13,20 +17,19 @@
             <div class="dm-modal" style="max-width:860px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Create" class="row" enctype="multipart/form-data">
+                <form asp-action="Create" asp-route-returnContractId="@ViewBag.returnContractId" class="row" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <input asp-for="Id" value="null" hidden />
-                    <input name="ContractId" value="@contid" hidden />
+                    <input name="ContractId" value="@contract?.Id" hidden />
                    
                     <div class="form-group col-6">
                         <label asp-for="Date" class="control-label"></label>
@@ -52,8 +55,7 @@
                         <input name="IsInBox" type="checkbox" id="checkCorrId" />
                     </div>
                     
-                    <div class="form-group mt-3">
-                        <a class="btn btn-success" asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id">Вернуться</a>
+                    <div class="form-group mt-3">                        
                         <input type="submit" value="Сохранить" class="btn btn-primary col-3" />
                     </div>
                 </form>

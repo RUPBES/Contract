@@ -246,17 +246,29 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, out int count)
+        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count)
         {
 
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
             if (!String.IsNullOrEmpty(request))
             {
-                items = _database.Contracts.Find(x =>
-                (x.NameObject != null && x.NameObject.Contains(request) || x.Number.Contains(request)) && x.ScopeWorks.Count() > 0); 
+                items = _database.Contracts.GetAll();
+                items = items.Where(x => x.NameObject.Contains(request) || x.Number.Contains(request));                
+                switch (filter) {
+                    case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
+                    case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
+                    default: break;
+                }
             }
-            else { items = _database.Contracts.GetAll(); }
+            else { items = _database.Contracts.GetAll(); 
+                switch (filter)
+                {
+                    case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
+                    case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
+                    default: break;
+                }
+            }
             count = items.Count();
             items = items.OrderBy(s => s.NameObject);                       
             items = items.Skip(skipEntities).Take(pageSize);
@@ -264,12 +276,19 @@ namespace BusinessLayer.Services
             return t;
         }
 
-        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, out int count)
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum,string filter, out int count)
         {            
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Contracts.Find(x => x.ScopeWorks.Count() > 0);
-            items = items.OrderBy(s => s.NameObject);
+            IEnumerable<Contract> items;
+            items = _database.Contracts.GetAll();
+            switch (filter)
+            {
+                case "Scope": items = items.Where(x => x.ScopeWorks.Count() > 0); break;
+                case "Payment": items = items.Where(x => x.Payments.Count() > 0); break;
+                default: break;
+            }                        
             count = items.Count();
+            items = items.OrderBy(s => s.NameObject);
             items = items.Skip(skipEntities).Take(pageSize);            
             var t = _mapper.Map<IEnumerable<ContractDTO>>(items);            
             return t;

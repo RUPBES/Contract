@@ -2,8 +2,12 @@
 
 @{
     ViewData["Title"] = "Редактирование";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+    var contid = ViewBag.contractId;
 }
-
 
 <div class="dm-overlay">
     <div class="dm-table">
@@ -11,18 +15,18 @@
             <div class="dm-modal" style="max-width:960px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (Model?.ContractId != null && @Model?.ContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
                 <div class="row">
-                    <form asp-action="Edit" class="row">
+                    <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="Id" />
                         <input asp-for="ContractId" value="@Model?.ContractId" hidden>
@@ -34,32 +38,29 @@
                         </div>
                         <div class="form-group col-6">
                             <label asp-for="DateAct" class="control-label"></label>
-                            <input asp-for="DateAct" class="form-control datepickers" type="datetime" />
+                            <input asp-for="DateAct" class="form-control datepickersNull" type="datetime" />
                             <span asp-validation-for="DateAct" class="text-danger"></span>
                         </div>
                         <div class="form-group col-6">
                             <label asp-for="DateSuspendedFrom" class="control-label"></label>
-                            <input asp-for="DateSuspendedFrom" class="form-control datepickers" type="datetime" />
+                            <input asp-for="DateSuspendedFrom" class="form-control datepickersNull" type="datetime" />
                             <span asp-validation-for="DateSuspendedFrom" class="text-danger"></span>
                         </div>
                         <div class="form-group col-6">
                             <label asp-for="DateSuspendedUntil" class="control-label"></label>
-                            <input asp-for="DateSuspendedUntil" class="form-control datepickers" type="datetime" />
+                            <input asp-for="DateSuspendedUntil" class="form-control datepickersNull" type="datetime" />
                             <span asp-validation-for="DateSuspendedUntil" class="text-danger"></span>
                         </div>
                         <div class="form-group col-6">
                             <label asp-for="DateRenewal" class="control-label"></label>
-                            <input asp-for="DateRenewal" class="form-control datepickers" type="datetime" />
+                            <input asp-for="DateRenewal" class="form-control datepickersNull" type="datetime" />
                             <span asp-validation-for="DateRenewal" class="text-danger"></span>
                         </div>
                         <div class="form-group col-6">
                             <label class="control-label">Приостановлено?</label>
                             <input name="IsSuspension" type="checkbox" id="checkActId" />
-                        </div>
-                       
-
-                        <div class="form-group">
-                            <a class="btn btn-secondary mt-3" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId">Вернуться</a>
+                        </div>                   
+                        <div class="form-group">                            
                             <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
                         </div>                       
                     </form>

@@ -27,14 +27,15 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int contractId, bool isEngineering)
+        public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
             ViewBag.IsEngineering = isEngineering;
-            ViewData["contractId"] = contractId;
-            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == contractId)));
+            ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
+            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id)));
         }
 
-        public IActionResult ChoosePeriod(int contractId, bool isOwnForces)
+        public IActionResult ChoosePeriod(int contractId, bool isOwnForces, int returnContractId = 0)
         {
             if (contractId > 0)
             {
@@ -43,7 +44,9 @@ namespace MvcLayer.Controllers
 
                 if (period is null)
                 {
-                    return RedirectToAction("Details", "Contracts", new { id = contractId });
+                    TempData["Message"] = "Заполните объем работ";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
                 var periodChoose = new PeriodChooseViewModel
                 {
@@ -53,58 +56,52 @@ namespace MvcLayer.Controllers
                     PeriodEnd = period.Value.Item2,
                 };
 
-                DateTime startDate = period.Value.Item1;
-
-                if (period is null)
-                {
-                    return RedirectToAction("Details", "Contracts", new { id = contractId });
-                }
+                DateTime startDate = period.Value.Item1;         
 
                 // определяем, есть уже формы собственными силами (флаг IsOwnForces = true)
 
                 var formExist = _formService
                     .Find(x => x.ContractId == contractId && x.IsOwnForces == isOwnForces);
-
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
                 if (formExist.Count() > 0)
                 {
-
                     //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
                     while (startDate <= period?.Item2)
                     {
-                        //проверяем если по данной дате уже заполненные факт.авансы
+                        //проверяем если по данной дате уже заполненные C3-A
                         if (_formService.Find(x => x.Period.Value.Date == startDate.Date && x.ContractId == contractId && x.IsOwnForces == true).FirstOrDefault() is null)
                         {
                             periodChoose.ListDates.Add(startDate);
                         }
 
                         startDate = startDate.AddMonths(1);
-                    }
+                    }                    
                     return View(periodChoose);
                 }
                 else
                 {
-
                     while (startDate <= period?.Item2)
                     {
                         periodChoose.ListDates.Add(startDate);
                         startDate = startDate.AddMonths(1);
                     }
-
                     return View(periodChoose);
                 }
-
             }
             return View();
         }
 
-        public ActionResult CreateForm(PeriodChooseViewModel model)
+        public ActionResult CreateForm(PeriodChooseViewModel model, int? contractId = 0, int? returnContractId = 0)
         {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(FormViewModel formViewModel)
+        public ActionResult Create(FormViewModel formViewModel, int? returnContractId = 0)
         {
             try
             {
@@ -120,7 +117,7 @@ namespace MvcLayer.Controllers
 
                 _formService.AddFile(formId, fileId);
 
-                return RedirectToAction(nameof(GetByContractId), new { contractId = formViewModel.ContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = formViewModel.ContractId, returnContractId = returnContractId });
             }
             catch
             {
@@ -128,21 +125,23 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<FormViewModel>(_formService.GetById(id)));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(FormViewModel formViewModel)
+        public ActionResult Edit(FormViewModel formViewModel, int returnContractId = 0)
         {
             if (formViewModel is not null)
             {
                 try
                 {
                     _formService.Update(_mapper.Map<FormDTO>(formViewModel));
-                    return RedirectToAction("Details", "Contracts", new { id = formViewModel.ContractId });
+                    return RedirectToAction("Details", "Contracts", new { id = formViewModel.ContractId, returnContractId = returnContractId });
                 }
                 catch
                 {
