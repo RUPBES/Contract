@@ -37,41 +37,52 @@
                         <input asp-for="DateSigning" type="datetime" class="form-control datepickers" />
                         <span asp-validation-for="DateSigning" class="text-danger"></span>
                     </div>
-                    <div class="form-group col-6">
-                        <label asp-for="SmrCost" class="control-label"></label>
-                        <input name="SmrCost" type="text" value="@Model.SmrCost" class="form-control cost" />
-                        <span asp-validation-for="SmrCost" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="PnrCost" class="control-label"></label>
-                        <input name="PnrCost" type="text" value="@Model.PnrCost" class="form-control cost" />
-                        <span asp-validation-for="PnrCost" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="EquipmentCost" class="control-label"></label>
-                        <input name="EquipmentCost" type="text" value="@Model.EquipmentCost" class="form-control cost" />
-                        <span asp-validation-for="EquipmentCost" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="OtherExpensesCost" class="control-label"></label>
-                        <input name="OtherExpensesCost" type="text" value="@Model.OtherExpensesCost" class="form-control cost" />
-                        <span asp-validation-for="OtherExpensesCost" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="AdditionalCost" class="control-label"></label>
-                        <input name="AdditionalCost" type="text" value="@Model.AdditionalCost" class="form-control cost" />
-                        <span asp-validation-for="AdditionalCost" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="MaterialCost" class="control-label"></label>
-                        <input name="MaterialCost" type="text" value="@Model.MaterialCost" class="form-control cost" />
-                        <span asp-validation-for="MaterialCost" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="GenServiceCost" class="control-label"></label>
-                        <input name="GenServiceCost" type="text" value="@Model.GenServiceCost" class="form-control cost" />
-                        <span asp-validation-for="GenServiceCost" class="text-danger"></span>
-                    </div>
+                    @if (ViewBag.IsEngin == null)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="SmrCost" class="control-label"></label>
+                            <input name="SmrCost" type="text" value="@Model.SmrCost" class="form-control cost" />
+                            <span asp-validation-for="SmrCost" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="PnrCost" class="control-label"></label>
+                            <input name="PnrCost" type="text" value="@Model.PnrCost" class="form-control cost" />
+                            <span asp-validation-for="PnrCost" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="EquipmentCost" class="control-label"></label>
+                            <input name="EquipmentCost" type="text" value="@Model.EquipmentCost" class="form-control cost" />
+                            <span asp-validation-for="EquipmentCost" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="OtherExpensesCost" class="control-label"></label>
+                            <input name="OtherExpensesCost" type="text" value="@Model.OtherExpensesCost" class="form-control cost" />
+                            <span asp-validation-for="OtherExpensesCost" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="AdditionalCost" class="control-label"></label>
+                            <input name="AdditionalCost" type="text" value="@Model.AdditionalCost" class="form-control cost" />
+                            <span asp-validation-for="AdditionalCost" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="MaterialCost" class="control-label"></label>
+                            <input name="MaterialCost" type="text" value="@Model.MaterialCost" class="form-control cost" />
+                            <span asp-validation-for="MaterialCost" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="GenServiceCost" class="control-label"></label>
+                            <input name="GenServiceCost" type="text" value="@Model.GenServiceCost" class="form-control cost" />
+                            <span asp-validation-for="GenServiceCost" class="text-danger"></span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group col-6">
+                            <label class="control-label">Объем работ</label>
+                            <input name="SmrCost" type="text" value="@Model.SmrCost" class="form-control cost" />
+                            <span asp-validation-for="SmrCost" class="text-danger"></span>
+                        </div>
+                    }
                     <div class="form-group mt-3 col-8">                        
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>

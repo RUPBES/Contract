@@ -40,6 +40,9 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
+            var obj = _contractService.GetById(contractId);
+            if (obj.IsEngineering == true)
+                ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = contractId;
@@ -145,6 +148,9 @@ namespace MvcLayer.Controllers
 
         public IActionResult Create(int contractId, int returnContractId = 0)
         {
+            var obj =  _contractService.GetById(contractId);
+            if (obj.IsEngineering == true)
+                ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
             if (TempData["scopeW"] is string s)
@@ -231,6 +237,9 @@ namespace MvcLayer.Controllers
 
         public IActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
+            var ob = _contractService.GetById(contractId);
+            if (ob.IsEngineering == true)
+                ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
             var obj = _swCostService.GetById(id);

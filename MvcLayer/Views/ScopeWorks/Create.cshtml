@@ -71,163 +71,195 @@
                                 @{
                                     index = 0;
                                 }
-                            </tr>                            
-                            <tr>
-                                <th>Стоимость СМР</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    if (prevSWCost != null)
+                            </tr>    
+                            @if (ViewBag.IsEngin == null)
+                            {
+                                <tr>
+                                    <th>Стоимость СМР</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
-                                        if (obj != null)
+                                        if (prevSWCost != null)
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="@obj" /></td>
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                            }
                                         }
                                         else
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value=""/></td>
                                         }
+                                        index++;
                                     }
-                                    else
-                                    {
-                                        <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value=""/></td>
+                                    @{
+                                        index = 0;
                                     }
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
-                            <tr>
-                                <th>Стоимость ПНР</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    if (prevSWCost != null)
+                                </tr>
+                                <tr>
+                                    <th>Стоимость ПНР</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.PnrCost).FirstOrDefault();
-                                        if (obj != null)
+                                        if (prevSWCost != null)
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.PnrCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="" /></td>
+                                            }
                                         }
                                         else
                                         {
                                             <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="" /></td>
                                         }
+                                        index++;
                                     }
-                                    else
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>Стоимость оборудования</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="" /></td>
-                                    }                                    
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
-                            <tr>
-                                <th>Стоимость оборудования</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    if (prevSWCost != null)
-                                    {
-                                        var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.EquipmentCost).FirstOrDefault();
-                                        if (obj != null)
+                                        if (prevSWCost != null)
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.EquipmentCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="" /></td>
+                                            }
                                         }
                                         else
                                         {
                                             <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="" /></td>
                                         }
+                                        index++;
                                     }
-                                    else
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>Стоимость прочих работ и услуг</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="" /></td>
-                                    }                                    
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
-                            <tr>
-                                <th>Стоимость прочих работ и услуг</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    if (prevSWCost != null)
-                                    {
-                                        var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.OtherExpensesCost).FirstOrDefault();
-                                        if (obj != null)
+                                        if (prevSWCost != null)
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.OtherExpensesCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="" /></td>
+                                            }
                                         }
                                         else
                                         {
                                             <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="" /></td>
                                         }
+                                        index++;
                                     }
-                                    else
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>Стоимость доп. работ</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="" /></td>
-                                    }                                    
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
-                            <tr>
-                                <th>Стоимость доп. работ</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    if (prevSWCost != null)
-                                    {
-                                        var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.AdditionalCost).FirstOrDefault();
-                                        if (obj != null)
+                                        if (prevSWCost != null)
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.AdditionalCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="" /></td>
+                                            }
                                         }
                                         else
                                         {
                                             <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="" /></td>
                                         }
+                                        index++;
                                     }
-                                    else
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                                <tr>
+                                    <th>Стоимость материалов заказчика (справочно)</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="" /></td>
-                                    }                                    
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
-                            <tr>
-                                <th>Стоимость материалов заказчика (справочно)</th>
-                                @foreach (var item in d.SWCosts)
-                                {
-                                    if (prevSWCost != null)
-                                    {
-                                        var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.MaterialCost).FirstOrDefault();
-                                        if (obj != null)
+                                        if (prevSWCost != null)
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.MaterialCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="" /></td>
+                                            }
                                         }
                                         else
                                         {
                                             <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="" /></td>
                                         }
+                                        index++;
                                     }
-                                    else
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <th>Объем работ</th>
+                                    @foreach (var item in d.SWCosts)
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].MaterialCost" type="text" class="form-control cost" value="" /></td>
-                                    }                                    
-                                    index++;
-                                }
-                                @{
-                                    index = 0;
-                                }
-                            </tr>
+                                        if (prevSWCost != null)
+                                        {
+                                            var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
+                                            if (obj != null)
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="@obj" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                        }
+                                        index++;
+                                    }
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                            }
                             @foreach (var item in d.SWCosts)
                             {
                                 <input asp-for="SWCosts[index].IsOwnForces" hidden />

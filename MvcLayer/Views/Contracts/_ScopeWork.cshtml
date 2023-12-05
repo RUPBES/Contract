@@ -957,139 +957,139 @@
         <div class="modal-body">
             @* <button id="ChangeToType" onclick="funcChangeToType()">Сменить вид</button> *@
             <div class="full-width" style="width: 100%">
-                <table class="PartialTable modal__table table table-striped table-hover" style="position: sticky; left: -10px; z-index: 3; width: 30vw;">
-                    <thead>
-                        <tr class="tr-head-main-table">
+                <table class="PartialTable table table-striped table-hover">
+                    <thead class="Partialtable-sticky-top">
+                        <tr >
                             @*Виды работ по договору*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-currency">Категория работ</span></th>
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-work">Вид работ</span></th>
+                            <th class="first-col"><span>Категория работ</span></th>
+                            <th class="second-col"><span>Вид работ</span></th>
                             @*Контрактная договорная цена*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-contractprice table-th-background-color">Контрактная цена, с НДС</span></th>
+                            <th class="third-col"><span>Контрактная цена, с НДС</span></th>
                             @*Выполнено на 01.01 текущего года*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-realization">Выполнено на 01.01 тек. года</span></th>
+                            <th class="fourth-col"><span>Выполнено на 01.01 тек. года</span></th>
                             @*Остаток по выполнению от стоимости контрактной цены*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
+                            <th class="fifth-col"><span>Остаток по выполнению</span></th>
                             @*Объем на текущий год*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
+                            <th class="sixth-col"><span>Объем на текущий год</span></th>
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
                         <tr id="plan" @*Объем работ - План*@>
-                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">План</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.CostNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
+                            <th class="first-col" rowspan="8"><span>План</span></th>
+                            <th class="second-col"><span>Объем работ</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.CostNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                         </tr>
                         <tr @*СМР - План*@>
-                            <td class=" table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.SmrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
+                            <th class="second-col"><span>СМР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.SmrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                         </tr>
                         <tr @*ПНР - План*@>
-                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.PnrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
+                            <th class="second-col"><span>ПНР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.PnrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                         </tr>
                         <tr @*Оборудование - План*@>
-                            <td class="table-th-background-color"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.EquipmentCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
+                            <th class="second-col"><span>Оборудование</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.EquipmentCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                         </tr>
                         <tr @*Прочие работы и услуги - План*@>
-                            <td class="table-th-background-color"><span class="table_span-work">Прочие работы и услуги</span></td>                            
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
+                            <th class="second-col"><span>Прочие работы и услуги</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
 
                         </tr>
                         <tr @*Всего, без НДС - План*@>
-                            <td class="table-th-background-color"><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.CostNoNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
+                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.CostNoNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                         </tr>
                         <tr @*Доп. работы - План*@>
-                            <td class="table-th-background-color"><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.AdditionalCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
+                            <th class="second-col"><span>Доп. работы</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.AdditionalCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                         </tr>
                         <tr @*Материалы - План*@>
-                            <td class="table-th-background-color"><span class="table_span-work">Материалы заказчика (справочно)</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.MaterialCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
+                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.MaterialCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                         </tr>
 
                         <tr id="fact" @*Объем работ - Факт*@>
-                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.CostNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
+                            <th rowspan="8" class="first-col"><span>Факт</span></th>
+                            <th class="second-col"><span>Объем работ</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.CostNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                         </tr>
                         <tr @*СМР - Факт*@>
-                            <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.SmrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
+                            <th class="second-col"><span>СМР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.SmrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                         </tr>
                         <tr @*ПНР - Факт*@>
-                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.PnrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
+                            <th class="second-col"><span>ПНР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.PnrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                         </tr>
                         <tr @*Оборудование - Факт*@>
-                            <td class="table-th-background-color"><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.EquipmentCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
+                            <th class="second-col"><span>Оборудование</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.EquipmentCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                         </tr>
                         <tr @*Прочие работы - Факт*@>
                             @* туту class="table-th-background-color" *@
-                            <td class="table-th-background-color"><span class="table_span-work">Прочие работы и услуги</span></td> 
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
+                            <th class="second-col"><span>Прочие работы и услуги</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.OtherExpensesCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                         </tr>
                         <tr @*Всего, без НДС - Факт*@>
-                            <td><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.CostNoNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
+                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.CostNoNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                         </tr>
                         <tr @*Доп. работы - Факт*@>
-                            <td><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.AdditionalCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
+                            <th class="second-col"><span>Доп. работы</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.AdditionalCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                         </tr>
                         <tr @*Материалы - Факт*@>
-                            <td><span class="table_span-work">Материалы заказчика (справочно)</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScope.MaterialCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
+                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.MaterialCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                         </tr>
 
                         <tr id="planOur" @*Объем работ - План своими силами*@>

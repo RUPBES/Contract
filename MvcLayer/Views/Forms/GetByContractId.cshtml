@@ -54,21 +54,30 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.DateSigning)
                                 </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TotalCost)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.SmrCost)
-                                </th>
-                                <th >
-                                    @Html.DisplayNameFor(model => model.PnrCost)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.EquipmentCost)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.OtherExpensesCost)
-                                </th>                               
+                                @if (ViewBag.IsEngin == null)
+                                {
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.TotalCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.SmrCost)
+                                    </th>
+                                    <th >
+                                        @Html.DisplayNameFor(model => model.PnrCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.EquipmentCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th>
+                                        Объем работ
+                                    </th>
+                                }
                                 <th>Файлы справок</th>
                                 <th ></th>
                             </tr>                            
@@ -78,26 +87,35 @@
                             {
                                 <tr>
                                     <td>                                        
-                                        @item.Period?.ToString("MMM yyyy")
+                                        @item.Period?.ToString("MMMM-yyyy")
                                     </td>
                                     <td>                                        
                                         @item.DateSigning?.ToShortDateString()
                                     </td>
-                                    <td class="text-end">
-                                        @item.TotalCost?.ToString("N2")
-                                    </td>
-                                    <td class="text-end">
-                                        @item.SmrCost?.ToString("N2")
-                                    </td>
-                                    <td class="text-end">
-                                        @item.PnrCost?.ToString("N2")
-                                    </td>
-                                    <td class="text-end">
-                                        @item.EquipmentCost?.ToString("N2")
-                                    </td>
-                                    <td class="text-end">
-                                        @item.OtherExpensesCost?.ToString("N2")
-                                    </td>
+                                    @if (ViewBag.IsEngin == null)
+                                    {
+                                        <td class="text-end">
+                                            @item.TotalCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.SmrCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.PnrCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.EquipmentCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.OtherExpensesCost?.ToString("N2")
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">
+                                            @item.TotalCost?.ToString("N2")
+                                        </td>
+                                    }
                                     <td>
                                         @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
                                         {
