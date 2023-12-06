@@ -100,8 +100,7 @@ namespace MvcLayer.Controllers
             if (contract == null)
             {
                 return NotFound();
-            }
-
+            }            
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -387,6 +386,8 @@ namespace MvcLayer.Controllers
                 contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id });
             }
 
+            if (contract.IsEngineering == true)
+                ViewData["IsEngin"] = true;
 
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
@@ -438,13 +439,14 @@ namespace MvcLayer.Controllers
             catch (DbUpdateConcurrencyException)
             {
             }
-            if (contract.IsEngineering == true)
-            {
-                return RedirectToAction(nameof(Engineerings));
-            }
+            
             if (returnContractId != 0)
             {
                 return RedirectToAction("Details", new { id = returnContractId });
+            }
+            else if (contract.IsEngineering == true)
+            {
+                return RedirectToAction(nameof(Engineerings));
             }
             else
             {

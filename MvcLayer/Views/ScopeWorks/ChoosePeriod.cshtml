@@ -2,6 +2,7 @@
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
     ViewData["Title"] = "Добавление объема работ";
@@ -94,18 +95,7 @@
                         @if (Model?.IsOwnForces == false)
                         {
                             <div id="amendPartial">
-
-                            </div>
-                            @* <div class="row mt-3" id="date-box" hidden>
-                                <div class="form-group col-6 mb-3">
-                                    <label for="amendCheck1">Начало периода</label>
-                                    <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
-                                </div>
-                                <div class="form-group col-6 mb-3">
-                                    <label for="amendCheck2">Окончание периода</label>
-                                    <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
-                                </div>
-                            </div> *@
+                            </div>                            
                         }
                         <button id="butSubmit" class="btn btn-primary btn-sm mt-1" disabled type="submit">Выбрать</button>
                     </div>
@@ -114,17 +104,20 @@
 
             @if (!hasScope)
             {
+                var contract = Contract.GetById((int)Model.ContractId);
                 <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
                     <h4>Выбор периода объема работ</h4>
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-                    <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />                    
+                    <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <div class="form-group col-6 mb-3">
-                        <label for="amendCheck1">Укажите начало периода</label>
-                        <input asp-for=PeriodStart type="datetime" id="amendCheck1" class="monthYearPickers" />
+                        <label for="amendCheck1">Начало периода</label>
+                        <input name=PeriodStart type="datetime" value="@contract.DateBeginWork" hidden />
+                        <input type="text" value="@contract.DateBeginWork.Value.ToString("MMMM-yyyy") "readonly />                        
                     </div>
                     <div class="form-group col-6 mb-3">
-                        <label for="amendCheck2">Укажите окончание периода</label>
-                        <input asp-for=PeriodEnd type="datetime" id="amendCheck2" class="monthYearPickers" />
+                        <label for="amendCheck2">Окончание периода</label>
+                        <input name=PeriodEnd type="datetime" value="@contract.DateEndWork" hidden />
+                        <input type="text" value="@contract.DateEndWork.Value.ToString("MMMM-yyyy")" readonly />
                     </div>
                     <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
                 </form>
@@ -153,15 +146,7 @@
                 error: function (result) {
                     console.log(result, 'Ошибка при вызове сообщения');
                 }
-            })
-            // let divDates = document.querySelector("#date-box");
-
-            // if (divDates.hidden != true) {
-            //     divDates.hidden = true;
-            // }
-            // else {
-            //     divDates.hidden = null;
-            // }
+            })            
         });
 
         $("#amendCheck").on("change", function () {

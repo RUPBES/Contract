@@ -971,6 +971,17 @@
                             <th class="fifth-col"><span>Остаток по выполнению</span></th>
                             @*Объем на текущий год*@
                             <th class="sixth-col"><span>Объем на текущий год</span></th>
+                            @*Период (месяц)*@
+                            @{
+                                iterator = PeriodStart;
+                                while (iterator <= PeriodEnd)
+                                {
+                                    <th>
+                                        <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
+                                    </th>
+                                    iterator = iterator.Value.AddMonths(1);
+                                }
+                            }
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
@@ -981,252 +992,6 @@
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNds)</span></td>
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
-                        </tr>
-                        <tr @*СМР - План*@>
-                            <th class="second-col"><span>СМР</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.SmrCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
-                        </tr>
-                        <tr @*ПНР - План*@>
-                            <th class="second-col"><span>ПНР</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.PnrCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
-                        </tr>
-                        <tr @*Оборудование - План*@>
-                            <th class="second-col"><span>Оборудование</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.EquipmentCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
-                        </tr>
-                        <tr @*Прочие работы и услуги - План*@>
-                            <th class="second-col"><span>Прочие работы и услуги</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
-
-                        </tr>
-                        <tr @*Всего, без НДС - План*@>
-                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.CostNoNds)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
-                        </tr>
-                        <tr @*Доп. работы - План*@>
-                            <th class="second-col"><span>Доп. работы</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.AdditionalCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
-                        </tr>
-                        <tr @*Материалы - План*@>
-                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",allScope.MaterialCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
-                        </tr>
-
-                        <tr id="fact" @*Объем работ - Факт*@>
-                            <th rowspan="8" class="first-col"><span>Факт</span></th>
-                            <th class="second-col"><span>Объем работ</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.CostNds)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNds)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
-                        </tr>
-                        <tr @*СМР - Факт*@>
-                            <th class="second-col"><span>СМР</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.SmrCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
-                        </tr>
-                        <tr @*ПНР - Факт*@>
-                            <th class="second-col"><span>ПНР</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.PnrCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
-                        </tr>
-                        <tr @*Оборудование - Факт*@>
-                            <th class="second-col"><span>Оборудование</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.EquipmentCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
-                        </tr>
-                        <tr @*Прочие работы - Факт*@>
-                            @* туту class="table-th-background-color" *@
-                            <th class="second-col"><span>Прочие работы и услуги</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.OtherExpensesCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
-                        </tr>
-                        <tr @*Всего, без НДС - Факт*@>
-                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.CostNoNds)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
-                        </tr>
-                        <tr @*Доп. работы - Факт*@>
-                            <th class="second-col"><span>Доп. работы</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.AdditionalCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
-                        </tr>
-                        <tr @*Материалы - Факт*@>
-                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
-                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.MaterialCost)</span></td>
-                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
-                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
-                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
-                        </tr>
-
-                        <tr id="planOur" @*Объем работ - План своими силами*@>
-                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">План cвоими силами</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.CostNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
-                        </tr>
-                        <tr @*СМР - План своими силами*@>
-                            <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.SmrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.SmrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
-                        </tr>
-                        <tr @*ПНР - План своими силами*@>
-                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.PnrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.PnrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
-                        </tr>
-                        <tr @*Оборудование - План своими силами*@>
-                            <td><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.EquipmentCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.EquipmentCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
-                        </tr>
-                        <tr @*Прочие работы - План своими силами*@>
-                            <td><span class="table_span-work">Прочие работы и услуги</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
-                        </tr>
-                        <tr @*Всего, без НДС - План своими силами*@>
-                            <td><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.CostNoNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNoNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
-                        </tr>
-                        <tr @*Доп. работы - План своими силами*@>
-                            <td><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",allScopeOwn.AdditionalCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.AdditionalCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
-                        </tr>
-                        <tr @*Материалы - План своими силами*@>
-                            <td><span class="table_span-work">Материалы заказчика (справочно)</span></td>
-                            <td><span class="table_span-contractprice">-</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.MaterialCost)</span></td>
-                            <td><span class="table_span-remains">-</span></td>
-                            <td><span class="table_span-volume">-</span></td>                      
-                        </tr>
-
-                        <tr id="factOur" @*Объем работ - Факт своими силами*@>
-                            <td rowspan="8" class="table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
-                            <td class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.CostNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
-                        </tr>
-                        <tr @*СМР - Факт своими силами*@>
-                            <td class="table-th-background-color"><span class="table_span-work">СМР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.SmrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.SmrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
-                        </tr>
-                        <tr @*ПНР - Факт своими силами*@>
-                            <td class="table-th-background-color"><span class="table_span-work">ПНР</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.PnrCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.PnrCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
-                        </tr>
-                        <tr @*Оборудование - Факт своими силами*@>
-                            <td><span class="table_span-work">Оборудование</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.EquipmentCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.EquipmentCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
-                        </tr>
-                        <tr @*Прочие работы - Факт своими силами*@>
-                            <td><span class="table_span-work">Прочие работы и услуги</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
-                        </tr>
-                        <tr @*Всего, без НДС - Факт своими силами*@>
-                            <td><span class="table_span-work">Всего по договору, без НДС</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.CostNoNds)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.CostNoNds)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
-                        </tr>
-                        <tr @*Доп. работы - Факт своими силами*@>
-                            <td><span class="table_span-work">Доп. работы</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.AdditionalCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.AdditionalCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
-                        </tr>
-                        <tr @*Материалы - Факт своими силами*@>
-                            <td><span class="table_span-work">Материалы заказчика (справочно)</span></td>
-                            <td><span class="table_span-contractprice">@string.Format("{0:n}",todayScopeOwn.MaterialCost)</span></td>
-                            <td><span class="table_span-realization">@string.Format("{0:n}",workLastYearOwn.MaterialCost)</span></td>
-                            <td><span class="table_span-remains">@string.Format("{0:n}",allScopeOwn.MaterialCost-todayScopeOwn.MaterialCost)</span></td>
-                            <td><span class="table_span-volume">@string.Format("{0:n}",todayYearScopeOwn.MaterialCost)</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <table class="PartialTable modal__table table table-striped table-hover">
-                    <thead>
-                        <tr class="tr-head-main-table">
-                            @*Период (месяц)*@
-                            @{
-                                iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
-                                {
-                                    <th style="height: 57.5px;" class="table-th-background-color Partialtable-sticky-top">
-                                        <span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
-                                    </th>
-                                    iterator = iterator.Value.AddMonths(1);
-                                }
-                            }
-                        </tr>
-                    </thead>
-                    <tbody class="tbodyPartialTableModal">
-                        <tr id="plan">
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1237,17 +1002,22 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
+                                        <td>
+                                            <span>@string.Format("{0:n}",sum)</span>
+                                        </td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">
-                                            @string.Format("{0:n}",sum)
-                                        </span>
-                                    </td>
+                                    else
+                                    { <td></td> }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*СМР - План*@>
+                            <th class="second-col"><span>СМР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.SmrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
@@ -1258,15 +1028,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    { <td></td>}                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
-
                             }
                         </tr>
-                        <tr>
+                        <tr @*ПНР - План*@>
+                            <th class="second-col"><span>ПНР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.PnrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
@@ -1277,14 +1052,21 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {<td></td>}
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - План*@>
+                            <th class="second-col"><span>Оборудование</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.EquipmentCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
@@ -1295,14 +1077,23 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Прочие работы и услуги - План*@>
+                            <th class="second-col"><span>Прочие работы и услуги</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -1312,14 +1103,23 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - План*@>
+                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.CostNoNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1330,14 +1130,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - План*@>
+                            <th class="second-col"><span>Доп. работы</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.AdditionalCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
@@ -1348,14 +1153,23 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else 
+                                    { 
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Материалы - План*@>
+                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScope.MaterialCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
@@ -1366,15 +1180,21 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 71.7px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td>}                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
-                        <tr id="fact">
+                        <tr id="fact" @*Объем работ - Факт*@>
+                            <th rowspan="8" class="first-col"><span>Факт</span></th>
+                            <th class="second-col"><span>Объем работ</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.CostNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                             @{
                                 @*Период*@
                                 iterator = PeriodStart;
@@ -1385,14 +1205,22 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*СМР - Факт*@>
+                            <th class="second-col"><span>СМР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.SmrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.SmrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
@@ -1403,14 +1231,22 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*ПНР - Факт*@>
+                            <th class="second-col"><span>ПНР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.PnrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.PnrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
@@ -1421,14 +1257,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - Факт*@>
+                            <th class="second-col"><span>Оборудование</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.EquipmentCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
@@ -1439,14 +1280,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td> </td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Прочие работы - Факт*@>                            
+                            <th class="second-col"><span>Прочие работы и услуги</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.OtherExpensesCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1457,14 +1304,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - Факт*@>
+                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.CostNoNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1475,14 +1328,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost / (decimal)(1.2);
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - Факт*@>
+                            <th class="second-col"><span>Доп. работы</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.AdditionalCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
@@ -1493,14 +1352,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Материалы - Факт*@>
+                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScope.MaterialCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
@@ -1511,15 +1376,25 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 71.7px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
-                        <tr id="planOur">
+                        <tr id="planOur" @*Объем работ - План своими силами*@>
+                            <th rowspan="8" class="first-col"><span>План cвоими силами</span></th>
+                            <th class="second-col"><span>Объем работ</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.CostNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1530,14 +1405,23 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*СМР - План своими силами*@>
+                            <th class="second-col"><span>СМР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.SmrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
@@ -1548,15 +1432,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
-
                             }
                         </tr>
-                        <tr>
+                        <tr @*ПНР - План своими силами*@>
+                            <th class="second-col"><span>ПНР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.PnrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
@@ -1567,14 +1456,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - План своими силами*@>
+                            <th class="second-col"><span>Оборудование</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.EquipmentCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
@@ -1585,14 +1479,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Прочие работы - План своими силами*@>
+                            <th class="second-col"><span>Прочие работы и услуги</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.OtherExpensesCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.OtherExpensesCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -1602,14 +1501,23 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - План своими силами*@>
+                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.CostNoNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1620,14 +1528,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - План своими силами*@>
+                            <th class="second-col"><span>Доп. работы</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.AdditionalCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
@@ -1638,14 +1552,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td>}
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Материалы - План своими силами*@>
+                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            <td class="third-col"><span>-</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.MaterialCost)</span></td>
+                            <td class="fifth-col"><span>-</span></td>
+                            <td class="sixth-col"><span>-</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
@@ -1656,15 +1576,22 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 71.7px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td>}
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
 
-                        <tr id="factOur">
+                        <tr id="factOur" @*Объем работ - Факт своими силами*@>
+                            <th class="first-col" rowspan="8"><span>Факт своими силами</span></th>
+                            <th class="second-col"><span>Объем работ</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.CostNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.CostNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                             @{
                                 @*Период*@
                                 iterator = PeriodStart;
@@ -1675,14 +1602,23 @@
                                     if (obj != null)
                                     {
                                         sum = obj.TotalCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*СМР - Факт своими силами*@>
+                            <th class="second-col"><span>СМР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.SmrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.SmrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                             @{
                                 @*Стоимость СМР*@
                                 iterator = PeriodStart;
@@ -1693,14 +1629,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*ПНР - Факт своими силами*@>
+                            <th class="second-col"><span>ПНР</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.PnrCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.PnrCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                             @{
                                 @*Стоимость ПНР*@
                                 iterator = PeriodStart;
@@ -1711,14 +1652,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Оборудование - Факт своими силами*@>
+                            <th class="second-col"><span>Оборудование</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.EquipmentCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.EquipmentCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                             @{
                                 @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
@@ -1729,14 +1676,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Прочие работы - Факт своими силами*@>
+                            <th class="second-col"><span>Прочие работы и услуги</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.OtherExpensesCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.OtherExpensesCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1747,14 +1700,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Всего, без НДС - Факт своими силами*@>
+                            <th class="second-col"><span>Всего по договору, без НДС</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.CostNoNds)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.CostNoNds)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                             @{
                                 @*Стоимость ?*@
                                 iterator = PeriodStart;
@@ -1765,14 +1724,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost / (decimal)(1.2);
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 52.8px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Доп. работы - Факт своими силами*@>
+                            <th class="second-col"><span>Доп. работы</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.AdditionalCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.AdditionalCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                             @{
                                 @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
@@ -1783,14 +1747,20 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td> }
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>
+                        <tr @*Материалы - Факт своими силами*@>
+                            <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            <td class="third-col"><span>@string.Format("{0:n}",todayScopeOwn.MaterialCost)</span></td>
+                            <td class="fourth-col"><span>@string.Format("{0:n}",workLastYearOwn.MaterialCost)</span></td>
+                            <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.MaterialCost-todayScopeOwn.MaterialCost)</span></td>
+                            <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.MaterialCost)</span></td>
                             @{
                                 @*Стоимость Материалы*@
                                 iterator = PeriodStart;
@@ -1801,15 +1771,16 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
+                                        <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { sum = 0; }
-                                    <td style="height: 71.95px;"><span class="table_span-month">@string.Format("{0:n}",sum)</span></td>
+                                    else { <td></td>}
+                                    
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                     </tbody>
-                </table>
+                </table>                
             </div>
             <button id="buttonTableCategories" onclick="funcCloseByTableCategories()" class="modal__container-button">Закрыть таблицу</button>
         </div>
