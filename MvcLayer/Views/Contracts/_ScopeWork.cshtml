@@ -5,6 +5,47 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService FormC3
 @inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
+<style>
+    .first-col,
+    .second-col,
+    .third-col,
+    .fourth-col,
+    .fifth-col,
+    .sixth-col {
+        position: sticky !important;
+        left: -10px;
+        z-index: 1;
+    }
+    
+    th.first-col,
+    th.second-col,
+    th.third-col,
+    th.fourth-col,
+    th.fifth-col,
+    th.sixth-col {        
+        z-index: 3;
+    }
+
+    thead th.first-col,
+    thead th.second-col,
+    thead th.third-col,
+    thead th.fourth-col,
+    thead th.fifth-col,
+    thead th.sixth-col {
+        position: sticky !important;
+        z-index: 6 !important;
+    }
+        
+    td.third-col ,
+    td.fourth-col ,
+    td.fifth-col ,
+    td.sixth-col  {
+        background: #5f7b99;
+        color:white;
+        font-weight:600;
+    }
+
+</style>
 
 @{
     DateTime? PeriodStart, PeriodEnd;
@@ -43,12 +84,12 @@
                 PeriodEnd = (DateTime)item2.Period;
             }
         }
-    }     
+    }
 
     var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd);
     var listScopeWorkOwn = SWCosts.GetValueScopeWorkByPeriod(Model.Id, PeriodStart, PeriodEnd, true);
 
-    var workLastYear = new SWCostDTO();    
+    var workLastYear = new SWCostDTO();
     var allScope = new SWCostDTO();
     var todayYearScope = new SWCostDTO();
     var todayScope = new SWCostDTO();
@@ -84,7 +125,7 @@
     }
 
     for (var itYear = PeriodStart; itYear <= PeriodEnd; itYear = itYear.Value.AddMonths(1))
-    {        
+    {
         if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
         {
             var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
@@ -104,12 +145,12 @@
         {
             var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
             if (ob != null)
-            {                
+            {
                 allScope = allScope + ob;
             }
             var obOwn = listScopeWorkOwn?.Where(x => x.Period == itYear).FirstOrDefault();
             if (obOwn != null)
-            {                
+            {
                 allScopeOwn = allScope + obOwn;
             }
         }
@@ -133,38 +174,38 @@
                             @*Остаток по выполнению от стоимости контрактной цены*@
                             <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-remains">Остаток по выполнению</span></th>
                             @*Объем на текущий год*@
-                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>                            
+                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-volume">Объем на текущий год</span></th>
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="all" @*Объем работ - План*@> 
+                        <tr id="all" @*Объем работ - План*@>
                             <td rowspan="4" class="table-th-background-color"><span class="table_span-work">Объем работ</span></td>
                             <td class="table-th-background-color"><span class="table_span-currency">План</span></td>
                             <td><span class="table_span-contractprice">@string.Format("{0:n}",allScope.CostNds)</span></td>
                             <td><span class="table_span-realization">@string.Format("{0:n}",workLastYear.CostNds)</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                            
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
                         </tr>
-                        <tr @*Объем работ - Факт*@>                            
+                        <tr @*Объем работ - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
                             <td><span class="table_span-contractprice">Стоимость</span></td>
                             <td><span class="table_span-realization">@workLastYear.CostNds?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">остаток</span></td>
-                            <td><span class="table_span-volume">объем</span></td>                            
+                            <td><span class="table_span-volume">объем</span></td>
                         </tr>
                         <tr @*Объем работ - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
                             <td><span class="table_span-contractprice">Вид работ цена</span></td>
                             <td><span class="table_span-realization">@workLastYearOwn.CostNds?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td><span class="table_span-volume">Вид работ объем</span></td>                           
+                            <td><span class="table_span-volume">Вид работ объем</span></td>
                         </tr>
                         <tr @*Объем работ - Факт(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-currency"> Факт своими силами</span></td>
                             <td class="table-on-their-own"><span class="table_span-contractprice">Вид работ цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.CostNds?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">Вид работ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>                            
+                            <td class="table-on-their-own"><span class="table_span-volume">Вид работ объем</span></td>
                         </tr>
 
                         <tr id="smr" @*СМР - План*@>
@@ -173,28 +214,28 @@
                             <td><span class="table_span-contractprice">СМР цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.SmrCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>                           
+                            <td><span class="table_span-volume">СМР объем</span></td>
                         </tr>
                         <tr @*СМР - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
                             <td><span class="table_span-contractprice">СМР цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.SmrCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>                           
+                            <td><span class="table_span-volume">СМР объем</span></td>
                         </tr>
                         <tr @*СМР - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
                             <td><span class="table_span-contractprice">СМР цена</span></td>
                             <td><span class="table_span-realization" @workLastYearOwn.SmrCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">СМР остаток</span></td>
-                            <td><span class="table_span-volume">СМР объем</span></td>                            
+                            <td><span class="table_span-volume">СМР объем</span></td>
                         </tr>
                         <tr @*СМР - Факт(свои)*@>
                             <td class="table-on-their-own table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
                             <td class="table-on-their-own"><span class="table_span-contractprice">СМР цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.SmrCost?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">СМР остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>  
+                            <td class="table-on-their-own"><span class="table_span-volume">СМР объем</span></td>
                         </tr>
 
                         <tr id="pnr" @*ПМР - План*@>
@@ -203,28 +244,28 @@
                             <td><span class="table_span-contractprice">ПНР цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.PnrCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>                            
+                            <td><span class="table_span-volume">ПНР объем</span></td>
                         </tr>
                         <tr @*ПМР - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-currency">Факт</span></td>
                             <td><span class="table_span-contractprice">ПНР цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.PnrCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                            <td><span class="table_span-volume">ПНР объем</span></td>
                         </tr>
                         <tr @*ПМР - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-currency">План своими силами</span></td>
                             <td><span class="table_span-contractprice">ПНР цена</span></td>
                             <td><span class="table_span-realization">@workLastYearOwn.PnrCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">ПНР остаток</span></td>
-                            <td><span class="table_span-volume">ПНР объем</span></td>                           
+                            <td><span class="table_span-volume">ПНР объем</span></td>
                         </tr>
                         <tr @*ПМР - Факт(свои)*@>
                             <td class="table-on-their-own table-th-background-color"><span class="table_span-currency">Факт своими силами</span></td>
                             <td class="table-on-their-own"><span class="table_span-contractprice">ПНР цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.PnrCost?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">ПНР остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>                            
+                            <td class="table-on-their-own"><span class="table_span-volume">ПНР объем</span></td>
                         </tr>
 
                         <tr id="equip" @*Оборудование - План*@>
@@ -233,14 +274,14 @@
                             <td><span class="table_span-contractprice">Оборудование цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.EquipmentCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>                            
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
                         </tr>
                         <tr @*Оборудование - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
                             <td><span class="table_span-contractprice">Оборудование цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.EquipmentCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td><span class="table_span-volume">Оборудование объем</span></td>                            
+                            <td><span class="table_span-volume">Оборудование объем</span></td>
                         </tr>
                         <tr @*Оборудование - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
@@ -254,7 +295,7 @@
                             <td class="table-on-their-own"><span class="table_span-contractprice">Оборудование цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.EquipmentCost?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">Оборудование остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>                            
+                            <td class="table-on-their-own"><span class="table_span-volume">Оборудование объем</span></td>
                         </tr>
 
                         <tr id="other" @*Другие работы - План*@>
@@ -270,21 +311,21 @@
                             <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.OtherExpensesCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>                            
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                         </tr>
                         <tr @*Другие работы - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
                             <td><span class="table_span-contractprice">РАБОТЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYearOwn.OtherExpensesCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>                            
+                            <td><span class="table_span-volume">РАБОТЫ объем</span></td>
                         </tr>
                         <tr @*Другие работы - Факт(свои)*@>
                             <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
                             <td class="table-on-their-own"><span class="table_span-contractprice">РАБОТЫ цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.OtherExpensesCost?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">РАБОТЫ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>                            
+                            <td class="table-on-their-own"><span class="table_span-volume">РАБОТЫ объем</span></td>
                         </tr>
 
                         <tr id="allWithoutNDS" @*Всего, без НДС - План*@>
@@ -293,21 +334,21 @@
                             <td><span class="table_span-contractprice">Всего по договору цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.CostNoNds?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td><span class="table_span-volume">Всего по договору объем</span></td>                            
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>
                         </tr>
                         <tr @*Всего, без НДС - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
                             <td><span class="table_span-contractprice">Всего по договору цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.CostNoNds?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td><span class="table_span-volume">Всего по договору объем</span></td>                          
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>
                         </tr>
                         <tr @*Всего, без НДС - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
                             <td><span class="table_span-contractprice">Всего по договору цена</span></td>
                             <td><span class="table_span-realization">@workLastYearOwn.CostNoNds?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">Всего по договору остаток</span></td>
-                            <td><span class="table_span-volume">Всего по договору объем</span></td>                            
+                            <td><span class="table_span-volume">Всего по договору объем</span></td>
                         </tr>
                         <tr @*Всего, без НДС - Факт(свои)*@>
                             <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
@@ -323,28 +364,28 @@
                             <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.AdditionalCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                            
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                         </tr>
                         <tr @*Доп. работы, без НДС - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
                             <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.AdditionalCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                            
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                         </tr>
                         <tr @*Доп. работы, без НДС - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
                             <td><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYearOwn.AdditionalCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                            
+                            <td><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                         </tr>
                         <tr @*Доп. работы, без НДС - Факт(свои)*@>
                             <td class="table-on-their-own table-th-background-color"><span class="table_span-contractprice">Факт своими силами</span></td>
                             <td class="table-on-their-own"><span class="table_span-contractprice">ДОП.РАБОТЫ цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.AdditionalCost?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">ДОП.РАБОТЫ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>                           
+                            <td class="table-on-their-own"><span class="table_span-volume">ДОП.РАБОТЫ объем</span></td>
                         </tr>
 
                         <tr id="material" @*Материалы - План*@>
@@ -353,14 +394,14 @@
                             <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.MaterialCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>                            
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                         </tr>
                         <tr @*Материалы - Факт*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">Факт</span></td>
                             <td><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
                             <td><span class="table_span-realization">@workLastYear.MaterialCost?.ToString("N2")</span></td>
                             <td><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>                            
+                            <td><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                         </tr>
                         <tr @*Материалы - План(свои)*@>
                             <td class="table-th-background-color"><span class="table_span-contractprice">План своими силами</span></td>
@@ -374,28 +415,28 @@
                             <td class="table-on-their-own"><span class="table_span-contractprice">МАТЕРИАЛЫ цена</span></td>
                             <td class="table-on-their-own"><span class="table_span-realization">@workLastYearOwn.MaterialCost?.ToString("N2")</span></td>
                             <td class="table-on-their-own"><span class="table_span-remains">МАТЕРИАЛЫ остаток</span></td>
-                            <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>                            
+                            <td class="table-on-their-own"><span class="table_span-volume">МАТЕРИАЛЫ объем</span></td>
                         </tr>
                     </tbody>
                 </table>
                 <table class="PartialTable modal__table table table-striped table-hover">
                     <thead>
-                        <tr class="tr-head-main-table">                           
+                        <tr class="tr-head-main-table">
                             @{
-                                @*Период (месяц)*@
+                                        @*Период (месяц)*@
                                 var iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
+                                            <th class="table-th-background-color Partialtable-sticky-top"><span class="table_span-month">@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span></th>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="all" >
+                        <tr id="all">
                             @{
-                                @*Стоимость работ общая (месяц)*@
+                                        @*Стоимость работ общая (месяц)*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -406,13 +447,13 @@
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>                            
-                            @{                                
+                        <tr>
+                            @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -423,13 +464,13 @@
                                         sum = @obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>                            
-                            @{                               
+                        <tr>
+                            @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -440,13 +481,13 @@
                                         sum = @obj.CostNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                         <tr>
-                            @{                              
+                            @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -457,7 +498,7 @@
                                         sum = @obj.TotalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -475,12 +516,12 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr>                           
+                        <tr>
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
@@ -492,7 +533,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -509,7 +550,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -526,7 +567,7 @@
                                         sum = @obj.SmrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -544,7 +585,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -561,7 +602,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -578,7 +619,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -595,7 +636,7 @@
                                         sum = @obj.PnrCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -613,7 +654,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -630,7 +671,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -647,7 +688,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -664,7 +705,7 @@
                                         sum = @obj.EquipmentCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -682,7 +723,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -699,7 +740,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -716,7 +757,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -733,7 +774,7 @@
                                         sum = @obj.OtherExpensesCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -751,7 +792,7 @@
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -768,7 +809,7 @@
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -785,7 +826,7 @@
                                         sum = @obj.CostNoNds;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -802,7 +843,7 @@
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -820,11 +861,11 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
-                        </tr> 
+                        </tr>
                         <tr>
                             @{
                                 iterator = PeriodStart;
@@ -837,7 +878,7 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -846,14 +887,15 @@
                             @{
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
-                                {var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                {
+                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -870,7 +912,7 @@
                                         sum = @obj.AdditionalCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -888,7 +930,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -905,7 +947,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -922,7 +964,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -939,7 +981,7 @@
                                         sum = @obj.MaterialCost;
                                     }
                                     else { sum = 0; }
-                                    <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
+                                            <td><span class="table_span-month">@sum?.ToString("N2")</span></td>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -959,7 +1001,7 @@
             <div class="full-width" style="width: 100%">
                 <table class="PartialTable table table-striped table-hover">
                     <thead class="Partialtable-sticky-top">
-                        <tr >
+                        <tr>
                             @*Виды работ по договору*@
                             <th class="first-col"><span>Категория работ</span></th>
                             <th class="second-col"><span>Вид работ</span></th>
@@ -976,9 +1018,9 @@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
-                                    <th>
-                                        <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
-                                    </th>
+                                            <th>
+                                                <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
+                                            </th>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -993,7 +1035,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1002,12 +1044,14 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
-                                        <td>
-                                            <span>@string.Format("{0:n}",sum)</span>
-                                        </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                     }
                                     else
-                                    { <td></td> }
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1019,7 +1063,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                             @{
-                                @*Стоимость СМР*@
+                                        @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1028,10 +1072,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
-                                    { <td></td>}                                    
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1043,7 +1089,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                             @{
-                                @*Стоимость ПНР*@
+                                        @*Стоимость ПНР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1052,11 +1098,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
-                                    {<td></td>}
-                                    
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1068,7 +1116,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                             @{
-                                @*Стоимость Оборудование*@
+                                        @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1077,13 +1125,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1103,13 +1151,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1121,7 +1169,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1130,9 +1178,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1144,7 +1195,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                             @{
-                                @*Стоимость Доп. работы*@
+                                        @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1153,13 +1204,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else 
-                                    { 
-                                        <td></td>
+                                    else
+                                    {
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1171,7 +1222,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                             @{
-                                @*Стоимость Материалы*@
+                                        @*Стоимость Материалы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1180,9 +1231,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td>}                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1196,7 +1250,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                             @{
-                                @*Период*@
+                                        @*Период*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1205,12 +1259,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
-                                    }                                    
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1222,7 +1276,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                             @{
-                                @*Стоимость СМР*@
+                                        @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1231,12 +1285,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
-                                    }                                    
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1248,7 +1302,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                             @{
-                                @*Стоимость ПНР*@
+                                        @*Стоимость ПНР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1257,9 +1311,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1271,7 +1328,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                             @{
-                                @*Стоимость Оборудование*@
+                                        @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1280,22 +1337,25 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td> </td> }
-                                    
+                                    else
+                                    {
+                                                <td> </td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
-                        <tr @*Прочие работы - Факт*@>                            
+                        <tr @*Прочие работы - Факт*@>
                             <th class="second-col"><span>Прочие работы и услуги</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",todayScope.OtherExpensesCost)</span></td>
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1304,10 +1364,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1319,7 +1382,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1328,10 +1391,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost / (decimal)(1.2);
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1343,7 +1409,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                             @{
-                                @*Стоимость Доп. работы*@
+                                        @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1352,10 +1418,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1367,7 +1436,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                             @{
-                                @*Стоимость Материалы*@
+                                        @*Стоимость Материалы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1376,13 +1445,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1396,7 +1465,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1405,13 +1474,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1423,7 +1492,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                             @{
-                                @*Стоимость СМР*@
+                                        @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1432,10 +1501,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1447,7 +1519,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                             @{
-                                @*Стоимость ПНР*@
+                                        @*Стоимость ПНР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1456,9 +1528,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1470,7 +1545,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                             @{
-                                @*Стоимость Оборудование*@
+                                        @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1479,9 +1554,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1501,13 +1579,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1519,7 +1597,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1528,10 +1606,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1543,7 +1624,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                             @{
-                                @*Стоимость Доп. работы*@
+                                        @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1552,10 +1633,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td>}
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1567,7 +1651,7 @@
                             <td class="fifth-col"><span>-</span></td>
                             <td class="sixth-col"><span>-</span></td>
                             @{
-                                @*Стоимость Материалы*@
+                                        @*Стоимость Материалы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1576,10 +1660,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td>}
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1593,7 +1680,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                             @{
-                                @*Период*@
+                                        @*Период*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1602,13 +1689,13 @@
                                     if (obj != null)
                                     {
                                         sum = obj.TotalCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
                                     else
                                     {
-                                        <td></td>
+                                                <td></td>
                                     }
-                                    
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1620,7 +1707,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                             @{
-                                @*Стоимость СМР*@
+                                        @*Стоимость СМР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1629,9 +1716,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1643,7 +1733,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                             @{
-                                @*Стоимость ПНР*@
+                                        @*Стоимость ПНР*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1652,10 +1742,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1667,7 +1760,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                             @{
-                                @*Стоимость Оборудование*@
+                                        @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1676,10 +1769,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1691,7 +1787,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1700,10 +1796,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1715,7 +1814,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                             @{
-                                @*Стоимость ?*@
+                                        @*Стоимость ?*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1724,9 +1823,12 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost / (decimal)(1.2);
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1738,7 +1840,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                             @{
-                                @*Стоимость Доп. работы*@
+                                        @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1747,10 +1849,13 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td> }
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1762,7 +1867,7 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.MaterialCost-todayScopeOwn.MaterialCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.MaterialCost)</span></td>
                             @{
-                                @*Стоимость Материалы*@
+                                        @*Стоимость Материалы*@
                                 iterator = PeriodStart;
                                 while (iterator <= PeriodEnd)
                                 {
@@ -1771,16 +1876,19 @@
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
-                                        <td><span>@string.Format("{0:n}",sum)</span></td>
+                                                <td><span>@string.Format("{0:n}",sum)</span></td>
                                     }
-                                    else { <td></td>}
-                                    
+                                    else
+                                    {
+                                                <td></td>
+                                    }
+
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
                         </tr>
                     </tbody>
-                </table>                
+                </table>
             </div>
             <button id="buttonTableCategories" onclick="funcCloseByTableCategories()" class="modal__container-button">Закрыть таблицу</button>
         </div>
@@ -1790,7 +1898,6 @@
 
 
 <script>
-
     function funcChangeToCategories() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
@@ -1818,11 +1925,36 @@
         $('#modDialog').modal('toggle');
     }
 
-
     function funcCloseByTableType() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
         elementTable.classList.add('d-none')
         $('#modDialog').modal('toggle');
     }
+
+    function toLeft(example, target) {                
+        var width = $(example)[0].offsetWidth;        
+        var leftPrev = $(example)[0].style.left;        
+        leftPrev = leftPrev.substring(0, leftPrev.indexOf("p"))        
+        var leftPrevInt = parseInt(leftPrev);
+        var all = $(target)
+        for (var i = 0; i < all.length; i++) {
+            all[i].style.left = +(width+leftPrevInt) + "px";
+        } 
+    }    
+
+    $(function () {
+        var all = $(".first-col");
+        for (var i = 0; i < all.length; i++) {
+                all[i].style.left = "-10px";
+            }
+        
+        toLeft(".first-col", ".second-col"); 
+        toLeft(".second-col", ".third-col");
+        toLeft(".third-col", ".fourth-col");
+        toLeft(".fourth-col", ".fifth-col");
+        toLeft(".fifth-col", ".sixth-col");
+    });
+    
+
 </script>
