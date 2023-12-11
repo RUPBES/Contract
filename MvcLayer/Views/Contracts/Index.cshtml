@@ -16,7 +16,20 @@
     string redirectAction = "Index";
     string redirectController = "Contracts";
 }
+
+
 @section Table{
+    <style>
+        .square {
+            width: 20px;
+            height: 20px;
+        }
+
+        .overdue {
+            background-color: #e3849b !important;
+            
+        }
+    </style>
     <div>
         <h1 style="text-align: center;">Список договоров</h1>
         <div class="contracts-list">
@@ -44,6 +57,10 @@
                     }
                 }
             </p>
+        </div>
+        <div style="display:flex">
+            <div class="square overdue k-ml-2"></div>
+            <label> - Просроченные</label>            
         </div>
         <div class="full-width">
             <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
@@ -121,8 +138,9 @@
                         var sumPreviusYear = Form.Find(x => x.ContractId == item.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.TotalCost);
                         var factWork = Form.Find(x => x.ContractId == item.Id).Sum(x => x.TotalCost);
                         var sumThisYear = SWCost.Find(x => x.ScopeWorkId != null && x.ScopeWorkId == resultScopeWork?.Id && x.Period >= new DateTime(dateRange, 1, 1) && x.Period <= new DateTime(dateRange, 12, 31)).Sum(x => x.CostNds);
-
-                        <tr>
+                        if (item.DateEndWork<DateTime.Today)
+                        {
+                        <tr class="overdue">
                             @*Номер и дата договора*@
                             <td>
                                 <span class="table_span-numberanddate">
@@ -252,7 +270,142 @@
                                     <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                 </div>
                             </td>
-                        </tr>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                @*Номер и дата договора*@
+                                <td>
+                                    <span class="table_span-numberanddate">
+                                        <a asp-action="Details" asp-route-id="@item.Id">
+                                            @item.Number от
+                                            @item.Date?.ToShortDateString()
+                                        </a>
+                                    </span>
+
+                                </td>
+
+                                @*Наименование объекта*@
+                                <td>
+                                    <span class="table_span-nameobject">
+                                        @item.NameObject
+                                    </span>
+                                </td>
+                                @*Заказчик*@
+                                <td>
+                                    <span class="table_span-customer">
+                                        @item.Client
+                                    </span>
+                                </td>
+                                @*Генподрядчик*@
+                                @if (isEngineering != true)
+                                {
+                                    <td>
+                                        <span class="table_span-contractor">
+                                            @item.GenContractor
+                                        </span>
+                                    </td>
+                                }
+                                @*Сроки: выполнения работ - ввода *@
+                                <td>
+                                    <span class="table_span-deadlines">
+                                        @if (@item.DateBeginWork?.ToShortDateString() is not null || @item.DateEndWork?.ToShortDateString() is not null)
+                                        {
+                                            <b>выполнения работ:</b>
+
+                                            <br>
+                                            <span>@item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()</span>
+
+                                            <br>
+                                        }
+                                        @if (@item.EnteringTerm?.ToShortDateString() is not null)
+                                        {
+                                            <b>ввода:</b>
+                                            <span>@item.EnteringTerm?.ToShortDateString()</span>
+                                            <br>
+                                            <br>
+                                        }
+
+                                    </span>
+                                </td>
+                                @*Условия оплаты: Аванс - Оплата*@
+                                <td>
+                                    <span class="table_span-conditions">
+                                        <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
+                                            @item?.PaymentСonditionsAvans
+                                        </a>
+                                        <br />
+                                        <br />
+                                        <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
+                                            @item?.PaymentСonditionsRaschet@*  Оплата *@
+                                        </a>
+                                    </span>
+                                </td>
+                                @*Валюта*@
+                                <td>
+                                    <span class="table_span-currency">
+                                        @item.Сurrency
+                                    </span>
+                                </td>
+
+                                @*Условия формирования договорной цены*@
+                                @if (isEngineering)
+                                {
+                                    <td>
+                                        <span class="table_span-work">
+                                            @ServiceGc?.Find(x=>x.ContractId == item?.Id)?.LastOrDefault()?.ServicePercent
+                                        </span>
+                                    </td>
+                                }
+                                @*Виды работ по договору*@
+                                @if (!isEngineering)
+                                {
+                                    <td>
+                                        <span class="table_span-work">
+                                            @TypeWork?.Find(x=>x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                        </span>
+                                    </td>
+                                }
+                                @*Контрактная цена*@
+                                <td class="text-end">
+                                    <span class="table_span-contractprice">
+                                        @item.ContractPrice?.ToString("N2")
+                                    </span>
+                                </td>
+                                @*Выполнено на начало года*@
+                                <td class="text-end">
+                                    <span class="table_span-realization">
+                                        @sumPreviusYear?.ToString("N2")
+                                    </span>
+                                </td>
+                                @*Остаток*@
+                                <td class="text-end">
+                                    <span class="table_span-remains">
+                                        @{
+                                            var ostatok = item.ContractPrice - factWork;
+                                        }
+                                        @ostatok?.ToString("N2")
+                                    </span>
+                                </td>
+                                @*Объем*@
+                                <td>
+                                    <span class="table_span-volume">@sumThisYear?.ToString("N2")</span>
+                                </td>
+                                @*Действия с договором*@
+                                <td>
+                                    <div class="icon view" title="Просмотр детальной информации по договору">
+                                        <a asp-action="Details" asp-route-id="@item.Id"></a>
+                                    </div>
+                                    <div class="icon edit" title="Редактировать договор">
+                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                    </div>
+                                    <div class="icon delete" title="Удалить договор">
+                                        <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
