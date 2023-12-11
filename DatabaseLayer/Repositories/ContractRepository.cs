@@ -38,7 +38,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Contract> Find(Func<Contract, bool> predicate)
         {
-            return _context.Contracts.Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts).Where(predicate).ToList();
+            return _context.Contracts.Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts).Include(p => p.Payments).Where(predicate).ToList();
         }
 
         public IEnumerable<Contract> GetAll()

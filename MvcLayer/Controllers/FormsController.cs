@@ -9,17 +9,19 @@ namespace MvcLayer.Controllers
 {
     public class FormsController : Controller
     {
+        private readonly IContractService _contractService;
         private readonly IFormService _formService;
         private readonly IFileService _fileService;
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
 
-        public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork)
+        public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork, IContractService contractService)
         {
             _formService = formService;
             _mapper = mapper;
             _fileService = fileService;
             _scopeWork = scopeWork;
+            _contractService = contractService;
         }
 
         public ActionResult Index()
@@ -29,6 +31,9 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
+            var ob = _contractService.GetById(id);
+            if (ob.IsEngineering == true)
+                ViewData["IsEngin"] = true;
             ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
@@ -92,10 +97,13 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        public ActionResult CreateForm(PeriodChooseViewModel model, int? contractId = 0, int? returnContractId = 0)
+        public ActionResult CreateForm(PeriodChooseViewModel model, int contractId = 0, int? returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
+            var ob = _contractService.GetById(contractId);
+            if (ob.IsEngineering == true)
+                ViewData["IsEngin"] = true;
             return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
         }
 
@@ -113,8 +121,7 @@ namespace MvcLayer.Controllers
                 formViewModel.GenServiceCost = formViewModel.GenServiceCost == null ? 0 : formViewModel.GenServiceCost;
                 formViewModel.MaterialCost = formViewModel.MaterialCost == null ? 0 : formViewModel.MaterialCost;
                 int formId = (int)_formService.Create(_mapper.Map<FormDTO>(formViewModel));
-                int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
-
+                int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);                
                 _formService.AddFile(formId, fileId);
 
                 return RedirectToAction(nameof(GetByContractId), new { id = formViewModel.ContractId, returnContractId = returnContractId });
@@ -127,6 +134,9 @@ namespace MvcLayer.Controllers
 
         public ActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
+            var ob = _contractService.GetById(contractId);
+            if (ob.IsEngineering == true)
+                ViewData["IsEngin"] = true;
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<FormViewModel>(_formService.GetById(id)));

@@ -100,8 +100,7 @@ namespace MvcLayer.Controllers
             if (contract == null)
             {
                 return NotFound();
-            }
-
+            }            
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -263,6 +262,8 @@ namespace MvcLayer.Controllers
             {
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+                if (contract.IsEngineering == true)
+                    TempData["IsEngin"] = true;                
                 contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
 
                 var orgContract1 = new ContractOrganizationDTO
@@ -387,6 +388,8 @@ namespace MvcLayer.Controllers
                 contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id });
             }
 
+            if (contract.IsEngineering == true)
+                ViewData["IsEngin"] = true;
 
             ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
             ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
@@ -438,13 +441,14 @@ namespace MvcLayer.Controllers
             catch (DbUpdateConcurrencyException)
             {
             }
-            if (contract.IsEngineering == true)
-            {
-                return RedirectToAction(nameof(Engineerings));
-            }
+            
             if (returnContractId != 0)
             {
                 return RedirectToAction("Details", new { id = returnContractId });
+            }
+            else if (contract.IsEngineering == true)
+            {
+                return RedirectToAction(nameof(Engineerings));
             }
             else
             {
@@ -592,17 +596,35 @@ namespace MvcLayer.Controllers
         {
             if (!string.IsNullOrWhiteSpace(payment) && days.HasValue)
             {
-                if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                if (TempData["IsEngin"] != null)
                 {
-                    return $"Расчет за выполненные работы производится в течение {days} дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ";
+                    if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"Расчет за выполненные работы производится в течение {days} дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ";
+                    }
+                    if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"Расчет за выполненные работы производится в течение {days} банковских дней с момента подписания актов сдачи-приемки выполненных работ";
+                    }
+                    if (payment.Equals("числа месяца следующего за отчетным", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"Расчет за выполненные работы производится не позднее {days} числа месяца, следующего за отчетным";
+                    }
                 }
-                if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                else 
                 {
-                    return $"Расчет за выполненные работы производится в течение {days} банковских дней с момента подписания актов сдачи-приемки выполненных работ";
-                }
-                if (payment.Equals("числа месяца следующего за отчетным", StringComparison.OrdinalIgnoreCase))
-                {
-                    return $"Расчет за выполненные работы производится не позднее {days} числа месяца, следующего за отчетным";
+                    if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"Расчет за выполненные услуги производится в течение {days} календарных дней с момента подписания акта сдачи-приемки оказанных услуг";
+                    }
+                    if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"Расчет за выполненные услуги производится в течение {days} банковских дней с момента подписания актов сдачи-приемки оказанных услуг";
+                    }
+                    if (payment.Equals("числа месяца следующего за отчетным", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return $"Расчет за выполненные услуги производится не позднее {days} числа месяца, следующего за отчетным";
+                    }
                 }
             }
             return null;

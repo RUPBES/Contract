@@ -251,10 +251,17 @@ namespace BusinessLayer.Services
 
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
+            List<Contract> itemsT = new List<Contract>();            
             if (!String.IsNullOrEmpty(request))
             {
-                items = _database.Contracts.GetAll();
-                items = items.Where(x => x.NameObject.Contains(request) || x.Number.Contains(request));                
+                items = _database.Contracts.
+                    Find(c => c.IsMultiple == false && c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false && c.IsSubContract == false);
+                foreach (var item in items)
+                {
+                    if (item.NameObject != null && item.NameObject.Contains(request) || item.Number != null && item.Number.Contains(request))
+                        itemsT.Add(item);
+                }
+                items = itemsT;
                 switch (filter) {
                     case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
                     case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
@@ -280,7 +287,8 @@ namespace BusinessLayer.Services
         {            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
-            items = _database.Contracts.GetAll();
+            items = _database.Contracts.
+                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false && c.IsSubContract == false);
             switch (filter)
             {
                 case "Scope": items = items.Where(x => x.ScopeWorks.Count() > 0); break;

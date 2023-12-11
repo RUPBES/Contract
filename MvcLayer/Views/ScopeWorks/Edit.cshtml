@@ -23,7 +23,7 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (ViewBag.contractId != null && ViewBag.contractId > 0)
                     {
-                        <a asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId class="close-btn"></a>
+                        <a asp-action="GetByContractId" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="close-btn"></a>
                     }
                     @if (ViewBag.contractId == null || ViewBag.contractId == 0)
                     {
@@ -37,34 +37,44 @@
                             <tr>
                                 <th>Период</th>
                                 <td>
-                                    @Model.Period?.ToString("MMM yyyy")
+                                    @Model.Period?.ToString("MMMM-yyyy")
                                     <input asp-for="Period" type="text" class="form-control" hidden />
                                 </td>                                
                             </tr>
-                            <tr>
-                                <th>Стоимость СМР</th>
-                                <td class="text-end"><input name="SmrCost" value="@Model.SmrCost" type="text" class="form-control costs_contract cost" data-autonumeric /></td>
-                            </tr>
-                            <tr>
-                                <th>Стоимость ПНР</th>
-                                <td class="text-end"><input name="PnrCost" value="@Model.PnrCost" class="form-control cost" data-autonumeric /></td>
-                            </tr>
-                            <tr>
-                                <th>Стоимость оборудования</th>
-                                <td class="text-end"><input name="EquipmentCost" value="@Model.EquipmentCost" class="form-control cost" data-autonumeric /></td>
-                            </tr>
-                            <tr>
-                                <th>Стоимость прочих работ и услуг</th>
-                                <td class="text-end"><input name="OtherExpensesCost" value="@Model.OtherExpensesCost" class="form-control cost" data-autonumeric /></td>
-                            </tr>
-                            <tr>
-                                <th>Стоимость доп. работ</th>
-                                <td class="text-end"><input name="AdditionalCost" value="@Model.AdditionalCost" class="form-control cost" data-autonumeric /></td>
-                            </tr>
-                            <tr>
-                                <th>Стоимость материалов заказчика (справочно)</th>
-                                <td class="text-end"><input name="MaterialCost" value="@Model.MaterialCost" class="form-control cost" data-autonumeric /></td>
-                            </tr>
+                            @if (ViewBag.IsEngin == null)
+                            {
+                                <tr>
+                                    <th>Стоимость СМР</th>
+                                    <td class="text-end"><input name="SmrCost" value="@Model.SmrCost" type="text" class="form-control costs_contract cost" data-autonumeric /></td>
+                                </tr>
+                                <tr>
+                                    <th>Стоимость ПНР</th>
+                                    <td class="text-end"><input name="PnrCost" value="@Model.PnrCost" class="form-control cost" data-autonumeric /></td>
+                                </tr>
+                                <tr>
+                                    <th>Стоимость оборудования</th>
+                                    <td class="text-end"><input name="EquipmentCost" value="@Model.EquipmentCost" class="form-control cost" data-autonumeric /></td>
+                                </tr>
+                                <tr>
+                                    <th>Стоимость прочих работ и услуг</th>
+                                    <td class="text-end"><input name="OtherExpensesCost" value="@Model.OtherExpensesCost" class="form-control cost" data-autonumeric /></td>
+                                </tr>
+                                <tr>
+                                    <th>Стоимость доп. работ</th>
+                                    <td class="text-end"><input name="AdditionalCost" value="@Model.AdditionalCost" class="form-control cost" data-autonumeric /></td>
+                                </tr>
+                                <tr>
+                                    <th>Стоимость материалов заказчика (справочно)</th>
+                                    <td class="text-end"><input name="MaterialCost" value="@Model.MaterialCost" class="form-control cost" data-autonumeric /></td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <th>Объем работ</th>
+                                    <td class="text-end"><input name="SmrCost" value="@Model.SmrCost" type="text" class="form-control costs_contract cost" data-autonumeric /></td>
+                                </tr>
+                            }
                             <input asp-for="GenServiceCost" hidden />
                             <input asp-for="IsOwnForces" hidden />
                             <input asp-for="ScopeWorkId" hidden />

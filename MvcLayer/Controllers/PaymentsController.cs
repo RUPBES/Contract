@@ -182,5 +182,12 @@ namespace MvcLayer.Controllers
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
+
+        public IActionResult DetailsPayableCash(int contractId)
+        {
+            var list = _contractService.Find(c => c.Id == contractId ||
+            c.AgreementContractId == contractId || c.MultipleContractId == contractId || c.SubContractId == contractId);
+            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+        }
     }
 }
