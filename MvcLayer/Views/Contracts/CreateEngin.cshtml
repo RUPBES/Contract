@@ -99,11 +99,11 @@
                     <legend class="float-none w-auto px-3">
                         <a asp-action="AddTypeWork" id="addTypeWork" class="btn btn-sm btn-success">
                             <img src="~/icons/house-add.svg" />
-                            Добавить новый вид работ
+                            Добавить новый вид услуг
                         </a>
                     </legend>
                     <div class="col-12">
-                        <label>Вид работ</label>
+                        <label>Вид услуг</label>
                         <input name="TypeWorkContracts[0].TypeWork" hidden />
                         <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
                             @if (Model?.TypeWorkContracts[0] is not null)
@@ -113,7 +113,7 @@
                             }
                             @if (Model?.TypeWorkContracts[0] is null)
                             {
-                                <option selected>Выберите вид работ</option>
+                                <option selected>Выберите вид услуг</option>
                             }
 
                             @foreach (var item in TypeWork.GetAll())
@@ -219,10 +219,10 @@
         </div>
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Сроки</legend>
-            <label asp-for="DateBeginWork">Начало работ</label>
+            <label asp-for="DateBeginWork">Начало услуг</label>
             <input asp-for="DateBeginWork" type="date" class="form-control">
 
-            <label asp-for="DateEndWork">Окончание работ</label>
+            <label asp-for="DateEndWork">Окончание услуг</label>
             <input asp-for="DateEndWork" type="date" class="form-control">
         </fieldset>
         <fieldset class="border rounded-3 p-3">

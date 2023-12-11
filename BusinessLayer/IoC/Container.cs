@@ -53,6 +53,8 @@ namespace BusinessLayer.IoC
 
             services.AddScoped<IVContractEnginService, VContractEnginService>();
             services.AddScoped<IVContractService, VContractService>();
+
+            services.AddTransient<IStreamFileUploadService, StreamFileUploadLocalService>();
         }
     }
 }

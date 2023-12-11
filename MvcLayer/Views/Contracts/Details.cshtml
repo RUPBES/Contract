@@ -72,7 +72,17 @@
                     </th>
                     @*Виды работ по договору*@
                     <th>
-                        <span class="table_span-work">Виды работ по договору</span>
+                        @if (!isEngineering)
+
+                        {
+                            <span class="table_span-work">Виды работ по договору</span>
+                        }
+                        @if (isEngineering)
+
+                        {
+                            <span class="table_span-work">Виды услуг по договору</span>
+                        }
+                       
                     </th>
                     @*Контрактная цена*@
                     <th>
@@ -142,18 +152,18 @@
                                     {
                                         <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
                                         <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
-                                        if (isThereScopeWorks)
-                                        {
+                                        @* if (isThereScopeWorks)
+                                        { *@
                                             <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id">+ Подобъект</a>
-                                        }
+                                       @*  } *@
 
                                         <div class="dropdown-divider"></div>
                                         <h6 class="dropdown-header">План</h6>
                                         //TODO: проверка! если этот договор имеет подобъекты, то ему не нужны заполнение собственных обемов работ
-                                        @if (Model?.IsMultiple == true)
-                                        {
+                                       @*  @if (Model?.IsMultiple == true)
+                                        { *@
                                             <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">+ Oбъем работ</a>
-                                        }
+                                        @* } *@
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isOwnForces="true">+ Oбъем работ собственными силами</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">+ Авансы</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">+ Услуги генподряда</a>

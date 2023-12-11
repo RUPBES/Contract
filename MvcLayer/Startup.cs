@@ -29,7 +29,9 @@ namespace MvcLayer
             services.Configure<FormOptions>(options =>
             {
                 // Set the limit to 512 MB
-                options.MultipartBodyLengthLimit = 536870912;
+                //options.MultipartBodyLengthLimit = 536870912;
+                options.ValueLengthLimit = int.MaxValue;
+                options.MultipartBodyLengthLimit = int.MaxValue;
             });
 
             services.AddAutoMapper(typeof(MapperViewModel));

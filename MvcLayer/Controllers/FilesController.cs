@@ -4,6 +4,8 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using static System.Collections.Specialized.BitVector32;
+using System.Net.Mime;
 
 namespace MvcLayer.Controllers
 {
@@ -128,27 +130,41 @@ namespace MvcLayer.Controllers
             return View(); 
         }
 
-        //[HttpPost]
-        //public ActionResult TUT(MemoryStream streamReader)
-        //{
-        //    //byte[] bytes = streamReader.ToArray();
-        //    //if (bytes == null)
-        //    //{
+        [HttpPost]
+        [RequestFormLimits(MultipartBodyLengthLimit = 268435456)]
+        public async Task<ActionResult> TUTAsync([FromForm] IFormCollection streamReader)
+        {
 
-        //    //}
+            string filePath = Path.GetFullPath(Path.Combine(_env.WebRootPath + "\\StaticFiles\\Contracts"));
 
-        //    using (Stream responseStream = response.GetResponseStream())
-        //    {
-        //        Response.BufferOutput = false;   // to prevent buffering 
-        //        byte[] buffer = new byte[1024];
-        //        int bytesRead = 0;
-        //        while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
-        //        {
-        //            Response.OutputStream.Write(buffer, 0, bytesRead);
-        //        }
-        //    }
 
-        //    return Content($"ХАйй");
-        //}
+            var file = streamReader.Files["file"];
+            if (file != null && file.Length > 0)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await file.CopyToAsync(stream);
+                }
+            }
+
+            //byte[] bytes = streamReader.ToArray();
+            //if (bytes == null)
+            //{
+
+            //}
+
+            //using (Stream responseStream = response.GetResponseStream())
+            //{
+            //    Response.BufferOutput = false;   // to prevent buffering 
+            //    byte[] buffer = new byte[1024];
+            //    int bytesRead = 0;
+            //    while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
+            //    {
+            //        Response.OutputStream.Write(buffer, 0, bytesRead);
+            //    }
+            //}
+
+            return Content($"ХАйй");
+        }
     }
 }
