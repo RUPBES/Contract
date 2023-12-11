@@ -256,5 +256,12 @@ namespace MvcLayer.Controllers
         {            
             return PartialView("_Period", Id);
         }
+
+        public IActionResult DetailsCostDeviation(int contractId)
+        {
+            var list = _contractService.Find(c => c.Id == contractId  || 
+            c.AgreementContractId == contractId || c.MultipleContractId == contractId || c.SubContractId == contractId);
+            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+        }
     }
 }

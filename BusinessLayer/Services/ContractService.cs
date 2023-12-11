@@ -249,7 +249,7 @@ namespace BusinessLayer.Services
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
             items = _database.Contracts.
-                Find(c => c.IsMultiple == false && c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false && c.IsSubContract == false);
+                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false && c.IsSubContract == false);
             switch (filter)
             {
                 case "Scope": items = items.Where(x => x.ScopeWorks.Count() > 0); break;

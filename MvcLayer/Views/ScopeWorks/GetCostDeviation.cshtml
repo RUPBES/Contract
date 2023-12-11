@@ -70,7 +70,7 @@
         }
 
     .second-td-elem {
-        /* z-index: 5 !important; */        
+        /* z-index: 5 !important; */
         box-shadow: inset 0 0 0 9999px #bdbac3 !important;
         background-color: grey !important;
     }
@@ -201,9 +201,12 @@
 
                                 <tr>
                                     <td id="example" rowspan="7">
-                                        @item?.Number <br>
-                                        от<br>
-                                        @item?.Date?.ToShortDateString()
+                                        <a asp-action="DetailsCostDeviation" asp-route-contractId="@item.Id">
+                                            @item?.Number <br>
+                                            от<br>
+                                            @item?.Date?.ToShortDateString()
+                                        </a>
+
                                     </td>
                                     <td rowspan="7">
                                         @item?.NameObject
@@ -631,11 +634,11 @@
 </div>
 @section Scripts {
     <script type="text/javascript">
-        var width = document.getElementById('example').offsetWidth;        
+        var width = document.getElementById('example').offsetWidth;
         var all = $(".second-td-elem")
         width = width - 2;
         for (var i = 0; i < all.length; i++) {
-            all[i].style.left = width+"px";
-        }                
+            all[i].style.left = width + "px";
+        }
     </script>
 }
