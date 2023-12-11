@@ -187,8 +187,12 @@
                                 var balanceScope = allScope - todayScope;
                                 <tr>
                                     <td>
-                                        @contract?.Number <br>
-                                        @contract?.Date?.ToShortDateString()
+                                        <a asp-action="DetailsPayableCash" asp-route-contractId="@item.Id">
+                                            @contract.Number <br>
+                                            от<br>
+                                            @contract.Date?.ToShortDateString()                                            
+                                        </a>
+                                        
                                     </td>
                                     <td>
                                         @contract?.NameObject
