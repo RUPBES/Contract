@@ -69,7 +69,14 @@
                     </th>
                     @*Виды работ по договору*@
                     <th>
-                        <span class="table_span-work">Виды работ по договору</span>
+                        @if (!Model.IsEngineering)
+                        {
+                            <span class="table_span-work">Виды работ по договору</span>
+                        }
+                        else
+                        {
+                            <span class="table_span-work">Виды услуг по договору</span>
+                        }
                     </th>
                     @*Контрактная цена*@
                     <th>
@@ -89,7 +96,7 @@
                     @if (isEngineering)
                     {
                         <th>
-                            <span class="table_span-action">График производства услуг</span>
+                            <span class="table_span-action">График оказания услуг</span>
                         </th>
                     }
 

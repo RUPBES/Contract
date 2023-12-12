@@ -48,5 +48,7 @@ namespace BusinessLayer.Models
         public string? PaymentСonditionsAvans { get; set; }
 
         public string? PaymentСonditionsRaschet { get; set; }
+
+        public double? PaymentСonditionsPrice { get; set; }
     }
 }

@@ -5,7 +5,14 @@
 @model MvcLayer.Models.ScopeWorkViewModel
 
 @{
-    ViewData["Title"] = "Объем работ";
+    if (ViewBag.IsEngin == null)
+    {
+        ViewData["Title"] = "Объем работ";
+    }
+    else
+    {
+        ViewData["Title"] = "Объем услуг";
+    }
     int index = 0;
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
@@ -234,7 +241,7 @@
                             else
                             {
                                 <tr>
-                                    <th>Объем работ</th>
+                                    <th>Объем услуг</th>
                                     @foreach (var item in d.SWCosts)
                                     {
                                         if (prevSWCost != null)
