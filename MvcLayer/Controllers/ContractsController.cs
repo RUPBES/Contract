@@ -220,11 +220,16 @@ namespace MvcLayer.Controllers
         public IActionResult Create(ContractViewModel contract, string? message = null)
         {
             var listExistContracts = _contractService.ExistContractAndReturnListSameContracts(contract.Number, contract.Date);
-
+            // TODO: Разобраться в разнице между двумя проверками
+            if (contract != null && (contract.IsSubContract == true || contract.IsAgreementContract == true))
+            {
+                var ob = contract.SubContractId != null && contract.SubContractId > 0 ? contract.SubContractId : contract.AgreementContractId;
+                ViewData["returnContractId"] = ob;
+                    }
             if (listExistContracts is not null && listExistContracts.Count > 0)
             {
                 ViewBag.Message = message;
-
+                TempData["Message"] = "Уже создан договор с таким номерам";
                 if (contract.IsSubContract == true)
                 {
                     return View("CreateSub", contract);
@@ -242,6 +247,7 @@ namespace MvcLayer.Controllers
 
             if (_contractService.ExistContractByNumber(contract.Number) || contract.Number is null)
             {
+                TempData["Message"] = "Уже создан договор с таким номерам";
                 if (contract.IsSubContract == true)
                 {
                     return View("CreateSub", contract);
@@ -322,6 +328,10 @@ namespace MvcLayer.Controllers
                 }
 
                 _contractService.Create(_mapper.Map<ContractDTO>(contract));
+                if (ViewData["returnContractId"] != null)
+                {
+                    return RedirectToAction(nameof(Details), new { id = ViewBag.returnContractId });
+                }
                 if (contract.IsEngineering == true)
                 {
                     return RedirectToAction(nameof(Engineerings));

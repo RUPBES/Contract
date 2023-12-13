@@ -5,7 +5,7 @@
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
-@{   
+@{
     string? inputDays = null;
     @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
     {
@@ -62,7 +62,7 @@
                         </a>
                     </legend>
                     <div class="col-12">
-                        <label>Субподрядчик</label>  
+                        <label>Субподрядчик</label>
                         <input name="ContractOrganizations[0].Organization" hidden />
                         <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
                             @if (Model?.ContractOrganizations[0] is not null)
@@ -80,14 +80,14 @@
                                 <option value="@item.Id">@item.Name</option>
                             }
                         </select>
-                    </div>  
-                    
+                    </div>
+
                     <input name="ContractOrganizations[1].Organization" hidden />
                     <input name="ContractOrganizations[2].Organization" hidden />
                 </fieldset>
-            </div>  
+            </div>
 
-            @*Сотрудники *********@          
+            @*Сотрудники *********@
             <div class="col-12 mt-3">
                 <fieldset class="border rounded-3 p-3">
                     <legend class="float-none w-auto px-3">
@@ -243,9 +243,9 @@
             {
                 var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
                 var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
-                 string idCh = "check" + @numberCheckbox;
-                 
-                 <div>
+                string idCh = "check" + @numberCheckbox;
+
+                <div>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <div class="input-group-text" style="display: block;">
@@ -352,17 +352,28 @@
             }
         </fieldset>
     </div>
-   
-    <div class="col-8 mt-3">
+
+    <div class="col-8 mt-3" style="display:flex">
+        @if (ViewBag.returnContractId != null)
+        {
+            <a class="btn" asp-action="Details" asp-route-id="@ViewBag.returnContractId">Вернуться</a>
+        }
+        else
+        {
+        <a class="btn" asp-action="Index">Вернуться</a>
+        }
         <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
     </div>
 </form>
-<div>
-    <a class="btn" asp-action="Index">Вернуться</a>
-</div>
-
+@{
+    if (TempData["Message"] != null)
+    {
+        var mes = (string)TempData["Message"];
+        <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+    }
+}
 @section Scripts {
-    <script type="text/javascript">
+    <script type="text/javascript">   
         $(function ($) {
             $('body').on('input', '#CDC', function (e) {
                 digits_float(this);
@@ -536,7 +547,7 @@
                     }
                 });
             });
-            
+
             $("#addOrganization").click(function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -586,7 +597,28 @@
 
             });
 
-            
+
         });
-    </script>
+
+        function MessageError(val) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Message", "Home")',
+                dataType: 'html',
+                data: { message: val },
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('toggle');
+                },
+                error: function (result) {
+                    console.log(result, 'Ошибка при вызове сообщения');
+                }
+            })
+        }
+
+        window.onload = function () {
+            $("#messageInput").trigger('click');
+        }
+    </script>    
 }
