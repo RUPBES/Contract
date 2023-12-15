@@ -14,6 +14,7 @@ using AngleSharp.Dom;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class ContractsController : Controller
     {
         private readonly IContractOrganizationService _contractOrganizationService;
@@ -40,7 +41,7 @@ namespace MvcLayer.Controllers
             _vContractEnginService = vContractEnginService;
         }
 
-        // GET: Contracts
+        // GET: Contracts        
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
             if (pageNum < 1)
@@ -104,6 +105,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create()
         {
             return View();

@@ -41,7 +41,7 @@
                     
                 </li> 
             </ul>
-            <ul class="navbar-nav flex-grow-1">
+           @*  <ul class="navbar-nav flex-grow-1">
                 @if (User?.Identity is { IsAuthenticated: true })
                 {
                     <li style="line-height:35px; margin-right:30px;">Пользователь - @User.Identity.Name</li>
@@ -55,6 +55,20 @@
                 {
                     <li class="nav-item">
                         <a class="nav-link text-white btn btn-sm btn-primary" asp-area="" asp-controller="Authentication" asp-action="Login">Войти</a>
+                    </li>
+                }
+            </ul> *@
+            <ul class="navbar-nav">
+                @if ((User.Identity == null) || (!(User.Identity.IsAuthenticated)))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link  text-white btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">Login</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link  text-white btn btn-sm btn-danger" asp-controller="Account" asp-action="Logout">Logout</a>
                     </li>
                 }
             </ul>

@@ -1,13 +1,19 @@
 ﻿using BusinessLayer.IoC;
 using DatabaseLayer.Data;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using MvcLayer.Data;
 using MvcLayer.Mapper;
-using OpenIddict.Client;
+//using OpenIddict.Client;
 using Quartz;
-using static OpenIddict.Abstractions.OpenIddictConstants;
+using System.Security.Claims;
+//using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace MvcLayer
 {
@@ -25,11 +31,21 @@ namespace MvcLayer
             string connectionData = Configuration.GetConnectionString("Data");
             string connectionIdentity = Configuration.GetConnectionString("Identity");
             Container.RegisterContainer(services, connectionData);
+            ////
+            services.AddRazorPages();
+            services.AddWindowsService();
+            ///
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor |
+                    ForwardedHeaders.XForwardedProto |
+                    ForwardedHeaders.XForwardedHost;
+            });
 
             services.Configure<FormOptions>(options =>
             {
                 // Set the limit to 512 MB
-                //options.MultipartBodyLengthLimit = 536870912;
                 options.ValueLengthLimit = int.MaxValue;
                 options.MultipartBodyLengthLimit = int.MaxValue;
             });
@@ -37,99 +53,114 @@ namespace MvcLayer
             services.AddAutoMapper(typeof(MapperViewModel));
             services.AddDbContext<ContractsContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("Data"));               
+                options.UseSqlServer(Configuration.GetConnectionString("Data"));
             });
-            services.AddDbContext<ApplicationDbContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("Identity"));
-                options.UseOpenIddict();
-            });
+            
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/login";
-                    options.LogoutPath = "/logout";
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(50);
-                    options.SlidingExpiration = false;
-                });
-            // OpenIddict offers native integration with Quartz.NET to perform scheduled tasks
-            // (like pruning orphaned authorizations from the database) at regular intervals.
-            services.AddQuartz(options =>
+            .AddCookie(
+                 options =>
+                 {
+                     options.LoginPath = "/Account/Login/";
+                     options.LogoutPath = "/Account/Logout";
+                     //options.Events.OnSigningOut = async e =>
+                     //{
+                     //    await e.HttpContext.RevokeRefreshTokenAsync();
+                     //};
+                 }
+            )
+            .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, o =>
             {
-                options.UseMicrosoftDependencyInjectionJobFactory();
-                options.UseSimpleTypeLoader();
-                options.UseInMemoryStore();
-            });
-            services.AddMvc();
-            // Register the Quartz.NET service and configure it to block shutdown until jobs are complete.
-            services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
-            services.AddOpenIddict()
-                .AddCore(options =>
+                o.ClientId = "ContractApplicationMVC";
+                o.ClientSecret = "771994A5-E7FE-52CB-B11D-61EF6A8F8984";
+                o.Authority = "https://aauth.rupbes.by/";
+                o.ResponseType = OpenIdConnectResponseType.Code; // OpenIdConnectResponseType.CodeIdTokenToken; // "code id_token token";
+                o.ResponseMode = OpenIdConnectResponseMode.Query;
+                o.UsePkce = true; // o.UsePkce = false; 
+                o.SaveTokens = true;
+                o.GetClaimsFromUserInfoEndpoint = true;
+                o.SignedOutCallbackPath = "/signout-callback-oidc"; // "/signout-callback-oidc" is a default endpoint. Do not use "signout-oidc"
+                o.SignedOutRedirectUri = "/Account/PostLogout";
+                o.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+
+                o.Scope.Clear();
+                o.Scope.Add("openid");
+                o.Scope.Add("profile");
+                o.Scope.Add("subject");
+                o.Scope.Add("email");
+                o.Scope.Add("ContrView");
+                o.Scope.Add("ContrEdit");
+                o.Scope.Add("ContrAdmin");
+                // requests a refresh token
+                o.Scope.Add("offline_access");               
+                o.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.UseEntityFrameworkCore()
-                           .UseDbContext<ApplicationDbContext>();
-
-                    // Developers who prefer using MongoDB can remove the previous lines
-                    // and configure OpenIddict to use the specified MongoDB database:
-                    // options.UseMongoDb()
-                    //        .UseDatabase(new MongoClient().GetDatabase("openiddict"));
-
-                    options.UseQuartz();
-                })
-                .AddClient(options =>
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                };
+                o.Events.OnTokenResponseReceived = cntxt =>
                 {
-                    options.AllowAuthorizationCodeFlow();
-
-                    // Register the signing and encryption credentials used to protect
-                    // sensitive data like the state tokens produced by OpenIddict.
-                    options.AddDevelopmentEncryptionCertificate()
-                           .AddDevelopmentSigningCertificate();
-
-                    // Register the ASP.NET Core host and configure the ASP.NET Core-specific options.
-                    options.UseAspNetCore()
-                           .EnableStatusCodePagesIntegration()
-                           .EnableRedirectionEndpointPassthrough()
-                           .EnablePostLogoutRedirectionEndpointPassthrough();
-
-                    // Register the System.Net.Http integration and use the identity of the current
-                    // assembly as a more specific user agent, which can be useful when dealing with
-                    // providers that use the user agent as a way to throttle requests (e.g Reddit).
-                    options.UseSystemNetHttp()
-                           .SetProductInformation(typeof(Program).Assembly);
-
-                    // Add a client registration matching the client application definition in the server project.
-                    options.AddRegistration(new OpenIddictClientRegistration
+                    return Task.CompletedTask;
+                };
+                o.Events.OnTokenValidated = cntxt =>
+                {
+                    if (cntxt.TokenEndpointResponse != null)
                     {
-                        Issuer = new Uri("https://authsrv.rupbes.by:8011/", UriKind.Absolute),
-                        ClientId = "contract-mvc",
-                        ClientSecret = "771994A5-E7FE-52CB-B11D-61EF6A8F8984",
-                        
-                        Scopes = { Scopes.Email, Scopes.Profile },
+                        var scopes = cntxt.TokenEndpointResponse.Scope.Split(' ');
+                        if (scopes != null && (cntxt.Principal != null) && cntxt.Principal.Identity is ClaimsIdentity identity)
+                        {
+                            foreach (var scope in scopes)
+                            {
+                                identity.AddClaim(new Claim("scope", scope));
+                            }
+                        }
+                    }
+                    return Task.CompletedTask;
+                };
+                o.Events.OnRemoteFailure = cntxt =>
+                {
+                    cntxt.Response.Redirect("/");
+                    cntxt.HandleResponse();
+                    return Task.CompletedTask;
+                };
+            });
 
-                        // Note: to mitigate mix-up attacks, it's recommended to use a unique redirection endpoint
-                        // URI per provider, unless all the registered providers support returning a special "iss"
-                        // parameter containing their URL as part of authorization responses. 
-                        RedirectUri = new Uri("callback/login/local", UriKind.Relative),
-                        PostLogoutRedirectUri = new Uri("callback/logout/local", UriKind.Relative)
-                    });
-                });
+            services.AddAuthorization(options => {
+                options.AddPolicy("ContrViewPolicy", policy =>
+                   policy.RequireAssertion(context =>
+                   {
+                       bool r = context.User.HasClaim(c => (c.Type == "scope" || c.Value == "ContrView"));
+                       return r;
+                   }
+                ));
+                options.AddPolicy("ContrEditPolicy", policy =>
+                  policy.RequireAssertion(context =>
+                  {
+                      bool r = context.User.HasClaim(c => (c.Type == "scope" || c.Value == "ContrEdit"));
+                      return r;
+                  }
+               ));
+                options.AddPolicy("ContrAdminPolicy", policy =>
+                   policy.RequireAssertion(context =>
+                   {
+                       bool r = context.User.HasClaim(c => (c.Type == "scope"&& c.Value == "ContrAdmin"));
+                       return r;
+                   }
+                ));
+            });
+
+            services.AddMvc();            
             services.AddHttpClient();
             services.AddControllersWithViews();
-            // Register the worker responsible for creating the database used to store tokens.
-            // Note: in a real world application, this step should be part of a setup script.
-            services.AddHostedService<Worker>();
-            /////////////////////////////////////////
-            /////////////////////////////////////////
-            /////////////////////////////////////////
 
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
+            app.UseForwardedHeaders();
             app.Use((context, next) =>
             {
                 // Scheme must be resetted
@@ -161,6 +192,7 @@ namespace MvcLayer
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
         }
     }
