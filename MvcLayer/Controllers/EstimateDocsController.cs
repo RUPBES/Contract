@@ -25,24 +25,26 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int id)
+        public IActionResult GetByContractId(int id, int returnContractId = 0)
         {
             ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int contractId)
+        public ActionResult Create(int contractId, int returnContractId = 0)
         {
             var obj = _estimateDocService.Find(e => e.ContractId == contractId).FirstOrDefault();
             if (obj != null)
                 ViewData["Edit"] = "true";
             ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(EstimateDocViewModel estimateDoc)
+        public ActionResult Create(EstimateDocViewModel estimateDoc, int returnContractId = 0)
         {
             try
             {
@@ -53,7 +55,7 @@ namespace MvcLayer.Controllers
 
                 if (estimateDoc?.ContractId is not null && estimateDoc.ContractId > 0)
                 {
-                    return RedirectToAction(nameof(GetByContractId), new { id = estimateDoc.ContractId });
+                    return RedirectToAction(nameof(GetByContractId), new { id = estimateDoc.ContractId, returnContractId = returnContractId });
                 }
                 else
                 {
@@ -66,18 +68,19 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult Edit(int id, int? contractId = null)
+        public ActionResult Edit(int id, int? contractId = null, int returnContractId = 0)
         {
             var obj = _estimateDocService.GetById(id);
             if (obj.Reason.Equals("Первоночальная проектно-сметная документация договора") == false)
                 ViewData["Edit"] = "true";
             ViewBag.contractId = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<EstimateDocViewModel>(_estimateDocService.GetById(id)));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(EstimateDocViewModel commissionAct)
+        public ActionResult Edit(EstimateDocViewModel commissionAct, int returnContractId = 0)
         {
             if (commissionAct is not null)
             {
@@ -93,7 +96,7 @@ namespace MvcLayer.Controllers
 
             if (commissionAct?.ContractId is not null && commissionAct.ContractId > 0)
             {
-                return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId });
+                return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId, returnContractId = returnContractId});
             }
             else
             {

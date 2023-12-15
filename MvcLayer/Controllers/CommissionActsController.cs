@@ -26,22 +26,24 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<CommissionActViewModel>>(_commissionActService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int id, bool isEngineering)
+        public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
             ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<CommissionActViewModel>>(_commissionActService.Find(x => x.ContractId == id)));
         }
 
-        public ActionResult Create(int contractId)
+        public ActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(CommissionActViewModel commissionAct)
+        public ActionResult Create(CommissionActViewModel commissionAct, int returnContractId = 0)
         {
             try
             {
@@ -52,8 +54,8 @@ namespace MvcLayer.Controllers
 
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же, если нет - на список всех
                 if (commissionAct.ContractId is not null && commissionAct.ContractId > 0)
-                {
-                    return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId });
+                {                    
+                    return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId, returnContractId = returnContractId });
                 }
                 else
                 {
