@@ -2,6 +2,10 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
     ViewData["Title"] = "Добавить ПСД";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
     var contid = ViewBag.contractId;
     var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
@@ -13,11 +17,11 @@
             <div class="dm-modal" style="max-width:960px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
-                    @if (@contid != null && @contid > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contid" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contid == null || @contid == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
@@ -25,6 +29,7 @@
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
                     <input asp-for="ContractId" value="@contract?.Id" hidden>
                     <div class="col-6">
                         <div class="form-group">

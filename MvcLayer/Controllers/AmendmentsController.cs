@@ -31,6 +31,8 @@ namespace MvcLayer.Controllers
         [HttpGet]
         public ActionResult GetByContractId(int id, int returnContractId = 0)
         {
+            ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id)));
         }
 

@@ -2,7 +2,14 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 
 @{
-    ViewData["Title"] = "Объем работ";
+    if (ViewBag.IsEngin != null)
+    {
+        ViewData["Title"] = "Объем услуг";
+    }
+    else
+    {
+        ViewData["Title"] = "Объем работ";        
+    }    
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
     var contractId = ViewBag.contractId;
     int backId = 0;
@@ -67,7 +74,7 @@
                                 else
                                 {
                                     <th>
-                                        Объем работ
+                                        Объем услуг
                                     </th>
                                 }
                                 <th></th>

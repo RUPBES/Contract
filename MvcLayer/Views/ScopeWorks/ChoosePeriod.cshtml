@@ -5,7 +5,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
-    ViewData["Title"] = "Добавление объема работ";
+
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
@@ -17,6 +17,15 @@
     {
         hasScope = true;
     }
+    var contract = Contract.GetById((int)Model.ContractId);
+    if (contract.IsEngineering == true)
+    {
+        ViewData["Title"] = "Добавление объема услуг";
+    }
+    else
+    {
+        ViewData["Title"] = "Добавление объема работ";
+    }    
 }
 <style>
     .title-warning {
@@ -72,8 +81,16 @@
                     <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
 
                     <div class="form-group col-12">
+                        @if (contract.IsEngineering == true)
+                        {
+                            <div class="title-warning"><span>Объем услуг для данного договора заполнен</span></div>
+                            <label for="amendCheck">Внести изменения для объема услуг по доп.соглашению?</label>
+                        }
+                        else
+                        {
                         <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
                         <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+                        }
                         <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
                     </div>
                     <div id="chooseAmendment" class="row" hidden>
@@ -103,10 +120,16 @@
             }
 
             @if (!hasScope)
-            {
-                var contract = Contract.GetById((int)Model.ContractId);
+            {                
                 <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-                    <h4>Выбор периода объема работ</h4>
+                    @if (contract.IsEngineering == true)
+                    {
+                        <h4>Выбор периода объема услуг</h4>
+                    }
+                    else
+                    {
+                        <h4>Выбор периода объема работ</h4>
+                    }                    
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <div class="form-group col-6 mb-3">

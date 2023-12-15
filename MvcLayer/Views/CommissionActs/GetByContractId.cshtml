@@ -5,8 +5,12 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
-    ViewData["Title"] = "Акты ввода";
+    ViewData["Title"] = "Акты ввода ";
     bool isAdmin = true;
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
     string redirectAction = "GetByContractId";
     string redirectController = "CommissionActs";
     var contract = Contract.GetById((int)ViewData["contractId"]);
@@ -19,13 +23,13 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewData["contractId"]" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    @if (backId == null || backId == 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@ViewData["contractId"]" class=" close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Index" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
@@ -67,7 +71,7 @@
                                 </td>
                                 <td>
                                     <span class="icon file-add" title="Добавить файл к акту">
-                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.CommissionActs" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId"></a>
+                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.CommissionActs" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                     </span>                                   
                                     <span class="icon delete" title="Удалить акт">
                                         <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>

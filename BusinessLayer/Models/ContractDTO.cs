@@ -93,6 +93,11 @@ namespace BusinessLayer.Models
         /// </summary>
         public string? PaymentСonditionsRaschet { get; set; }
 
+        /// <summary>
+        /// условия формирования договорной цены, % (Инжиниронговые услуги)
+        /// </summary>
+        public double? PaymentСonditionsPrice { get; set; }
+
         public bool IsMultiple { get; set; }
         public int? MultipleContractId { get; set; }
         public bool IsOneOfMultiple { get; set; }

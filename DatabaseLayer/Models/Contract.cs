@@ -25,6 +25,7 @@ namespace DatabaseLayer.Models
         public bool? IsAgreementContract { get; set; }
         public string PaymentСonditionsAvans { get; set; }
         public string PaymentСonditionsRaschet { get; set; }
+        public double? PaymentСonditionsPrice { get; set; }
 
         public bool IsMultiple { get; set; }
         public int? MultipleContractId { get; set; }

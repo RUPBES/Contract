@@ -179,8 +179,8 @@ namespace BusinessLayer.Services
         public List<ContractDTO>? ExistContractAndReturnListSameContracts(string numberContract, DateTime? dateContract)
         {
             List<ContractDTO> contracts = new List<ContractDTO>();
-
-            var contract = _database.Contracts.Find(x => x.Number == numberContract && x.Date == dateContract).FirstOrDefault();
+            var list = _database.Contracts.GetAll();            
+            var contract = list.Where(x => x.Number != null && x.Number == numberContract && x.Date != null && x.Date == dateContract).FirstOrDefault();
 
             if (contract is not null)
             {

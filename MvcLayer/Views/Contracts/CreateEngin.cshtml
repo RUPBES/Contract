@@ -5,7 +5,7 @@
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
-@{   
+@{
     string? inputDays = null;
     @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
     {
@@ -56,9 +56,13 @@
                 <label for="CDC">Стоимость оказания услуг</label>
                 <div class="input-group">
                     <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                    <input name="ContractPrice" type="text" class="form-control" id="CDC">
+                    <input name="ContractPrice" type="text" class="form-control cost" id="CDC">
                 </div>
-            </div>           
+            </div>
+            <div class="form-group mt-3">
+                <label asp-for="PaymentСonditionsPrice"></label>
+                <input name="PaymentСonditionsPrice" maxlength="5" type="text" class="form-control cost">
+            </div>
             @*Орагнизации *********@
             <div class="col-12 mt-3">
                 <fieldset class="border rounded-3 p-3">
@@ -92,7 +96,7 @@
                     <input name="ContractOrganizations[1].Organization" hidden />
                     <input name="ContractOrganizations[2].Organization" hidden />
                 </fieldset>
-            </div>  
+            </div>
             @*Виды работ*********@
             <div class="col-12 mt-3">
                 <fieldset class="border rounded-3 p-3">
@@ -128,7 +132,7 @@
             </div>
         </div>
     </div>
-    <div class="col-4"> 
+    <div class="col-4">
         <div class="col-12">
             <label>Наименование объекта</label>
             <textarea asp-for="NameObject" class="form-control" rows="2"></textarea>
@@ -258,7 +262,7 @@
                 </div>
             }
         </fieldset>
-        </div>
+    </div>
     <div class="col-8 mt-1">
         <fieldset class="border rounded-3 p-3">
             <legend class="float-none w-auto px-3">Расчет за выполненные услуги</legend>
@@ -295,18 +299,28 @@
             }
         </fieldset>
     </div>
-    <div class="col-8 mt-3">
-        <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
+    <div class="col-8 mt-3" style="display:flex">
+        <a class="btn btn-success" asp-action="Index">Вернуться</a>
+        <button type="submit" class="btn btn-primary k-ml-2" id="subBtn">Сохранить</button>
     </div>
 </form>
-
+@{
+    if (TempData["Message"] != null)
+    {
+        var mes = (string)TempData["Message"];
+        <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+    }
+}
 @section Scripts {
     <script type="text/javascript">
         $(function ($) {
-            $('body').on('input', '#CDC', function (e) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
+            $('body').on('input', '.cost', function (e) {
                 digits_float(this);
             });
-            digits_float('#CDC');
         });
         $(document).ready(function () {
             ////    проверка вводимых дат /////////********/
@@ -472,7 +486,7 @@
                     }
                 });
             });
-            
+
             $("#addOrganization").click(function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -486,7 +500,7 @@
                     })
                 });
 
-            });           
+            });
 
             ///
 
@@ -504,7 +518,25 @@
                 });
             });
 
-            
+
         });
+    </script>
+    <script>
+        function MessageError(val) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Message", "Home")',
+                dataType: 'html',
+                data: { message: val },
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('toggle');
+                },
+                error: function (result) {
+                    console.log(result, 'Ошибка при вызове сообщения');
+                }
+            })
+        }
     </script>
 }

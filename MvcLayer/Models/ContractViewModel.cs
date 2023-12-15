@@ -111,6 +111,12 @@ namespace MvcLayer.Models
         public string? PaymentСonditionsAvans { get; set; }
 
         /// <summary>
+        /// условия формирования договорной цены, % (Инжиниронговые услуги)
+        /// </summary>
+        [DisplayName("Условия договорной цены, %")]
+        public double? PaymentСonditionsPrice { get; set; }
+
+        /// <summary>
         /// условия оплаты (расчеты за выполненные работы)
         /// </summary>
         [DisplayName("Расчет за выполненные работы")]

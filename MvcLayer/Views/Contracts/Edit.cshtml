@@ -253,9 +253,17 @@
                             }
                         </select>
                     </div>
+                    @if (ViewBag.IsEngin != null)
+                    {
+                        <div class="col-3">
+                            <label asp-for="PaymentСonditionsPrice" class="control-label"></label>
+                            <input id="PaymentСonditionsPrice" type="text" name="PaymentСonditionsPrice" value="@Model.PaymentСonditionsPrice" class="form-control cost" />
+                            <span asp-validation-for="PaymentСonditionsPrice" class="text-danger"></span>
+                        </div>
+                    }
                     <div class="col-3">
                         <label asp-for="ContractPrice" class="control-label"></label>
-                        <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control" />
+                        <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
                         <span asp-validation-for="ContractPrice" class="text-danger"></span>
                     </div>
                     <div class="form-group">
@@ -339,12 +347,15 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     <script>
-                    $(function ($) {
-                        $('body').on('input', '#contractPrice', function (e) {
-                            digits_float(this);
-                        });
-                        digits_float('#contractPrice');
-                    });
+            $(function ($) {
+                var allCost = $(".cost")
+                for (let el of allCost) {
+                    digits_float(el)
+                }
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+            });
 
                     //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
 
