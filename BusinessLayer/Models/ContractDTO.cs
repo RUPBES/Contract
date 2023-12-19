@@ -125,7 +125,7 @@ namespace BusinessLayer.Models
 
         public List<ContractDTO> InverseSubContract { get; set; } = new List<ContractDTO>();
 
-        public List<MaterialDTO> Materials { get; set; } = new List<MaterialDTO>();
+        public List<MaterialDTO> MaterialGcs { get; set; } = new List<MaterialDTO>();
 
         public List<PaymentDTO> Payments { get; set; } = new List<PaymentDTO>();
 

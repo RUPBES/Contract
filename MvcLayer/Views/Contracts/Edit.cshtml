@@ -274,7 +274,7 @@
                     <fieldset class="border rounded-1 p-3">
                         <legend class="float-none w-auto px-3">Источник финансирования</legend>
                         @foreach (var item in Enum.GetValues<FundingSourceEnum>())
-                        {                            
+                        {
                             var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
                             var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
 
@@ -296,7 +296,7 @@
                                 </div>
                             </div>
                         }
-                    </fieldset>                    
+                    </fieldset>
                     <fieldset class="border rounded-1 p-3">
                         <legend class="float-none w-auto px-3">Условия авансирования</legend>
                         @{
@@ -328,12 +328,12 @@
                             </div>
                             numberCheckbox++;
                         }
-                    </fieldset>                   
+                    </fieldset>
                     <div class="form-group">
                         <label asp-for="PaymentСonditionsRaschet" class="control-label"></label>
                         <input type="text" name="PaymentСonditionsRaschet" value="@Model.PaymentСonditionsRaschet" class="form-control" />
                         <span asp-validation-for="PaymentСonditionsRaschet" class="text-danger"></span>
-                    </div>                   
+                    </div>
                     <div class="form-group mt-3">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
@@ -343,10 +343,11 @@
     </div>
 </div>
 
-@section Scripts {
+@section Scripts
+{
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    <script>
+        <script>
             $(function ($) {
                 var allCost = $(".cost")
                 for (let el of allCost) {
@@ -357,57 +358,66 @@
                 });
             });
 
-                    //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+            //select выпадающий список
+            $(document).ready(function () {
+                console.log('ready')
+                $('.js-chosen').chosen({
+                    width: '91%',
+                    no_results_text: 'Совпадений не найдено',
+                    placeholder_text_single: 'Выберите'
+                });
+            });
 
-                    let ch1 = document.querySelector("#check0");
-                    let ch2 = document.querySelector("#check1");
-                    let ch3 = document.querySelector("#check2");
+            //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+
+            let ch1 = document.querySelector("#check0");
+            let ch2 = document.querySelector("#check1");
+            let ch3 = document.querySelector("#check2");
 
             let mod = @Html.Raw(Json.Serialize(Model.PaymentСonditionsAvans))
-            
-                    window.onload = function () {                        
-                        if (mod != null) {
-                            if (ch1.checked) {
-                                ch2.setAttribute("disabled", true);
-                                ch3.setAttribute("disabled", true);
-                            }
-                            else {
-                                ch1.setAttribute("disabled", true)
-                            }
-                        }
-                    }
-                    ch1.addEventListener('change', (e) => {
-                        if (e.currentTarget.checked) {
+
+                window.onload = function () {
+                    if (mod != null) {
+                        if (ch1.checked) {
                             ch2.setAttribute("disabled", true);
                             ch3.setAttribute("disabled", true);
                         }
-
-                        if (!e.currentTarget.checked) {
-                            ch2.removeAttribute("disabled");
-                            ch3.removeAttribute("disabled");
+                        else {
+                            ch1.setAttribute("disabled", true)
                         }
-                    });
+                    }
+                }
+            ch1.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch2.setAttribute("disabled", true);
+                    ch3.setAttribute("disabled", true);
+                }
 
-                    ch2.addEventListener('change', (e) => {
-                        if (e.currentTarget.checked) {
-                            ch1.setAttribute("disabled", true);
-                        }
+                if (!e.currentTarget.checked) {
+                    ch2.removeAttribute("disabled");
+                    ch3.removeAttribute("disabled");
+                }
+            });
 
-                        if (!e.currentTarget.checked && !ch3.checked) {
-                            ch1.removeAttribute("disabled");
-                        }
+            ch2.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch1.setAttribute("disabled", true);
+                }
 
-                    });
+                if (!e.currentTarget.checked && !ch3.checked) {
+                    ch1.removeAttribute("disabled");
+                }
+            });
 
-                    ch3.addEventListener('change', (e) => {
-                        if (e.currentTarget.checked) {
-                            ch1.setAttribute("disabled", true);
-                        }
+            ch3.addEventListener('change', (e) => {
+                if (e.currentTarget.checked) {
+                    ch1.setAttribute("disabled", true);
+                }
 
-                        if (!e.currentTarget.checked && !ch2.checked) {
-                            ch1.removeAttribute("disabled");
-                        }
-                    });
+                if (!e.currentTarget.checked && !ch2.checked) {
+                    ch1.removeAttribute("disabled");
+                }
+            });
 
             let styleName = "border:solid red 4px;";
 
@@ -422,9 +432,9 @@
                     $("#dayInput").parent().remove();
                 }
 
-                $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'></div>`);
+                $(this).parent().parent().last().after(`<div class='col-1'>
+                            <input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
             });
-
-    </script>
+        </script>
     }
 }

@@ -93,6 +93,8 @@ namespace MvcLayer.Controllers
                    
                     if (scopeChangeOwnForce?.FirstOrDefault() is null)
                     {
+                        TempData["contractId"] = contractId;
+                        TempData["returnContractId"] = returnContractId;
                         return RedirectToAction(nameof(CreatePeriods), periodChoose);
                     }
                     else if (scopeChangeOwnForce.Count() > 0)
@@ -112,6 +114,14 @@ namespace MvcLayer.Controllers
         {
             if (scopeWork is not null)
             {
+                if (TempData["contractId"] != null)
+                {
+                    contractId = (int)TempData["contractId"];
+                }
+                if (TempData["returnContractId"] != null)
+                {
+                    returnContractId = (int)TempData["returnContractId"];
+                }
                 ScopeWorkViewModel scope = new ScopeWorkViewModel();
                 List<SWCostDTO> costs = new List<SWCostDTO>();                
                 if (scopeWork.AmendmentId > 0)
