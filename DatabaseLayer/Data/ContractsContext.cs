@@ -103,8 +103,8 @@ public partial class ContractsContext : DbContext
             //var connectionString = configuration.GetConnectionString("Data");
             //optionsBuilder.UseSqlServer(connectionString);
 
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
 
         }
     }
@@ -190,7 +190,7 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<Amendment>(entity =>
         {
-            entity.ToTable("Amendment", tg=>tg.HasTrigger("TGR_Change_Contract_Price_After_Amendment"));
+            entity.ToTable("Amendment", tg => tg.HasTrigger("TGR_Change_Contract_Price_After_Amendment"));
 
             entity.HasComment("Изменения к договору");
 
@@ -288,15 +288,32 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.FundingSource).HasComment("источник финансирования");
 
-            entity.Property(e => e.IsAgreementContract).HasDefaultValueSql("0").HasComment("является ли соглашением с филиалом");
+            entity.Property(e => e.IsAgreementContract)
+            .HasDefaultValueSql("0")
+            .HasComment("является ли соглашением с филиалом");
 
-            entity.Property(e => e.IsEngineering).HasDefaultValueSql("0").HasComment("является ли договор инжиниринговыми услугами");
+            entity.Property(e => e.IsEngineering)
+            .HasDefaultValueSql("0")
+            .HasComment("является ли договор инжиниринговыми услугами");
 
-            entity.Property(e => e.IsSubContract).HasDefaultValueSql("0").HasComment("Флаг, является ли договором субподряда");
-            entity.Property(e => e.IsMultiple).HasDefaultValueSql("0").HasComment("является составным договором");
-            entity.Property(e => e.IsOneOfMultiple).HasDefaultValueSql("0").HasComment("является подобъектом");
+            entity.Property(e => e.IsSubContract)
+            .HasDefaultValueSql("0")
+            .HasComment("Флаг, является ли договором субподряда");
 
-            entity.Property(e => e.NameObject).HasComment("Название объекта");
+            entity.Property(e => e.IsMultiple)
+            .HasDefaultValueSql("0")
+            .HasComment("является составным договором");
+
+            entity.Property(e => e.IsOneOfMultiple)
+            .HasDefaultValueSql("0")
+            .HasComment("является подобъектом");
+
+            entity.Property(e => e.IsExpired).HasDefaultValueSql("0");
+            entity.Property(e => e.IsClosed).HasDefaultValueSql("0");
+            entity.Property(e => e.Author);
+            entity.Property(e => e.Owner);
+
+          entity.Property(e => e.NameObject).HasComment("Название объекта");
 
             entity.Property(e => e.Number)
                 .HasMaxLength(100)
@@ -321,20 +338,20 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.InverseSubContract)
                 .HasForeignKey(d => d.SubContractId)
                 .HasConstraintName("FK_Contract_Contract_Id");
-           
+
             entity.HasOne(d => d.MultipleContract)
                .WithMany(p => p.InverseMultipleContract)
                .HasForeignKey(d => d.MultipleContractId)
                .HasConstraintName("FK_MultipleContract_Contract_Id");
-        }); 
-        
+        });
+
         modelBuilder.Entity<ContractFile>(entity =>
         {
             entity.HasKey(e => new { e.ContractId, e.FileId });
 
             entity.ToTable("ContractFile");
 
-           
+
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.ContractFiles)
                 .HasForeignKey(d => d.ContractId)

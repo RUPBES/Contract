@@ -8,9 +8,11 @@ using BusinessLayer.Models;
 using DatabaseLayer.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Diagnostics.Contracts;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class DepartmentsController : Controller
     {
         private readonly IMapper _mapper;
@@ -54,6 +56,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(int idOrg)
         {
             ViewData["OrganizationId"] = idOrg;
@@ -61,6 +64,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(DepartmentViewModel department)
         {
@@ -73,6 +77,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index","Organizations");
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _departmentService.GetAll() == null)
@@ -91,6 +96,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,OrganizationId")] DepartmentViewModel department)
         {
             if (id != department.Id)
@@ -121,6 +127,7 @@ namespace MvcLayer.Controllers
             return View(department);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _departmentService.GetAll() == null)
@@ -151,6 +158,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

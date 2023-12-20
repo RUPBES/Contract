@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class MaterialController : Controller
     {
 
@@ -142,6 +144,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult CreateMaterialFact(PeriodChooseViewModel model)
         {
             int id = TempData["materialId"] is int preId ? preId : 0;
@@ -157,6 +160,7 @@ namespace MvcLayer.Controllers
             });
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel, int? contractId = 0, int? returnContractId = 0)
         {
             if (TempData["contractId"] != null)
@@ -201,6 +205,7 @@ namespace MvcLayer.Controllers
             return View(periodViewModel);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -221,6 +226,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(MaterialViewModel material, int returnContractId = 0)
         {
@@ -239,6 +245,7 @@ namespace MvcLayer.Controllers
             return View(material);
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(MaterialViewModel material)
         {
             if (material is not null)
@@ -254,6 +261,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _materialService.GetAll() == null)

@@ -18,6 +18,12 @@ namespace MvcLayer.Controllers
             // do not use HttpContext.ChallengeAsync(...)-method call !!! It will not work
             return Challenge(authProps, OpenIdConnectDefaults.AuthenticationScheme);
         }
+        
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
         [HttpGet("~/Account/Logout")]
         public async Task Logout()
         {

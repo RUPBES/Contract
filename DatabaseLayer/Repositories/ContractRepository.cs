@@ -110,6 +110,11 @@ namespace DatabaseLayer.Repositories
                     contract.MultipleContractId = entity.MultipleContractId;
                     contract.IsMultiple = entity.IsMultiple;
                     contract.IsOneOfMultiple = entity.IsOneOfMultiple;
+                    contract.IsClosed = entity.IsClosed;
+
+                    contract.IsExpired = entity.IsExpired;
+                    contract.Author = entity.Author;
+                    contract.Owner = entity.Owner;
 
                     foreach (var item in entity.ContractOrganizations)
                     {

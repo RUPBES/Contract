@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class FilesController : Controller
     {
         private readonly IFileService _file;
@@ -23,6 +25,7 @@ namespace MvcLayer.Controllers
             return View(_file.GetAll());
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
@@ -34,6 +37,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         [HttpPost]
         public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
@@ -62,13 +66,14 @@ namespace MvcLayer.Controllers
             return View(files);
         }
 
-
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Create(IFormCollection collection)
         {
             try
@@ -83,6 +88,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Delete(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
             try
@@ -108,6 +114,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult GetFile(int id)
         {
             if (id != 0)

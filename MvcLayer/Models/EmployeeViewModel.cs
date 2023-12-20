@@ -35,6 +35,7 @@ namespace MvcLayer.Models
 
         [DisplayName("Электронная почта")]
         public string? Email { get; set; }
+        public string? Author { get; set; }
 
         public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
                

@@ -13,6 +13,7 @@ namespace DatabaseLayer.Models
         public string Fio { get; set; }
         public string Position { get; set; }
         public string Email { get; set; }
+        public string? Author { get; set; }
 
         public virtual List<DepartmentEmployee> DepartmentEmployees { get; set; } = new List<DepartmentEmployee>();
         public virtual List<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();

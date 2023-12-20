@@ -3,11 +3,13 @@ using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class CorrespondencesController : Controller
     {
         private readonly ICorrespondenceService _correspondenceService;
@@ -34,6 +36,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<CorrespondenceViewModel>>(_correspondenceService.Find(x => x.ContractId == id)));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -43,6 +46,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Create(CorrespondenceViewModel correspondenceViewModel, int returnContractId = 0)
         {
             try
@@ -67,6 +71,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public ActionResult Edit(int id, int? contractId = 0, int returnContractId = 0)
         {
             ViewBag.contractId = contractId;
@@ -76,6 +81,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrEditPolicy")]
         public ActionResult Edit(CorrespondenceViewModel correspondence, int returnContractId = 0)
         {
             if (correspondence is not null)
@@ -100,6 +106,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Delete(int id, int? contractId = null)
         {
             try

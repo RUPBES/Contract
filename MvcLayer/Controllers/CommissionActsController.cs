@@ -3,11 +3,13 @@ using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class CommissionActsController : Controller
     {
         private readonly ICommissionActService _commissionActService;
@@ -34,6 +36,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<CommissionActViewModel>>(_commissionActService.Find(x => x.ContractId == id)));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -43,6 +46,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Create(CommissionActViewModel commissionAct, int returnContractId = 0)
         {
             try
@@ -100,6 +104,7 @@ namespace MvcLayer.Controllers
         //    }
         //}
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Delete(int id, int? contractId = null)
         {
             try

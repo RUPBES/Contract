@@ -5,12 +5,11 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using System.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class EmployeesController : Controller
     {
         private readonly IEmployeeService _employeesService;
@@ -27,6 +26,9 @@ namespace MvcLayer.Controllers
         // GET: Employees
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
+            //TODO: 2. здесь название организации, ее вставить в _employeesService.GetPage и _employeesService.GetPageFilter чтобы взять инфу по организации
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+
             ViewBag.CurrentSort = sortOrder;
             ViewBag.FullNameSortParm = sortOrder == "fullName" ? "fullNameDesc" : "fullName";
             ViewBag.FioSortParm = sortOrder == "fio" ? "fioDesc" : "fio";
@@ -61,6 +63,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<EmployeeViewModel>(employee));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create()
         {
             ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name");
@@ -69,6 +72,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
             //if (ModelState.IsValid)
@@ -80,7 +84,7 @@ namespace MvcLayer.Controllers
             return View(employee);
         }
 
-
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _employeesService.GetAll() == null)
@@ -111,6 +115,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EmployeeViewModel employee)
         {
@@ -151,10 +156,11 @@ namespace MvcLayer.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
+        //ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name", employee.ContractId);
         //    return View(employee);
         //}
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _employeesService.GetAll() == null)
@@ -172,6 +178,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

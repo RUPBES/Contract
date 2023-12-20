@@ -2,12 +2,14 @@
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class PaymentsController : Controller
     {
         private readonly IContractService _contractService;
@@ -84,6 +86,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel paymentViewModel, int? contractId = 0, int? returnContractId = 0)
         {
             if (TempData["contractId"] != null)
@@ -116,6 +119,7 @@ namespace MvcLayer.Controllers
             return View(paymentViewModel);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -133,6 +137,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(List<PaymentViewModel> payment, int returnContractId = 0)
         {
@@ -149,6 +154,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> EditPayments(List<PaymentViewModel> payment, int returnContractId = 0)
         {
             if (payment is not null || payment.Count() > 0)

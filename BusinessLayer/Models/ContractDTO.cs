@@ -101,6 +101,12 @@ namespace BusinessLayer.Models
         public bool IsMultiple { get; set; }
         public int? MultipleContractId { get; set; }
         public bool IsOneOfMultiple { get; set; }
+
+        public string? Author { get; set; }
+        public string? Owner { get; set; }
+        public bool IsExpired { get; set; }
+        public bool IsClosed { get; set; }
+
         public virtual ContractDTO MultipleContract { get; set; }
 
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();

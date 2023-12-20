@@ -36,5 +36,9 @@
         public string? PaymentСonditionsRaschet { get; set; }
 
         public double? PaymentСonditionsPrice { get; set; }
+        public string? Author { get; set; }
+        public string? Owner { get; set; }
+        public bool IsExpired { get; set; }
+        public bool IsClosed { get; set; }
     }
 }

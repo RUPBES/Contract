@@ -2,11 +2,13 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class FormsController : Controller
     {
         private readonly IContractService _contractService;
@@ -97,6 +99,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult CreateForm(PeriodChooseViewModel model, int contractId = 0, int? returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -108,6 +111,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Create(FormViewModel formViewModel, int? returnContractId = 0)
         {
@@ -132,6 +136,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public ActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
             var ob = _contractService.GetById(contractId);
@@ -143,6 +148,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(FormViewModel formViewModel, int returnContractId = 0)
         {
@@ -162,6 +168,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult Delete(int id)
         {
             try

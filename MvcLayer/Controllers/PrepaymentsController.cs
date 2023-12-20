@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class PrepaymentsController : Controller
     {
 
@@ -158,6 +160,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult CreatePrepaymentFact(PeriodChooseViewModel model)
         {
             int id = TempData["prepaymentId"] is int preId ? preId : 0;
@@ -174,6 +177,7 @@ namespace MvcLayer.Controllers
                 }
             });
         }
+
 
         public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel, int? contractId = 0, int? returnContractId = 0)
         {
@@ -240,6 +244,7 @@ namespace MvcLayer.Controllers
             return View(prepaymentViewModel);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -270,6 +275,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(PrepaymentViewModel prepayment, int returnContractId = 0)
         {
             if (prepayment is not null)
@@ -293,6 +299,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> EditPrepayments(List<PrepaymentViewModel> prepayment, int returnContractId = 0)
         {
             if (prepayment is not null || prepayment.Count() > 0)
@@ -307,6 +314,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _prepayment.GetAll() == null)
@@ -318,6 +326,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> EditFact(int id, int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -327,6 +336,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> EditFact(PrepaymentFactDTO factDTO, int contractId, int returnContractId = 0)
         {
             _prepaymentFact.Update(factDTO);

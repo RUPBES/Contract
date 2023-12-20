@@ -11,6 +11,7 @@ using System.Diagnostics.Contracts;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using AngleSharp.Dom;
+using static System.Net.WebRequestMethods;
 
 namespace MvcLayer.Controllers
 {
@@ -44,10 +45,14 @@ namespace MvcLayer.Controllers
         // GET: Contracts        
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
+            //TODO: 1. здесь название организации, ее вставить в _vContractService.GetPage и _vContractService.GetPageFilter чтобы взять инфу по организации
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+
             if (pageNum < 1)
             {
                 pageNum = 1;
             }
+
             ViewData["IsEngineering"] = false;
             ViewData["CurrentSort"] = sortOrder;
             ViewData["DateSortParm"] = sortOrder == "date" ? "dateDesc" : "date";
@@ -101,7 +106,7 @@ namespace MvcLayer.Controllers
             if (contract == null)
             {
                 return NotFound();
-            }            
+            }
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -110,6 +115,7 @@ namespace MvcLayer.Controllers
         {
             return View();
         }
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult CreateSubObj(int? id)
         {
             if (id == null)
@@ -123,20 +129,26 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult CreateSubObj(ContractViewModel viewModel)
         {
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             if (viewModel is not null)
             {
                 var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
                 oldContract.IsMultiple = true;
                 _contractService.Update(oldContract);
                 viewModel.IsOneOfMultiple = true;
+                viewModel.Author = organizationName;
+                viewModel.Owner = organizationName;
+
                 _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
-                return RedirectToAction(nameof(Details),new { id = viewModel.MultipleContractId });
+                return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });
             }
             return View();
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         /// <summary>
         /// Создание соглашения с филиалом
         /// </summary>
@@ -167,6 +179,8 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
+
+        [Authorize(Policy = "ContrAdminPolicy")]
         /// <summary>
         /// Создание  договора на оказание инжиниринговых услуг
         /// </summary> 
@@ -187,6 +201,7 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         /// <summary>
         /// Создание субподрядного договора
         /// </summary>
@@ -218,37 +233,44 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(ContractViewModel contract, string? message = null)
         {
-            var listExistContracts = _contractService.ExistContractAndReturnListSameContracts(contract.Number, contract.Date);
-            // TODO: Разобраться в разнице между двумя проверками
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";           
+            
             if (contract != null && (contract.IsSubContract == true || contract.IsAgreementContract == true))
             {
                 var ob = contract.SubContractId != null && contract.SubContractId > 0 ? contract.SubContractId : contract.AgreementContractId;
                 ViewData["returnContractId"] = ob;
-                    }
-            if (listExistContracts is not null && listExistContracts.Count > 0)
-            {
-                ViewBag.Message = message;
-                TempData["Message"] = "Уже создан договор с таким номерам";
-                if (contract.IsSubContract == true)
-                {
-                    return View("CreateSub", contract);
-                }
-                if (contract.IsAgreementContract == true)
-                {
-                    return View("CreateAgr", contract);
-                }
-                if (contract.IsEngineering == true)
-                {
-                    return View("CreateEngin", contract);
-                }
-                return View(contract);
             }
 
+            //TODO: если ничего не обваливается при создании договора, удалить закоменченую проверку, если да - то раскоментировать
+
+            //var listExistContracts = _contractService.ExistContractAndReturnListSameContracts(contract.Number, contract.Date);
+            //if (listExistContracts is not null && listExistContracts.Count > 0)
+            //{
+            //    ViewBag.Message = message;
+            //    TempData["Message"] = "Уже создан договор с таким номерам";
+            //    if (contract.IsSubContract == true)
+            //    {
+            //        return View("CreateSub", contract);
+            //    }
+            //    if (contract.IsAgreementContract == true)
+            //    {
+            //        return View("CreateAgr", contract);
+            //    }
+            //    if (contract.IsEngineering == true)
+            //    {
+            //        return View("CreateEngin", contract);
+            //    }
+            //    return View(contract);
+            //}
+
+            // проверка, существует ли договор с таким номером,если да - то обратно на заполнение данных
             if (_contractService.ExistContractByNumber(contract.Number) || contract.Number is null)
             {
+                ViewBag.Message = message;
                 TempData["Message"] = "Уже создан договор с таким номерам";
                 if (contract.IsSubContract == true)
                 {
@@ -271,7 +293,7 @@ namespace MvcLayer.Controllers
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
                 if (contract.IsEngineering == true)
-                    TempData["IsEngin"] = true;                
+                    TempData["IsEngin"] = true;
                 contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
 
                 var orgContract1 = new ContractOrganizationDTO
@@ -329,6 +351,9 @@ namespace MvcLayer.Controllers
                     contract.TypeWorkContracts.Add(typeWork);
                 }
 
+                contract.Author = organizationName;
+                contract.Owner = organizationName;
+
                 _contractService.Create(_mapper.Map<ContractDTO>(contract));
                 if (ViewData["returnContractId"] != null)
                 {
@@ -344,6 +369,7 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         // GET: Contracts/Edit/5
         //[Authorize]
         public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
@@ -415,9 +441,8 @@ namespace MvcLayer.Controllers
             return View(viewContract);
         }
 
-        //[Authorize]
         [HttpPost]
-        //[ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
         {
             if (contract.ContractOrganizations[1].OrganizationId == 0)
@@ -453,7 +478,7 @@ namespace MvcLayer.Controllers
             catch (DbUpdateConcurrencyException)
             {
             }
-            
+
             if (returnContractId != 0)
             {
                 return RedirectToAction("Details", new { id = returnContractId });
@@ -468,7 +493,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        //[Authorize]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _contractService.GetAll() == null)
@@ -485,8 +510,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
-        //[Authorize]
-
+        [Authorize(Policy = "ContrAdminPolicy")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -495,7 +519,7 @@ namespace MvcLayer.Controllers
             {
                 return Problem("Entity set 'ContractsContext.Contracts'  is null.");
             }
-           
+
             var contract = _contractService.GetById(id);
 
             if (contract != null)
@@ -507,7 +531,7 @@ namespace MvcLayer.Controllers
                 else
                 {
                     _contractService.Delete(id);
-                }                
+                }
             }
 
             return RedirectToAction(nameof(Index));
@@ -623,7 +647,7 @@ namespace MvcLayer.Controllers
                         return $"Расчет за выполненные работы производится не позднее {days} числа месяца, следующего за отчетным";
                     }
                 }
-                else 
+                else
                 {
                     if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
                     {

@@ -9,9 +9,11 @@ using DatabaseLayer.Data;
 using DatabaseLayer.Models;
 using System.Diagnostics.Contracts;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class EnginContractsController : Controller
     {
 

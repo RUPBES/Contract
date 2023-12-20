@@ -5,9 +5,11 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class PhonesController : Controller
     {
         private readonly IPhoneService _phoneService;
@@ -46,6 +48,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<PhoneViewModel>(phone));
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create()
         {
             ViewData["EmployeeId"] = new SelectList(_employeesService.GetAll(), "Id", "FIO");
@@ -55,6 +58,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Create([Bind("Id,Number,OrganizationId,EmployeeId")] PhoneViewModel phone)
         {
             if (ModelState.IsValid)
@@ -67,6 +71,7 @@ namespace MvcLayer.Controllers
             return View(phone);
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _phoneService.GetAll() == null)
@@ -88,6 +93,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Number,OrganizationId,EmployeeId")] PhoneViewModel phone)
         {
             if (id != phone.Id)
@@ -119,6 +125,7 @@ namespace MvcLayer.Controllers
             return View(phone);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _phoneService.GetAll() == null)
@@ -137,6 +144,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_phoneService.GetAll() == null)

@@ -25,7 +25,8 @@ namespace BusinessLayer.Models
         public string? Position { get; set; }
 
         public string? Email { get; set; }
-       
+        public string? Author { get; set; }
+
         public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 
         public List<PhoneDTO> Phones { get; set; } = new List<PhoneDTO>();

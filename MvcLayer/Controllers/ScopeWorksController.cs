@@ -3,6 +3,7 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using MvcLayer.Models;
@@ -13,6 +14,7 @@ using System.Drawing.Printing;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class ScopeWorksController : Controller
     {
         private readonly IContractService _contractService;        
@@ -108,6 +110,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork, int contractId, int returnContractId = 0)
         {
             if (scopeWork is not null)
@@ -137,35 +140,53 @@ namespace MvcLayer.Controllers
                 }
 
                 scope.SWCosts.AddRange(costs);
-                var scopeEntity = JsonConvert.SerializeObject(scope);
+                //var scopeEntity = JsonConvert.SerializeObject(scope);
 
-                TempData["scopeW"] = scopeEntity;
+                //TempData["scopeW"] = scopeEntity;
 
-                return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
+                var obj = _contractService.GetById(contractId);
+                if (obj.IsEngineering == true)
+                    ViewData["IsEngin"] = true;
+                ViewData["returnContractId"] = returnContractId;
+                ViewData["contractId"] = contractId;
+                if (scope is not null)
+                {
+                    return View("Create", scope);
+                }
+                if (contractId > 0)
+                {
+                    return View("Create", new ScopeWorkViewModel { ContractId = contractId });
+                }
+                return View();
+
+                //return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
             }
             return View(scopeWork);
         }
 
-        public IActionResult Create(int contractId, int returnContractId = 0)
-        {
-            var obj =  _contractService.GetById(contractId);
-            if (obj.IsEngineering == true)
-                ViewData["IsEngin"] = true;
-            ViewData["returnContractId"] = returnContractId;
-            ViewData["contractId"] = contractId;
-            if (TempData["scopeW"] is string s)
-            {
-                return View(JsonConvert.DeserializeObject<ScopeWorkViewModel>(s));
-            }
-            if (contractId > 0)
-            {
-                return View(new ScopeWorkViewModel { ContractId = contractId });
-            }
-            return View();
-        }
+        //TODO: если не обваливается то удалить ниже!
+        // [Authorize(Policy = "ContrAdminPolicy")]
+        //public IActionResult Create(int contractId, int returnContractId = 0)
+        //{
+        //    var obj =  _contractService.GetById(contractId);
+        //    if (obj.IsEngineering == true)
+        //        ViewData["IsEngin"] = true;
+        //    ViewData["returnContractId"] = returnContractId;
+        //    ViewData["contractId"] = contractId;
+        //    if (TempData["scopeW"] is string s)
+        //    {
+        //        return View(JsonConvert.DeserializeObject<ScopeWorkViewModel>(s));
+        //    }
+        //    if (contractId > 0)
+        //    {
+        //        return View(new ScopeWorkViewModel { ContractId = contractId });
+        //    }
+        //    return View();
+        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(ScopeWorkViewModel scopeWork, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -192,6 +213,7 @@ namespace MvcLayer.Controllers
             return View(scopeWork);
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id, int contractId)
         {
             if (id == null || _scopeWork.GetAll() == null)
@@ -235,6 +257,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
             var ob = _contractService.GetById(contractId);
@@ -246,6 +269,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<SWCostViewModel>(obj));
         }
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
         {   
             _swCostService.Update(_mapper.Map<SWCostDTO>(model));            

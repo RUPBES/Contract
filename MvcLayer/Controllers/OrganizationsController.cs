@@ -1,17 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MvcLayer.Models;
 using AutoMapper;
 using BusinessLayer.Models;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using static System.Net.WebRequestMethods;
-using System.Reflection;
-using DatabaseLayer.Models;
 using BusinessLayer.Interfaces.CommonInterfaces;
-using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class OrganizationsController : Controller
     {
         private readonly IOrganizationService _organizationService;
@@ -62,6 +59,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Create
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create()
         {
             return View();
@@ -72,6 +70,7 @@ namespace MvcLayer.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create( OrganizationViewModel organization)
         {
@@ -84,6 +83,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Edit/5
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _organizationService.GetAll() == null)
@@ -108,6 +108,7 @@ namespace MvcLayer.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(OrganizationViewModel organization)
         {          
@@ -131,6 +132,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Delete/5
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _organizationService.GetAll() == null)
@@ -149,6 +151,7 @@ namespace MvcLayer.Controllers
 
         // POST: Organizations/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

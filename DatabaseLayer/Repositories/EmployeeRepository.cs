@@ -70,6 +70,8 @@ namespace DatabaseLayer.Repositories
                     employee.Fio = entity.Fio;
                     employee.Position = entity.Position;
                     employee.Email = entity.Email;
+                    employee.Author = entity.Author;
+
                     var depEmp = _context.DepartmentEmployees.FirstOrDefault(x => x.EmployeeId == entity.Id);
 
                     if (depEmp != null && entity.DepartmentEmployees.Count>0)

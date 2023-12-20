@@ -94,6 +94,11 @@ namespace MvcLayer
                 o.Scope.Add("ContrView");
                 o.Scope.Add("ContrEdit");
                 o.Scope.Add("ContrAdmin");
+                o.Scope.Add("ContrDelete");
+                o.Scope.Add("ContrOrgBes");
+                o.Scope.Add("ContrOrgTec2");
+                o.Scope.Add("ContrOrgTec5");
+                //o.Scope.Add("ContrOrgBesm");
                 // requests a refresh token
                 o.Scope.Add("offline_access");               
                 o.TokenValidationParameters = new TokenValidationParameters
@@ -114,6 +119,11 @@ namespace MvcLayer
                         {
                             foreach (var scope in scopes)
                             {
+                                if (scope.Contains("Org"))
+                                {
+                                    identity.AddClaim(new Claim("org", scope));
+                                }
+
                                 identity.AddClaim(new Claim("scope", scope));
                             }
                         }

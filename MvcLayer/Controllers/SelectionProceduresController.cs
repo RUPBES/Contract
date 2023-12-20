@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class SelectionProceduresController : Controller
     {
         private readonly IContractService _contractService;
@@ -30,9 +32,10 @@ namespace MvcLayer.Controllers
         {
             return View(_mapper.Map<IEnumerable<SelectionProcedureViewModel>>(_selectProcedureService.Find(x => x.ContractId == contractId)));
         }
-                
+
         //при создании договора, автоматически создается запись в таблице "Процедура выбора" с Видом закупки,
         // поэтому необходимо найти созданную для данного договора проц.выбора и добавить все данные
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(int contractId)
         {
             if (contractId > 0)
@@ -45,6 +48,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(SelectionProcedureViewModel selectProcedure)
         {
             if (selectProcedure is not null)
@@ -64,6 +68,7 @@ namespace MvcLayer.Controllers
             return View(selectProcedure);
         }
 
+        [Authorize(Policy = "ContrEditPolicy")]
         public ActionResult Edit(int id, int? contractId = null)
         {
             ViewBag.contractId = contractId;
@@ -72,6 +77,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(SelectionProcedureViewModel selectProcedure)
         {
             if (selectProcedure is not null)
@@ -95,6 +101,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _selectProcedureService.GetAll() == null)

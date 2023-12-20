@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class ServiceGCController : Controller
     {
 
@@ -131,6 +133,7 @@ namespace MvcLayer.Controllers
                 return RedirectToAction("Index", "Contracts");
             }
         }
+
         public ActionResult CreateServiceFact(PeriodChooseViewModel model)
         {
             int id = TempData["serviceId"] is int preId ? preId : 0;
@@ -146,6 +149,7 @@ namespace MvcLayer.Controllers
                 }
             });
         }
+
         public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel)
         {
             if (periodViewModel is not null)
@@ -182,6 +186,8 @@ namespace MvcLayer.Controllers
             }
             return View(periodViewModel);
         }
+
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(int contractId)
         {
             if (TempData["serviceGC"] is string s)
@@ -198,6 +204,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create(ServiceGCViewModel listServiceGC)
         {
             if (listServiceGC is not null)
@@ -214,9 +221,10 @@ namespace MvcLayer.Controllers
             }
             return View(listServiceGC);
         }
-        //TODO: Переименовать заполнение факта!!!
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(ServiceGCViewModel serviceGC)
         {
             if (serviceGC is not null)
@@ -232,6 +240,8 @@ namespace MvcLayer.Controllers
 
             return RedirectToAction("Index", "Contracts");
         }
+
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _serviceGC.GetAll() == null)
