@@ -18,6 +18,11 @@
         hasScope = true;
     }
     var contract = Contract.GetById((int)Model.ContractId);
+    ContractDTO contractTwo = new ContractDTO();
+    if ((int)ViewData["returnContractId"] != 0)
+    {
+        contractTwo = Contract.GetById(ViewBag.returnContractId);
+    }
     if (contract.IsEngineering == true)
     {
         ViewData["Title"] = "Добавление объема услуг";
@@ -25,7 +30,7 @@
     else
     {
         ViewData["Title"] = "Добавление объема работ";
-    }    
+    }
 }
 <style>
     .title-warning {
@@ -88,8 +93,8 @@
                         }
                         else
                         {
-                        <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
-                        <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+                            <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
+                            <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
                         }
                         <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
                     </div>
@@ -112,7 +117,7 @@
                         @if (Model?.IsOwnForces == false)
                         {
                             <div id="amendPartial">
-                            </div>                            
+                            </div>
                         }
                         <button id="butSubmit" class="btn btn-primary btn-sm mt-1" disabled type="submit">Выбрать</button>
                     </div>
@@ -120,8 +125,8 @@
             }
 
             @if (!hasScope)
-            {                
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+            {
+                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
                     @if (contract.IsEngineering == true)
                     {
                         <h4>Выбор периода объема услуг</h4>
@@ -129,18 +134,42 @@
                     else
                     {
                         <h4>Выбор периода объема работ</h4>
-                    }                    
+                    }
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <div class="form-group col-6 mb-3">
                         <label for="amendCheck1">Начало периода</label>
-                        <input name=PeriodStart type="datetime" value="@contract.DateBeginWork" hidden />
-                        <input type="text" value="@contract.DateBeginWork.Value.ToString("MMMM-yyyy") "readonly />                        
+                        @if (contract.DateBeginWork != null)
+                        {
+                            <input name=PeriodStart type="datetime" value="@contract.DateBeginWork" hidden />
+                            <input type="text" value="@contract.DateBeginWork.Value.ToString("MMMM-yyyy") " readonly />
+                        }
+                        else if (contractTwo.DateBeginWork != null)
+                        {
+                            <input name=PeriodStart type="datetime" value="@contractTwo.DateBeginWork" hidden />
+                            <input type="text" value="@contractTwo.DateBeginWork.Value.ToString("MMMM-yyyy") " readonly />
+                        }
+                        else
+                        {
+                            <input name=PeriodStart type="date" class="form-control" />
+                        }
                     </div>
                     <div class="form-group col-6 mb-3">
                         <label for="amendCheck2">Окончание периода</label>
-                        <input name=PeriodEnd type="datetime" value="@contract.DateEndWork" hidden />
-                        <input type="text" value="@contract.DateEndWork.Value.ToString("MMMM-yyyy")" readonly />
+                        @if (contract.DateBeginWork != null)
+                        {
+                            <input name=PeriodEnd type="datetime" value="@contract.DateEndWork" hidden />
+                            <input type="text" value="@contract.DateEndWork.Value.ToString("MMMM-yyyy")" readonly />
+                        }
+                        else if (contractTwo.DateBeginWork != null)
+                        {
+                            <input name=PeriodEnd type="datetime" value="@contractTwo.DateEndWork" hidden />
+                            <input type="text" value="@contractTwo.DateEndWork.Value.ToString("MMMM-yyyy")" readonly />
+                        }
+                        else
+                        {
+                            <input name=PeriodEnd type="date" class="form-control" />
+                        }                        
                     </div>
                     <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
                 </form>
@@ -149,7 +178,7 @@
         </div>
     </div>
 </div>
-</div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -169,7 +198,7 @@
                 error: function (result) {
                     console.log(result, 'Ошибка при вызове сообщения');
                 }
-            })            
+            })
         });
 
         $("#amendCheck").on("change", function () {

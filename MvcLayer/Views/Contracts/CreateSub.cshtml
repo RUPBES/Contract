@@ -64,7 +64,7 @@
                     <div class="col-12">
                         <label>Субподрядчик</label>
                         <input name="ContractOrganizations[0].Organization" hidden />
-                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
+                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen">
                             @if (Model?.ContractOrganizations[0] is not null)
                             {
                                 var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
@@ -381,6 +381,16 @@
             digits_float('#CDC');
         });
 
+        //select выпадающий список
+        $(document).ready(function () {
+            console.log('ready')
+            $('.js-chosen').chosen({
+                width: '91%',
+                no_results_text: 'Совпадений не найдено',
+                placeholder_text_single: 'Выберите'
+            });
+        });
+
         $(document).ready(function () {
 
             ////    проверка вводимых дат /////////********/
@@ -616,6 +626,7 @@
                 }
             })
         }
+
         $(function () {
             $("#messageInput").trigger('click');
         });      
