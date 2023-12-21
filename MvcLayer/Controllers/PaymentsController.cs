@@ -99,42 +99,31 @@ namespace MvcLayer.Controllers
             }
             if (paymentViewModel is not null)
             {
-                List<PaymentViewModel> model = new List<PaymentViewModel>();
+                List<PaymentViewModel> payment = new List<PaymentViewModel>();
 
                 while (paymentViewModel.PeriodStart <= paymentViewModel.PeriodEnd)
                 {
-                    model.Add(new PaymentViewModel
+                    payment.Add(new PaymentViewModel
                     {
                         Period = paymentViewModel.PeriodStart,
                         ContractId = paymentViewModel.ContractId,
                     });
                     paymentViewModel.PeriodStart = paymentViewModel.PeriodStart.AddMonths(1);
                 }
-
-                var payment = JsonConvert.SerializeObject(model);
-                TempData["payment"] = payment;
-
-                return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
+                if (payment is not null)
+                {
+                    return View("Create", payment);
+                }
+                if (contractId > 0)
+                {
+                    return View("Create", new PaymentViewModel { ContractId = contractId });
+                }
+                return View();
             }
             return View(paymentViewModel);
-        }
-
-        [Authorize(Policy = "ContrAdminPolicy")]
-        public IActionResult Create(int contractId, int returnContractId = 0)
-        {
-            ViewData["returnContractId"] = returnContractId;
-            ViewData["contractId"] = contractId;
-            if (TempData["payment"] is string s)
-            {
-                return View(JsonConvert.DeserializeObject<List<PaymentViewModel>>(s));
-            }
-
-            if (contractId > 0)
-            {
-                return View(new PrepaymentViewModel { ContractId = contractId });
-            }
-            return View();
-        }
+        }        
 
         [HttpPost]
         [Authorize(Policy = "ContrAdminPolicy")]

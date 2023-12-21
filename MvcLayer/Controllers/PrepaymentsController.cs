@@ -43,17 +43,17 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
             var contract = _contractService.GetById(contractId);
-            if (contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
             {
                 TempData["Message"] = "У контракта условие - без авансов";
                 var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                 return RedirectToAction("Details", "Contracts", new { id = urlReturn });
             }            
-            if (contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
             {
                 ViewData["Current"] = "true";
             }
-            if (contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
             {
                 ViewData["Target"] = "true";
             }
@@ -76,7 +76,7 @@ namespace MvcLayer.Controllers
                 //находим  по объему работ начало и окончание периода
                 var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
                 var contract = _contractService.GetById(contractId);
-                if (contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
                 {
                     TempData["Message"] = "У контракта условие - без авансов";
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
@@ -161,8 +161,10 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "ContrAdminPolicy")]
-        public ActionResult CreatePrepaymentFact(PeriodChooseViewModel model)
+        public ActionResult CreatePrepaymentFact(PeriodChooseViewModel model, int returnContractId = 0)
         {
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["contractId"] = model.ContractId;
             int id = TempData["prepaymentId"] is int preId ? preId : 0;
             return View("AddPrepaymentFact", new PrepaymentViewModel
             {
@@ -191,7 +193,7 @@ namespace MvcLayer.Controllers
             }            
             if (prepaymentViewModel is not null)
             {
-                PrepaymentViewModel model = new PrepaymentViewModel();
+                PrepaymentViewModel prepayment = new PrepaymentViewModel();
 
                 if (prepaymentViewModel.AmendmentId > 0)
                 {
@@ -228,49 +230,34 @@ namespace MvcLayer.Controllers
                     prepaymentViewModel.PeriodStart = prepaymentViewModel.PeriodStart.AddMonths(1);
                 }
 
+                prepayment.IsChange = prepaymentViewModel.IsChange;
+                prepayment.ContractId = prepaymentViewModel.ContractId;
+                prepayment.AmendmentId = prepaymentViewModel.AmendmentId;
+                prepayment.ChangePrepaymentId = prepaymentViewModel.ChangePrepaymentId;
+                prepayment.PrepaymentPlans = plan;
 
-                model.IsChange = prepaymentViewModel.IsChange;
-                model.ContractId = prepaymentViewModel.ContractId;
-                model.AmendmentId = prepaymentViewModel.AmendmentId;
-                model.ChangePrepaymentId = prepaymentViewModel.ChangePrepaymentId;
-                model.PrepaymentPlans = plan;
-
-
-                var prepayment = JsonConvert.SerializeObject(model);
-                TempData["prepayment"] = prepayment;
-
-                return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
+                var contract = _contractService.GetById((int)contractId);
+                if (contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+                if (prepayment is not null)
+                {
+                    return View("Create", prepayment);
+                }
+                if (contractId > 0)
+                {
+                    return View("Create", new PrepaymentViewModel { ContractId = contractId });
+                }
+                return View();
             }
             return View(prepaymentViewModel);
-        }
-
-        [Authorize(Policy = "ContrAdminPolicy")]
-        public IActionResult Create(int contractId, int returnContractId = 0)
-        {
-            ViewData["returnContractId"] = returnContractId;
-            ViewData["contractId"] = contractId;
-            var contract = _contractService.GetById(contractId);
-            if (contract.PaymentСonditionsAvans.Contains("текущего аванса"))
-            {
-                ViewData["Current"] = "true";
-            }
-            if (contract.PaymentСonditionsAvans.Contains("целевого аванса"))
-            {
-                ViewData["Target"] = "true";
-            }
-            if (TempData["prepayment"] is string s)
-            {
-                return View(JsonConvert.DeserializeObject<PrepaymentViewModel>(s));
-            }
-
-            if (contractId > 0)
-            {
-                //PrepaymentViewModel prepayment = new PrepaymentViewModel { ContractId = contractId};
-
-                return View(new PrepaymentViewModel { ContractId = contractId });
-
-            }
-            return View();
         }
 
         [HttpPost]

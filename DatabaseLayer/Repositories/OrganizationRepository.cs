@@ -109,9 +109,9 @@ namespace DatabaseLayer.Repositories
             return _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 
-        public IEnumerable<Organization> GetEntityWithSkipTake(int skip, int take, int legalPersonId)
+        public IEnumerable<Organization> GetEntityWithSkipTake(int skip, int take, string org)
         {
-            return _context.Organizations/*.Where(x => x.LegalPersonId == legalPersonId)*/.Skip(skip).Take(take).ToList();
+            return _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 
         public IEnumerable<Organization> FindLike(string propName, string queryString) => propName switch

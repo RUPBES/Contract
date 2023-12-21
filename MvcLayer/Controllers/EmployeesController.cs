@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
+﻿using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using MvcLayer.Models;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -42,8 +42,8 @@ namespace MvcLayer.Controllers
             ViewData["CurrentFilter"] = searchString;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return View(_employeesService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
-            else return View(_employeesService.GetPage(100, pageNum ?? 1));           
+                return View(_employeesService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+            else return View(_employeesService.GetPage(100, pageNum ?? 1, organizationName));           
         }
 
         // GET: Employees/Details/5

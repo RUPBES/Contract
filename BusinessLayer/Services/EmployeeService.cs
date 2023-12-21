@@ -112,11 +112,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IndexViewModel GetPage(int pageSize, int pageNum)
-        {
-            int count = _database.Employees.Count();
+        public IndexViewModel GetPage(int pageSize, int pageNum, string org)
+        {            
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Employees.GetEntitySkipTake(skipEntities,pageSize).OrderBy(x => x.FullName);
+            var items = _database.Employees.GetEntityWithSkipTake(skipEntities,pageSize, org).OrderBy(x => x.FullName);
+            int count = items.Count();
             var t = _mapper.Map<IEnumerable<EmployeeDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -129,14 +129,14 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
         {
             
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Employee> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Employees.FindLike("FullName", request); }
-            else { items = _database.Employees.GetAll(); }
+            { items = _database.Employees.FindLike("FullName", request).Where(e => e.Author == org).ToList(); }
+            else { items = _database.Employees.GetAll().Where(e => e.Author == org); }
             int count = items.Count();
 
             switch (sortOrder)
