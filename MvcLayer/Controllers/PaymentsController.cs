@@ -171,6 +171,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetPayableCash(string currentFilter, int? pageNum, string searchString)
         {
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             int pageSize = 20;
             if (searchString != null)
             { pageNum = 1; }
@@ -181,8 +182,8 @@ namespace MvcLayer.Controllers
             int count;
 
             if (!String.IsNullOrEmpty(searchString))
-                list = _contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, "Payment", out count).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Payment", out count).ToList();
+                list = _contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, "Payment", out count, organizationName).ToList();
+            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Payment", out count, organizationName).ToList();
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);

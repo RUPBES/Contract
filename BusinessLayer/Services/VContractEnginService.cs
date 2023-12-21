@@ -50,11 +50,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IndexViewModel GetPage(int pageSize, int pageNum)
-        {
-            int count = _database.vContractEngins.Count();
+        public IndexViewModel GetPage(int pageSize, int pageNum, string org)
+        {            
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.vContractEngins.GetEntitySkipTake(skipEntities, pageSize);
+            var items = _database.vContractEngins.GetEntitySkipTake(skipEntities, pageSize, org);
+            int count = items.Count();
             var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -67,14 +67,14 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
         {
             
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<VContractEngin> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.vContractEngins.FindContract(request); }
-            else { items = _database.vContractEngins.GetAll(); }
+            { items = _database.vContractEngins.FindContract(request).Where(x => x.Author == org || x.Owner == org); }
+            else { items = _database.vContractEngins.GetAll().Where(x => x.Author == org || x.Owner == org); }
             int count = items.Count();
 
             switch (sortOrder)

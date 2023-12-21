@@ -40,9 +40,9 @@ namespace DatabaseLayer.Repositories.ViewRepo
             }
         }
 
-        public IEnumerable<VContractEngin> GetEntitySkipTake(int skip, int take)
+        public IEnumerable<VContractEngin> GetEntitySkipTake(int skip, int take, string org)
         {
-            return _context.VContractEngins.OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+            return _context.VContractEngins.Where(x => x.Author == org || x.Owner == org).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
         }
 
         public IEnumerable<VContractEngin> GetEntityWithSkipTake(int skip, int take, int legalPersonId)

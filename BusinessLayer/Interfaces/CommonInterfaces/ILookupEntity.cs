@@ -11,7 +11,7 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
     public interface ILookupEntity<T, K> where T : class where K : class
     {
         IEnumerable<T> GetAll();
-        IndexViewModel GetPage(int pageSize, int pageNum);
+        IndexViewModel GetPage(int pageSize, int pageNum, string org);
         IEnumerable<T> FindLikeNameObj(string queryString);
         IEnumerable<T> Find(Func<K, bool> predicate);
         T GetById(int id);

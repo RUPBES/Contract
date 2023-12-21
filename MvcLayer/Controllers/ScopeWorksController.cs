@@ -150,9 +150,6 @@ namespace MvcLayer.Controllers
                 }
 
                 scope.SWCosts.AddRange(costs);
-                //var scopeEntity = JsonConvert.SerializeObject(scope);
-
-                //TempData["scopeW"] = scopeEntity;
 
                 var obj = _contractService.GetById(contractId);
                 if (obj.IsEngineering == true)
@@ -167,32 +164,10 @@ namespace MvcLayer.Controllers
                 {
                     return View("Create", new ScopeWorkViewModel { ContractId = contractId });
                 }
-                return View();
-
-                //return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId });
+                return View();                
             }
             return View(scopeWork);
-        }
-
-        //TODO: если не обваливается то удалить ниже!
-        // [Authorize(Policy = "ContrAdminPolicy")]
-        //public IActionResult Create(int contractId, int returnContractId = 0)
-        //{
-        //    var obj =  _contractService.GetById(contractId);
-        //    if (obj.IsEngineering == true)
-        //        ViewData["IsEngin"] = true;
-        //    ViewData["returnContractId"] = returnContractId;
-        //    ViewData["contractId"] = contractId;
-        //    if (TempData["scopeW"] is string s)
-        //    {
-        //        return View(JsonConvert.DeserializeObject<ScopeWorkViewModel>(s));
-        //    }
-        //    if (contractId > 0)
-        //    {
-        //        return View(new ScopeWorkViewModel { ContractId = contractId });
-        //    }
-        //    return View();
-        //}
+        }    
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -249,6 +224,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
         {
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             int pageSize = 20;
             if (searchString != null)
             { pageNum = 1; }
@@ -259,8 +235,8 @@ namespace MvcLayer.Controllers
             int count;
             
             if (!String.IsNullOrEmpty(searchString))
-                list =_contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString,"Scope", out count).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Scope", out count).ToList();
+                list =_contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString,"Scope", out count, organizationName).ToList();
+            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Scope", out count, organizationName).ToList();
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);

@@ -67,13 +67,14 @@ namespace MvcLayer.Controllers
             ViewData["CurrentFilter"] = searchString;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
-            else return View(_vContractService.GetPage(100, pageNum ?? 1));
+                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+            else return View(_vContractService.GetPage(100, pageNum ?? 1, organizationName));
         }
 
         // GET: Contracts of Engineerings
         public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             ViewData["IsEngineering"] = true;
             ViewData["CurrentSort"] = sortOrder;
             ViewData["DateSortParm"] = sortOrder == "date" ? "dateDesc" : "date";
@@ -88,8 +89,8 @@ namespace MvcLayer.Controllers
             ViewData["CurrentFilter"] = searchString;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
-            else return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1));
+                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+            else return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1, organizationName));
         }
 
         // GET: Contracts/Details/5

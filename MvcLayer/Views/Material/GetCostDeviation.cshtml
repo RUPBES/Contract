@@ -142,14 +142,17 @@
                                     <td>
                                         <a asp-action="DetailsCostDeviation" asp-route-contractId="@item.Id">
                                             @contract.Number <br>
-                                            от<br>
-                                            @contract.Date.Value.ToString("dd-MMMM-yyyy")
+                                            @if (contract.Date != null)
+                                            {
+                                                <span>от<br></span>
+                                                <span>@contract.Date.Value.ToString("dd-MMMM-yyyy")</span>
+                                            }
                                         </a>         
                                     </td>
                                     <td>
                                         @contract.NameObject
                                     </td>
-                                    <td>
+                                    <td class="text-end">
                                         @{
                                             var sum = 0M;
                                             for (var itemTime = startPeriod; itemTime <= endPeriod; itemTime = itemTime.AddMonths(1))

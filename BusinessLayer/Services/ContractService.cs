@@ -246,16 +246,17 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count)
+        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org)
         {
-
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
             List<Contract> itemsT = new List<Contract>();            
             if (!String.IsNullOrEmpty(request))
             {
                 items = _database.Contracts.
-                    Find(c => c.IsMultiple == false && c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false && c.IsSubContract == false);
+                    Find(c => c.IsEngineering == false && c.IsAgreementContract == false 
+                    && c.IsOneOfMultiple == false && c.IsSubContract == false && 
+                    (c.Author == org || c.Owner == org));
                 foreach (var item in items)
                 {
                     if (item.NameObject != null && item.NameObject.Contains(request) || item.Number != null && item.Number.Contains(request))
@@ -265,6 +266,7 @@ namespace BusinessLayer.Services
                 switch (filter) {
                     case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
                     case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
+                    case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
                     default: break;
                 }
             }
@@ -273,6 +275,7 @@ namespace BusinessLayer.Services
                 {
                     case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
                     case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
+                    case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
                     default: break;
                 }
             }
@@ -283,16 +286,19 @@ namespace BusinessLayer.Services
             return t;
         }
 
-        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum,string filter, out int count)
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum,string filter, out int count, string org)
         {            
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
             items = _database.Contracts.
-                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false && c.IsSubContract == false);
+                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false 
+                && c.IsSubContract == false &&
+                    (c.Author == org || c.Owner == org));
             switch (filter)
             {
                 case "Scope": items = items.Where(x => x.ScopeWorks.Count() > 0); break;
                 case "Payment": items = items.Where(x => x.Payments.Count() > 0); break;
+                case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
                 default: break;
             }                        
             count = items.Count();
