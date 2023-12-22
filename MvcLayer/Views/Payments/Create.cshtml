@@ -10,15 +10,10 @@
     if (ViewBag.returnContractId == 0)
         backId = ViewBag.contractId;
     else backId = ViewBag.returnContractId;
-    var d = new List<PaymentViewModel>();
-    if (TempData["payment"] is string s)
-    {
-        d.AddRange(JsonConvert.DeserializeObject<List<PaymentViewModel>>(s));
-    }
 
     string actionName = (TempData["existPayment"] is bool) == true ? "EditPayments" : "Create";
     var existPayment = (TempData["existPayment"] is bool) == true ? true:false;
-    var contract = Contract.GetById((int)d?.FirstOrDefault()?.ContractId);
+    var contract = Contract.GetById((int)Model?.FirstOrDefault()?.ContractId);
 }
 <style>
     .cont-table {
@@ -51,7 +46,7 @@
                         <table class="table table-bordered table-striped">
                             <tr>
                                 <th>Период</th>
-                                @foreach (var item in d)
+                                @foreach (var item in Model)
                                 {
                                     <td>
                                         @item.Period?.ToString("MMMM-yyyy")
@@ -65,7 +60,7 @@
                             </tr>
                             <tr>
                                 <th>Всего к оплате</th>
-                                @foreach (var item in d)
+                                @foreach (var item in Model)
                                 {
                                     var obj = item.PaySum != null ? item.PaySum : 0;
                                     <td><input name="[@index].PaySum" class="form-control cost" value="@obj" type="text" /></td>
@@ -77,7 +72,7 @@
                             </tr>
                             <tr>
                                 <th>из них на счет РУП "БЭС"-УКХ"</th>
-                                @foreach (var item in d)
+                                @foreach (var item in Model)
                                 {
                                     var obj = item.PaySumForRupBes != null ? item.PaySumForRupBes : 0;
                                     <td><input name="[@index].PaySumForRupBes" class="form-control cost" value="@obj" type="text" /></td>
@@ -88,7 +83,7 @@
                                 }
                             </tr>
 
-                            @foreach (var item in d)
+                            @foreach (var item in Model)
                             {
                                 <input asp-for="@Model[index].ContractId" hidden />
                                 @if (existPayment)

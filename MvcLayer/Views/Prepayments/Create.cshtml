@@ -10,17 +10,11 @@
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
+    else backId = (int)ViewData["returnContractId"]; 
 
-    var d = new PrepaymentViewModel();
-    if (TempData["prepayment"] is string s)
-    {
-        d = (JsonConvert.DeserializeObject<PrepaymentViewModel>(s));
-    }
-
-    bool isFact = d.IsFact == true ? true : false;
+    bool isFact = Model.IsFact == true ? true : false;
     string actionName = isFact ? "EditPrepayments" : "Create";
-    var contract = Contract.GetById((int)d?.ContractId);
+    var contract = Contract.GetById((int)Model.ContractId);
 }
 <style>
     .cont-table {
@@ -58,7 +52,7 @@
                             {
                                 <tr>
                                     <th>Период</th>
-                                    @foreach (var item in d.PrepaymentPlans)
+                                    @foreach (var item in Model.PrepaymentPlans)
                                     {
                                         <td>
                                             @item.Period?.ToString("MMM yyyy")
@@ -74,7 +68,7 @@
                                 {
                                     <tr>
                                         <th>Текущие авансы</th>
-                                        @foreach (var item in d.PrepaymentPlans)
+                                        @foreach (var item in Model.PrepaymentPlans)
                                         {
                                             if (Model.PrepaymentPlans[index].CurrentValue != null && Model.PrepaymentPlans[index].CurrentValue != 0)
                                             {
@@ -95,7 +89,7 @@
                                 {
                                     <tr>
                                         <th>Целевые авансы</th>
-                                        @foreach (var item in d.PrepaymentPlans)
+                                        @foreach (var item in Model.PrepaymentPlans)
                                         {
                                             if (Model.PrepaymentPlans[index].TargetValue != null && Model.PrepaymentPlans[index].TargetValue != 0)
                                             {
@@ -113,7 +107,7 @@
                                     </tr>
                                     <tr>
                                         <th>Отработка целевых авансов</th>
-                                        @foreach (var item in d.PrepaymentPlans)
+                                        @foreach (var item in Model.PrepaymentPlans)
                                         {
                                             if (Model.PrepaymentPlans[index].WorkingOutValue != null && Model.PrepaymentPlans[index].WorkingOutValue != 0)
                                             {
@@ -135,7 +129,7 @@
                             {
                                 <tr>
                                     <th>Период</th>
-                                    @foreach (var item in d.PrepaymentFacts)
+                                    @foreach (var item in Model.PrepaymentFacts)
                                     {
                                         <td>
                                             @item.Period?.ToString("MMM yyyy")
@@ -151,7 +145,7 @@
                                 {
                                     <tr>
                                         <th>Текущие авансы по факту</th>
-                                        @foreach (var item in d.PrepaymentFacts)
+                                        @foreach (var item in Model.PrepaymentFacts)
                                         {
                                             if (Model.PrepaymentFacts[index].CurrentValue != null && Model.PrepaymentFacts[index].CurrentValue != 0)
                                             {
@@ -172,7 +166,7 @@
                                 {
                                     <tr>
                                         <th>Текущие авансы по факту</th>
-                                        @foreach (var item in d.PrepaymentFacts)
+                                        @foreach (var item in Model.PrepaymentFacts)
                                         {
                                             if (Model.PrepaymentFacts[index].TargetValue != null && Model.PrepaymentFacts[index].TargetValue != 0)
                                             {
@@ -190,7 +184,7 @@
                                     </tr>
                                     <tr>
                                         <th>Отработка целевых по факту</th>
-                                        @foreach (var item in d.PrepaymentFacts)
+                                        @foreach (var item in Model.PrepaymentFacts)
                                         {
                                             if (Model.PrepaymentFacts[index].WorkingOutValue != null && Model.PrepaymentFacts[index].WorkingOutValue != 0)
                                             {

@@ -5,7 +5,7 @@ namespace DatabaseLayer.Interfaces
     {
         int Count();
         IEnumerable<T> GetEntitySkipTake(int skip, int take);
-        IEnumerable<T> GetEntityWithSkipTake(int skip, int take, int legalPersonId);
+        IEnumerable<T> GetEntityWithSkipTake(int skip, int take, string org );
         IEnumerable<T> FindLike(string propName, string queryString);
     }
 }
