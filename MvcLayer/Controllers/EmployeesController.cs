@@ -75,8 +75,10 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             //if (ModelState.IsValid)
             {
+                employee.Author = organizationName;               
                 _employeesService.Create(_mapper.Map<EmployeeDTO>(employee));
                 return RedirectToAction(nameof(Index));
             }

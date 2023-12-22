@@ -1,14 +1,13 @@
 ﻿using BusinessLayer.IoC;
 using DatabaseLayer.Data;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using MvcLayer.Data;
 using MvcLayer.Mapper;
 //using OpenIddict.Client;
 using Quartz;
@@ -29,12 +28,15 @@ namespace MvcLayer
         {
 
             string connectionData = Configuration.GetConnectionString("Data");
-            string connectionIdentity = Configuration.GetConnectionString("Identity");
+            //string connectionIdentity = Configuration.GetConnectionString("Identity");
             Container.RegisterContainer(services, connectionData);
             ////
             services.AddRazorPages();
             services.AddWindowsService();
             ///
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+            IdentityModelEventSource.ShowPII = true;
+
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders =
@@ -184,7 +186,8 @@ namespace MvcLayer
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseDeveloperExceptionPage();
+                //app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }

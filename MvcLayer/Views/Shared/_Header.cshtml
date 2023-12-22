@@ -61,12 +61,14 @@
             <ul class="navbar-nav">
                 @if ((User.Identity == null) || (!(User.Identity.IsAuthenticated)))
                 {
+                   
                     <li class="nav-item">
                         <a class="nav-link  text-white btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">Login</a>
                     </li>
                 }
                 else
                 {
+                    <li style="line-height:35px; margin-right:30px;">Пользователь - @User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x=>x.Type == "given_name")?.Value</li>
                     <li class="nav-item">
                         <a class="nav-link  text-white btn btn-sm btn-danger" asp-controller="Account" asp-action="Logout">Logout</a>
                     </li>

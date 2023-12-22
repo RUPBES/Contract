@@ -103,8 +103,8 @@ public partial class ContractsContext : DbContext
             //var connectionString = configuration.GetConnectionString("Data");
             //optionsBuilder.UseSqlServer(connectionString);
 
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
 
         }
     }
@@ -1164,6 +1164,10 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.EnteringTerm).HasColumnType("datetime");
             entity.Property(e => e.Number).HasMaxLength(100);
             entity.Property(e => e.Сurrency).HasMaxLength(50);
+            entity.Property(e => e.Author);
+            entity.Property(e => e.Owner);
+            entity.Property(e => e.IsClosed);
+            entity.Property(e => e.IsExpired);
         });
 
         modelBuilder.Entity<VContractEngin>(entity =>
