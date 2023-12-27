@@ -9,5 +9,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         void AddAmendmentToScopeWork(int amendmentId, int scopeworkId);
         (DateTime, DateTime)? GetPeriodRangeScopeWork(int contractId);
         (DateTime, DateTime)? GetFullPeriodRangeScopeWork(int contractId);
+        AmendmentDTO? GetAmendmentByScopeId(int scopeId);
     }
 }

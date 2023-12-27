@@ -44,6 +44,7 @@ namespace BusinessLayer.Mapper
             CreateMap<ServiceGCDTO, ServiceGc>().ReverseMap();
             CreateMap<ServiceCostDTO, ServiceCost>().ReverseMap();
             CreateMap<ScopeWork, ScopeWorkDTO>().ReverseMap();
+            CreateMap<ScopeWorkAmendment, ScopeWorkAmendmentDTO>().ReverseMap();
             CreateMap<SWCost, SWCostDTO>().ReverseMap();
             CreateMap<TypeWork, TypeWorkDTO>().ReverseMap();
             CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
