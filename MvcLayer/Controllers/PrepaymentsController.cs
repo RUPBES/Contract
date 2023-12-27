@@ -43,19 +43,40 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
             var contract = _contractService.GetById(contractId);
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            if (contract.IsOneOfMultiple)
             {
-                TempData["Message"] = "У контракта условие - без авансов";
-                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-            }            
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
-            {
-                ViewData["Current"] = "true";
+                var contratcGen = _contractService.GetById((int)contract.MultipleContractId);
+                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "У контракта условие - без авансов";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
+                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
             }
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+            else
             {
-                ViewData["Target"] = "true";
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "У контракта условие - без авансов";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
             }
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
@@ -76,11 +97,24 @@ namespace MvcLayer.Controllers
                 //находим  по объему работ начало и окончание периода
                 var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
                 var contract = _contractService.GetById(contractId);
-                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                if (contract.IsOneOfMultiple)
                 {
-                    TempData["Message"] = "У контракта условие - без авансов";
-                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    var contractGen = _contractService.GetById((int)contract.MultipleContractId);
+                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                    {
+                        TempData["Message"] = "У контракта условие - без авансов";
+                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    }
+                }
+                else
+                {
+                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                    {
+                        TempData["Message"] = "У контракта условие - без авансов";
+                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                    }
                 }
                 if (period is null)
                 {
@@ -239,13 +273,28 @@ namespace MvcLayer.Controllers
                 ViewData["contractId"] = contractId;
                 ViewData["returnContractId"] = returnContractId;
                 var contract = _contractService.GetById((int)contractId);
-                if (contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                if (contract.IsOneOfMultiple)
                 {
-                    ViewData["Current"] = "true";
+                    var contractGen = _contractService.GetById((int)contract.MultipleContractId);
+                    if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("текущего аванса"))
+                    {
+                        ViewData["Current"] = "true";
+                    }
+                    if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("целевого аванса"))
+                    {
+                        ViewData["Target"] = "true";
+                    }
                 }
-                if (contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                else
                 {
-                    ViewData["Target"] = "true";
+                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                    {
+                        ViewData["Current"] = "true";
+                    }
+                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                    {
+                        ViewData["Target"] = "true";
+                    }                    
                 }
                 if (prepayment is not null)
                 {
