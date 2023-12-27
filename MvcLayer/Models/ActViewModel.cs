@@ -28,6 +28,8 @@ namespace MvcLayer.Models
         public IFormFileCollection FilesEntity { get; set; }
         public int? ContractId { get; set; }
 
+        public string? Author { get; set; }
+
         [DisplayName("Договор")]
         public ContractViewModel? Contract { get; set; }
 

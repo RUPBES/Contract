@@ -125,7 +125,7 @@ namespace MvcLayer
                                 {
                                     identity.AddClaim(new Claim("org", scope));
                                 }
-
+                                
                                 identity.AddClaim(new Claim("scope", scope));
                             }
                         }

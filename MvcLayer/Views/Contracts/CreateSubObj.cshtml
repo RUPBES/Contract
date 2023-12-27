@@ -3,16 +3,31 @@
 
 @{
     ViewData["Title"] = "Добавление подобъекта";
+    
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = Model.Id;
+    else backId = (int)ViewData["returnContractId"];
 }
-
-
+<style>
+    div#CurDC_chosen {
+        max-width: 85%;
+    }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Employees" asp-action="Index" class="close-btn"></a>
+                    @if ((int)ViewData["returnContractId"] != 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }                   
+                    else
+                    {
+                        <a asp-action="Index" class="close-btn"></a>
+                    }
                 </div>
                 <hr class="modal-line" />
                 <form class="row align-content-start" method="post" enctype="multipart/form-data">

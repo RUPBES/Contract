@@ -23,7 +23,7 @@ namespace MvcLayer.Models
         /// </summary>
         public string? SiteAddress { get; set; }
 
-
+        public string? Author { get; set; }
 
         /// <summary>
         /// Почтовый индекс

@@ -93,7 +93,6 @@ namespace MvcLayer.Controllers
             else return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1, organizationName));
         }
 
-        // GET: Contracts/Details/5
         public async Task<IActionResult> Details(int? id, string? message = null)
         {
             if (id == null || _contractService.GetAll() == null)
@@ -116,14 +115,15 @@ namespace MvcLayer.Controllers
         {
             return View();
         }
+
         [Authorize(Policy = "ContrAdminPolicy")]
-        public IActionResult CreateSubObj(int? id)
+        public IActionResult CreateSubObj(int? id, int returnContractId = 0)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
+            ViewData["returnContractId"] = returnContractId;
             ViewBag.MultipleContractId = id;
 
             return View();
@@ -565,10 +565,29 @@ namespace MvcLayer.Controllers
             var contract = _contractService.GetById(id);
 
             if (contract != null)
-            {
+            {              
                 if (contract.IsOneOfMultiple)
                 {
+                    //удаляем объемы работ подобъектов
                     _contractService.DeleteAfterScopeWork(id);
+
+                    //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной
+                    var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
+                    if (subObj == null || subObj.Count() == 0)
+                    {
+                        try
+                        {
+                            var contractEdit = _contractService.GetById((int)contract.MultipleContractId);
+                            _contractService.DeleteScopeWorks((int)contract.MultipleContractId);
+                            contractEdit.IsMultiple = false;
+                            _contractService.Update(contractEdit);
+                        }
+                        catch (Exception)
+                        {
+                            return BadRequest();
+                        }
+                       
+                    }
                 }
                 else
                 {
