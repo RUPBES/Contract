@@ -2,6 +2,7 @@
 using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using BusinessLayer.Helpers;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -137,7 +138,7 @@ namespace MvcLayer.Controllers
                 scope.ChangeScopeWorkId = scopeWork.ChangeScopeWorkId;
                 scope.AmendmentId = scopeWork.AmendmentId;
 
-                while (scopeWork.PeriodStart <= scopeWork.PeriodEnd)
+                while (Checker.LessOrEquallyFirstDateByMonth(scopeWork.PeriodStart, scopeWork.PeriodEnd))
                 {
                     costs.Add(new SWCostDTO
                     {

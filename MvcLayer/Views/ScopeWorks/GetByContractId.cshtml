@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 
 @{
     if (ViewBag.IsEngin != null)
@@ -8,8 +9,8 @@
     }
     else
     {
-        ViewData["Title"] = "Объем работ";        
-    }    
+        ViewData["Title"] = "Объем работ";
+    }
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
     var contractId = ViewBag.contractId;
     int backId = 0;
@@ -83,6 +84,25 @@
                         <tbody>
                             @foreach (var scope in Model)
                             {
+                                if (scope.IsChange == true)
+                                {
+                                    var amendment = ScopeWork.GetAmendmentByScopeId(scope.Id);
+                                    <tr>
+                                        @if (ViewBag.IsEngin == null)
+                                        {
+                                            <td colspan="9">
+                                                <span>@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td colspan="2">
+                                                <span>@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
+                                            </td>
+                                        }
+                                    </tr>
+
+                                }
                                 @foreach (var item in SWCosts.Find(x => x.ScopeWorkId == scope.Id))
                                 {
                                     <tr>

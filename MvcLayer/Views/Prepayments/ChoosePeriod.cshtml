@@ -2,6 +2,7 @@
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentService Prepayment
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
     ViewData["Title"] = "Выбрать период";
@@ -9,6 +10,7 @@
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
+    var contract = Contract.GetById((int)Model.ContractId);
 }
 
 <style>
@@ -72,9 +74,19 @@
                             <label class="control-label">Выбрать доп.соглашение</label>
                             <select name="AmendmentId" id="AmendId" class="form-control select">
                                 <option disabled selected>Выберите</option>
-                                @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == Model?.ContractId && x.ContractId != null))
+                                @if (contract.IsOneOfMultiple)
                                 {
-                                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == contract.MultipleContractId && contract.MultipleContractId != null))
+                                    {
+                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    }
+                                }
+                                else
+                                {
+                                    @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == Model?.ContractId && x.ContractId != null))
+                                    {
+                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    }
                                 }
                             </select>
                         </div>

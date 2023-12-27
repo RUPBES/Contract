@@ -166,6 +166,7 @@ namespace MvcLayer.Controllers
                     //если нет авансов, запонять факт невозможно, перенаправляем обратно на договор
                     if (prepayment is null || prepayment?.Count() < 1)
                     {
+                        TempData["Message"] = "Заполните Авансы(План)";
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
@@ -197,6 +198,42 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "ContrAdminPolicy")]
         public ActionResult CreatePrepaymentFact(PeriodChooseViewModel model, int returnContractId = 0)
         {
+            var contract = _contractService.GetById((int)model.ContractId);
+            if (contract.IsOneOfMultiple)
+            {
+                var contratcGen = _contractService.GetById((int)contract.MultipleContractId);
+                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "У контракта условие - без авансов";
+                    var urlReturn = returnContractId == 0 ? model.ContractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
+                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+            }
+            else
+            {
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "У контракта условие - без авансов";
+                    var urlReturn = returnContractId == 0 ? model.ContractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+            }
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = model.ContractId;
             int id = TempData["prepaymentId"] is int preId ? preId : 0;
@@ -213,7 +250,6 @@ namespace MvcLayer.Controllers
                 }
             });
         }
-
 
         public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel, int? contractId = 0, int? returnContractId = 0)
         {
