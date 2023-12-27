@@ -34,20 +34,25 @@
                         <label class="control-label">Месяц</label>
                         <input asp-for="PrepaymentFacts[0].Period" value="@Model.Period?.ToShortDateString()" type="datetime" class="form-control" disabled />
                     </div>
-                    <div class="form-group col-6">
-                        <label asp-for="CurrentValueFact" class="control-label"></label>
-                        <input name="PrepaymentFacts[0].CurrentValue" type="text" class="form-control cost" />
+                    @if (ViewBag.Current != null)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="CurrentValueFact" class="control-label"></label>
+                            <input name="PrepaymentFacts[0].CurrentValue" type="text" class="form-control cost" />
+                        </div>
+                    }                   
+                    @if (ViewBag.Target != null)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="TargetValueFact" class="control-label"></label>
+                            <input name="PrepaymentFacts[0].TargetValue" type="text" class="form-control cost" />
 
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="TargetValueFact" class="control-label"></label>
-                        <input name="PrepaymentFacts[0].TargetValue" type="text" class="form-control cost" />
-
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="WorkingOutValueFact" class="control-label"></label>
-                        <input name="PrepaymentFacts[0].WorkingOutValue" type="text" class="form-control cost" />
-                    </div>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="WorkingOutValueFact" class="control-label"></label>
+                            <input name="PrepaymentFacts[0].WorkingOutValue" type="text" class="form-control cost" />
+                        </div>
+                    }
                     <div class="form-group mt-1">
                         <input type="submit" value="Создать" class="btn btn-primary" />
                     </div>
