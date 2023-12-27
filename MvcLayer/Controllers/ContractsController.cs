@@ -371,8 +371,6 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "ContrEditPolicy")]
-        // GET: Contracts/Edit/5
-        //[Authorize]
         public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -441,6 +439,49 @@ namespace MvcLayer.Controllers
 
             return View(viewContract);
         }
+        
+        [Authorize(Policy = "ContrEditPolicy")]
+        public async Task<IActionResult> EditSubObj(int? id, int returnContractId = 0)
+        {
+            ViewData["returnContractId"] = returnContractId;
+           
+            var contract = _contractService.GetById((int)id);
+            if (contract == null)
+            {
+                return NotFound();
+            }
+            
+            var viewContract = _mapper.Map<ContractViewModel>(contract);           
+
+            return View(viewContract);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
+        public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
+        {           
+            try
+            {
+                _contractService.Update(_mapper.Map<ContractDTO>(contract));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+            }
+
+            if (returnContractId != 0)
+            {
+                return RedirectToAction("Details", new { id = returnContractId });
+            }
+            else if (contract.IsEngineering == true)
+            {
+                return RedirectToAction(nameof(Engineerings));
+            }
+            else
+            {
+                return RedirectToAction("Index");
+            }
+        }
+
 
         [HttpPost]
         [Authorize(Policy = "ContrEditPolicy")]
