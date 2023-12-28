@@ -1,5 +1,6 @@
 ﻿@using BusinessLayer.Enums;
 @using BusinessLayer.Models;
+@using System.Diagnostics
 @model BusinessLayer.Models.IndexViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
@@ -128,16 +129,29 @@
                     </tr>
                 </thead>
                 <tbody class="table_tbody">
+                    @{
+Stopwatch watch = new Stopwatch();
+                        watch.Start();
+                        Debug.WriteLine("star view" + "-" + watch.ElapsedMilliseconds);
+                    }
                     @foreach (VContractDTO item in Model.Objects)
                     {
+                        
 
-                        var ds = ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange == true).LastOrDefault();
+                         var ds = ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange == true).LastOrDefault();
                         var resultScopeWork = ds is null ? ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange != true).LastOrDefault() : ds;
-                        var dateRange = DateTime.Now.Date.Year;
+                        var dateRange = DateTime.Now.Date.Year; ///
 
                         var sumPreviusYear = Form.Find(x => x.ContractId == item.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.TotalCost);
                         var factWork = Form.Find(x => x.ContractId == item.Id).Sum(x => x.TotalCost);
-                        var sumThisYear = SWCost.Find(x => x.ScopeWorkId != null && x.ScopeWorkId == resultScopeWork?.Id && x.Period >= new DateTime(dateRange, 1, 1) && x.Period <= new DateTime(dateRange, 12, 31)).Sum(x => x.CostNds);
+                        var sumThisYear = SWCost.Find(x => x.ScopeWorkId != null 
+                                            && x.ScopeWorkId == resultScopeWork?.Id 
+                                            && x.Period >= new DateTime(dateRange, 1, 1) 
+                                            && x.Period <= new DateTime(dateRange, 12, 31))
+                                            .Sum(x => x.CostNds);
+
+                        Debug.WriteLine("get row" + "-" + watch.ElapsedMilliseconds);
+
                         if (item.DateEndWork<DateTime.Today)
                         {
                         <tr class="overdue">
@@ -406,6 +420,10 @@
                                 </td>
                             </tr>
                         }
+                    }
+                    @{
+                        Debug.WriteLine("stop view" + "-" + watch.ElapsedMilliseconds);
+                        watch.Stop();
                     }
                 </tbody>
             </table>
