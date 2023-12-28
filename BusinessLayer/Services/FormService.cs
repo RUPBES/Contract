@@ -27,6 +27,10 @@ namespace BusinessLayer.Services
 
         public int? Create(FormDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.Forms.GetById(item.Id) is null)
@@ -35,19 +39,34 @@ namespace BusinessLayer.Services
 
                     _database.Forms.Create(form);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create form C3a, ID={form.Id}", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create form C3a, ID={form.Id}",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return form.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create form C3a, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create form C3a, object is null",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var form = _database.Forms.GetById(id);
@@ -58,17 +77,33 @@ namespace BusinessLayer.Services
                     {
                         _database.Forms.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete form C3a, ID={id}", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete form C3a, ID={id}",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete form C3a, ID is not more than zero", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete form C3a, ID is not more than zero",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -98,20 +133,39 @@ namespace BusinessLayer.Services
 
         public void Update(FormDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Forms.Update(_mapper.Map<FormC3a>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update form C3a, ID={item.Id}", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update form C3a, ID={item.Id}",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update form C3a, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update form C3a, object is null",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
         public void AddFile(int formId, int fileId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (fileId > 0 && formId > 0)
             {
                 if (_database.FormFiles.GetById(formId, fileId) is null)
@@ -123,16 +177,22 @@ namespace BusinessLayer.Services
                     });
 
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create file of form", typeof(FormService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create file of form",
+                            nameSpace: typeof(FormService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create file of form, object is null", typeof(FormService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
-        }
-
-        //public FormDTO? GetValueScopeWorkByPeriod(int contractId, DateTime? period, Boolean IsOwn = false)
-        //{ 
-                       
-        //}
+            _logger.WriteLog(
+                           logLevel: LogLevel.Warning,
+                           message: $"not create file of form, object is null",
+                           nameSpace: typeof(FormService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user);
+        }        
     }
 }

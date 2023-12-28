@@ -27,6 +27,10 @@ namespace BusinessLayer.Services
 
         public int? Create(EmployeeDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.Employees.GetById(item.Id) is null)
@@ -37,19 +41,34 @@ namespace BusinessLayer.Services
                     var employee = _mapper.Map<Employee>(item);
                     _database.Employees.Create(employee);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create employee, ID={employee.Id}, Name={employee.Fio}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create employee, ID={employee.Id}, Name={employee.Fio}",
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return employee.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create employee, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create employee, object is null",
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var emp = _database.Employees.GetById(id);
@@ -60,17 +79,33 @@ namespace BusinessLayer.Services
                     {
                         _database.Employees.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete employee, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete employee, ID={id}",
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete employee, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete employee, ID is not more than zero",
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -100,15 +135,30 @@ namespace BusinessLayer.Services
 
         public void Update(EmployeeDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Employees.Update(_mapper.Map<Employee>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update employee, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update employee, ID={item.Id}",
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update employee, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update employee, object is null",
+                            nameSpace: typeof(EmployeeService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 

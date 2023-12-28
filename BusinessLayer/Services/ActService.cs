@@ -20,7 +20,7 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
+        private readonly IHttpContextAccessor _http;        
 
         public ActService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
         {
@@ -32,6 +32,9 @@ namespace BusinessLayer.Services
 
         public int? Create(ActDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (item is not null)
             {
                 if (_database.Acts.GetById(item.Id) is null)
@@ -40,19 +43,32 @@ namespace BusinessLayer.Services
 
                     _database.Acts.Create(act);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create act, ID={act.Id}", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create act, ID={act.Id}",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     return act.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create act, object is null", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create act, object is null",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (id > 0)
             {
                 var act = _database.Acts.GetById(id);
@@ -63,18 +79,33 @@ namespace BusinessLayer.Services
                     {
                         _database.Acts.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete act, ID={id}", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete act, ID={id}",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete act, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete act, ID is not more than zero",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -100,15 +131,30 @@ namespace BusinessLayer.Services
 
         public void Update(ActDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Acts.Update(_mapper.Map<Act>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update act, ID={item.Id}", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update act, ID={item.Id}",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);                
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update act, object is null", typeof(ActService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update act, object is null",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -119,6 +165,10 @@ namespace BusinessLayer.Services
 
         public void AddFile(int actId, int fileId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (fileId > 0 && actId > 0)
             {
                 if (_database.ActFiles.GetById(actId, fileId) is null)
@@ -130,11 +180,21 @@ namespace BusinessLayer.Services
                     });
 
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create file of act", typeof(ActService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create file of act",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create file of act, object is null", typeof(ActService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create file of act, object is null",
+                            nameSpace: typeof(ActService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
         }
     }
 }

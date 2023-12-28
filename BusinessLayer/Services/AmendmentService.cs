@@ -6,6 +6,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Reflection;
 
 namespace BusinessLayer.Services
@@ -27,6 +28,10 @@ namespace BusinessLayer.Services
 
         public int? Create(AmendmentDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.Amendments.GetById(item.Id) is null)
@@ -35,19 +40,34 @@ namespace BusinessLayer.Services
 
                     _database.Amendments.Create(amend);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create amendment, ID={amend.Id}", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create amendment, ID={amend.Id}",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return amend.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                           logLevel: LogLevel.Warning,
+                           message: $"not create amendment, object is null",
+                           nameSpace: typeof(AmendmentService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var act = _database.Amendments.GetById(id);
@@ -58,17 +78,33 @@ namespace BusinessLayer.Services
                     {
                         _database.Amendments.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete amendment, ID={id}", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete amendment, ID={id}",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete amendment, ID is not more than zero", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete amendment, ID is not more than zero",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -94,15 +130,30 @@ namespace BusinessLayer.Services
 
         public void Update(AmendmentDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Amendments.Update(_mapper.Map<Amendment>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update amendment, ID={item.Id}", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update amendment, ID={item.Id}",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update amendment, object is null",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -113,6 +164,10 @@ namespace BusinessLayer.Services
 
         public void AddFile(int amendId, int fileId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (fileId > 0 && amendId > 0)
             {
                 if (_database.AmendmentFiles.GetById(amendId, fileId) is null)
@@ -124,15 +179,24 @@ namespace BusinessLayer.Services
                     });
 
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create file of amendment", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create file of amendment",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not create file of amendment, object is null", typeof(AmendmentService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create file of amendment, object is null",
+                            nameSpace: typeof(AmendmentService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
-
         }
     }
 }

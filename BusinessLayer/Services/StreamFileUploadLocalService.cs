@@ -21,16 +21,13 @@ namespace BusinessLayer.Services
         {
                 _env = env;
         }
-        public async Task<bool> UploadFile(MultipartReader reader, MultipartSection? section)
-        {
-            
 
-            
+        public async Task<bool> UploadFile(MultipartReader reader, MultipartSection? section)
+        {   
             while (section != null)
             {
-                var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(
-                    section.ContentDisposition, out var contentDisposition
-                );
+                var hasContentDispositionHeader = ContentDispositionHeaderValue.
+                    TryParse(section.ContentDisposition, out var contentDisposition);
 
                 if (hasContentDispositionHeader)
                 {
@@ -53,8 +50,7 @@ namespace BusinessLayer.Services
                         //}
                     }
                 }
-                section = await reader.ReadNextSectionAsync();
-                
+                section = await reader.ReadNextSectionAsync();                
         }
             return true;
         }

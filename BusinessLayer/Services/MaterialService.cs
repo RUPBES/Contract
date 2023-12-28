@@ -27,6 +27,10 @@ namespace BusinessLayer.Services
 
         public int? Create(MaterialDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.Materials.GetById(item.Id) is null)
@@ -35,19 +39,34 @@ namespace BusinessLayer.Services
 
                     _database.Materials.Create(amend);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create material, ID={amend.Id}", typeof(MaterialService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create material, ID={amend.Id}",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return amend.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create material, object is null", typeof(MaterialService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create material, object is null",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var material = _database.Materials.GetById(id);
@@ -58,20 +77,35 @@ namespace BusinessLayer.Services
                     {
                         _database.Materials.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete material, ID={id}", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete material, ID={id}",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete material, ID is not more than zero", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete material, ID is not more than zero",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
-
 
         public IEnumerable<MaterialDTO> GetAll()
         {
@@ -94,15 +128,30 @@ namespace BusinessLayer.Services
 
         public void Update(MaterialDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Materials.Update(_mapper.Map<MaterialGc>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update material, ID={item.Id}", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update material, ID={item.Id}",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update material, object is null", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update material, object is null",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -110,8 +159,13 @@ namespace BusinessLayer.Services
         {
             return _mapper.Map<IEnumerable<MaterialDTO>>(_database.Materials.Find(predicate));
         }
+
         public void AddAmendmentToMaterial(int amendmentId, int materialId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (materialId > 0 && amendmentId > 0)
             {
                 _database.MaterialAmendments.Create(new MaterialAmendment
@@ -121,11 +175,22 @@ namespace BusinessLayer.Services
                 });
 
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={materialId}) to amendment (ID={amendmentId})", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"add amendment (ID={materialId}) to amendment (ID={amendmentId})",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not add materialAmendment", typeof(MaterialService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not add materialAmendment",
+                            nameSpace: typeof(MaterialService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
     }

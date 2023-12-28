@@ -28,6 +28,10 @@ namespace BusinessLayer.Services
 
         public int? Create(OrganizationDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.Organizations.GetById(item.Id) is null)
@@ -36,18 +40,34 @@ namespace BusinessLayer.Services
 
                     _database.Organizations.Create(organization);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create organization, ID={organization.Id}, Name={organization.Name}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create organization, ID={organization.Id}, Name={organization.Name}",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return organization.Id;
                 }
             }
-            _logger.WriteLog(LogLevel.Warning, $"not create organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create organization, object is null",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var organization = _database.Organizations.GetById(id);
@@ -56,13 +76,23 @@ namespace BusinessLayer.Services
                 {
                     _database.Organizations.Delete(id);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"delete organization, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete organization, ID={id}",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete organization, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete organization, ID is not more than zero",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -92,15 +122,30 @@ namespace BusinessLayer.Services
 
         public void Update(OrganizationDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Organizations.Update(_mapper.Map<Organization>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update organization, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"update organization, ID={item.Id}",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update organization, object is null",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 

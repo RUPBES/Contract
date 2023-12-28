@@ -35,6 +35,10 @@ namespace BusinessLayer.Services
 
         public int? Create(ContractOrganizationDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.ContractOrganizations.GetById(item.OrganizationId, item.ContractId) is null)
@@ -43,18 +47,34 @@ namespace BusinessLayer.Services
 
                     _database.ContractOrganizations.Create(contract);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create contract-organization, ContractID={item.ContractId}, OrganizationID=={item.OrganizationId}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create contract-organization, ContractID={item.ContractId}, OrganizationID=={item.OrganizationId}",
+                            nameSpace: typeof(ContractOrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return contract.ContractId;
                 }
             }
-            _logger.WriteLog(LogLevel.Warning, $"not create contract-organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create contract-organization, object is null",
+                            nameSpace: typeof(ContractOrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? contractId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0 && contractId != null)
             {
                 var contOrg = _database.ContractOrganizations.GetById(id, contractId);
@@ -63,13 +83,23 @@ namespace BusinessLayer.Services
                 {
                     _database.ContractOrganizations.Delete(id, contractId);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"delete contract-organization, ContractID={contractId}, OrganizationID=={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete contract-organization, ContractID={contractId}, OrganizationID=={id}",
+                            nameSpace: typeof(ContractOrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete contract-organization, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete contract-organization, ID is not more than zero",
+                            nameSpace: typeof(ContractOrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }           
         }
 
@@ -99,16 +129,30 @@ namespace BusinessLayer.Services
 
         public void Update(ContractOrganizationDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.ContractOrganizations.Update(_mapper.Map<ContractOrganization>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update contract-organization, ContractID={item.ContractId}, OrganizationID=={item.OrganizationId}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update contract-organization, ContractID={item.ContractId}, OrganizationID=={item.OrganizationId}",
+                            nameSpace: typeof(ContractOrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update contract-organization, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update contract-organization, object is null",
+                            nameSpace: typeof(ContractOrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 

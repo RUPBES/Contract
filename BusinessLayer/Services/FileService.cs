@@ -32,6 +32,10 @@ namespace BusinessLayer.Services
 
         public int? Create(IFormFileCollection files, FolderEnum folder, int entityId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             int id = default;
             if (files != null /*&& item != null*/)
             {
@@ -74,7 +78,13 @@ namespace BusinessLayer.Services
 
                     _database.Files.Create(fileNew);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create file ID={fileNew.Id}", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create file ID={fileNew.Id}",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     id = fileNew.Id;
                     
@@ -83,7 +93,12 @@ namespace BusinessLayer.Services
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not create file, object or IFormFileCollection or name of folder is null", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create file, object or IFormFileCollection or name of folder is null",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
 
             return id;
@@ -91,6 +106,10 @@ namespace BusinessLayer.Services
 
         public void Delete(int id)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var file = _database.Files.GetById(id);
@@ -104,27 +123,53 @@ namespace BusinessLayer.Services
                         if (System.IO.File.Exists(file.FilePath))
                         {
                             System.IO.File.Delete(file.FilePath);
-                            _logger.WriteLog(LogLevel.Information, $"file has been removed from folder ##{file.FilePath}##, ID={id}", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                            _logger.WriteLog(
+                               logLevel: LogLevel.Information,
+                               message: $"file has been removed from folder ##{file.FilePath}##, ID={id}",
+                               nameSpace: typeof(FileService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user);
                         }
 
                         _database.Files.Delete(file.Id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"file has been removed from database, ID={id}", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
+                        _logger.WriteLog(
+                               logLevel: LogLevel.Information,
+                               message: $"file has been removed from database, ID={id}",
+                               nameSpace: typeof(FileService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                               logLevel: LogLevel.Error,
+                               message: e.Message,
+                               nameSpace: typeof(FileService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user);
                     }
                 }
                 else
                 {
-                    _logger.WriteLog(LogLevel.Warning, $"file didn't find", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(
+                               logLevel: LogLevel.Warning,
+                               message: $"file didn't find",
+                               nameSpace: typeof(FileService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user);
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete file, ID is not more than zero", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                               logLevel: LogLevel.Warning,
+                               message: $"not delete file, ID is not more than zero",
+                               nameSpace: typeof(FileService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user);
             }
         }
 
@@ -154,15 +199,30 @@ namespace BusinessLayer.Services
 
         public void Update(FileDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Files.Update(_mapper.Map<File>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update file, ID={item.Id}", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update file, ID={item.Id}",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update file, object is null", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update file, object is null",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -240,6 +300,10 @@ namespace BusinessLayer.Services
 
         public void AttachFileToEntity(int fileId, int entityId, FolderEnum folder)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (fileId > 0 && entityId > 0)
             {
                 switch (folder)
@@ -247,42 +311,85 @@ namespace BusinessLayer.Services
                     case FolderEnum.Acts:
                         _database.ActFiles.Create(new ActFile { FileId = fileId, ActId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to act", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to act",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
 
                     case FolderEnum.Amendment:
                         _database.AmendmentFiles.Create(new AmendmentFile { FileId = fileId, AmendmentId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to amendment", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to amendment",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
 
                     case FolderEnum.CommissionActs:
                         _database.CommissionActFiles.Create(new CommissionActFile { FileId = fileId, СommissionActId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to commission of act", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to commission of act",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
 
                     case FolderEnum.Correspondences:
                         _database.CorrespondenceFiles.Create(new CorrespondenceFile { FileId = fileId, CorrespondenceId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to correspondence", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to correspondence",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
 
                     case FolderEnum.EstimateDocumentations:
                         _database.EstimateDocFiles.Create(new EstimateDocFile { FileId = fileId, EstimateDocId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to estimate document", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to estimate document",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
+
                     case FolderEnum.Form3C:
                         _database.FormFiles.Create(new FormFile { FileId = fileId, FormId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to form c-3a", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to form c-3a",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
 
                     case FolderEnum.Contracts:
                         _database.ContractFiles.Create(new ContractFile { FileId = fileId, ContractId = entityId });
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"attach file to contract", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to contract",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                         break;
 
                     case FolderEnum.Other:
@@ -291,7 +398,12 @@ namespace BusinessLayer.Services
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not create file, file id or entity id is less than zero or name of folder is null", typeof(FileService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create file, file id or entity id is less than zero or name of folder is null",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
     }

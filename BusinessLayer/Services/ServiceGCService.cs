@@ -27,6 +27,10 @@ namespace BusinessLayer.Services
 
         public int? Create(ServiceGCDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.ServiceGCs.GetById(item.Id) is null)
@@ -35,19 +39,34 @@ namespace BusinessLayer.Services
 
                     _database.ServiceGCs.Create(service);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create service of general contractor, ID={service.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create service of general contractor, ID={service.Id}",
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return service.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create service of general contractor, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create service of general contractor, object is null",
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var service = _database.ServiceGCs.GetById(id);
@@ -58,17 +77,33 @@ namespace BusinessLayer.Services
                     {
                         _database.ServiceGCs.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete service of general contractor, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete service of general contractor, ID={id}",
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete service of general contractor, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete service of general contractor, ID is not more than zero",
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -93,15 +128,30 @@ namespace BusinessLayer.Services
 
         public void Update(ServiceGCDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.ServiceGCs.Update(_mapper.Map<ServiceGc>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update service of general contractor, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update service of general contractor, ID={item.Id}",
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update service of general contractor, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update service of general contractor, object is null",
+                            nameSpace: typeof(ServiceGCService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -112,6 +162,10 @@ namespace BusinessLayer.Services
 
         public void AddAmendmentToService(int amendmentId, int serviceId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (amendmentId > 0 && serviceId > 0)
             {
                 _database.ServiceAmendments.Create(new ServiceAmendment
@@ -121,11 +175,22 @@ namespace BusinessLayer.Services
                 });
 
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to service gencontractor (ID={serviceId})", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                           logLevel: LogLevel.Information,
+                           message: $"add amendment (ID={amendmentId}) to service gencontractor (ID={serviceId})",
+                           nameSpace: typeof(ServiceGCService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not add serviceAmendment", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                           logLevel: LogLevel.Warning,
+                           message: $"not add serviceAmendment",
+                           nameSpace: typeof(ServiceGCService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user);
             }
         }
     }

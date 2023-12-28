@@ -6,9 +6,11 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Text;
+using Contract = DatabaseLayer.Models.Contract;
 
 namespace BusinessLayer.Services
 {
@@ -29,35 +31,42 @@ namespace BusinessLayer.Services
 
         public int? Create(ContractDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (item is not null)
             {
                 if (_database.Contracts.GetById(item.Id) is null)
                 {
-                    var contract = _mapper.Map<Contract>(item);
-                    //TODO: сделать общую строку UserName (d2+d) И вставить вместо HTTPCOntext у логера, на всех сервисах,  для create? delete and update
-                    var d = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? "Не определен";
-                    var d2 = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? "Не определен";
-                    //
+                    var contract = _mapper.Map<DatabaseLayer.Models.Contract>(item);
+
                     _database.Contracts.Create(contract);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, 
-                        $"create contract, ID={contract.Id}, Number={contract.Number}", 
-                        typeof(ContractService).Name, 
-                        MethodBase.GetCurrentMethod().Name,
-                        //сюда
-                         _http?.HttpContext?.User?.Identity?.Name);
 
+                    _logger.WriteLog(
+                        logLevel: LogLevel.Information,
+                        message: $"create contract, ID={contract.Id}, Number={contract.Number}",
+                        nameSpace: typeof(ContractService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name,
+                        userName: user);
                     return contract.Id;
                 }
             }
-
-            _logger.WriteLog(LogLevel.Warning, $"not create contract, object is null", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                logLevel: LogLevel.Warning,
+                message: $"not create contract, object is null",
+                nameSpace: typeof(ContractService).Name,
+                methodName: MethodBase.GetCurrentMethod().Name,
+                userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (id > 0)
             {
                 var contract = _database.Contracts.GetById(id);
@@ -68,23 +77,41 @@ namespace BusinessLayer.Services
                     {
                         _database.Contracts.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete contract, ID={id}", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete contract, ID={contract.Id}",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete contract, ID is not more than zero", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-            }            
+                _logger.WriteLog(
+                    logLevel: LogLevel.Warning,
+                    message: $"not delete contract, ID is not more than zero",
+                    nameSpace: typeof(ContractService).Name,
+                    methodName: MethodBase.GetCurrentMethod().Name,
+                    userName: user);
+            }
         }
 
         public void DeleteAfterScopeWork(int id)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (id > 0)
             {
                 var contract = _database.Contracts.GetById(id);
@@ -93,8 +120,8 @@ namespace BusinessLayer.Services
                 {
                     try
                     {
-                        var scopes = _database.ScopeWorks.Find(x=>x.ContractId == id);
-                        
+                        var scopes = _database.ScopeWorks.Find(x => x.ContractId == id);
+
                         foreach (var item in scopes)
                         {
                             foreach (var item1 in item.SWCosts)
@@ -103,27 +130,43 @@ namespace BusinessLayer.Services
                             }
                             _database.Save();
                         }
-                       
 
                         _database.Contracts.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete contract, ID={id}", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete contract, ID={id}",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete contract, ID is not more than zero", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete contract, ID is not more than zero",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
         public void DeleteScopeWorks(int id)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (id > 0)
             {
                 var contract = _database.Contracts.GetById(id);
@@ -144,19 +187,33 @@ namespace BusinessLayer.Services
                         }
 
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete contract's the scope works, ID={id}", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
 
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete contract's the scope works, ID={id}",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete contract, ID is not more than zero", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete contract, ID is not more than zero",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -165,7 +222,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.GetAll());
         }
 
-        public ContractDTO GetById(int id   , int? secondId = null)
+        public ContractDTO GetById(int id, int? secondId = null)
         {
             var contract = _database.Contracts.GetById(id);
 
@@ -181,15 +238,28 @@ namespace BusinessLayer.Services
 
         public void Update(ContractDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (item is not null)
             {
                 _database.Contracts.Update(_mapper.Map<Contract>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update contract, ID={item.Id}", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                           logLevel: LogLevel.Information,
+                           message: $"update contract, ID={item.Id}",
+                           nameSpace: typeof(ContractService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update contract, object is null", typeof(ContractService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: $"not update contract, object is null",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -200,10 +270,10 @@ namespace BusinessLayer.Services
 
         public bool ExistContractByNumber(string numberContract)
         {
-            bool result = false;           
+            bool result = false;
 
             if (_database.Contracts.Find(x => x.Number == numberContract).FirstOrDefault() is not null)
-            {                
+            {
                 return true;
             }
 
@@ -225,12 +295,12 @@ namespace BusinessLayer.Services
         public List<ContractDTO>? ExistContractAndReturnListSameContracts(string numberContract, DateTime? dateContract)
         {
             List<ContractDTO> contracts = new List<ContractDTO>();
-            var list = _database.Contracts.GetAll();            
+            var list = _database.Contracts.GetAll();
             var contract = list.Where(x => x.Number != null && x.Number == numberContract && x.Date != null && x.Date == dateContract).FirstOrDefault();
 
             if (contract is not null)
             {
-                contracts.Add(_mapper.Map<ContractDTO>(contract)); 
+                contracts.Add(_mapper.Map<ContractDTO>(contract));
                 return contracts;
             }
 
@@ -271,6 +341,9 @@ namespace BusinessLayer.Services
 
         public void AddFile(int contractId, int fileId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (fileId > 0 && contractId > 0)
             {
                 if (_database.ContractFiles.GetById(contractId, fileId) is null)
@@ -282,13 +355,23 @@ namespace BusinessLayer.Services
                     });
 
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create file of contract", typeof(ContractService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                           logLevel: LogLevel.Information,
+                           message: $"create file of contract",
+                           nameSpace: typeof(ContractService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user);
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not create file of contract, object is null", typeof(ContractService).Name, MethodBase.GetCurrentMethod()?.Name, _http?.HttpContext?.User?.Identity?.Name);
-
+                _logger.WriteLog(
+                           logLevel: LogLevel.Warning,
+                           message: $"not create file of contract, object is null",
+                           nameSpace: typeof(ContractService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name,
+                           userName: user); 
             }
         }
 
@@ -296,12 +379,12 @@ namespace BusinessLayer.Services
         {
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
-            List<Contract> itemsT = new List<Contract>();            
+            List<Contract> itemsT = new List<Contract>();
             if (!String.IsNullOrEmpty(request))
             {
                 items = _database.Contracts.
-                    Find(c => c.IsEngineering == false && c.IsAgreementContract == false 
-                    && c.IsOneOfMultiple == false && c.IsSubContract == false && 
+                    Find(c => c.IsEngineering == false && c.IsAgreementContract == false
+                    && c.IsOneOfMultiple == false && c.IsSubContract == false &&
                     (c.Author == org || c.Owner == org));
                 foreach (var item in items)
                 {
@@ -309,14 +392,17 @@ namespace BusinessLayer.Services
                         itemsT.Add(item);
                 }
                 items = itemsT;
-                switch (filter) {
+                switch (filter)
+                {
                     case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
                     case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
                     case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
                     default: break;
                 }
             }
-            else { items = _database.Contracts.GetAll(); 
+            else
+            {
+                items = _database.Contracts.GetAll();
                 switch (filter)
                 {
                     case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
@@ -326,18 +412,18 @@ namespace BusinessLayer.Services
                 }
             }
             count = items.Count();
-            items = items.OrderBy(s => s.NameObject);                       
+            items = items.OrderBy(s => s.NameObject);
             items = items.Skip(skipEntities).Take(pageSize);
-            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);            
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }
 
-        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum,string filter, out int count, string org)
-        {            
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org)
+        {
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items;
             items = _database.Contracts.
-                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false 
+                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false
                 && c.IsSubContract == false &&
                     (c.Author == org || c.Owner == org));
             switch (filter)
@@ -346,11 +432,11 @@ namespace BusinessLayer.Services
                 case "Payment": items = items.Where(x => x.Payments.Count() > 0); break;
                 case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
                 default: break;
-            }                        
+            }
             count = items.Count();
             items = items.OrderBy(s => s.NameObject);
-            items = items.Skip(skipEntities).Take(pageSize);            
-            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);            
+            items = items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }
 

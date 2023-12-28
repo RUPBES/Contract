@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +33,9 @@ namespace BusinessLayer.Services
 
         public int? Create(AddressDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (item is not null)
             {
                 if (_database.Addresses.GetById(item.Id) is null)
@@ -40,19 +44,34 @@ namespace BusinessLayer.Services
 
                     _database.Addresses.Create(address);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create address, ID={address.Id}, Name={address.FullAddress}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create address, ID={address.Id}, Name={address.FullAddress}",
+                            nameSpace: typeof(AddressService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return address.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create address, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(                            
+                logLevel: LogLevel.Warning,
+                message: $"not create address, object is null",
+                nameSpace: typeof(AddressService).Name,
+                methodName: MethodBase.GetCurrentMethod().Name, 
+                userName: user);            
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var address = _database.Addresses.GetById(id);
@@ -63,17 +82,33 @@ namespace BusinessLayer.Services
                     {
                         _database.Addresses.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete address, ID={id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete address, ID={id}",
+                            nameSpace: typeof(AddressService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(AddressService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete address, ID is not more than zero", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete address, ID is not more than zero",
+                            nameSpace: typeof(AddressService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -103,15 +138,30 @@ namespace BusinessLayer.Services
 
         public void Update(AddressDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен"; 
+
             if (item is not null)
             {
                 _database.Addresses.Update(_mapper.Map<Address>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update address, ID={item.Id}", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                    logLevel: LogLevel.Information,
+                    message: $"update address, ID={item.Id}",
+                    nameSpace: typeof(AddressService).Name,
+                    methodName: MethodBase.GetCurrentMethod().Name,
+                    userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update address, object is null", typeof(OrganizationService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                    logLevel: LogLevel.Warning,
+                    message: $"not update address, object is null",
+                    nameSpace: typeof(AddressService).Name,
+                    methodName: MethodBase.GetCurrentMethod().Name,
+                    userName: user);
             }
         }
     }

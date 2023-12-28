@@ -27,6 +27,10 @@ namespace BusinessLayer.Services
 
         public int? Create(MaterialCostDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.MaterialCosts.GetById(item.Id) is null)
@@ -35,19 +39,34 @@ namespace BusinessLayer.Services
 
                     _database.MaterialCosts.Create(model);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create material costs, ID={model.Id}", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create material costs, ID={model.Id}",
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return model.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create material costs, object is null", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create material costs, object is null",
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var model = _database.MaterialCosts.GetById(id);
@@ -58,17 +77,33 @@ namespace BusinessLayer.Services
                     {
                         _database.MaterialCosts.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete material costs, ID={id}", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete material costs, ID={id}",
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete material costs, ID is not more than zero", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete material costs, ID is not more than zero",
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -98,21 +133,31 @@ namespace BusinessLayer.Services
 
         public void Update(MaterialCostDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.MaterialCosts.Update(_mapper.Map<MaterialCost>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update material costs, ID={item.Id}", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update material costs, ID={item.Id}",
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update material costs, object is null", typeof(MaterialCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update material costs, object is null",
+                            nameSpace: typeof(MaterialCostService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
-
-        //public (DateTime, DateTime) GetPeriodRange()
-        //{
-            
-        //}
     }
 }

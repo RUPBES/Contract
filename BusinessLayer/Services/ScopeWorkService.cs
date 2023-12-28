@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    internal class ScopeWorkService: IScopeWorkService
+    internal class ScopeWorkService : IScopeWorkService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
@@ -28,6 +28,10 @@ namespace BusinessLayer.Services
 
         public int? Create(ScopeWorkDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.ScopeWorks.GetById(item.Id) is null)
@@ -36,19 +40,34 @@ namespace BusinessLayer.Services
 
                     _database.ScopeWorks.Create(scopeWorks);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create scope works, ID={scopeWorks.Id}", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create scope works, ID={scopeWorks.Id}",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
                     return scopeWorks.Id;
                 }
             }
 
-            _logger.WriteLog(LogLevel.Warning, $"not create scope works, object is null", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create scope works, object is null",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (id > 0)
             {
                 var scopeWorks = _database.ScopeWorks.GetById(id);
@@ -59,17 +78,33 @@ namespace BusinessLayer.Services
                     {
                         _database.ScopeWorks.Delete(id);
                         _database.Save();
-                        _logger.WriteLog(LogLevel.Information, $"delete scope works, ID={id}", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete scope works, ID={id}",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(LogLevel.Error, e.Message, typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not delete scope works, ID is not more than zero", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete scope works, ID is not more than zero",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -99,20 +134,39 @@ namespace BusinessLayer.Services
 
         public void Update(ScopeWorkDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.ScopeWorks.Update(_mapper.Map<ScopeWork>(item));
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"update scope works, ID={item.Id}", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update scope works, ID={item.Id}",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not update scope works, object is null", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update scope works, object is null",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
         public void AddAmendmentToScopeWork(int amendmentId, int scopeworkId)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (amendmentId > 0 && scopeworkId > 0)
             {
                 _database.ScopeWorkAmendments.Create(new ScopeWorkAmendment
@@ -122,11 +176,22 @@ namespace BusinessLayer.Services
                 });
 
                 _database.Save();
-                _logger.WriteLog(LogLevel.Information, $"add amendment (ID={amendmentId}) to scope work (ID={scopeworkId})", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"add amendment (ID={amendmentId}) to scope work (ID={scopeworkId})",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
             else
             {
-                _logger.WriteLog(LogLevel.Warning, $"not add scopeWorkAmendments", typeof(ScopeWorkService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not add scopeWorkAmendments",
+                            nameSpace: typeof(ScopeWorkService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
 
@@ -191,7 +256,7 @@ namespace BusinessLayer.Services
             //возвращаем NULL
 
             var scope = _database.ScopeWorks
-                .Find(x => x.ContractId == contractId && x.IsOwnForces == false).ToList();                   
+                .Find(x => x.ContractId == contractId && x.IsOwnForces == false).ToList();
 
             //если и основной объем равен NULL возвращаем NULL
             if (scope.Count == 0 || scope is null)
@@ -201,9 +266,9 @@ namespace BusinessLayer.Services
 
             resultPeriod.start = new DateTime(4000, 1, 1);
             resultPeriod.end = new DateTime(1000, 1, 1);
-            foreach ( var item in scope)
+            foreach (var item in scope)
             {
-                foreach (var item2 in item.SWCosts) 
+                foreach (var item2 in item.SWCosts)
                 {
                     resultPeriod.start = resultPeriod.start > item2.Period ? (DateTime)item2.Period : resultPeriod.start;
                     resultPeriod.end = resultPeriod.end < item2.Period ? (DateTime)item2.Period : resultPeriod.end;
@@ -217,9 +282,13 @@ namespace BusinessLayer.Services
 
         public AmendmentDTO? GetAmendmentByScopeId(int scopeId)
         {
-            var amendId = _database.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.FirstOrDefault().AmendmentId;
-            var amend = _database.Amendments.GetById((int)amendId);
-            return _mapper.Map<AmendmentDTO>(amend);
+            try
+            {
+                var amendId = _database.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.FirstOrDefault().AmendmentId;
+                var amend = _database.Amendments.GetById((int)amendId);
+                return _mapper.Map<AmendmentDTO>(amend);
+            }
+            catch (Exception ex) { return null;}
         }
     }
 }
