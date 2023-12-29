@@ -3,7 +3,7 @@
 
 // Write your JavaScript code.
 
-function ShowContent(event) {
+function ShowContent(event) {    
     event.classList.toggle("show");
 }
 
@@ -44,3 +44,12 @@ function digits_float(target) {
     val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     $(target).val(val);    
 }
+
+$(document).ready(function () {
+    $('.js-chosen').chosen({
+        no_results_text: 'Совпадений не найдено',
+        placeholder_text_single: 'Выберите',
+        width: '100%',
+        disable_search_threshold: 5
+    });
+});

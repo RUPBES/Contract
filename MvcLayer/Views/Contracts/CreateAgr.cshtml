@@ -88,7 +88,7 @@
             </div>  
 
             @*Сотрудники *********@          
-            <div class="col-12 mt-3">
+            <div class="col-12 mt-3" id="EmployeeFieldSet">
                 <fieldset class="border rounded-3 p-3">
                     <legend class="float-none w-auto px-3">
                         <a asp-action="AddEmployee" id="addEmployee" class="btn btn-sm btn-success">
@@ -362,9 +362,9 @@
         </fieldset>
     </div>
     <div class="col-8 mt-3" style="display:flex">
-        @if (ViewBag.returnContractId != null)
+        @if (Model.AgreementContractId != null)
         {
-            <a class="btn btn-success" asp-action="Details" asp-route-id="@ViewBag.returnContractId">Вернуться</a>
+            <a class="btn btn-success" asp-action="Details" asp-route-id="@Model.AgreementContractId">Вернуться</a>
         }
         else
         {
@@ -384,16 +384,6 @@
     <script type="text/javascript">
         $(function () {
             $("#messageInput").trigger('click');
-        });
-
-        //select выпадающий список
-        $(document).ready(function () {
-            console.log('ready')
-            $('.js-chosen').chosen({
-                width: '91%',
-                no_results_text: 'Совпадений не найдено',
-                placeholder_text_single: 'Выберите'
-            });
         });
 
         $(function ($) {
@@ -535,8 +525,8 @@
 
             let styleName = "border:solid red 4px;";
 
-            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
-            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
+            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#EmployeeFieldSet", "#subBtn", styleName);
+            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#EmployeeFieldSet", "#subBtn", styleName);
 
             // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
             $(".checkChoise").click(function (e) {

@@ -14,14 +14,16 @@ namespace MvcLayer.Controllers
     public class AmendmentsController : Controller
     {
         private readonly IAmendmentService _amendment;
+        private readonly IContractService _contract;
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public AmendmentsController(IAmendmentService amendment, IMapper mapper, IFileService fileService)
+        public AmendmentsController(IAmendmentService amendment, IMapper mapper, IFileService fileService, IContractService contract)
         {
             _amendment = amendment;
             _mapper = mapper;
             _fileService = fileService;
+            _contract = contract;
         }
 
         [HttpGet]
@@ -43,7 +45,24 @@ namespace MvcLayer.Controllers
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            return View();
+            var model = new AmendmentViewModel();
+            var prevAmend = _amendment.Find(a => a.ContractId == contractId).LastOrDefault();
+            if (prevAmend == null)
+            {
+                var contract = _contract.GetById(contractId);
+                model.Date = contract.Date;
+                model.DateBeginWork = contract.DateBeginWork;
+                model.DateEndWork = contract.DateEndWork;
+                model.DateEntryObject = contract.EnteringTerm;
+            }
+            else 
+            {
+                model.Date = prevAmend.Date;
+                model.DateBeginWork = prevAmend.DateBeginWork;
+                model.DateEndWork = prevAmend.DateEndWork;
+                model.DateEntryObject = prevAmend.DateEntryObject;                
+            }
+            return View(model);
         }
 
         [HttpPost]

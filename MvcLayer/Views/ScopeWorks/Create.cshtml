@@ -19,15 +19,10 @@
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
 
-    var d = new ScopeWorkViewModel();
-    if (TempData["scopeW"] is string s)
-    {
-        d = JsonConvert.DeserializeObject<ScopeWorkViewModel>(s);
-    }
     ScopeWorkDTO prevSWCost = new ScopeWorkDTO();
-    if (d.ChangeScopeWorkId != null)
+    if (Model.ChangeScopeWorkId != null)
     {
-        prevSWCost = Scope.GetById((int)d.ChangeScopeWorkId);
+        prevSWCost = Scope.GetById((int)Model.ChangeScopeWorkId);
     }
     else
     {

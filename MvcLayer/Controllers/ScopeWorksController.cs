@@ -144,7 +144,7 @@ namespace MvcLayer.Controllers
                     {
                         Period = scopeWork.PeriodStart,
                         IsOwnForces = scopeWork.IsOwnForces,
-
+                        
                     });
 
                     scopeWork.PeriodStart = scopeWork.PeriodStart.AddMonths(1);

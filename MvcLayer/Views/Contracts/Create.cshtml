@@ -51,7 +51,7 @@
                 </div>
             </div>
             @*Орагнизации *********@
-            <div class="col-12 mt-2">
+            <div class="col-12 mt-2" id="OrganizationFieldSet">
                 <fieldset class="border rounded-1 p-3">
                     <legend class="float-none w-auto px-3">
                         <a asp-action="AddOrganization" id="addOrganization" class="btn btn-sm btn-success">
@@ -102,7 +102,7 @@
                 </fieldset>
             </div>           
             @*Сотрудники *********@
-            <div class="col-12 mt-2">
+            <div class="col-12 mt-2" id="EmployeeFieldSet">
                 <fieldset class="border rounded-1 p-3">
                     <legend class="float-none w-auto px-3">
                         <a asp-action="AddEmployee" id="addEmployee" class="btn btn-sm btn-success">
@@ -382,16 +382,6 @@
 
 @section Scripts {
     <script type="text/javascript">
-        //select выпадающий список
-        $(document).ready(function () {
-            console.log('ready')
-            $('.js-chosen').chosen({
-                width: '91%',
-                no_results_text: 'Совпадений не найдено',
-                placeholder_text_single: 'Выберите'
-            });
-        });
-
         $(document).ready(function () {
             
             ////    проверка вводимых дат /////////********/
@@ -513,11 +503,11 @@
             ///////
 
              let styleName = "border:solid red 4px;";
-            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
-            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
+            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#EmployeeFieldSet", "#subBtn", styleName);
+            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#EmployeeFieldSet", "#subBtn", styleName);
 
-            checkTwoSelectValues("#selectOrgOne", "#selectOrgTwo", "#subBtn", styleName);
-            checkTwoSelectValues("#selectOrgTwo", "#selectOrgOne", "#subBtn", styleName);
+            checkTwoSelectValues("#selectOrgOne", "#selectOrgTwo", "#OrganizationFieldSet", "#subBtn", styleName);
+            checkTwoSelectValues("#selectOrgTwo", "#selectOrgOne", "#OrganizationFieldSet", "#subBtn", styleName);
 
             // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
             $(".checkChoise").click(function (e) {
@@ -613,4 +603,3 @@
         });
     </script>
 }
-@* //class="text-end" *@
