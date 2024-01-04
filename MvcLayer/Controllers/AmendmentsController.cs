@@ -55,12 +55,12 @@ namespace MvcLayer.Controllers
                 model.DateEndWork = contract.DateEndWork;
                 model.DateEntryObject = contract.EnteringTerm;
             }
-            else 
+            else
             {
                 model.Date = prevAmend.Date;
                 model.DateBeginWork = prevAmend.DateBeginWork;
                 model.DateEndWork = prevAmend.DateEndWork;
-                model.DateEntryObject = prevAmend.DateEntryObject;                
+                model.DateEntryObject = prevAmend.DateEntryObject;
             }
             return View(model);
         }

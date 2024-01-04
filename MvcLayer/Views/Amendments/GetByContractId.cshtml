@@ -1,0 +1,125 @@
+﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
+@model IEnumerable<MvcLayer.Models.AmendmentViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+    ViewData["Title"] = "Дополнительные соглашения";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+    var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
+    bool isAdmin = true;
+    string redirectAction = "GetByContractId";
+    string redirectController = "Amendments";
+}
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />               
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="text-center" rowspan="3">
+                                @Html.DisplayNameFor(model => model.Number)
+                                и
+                                @Html.DisplayNameFor(model => model.Date)
+                            </th>
+                            <th class="text-center" rowspan="3">
+                                @Html.DisplayNameFor(model => model.Reason)
+                            </th>
+                            <th class="text-center" rowspan="3">
+                                @Html.DisplayNameFor(model => model.ContractPrice)
+                            </th>
+                            <th class="text-center align-middle" colspan="3">Сроки</th>
+                            <th class="text-center" rowspan="3">
+                                @Html.DisplayNameFor(model => model.ContractChanges)
+                            </th>
+                            <th class="text-center" rowspan="3">Файлы ДС</th>
+                            <th rowspan="3">
+                                <span class="icon file-add" title="Добавить объем работ">
+                                    <a asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contract?.Id" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                </span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="text-center align-middle" colspan="2">выполнения работ</th>
+                            <th class="text-center align-middle" rowspan="2">ввода объекта</th>
+                        </tr>
+                        <tr>
+                            <th class="text-center align-middle" colspan="1">начало</th>
+                            <th class="text-center align-middle" colspan="1">окончание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Number)
+                                    от
+                                    @item.Date?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Reason)
+                                </td>
+                                <td class="text-end">
+                                    @item.ContractPrice?.ToString("N2")
+                                </td>
+                                <td>
+                                    @item.DateBeginWork?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @item.DateEndWork?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @item.DateEntryObject?.ToShortDateString()
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ContractChanges)
+                                </td>
+                                <td>
+                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
+                                    {
+                                        <div>
+                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                            @if (isAdmin)
+                                            {
+                                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                                <td>                                    
+                                    <span class="icon file-add" title="Добавить файл к изменению">
+                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                    </span>
+                                    <span class="icon edit" title="Редактировать изменение по договору">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                    </span>
+                                    <span class="icon delete" title="Удалить изменение по договору">
+                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
