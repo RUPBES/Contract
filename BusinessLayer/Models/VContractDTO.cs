@@ -54,5 +54,8 @@ namespace BusinessLayer.Models
         public string? Owner { get; set; }
         public bool IsExpired { get; set; }
         public bool IsClosed { get; set; }
+        public decimal? ThisYearSum { get; set; }
+        public decimal? PreYearSum { get; set; }
+        public decimal? RemainingSum { get; set; }
     }
 }

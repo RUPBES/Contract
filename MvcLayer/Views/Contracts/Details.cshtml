@@ -397,7 +397,27 @@
                         <td></td>
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td>
+                            <span class="table_span-deadlines">
+                               
+                                @if (contractBranch.DateBeginWork?.ToShortDateString() is not null || contractBranch.DateEndWork?.ToShortDateString() is not null)
+                                {
+                                    <span>Сроки-</span>
+                                    <b>выполнения работ:</b>
+                                    <br>
+                                    <span>@contractBranch.DateBeginWork?.ToShortDateString() -  @contractBranch.DateEndWork?.ToShortDateString()</span>
+                                    <br>
+                                }
+                                @if (contractBranch.EnteringTerm?.ToShortDateString() is not null)
+                                {
+                                    <b>ввода:</b>
+
+                                    <br>
+                                    <span>@Model.EnteringTerm?.ToShortDateString()</span>
+                                    <br>
+                                }                               
+                            </span>
+                        </td>
                         <td></td>
                         <td></td>
                         <td class="text-end">

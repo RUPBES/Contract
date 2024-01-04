@@ -440,5 +440,51 @@ namespace BusinessLayer.Services
             return t;
         }
 
+        public bool IsThereSubObjs(int contarctId)
+        {
+            var subObjs = _database.Contracts.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contarctId);
+
+            if (subObjs is not null && subObjs.Count() > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsThereScopeWorks(int contarctId)
+        {
+            var scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
+
+            if (scopeId is not null && scopeId > 0)
+            {
+                    return true;
+            }
+            return false;
+        }
+
+        public bool IsThereSWCosts(int contarctId)
+        {
+            var scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
+
+            if (scopeId is not null && scopeId > 0)
+            {
+                if (_database.SWCosts.Find(x=>x.ScopeWorkId == scopeId)?.Count() > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool IsThereAmendment(int contarctId)
+        {
+            var amendmentId = _database.Amendments.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
+
+            if (amendmentId is not null && amendmentId > 0)
+            {               
+                    return true;
+            }
+            return false;
+        }
     }
 }

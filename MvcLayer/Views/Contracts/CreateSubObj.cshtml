@@ -1,14 +1,22 @@
 ﻿@using BusinessLayer.Enums;
 @model MvcLayer.Models.ContractViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
     ViewData["Title"] = "Добавление подобъекта";
-    
+
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = Model.Id;
     else backId = (int)ViewData["returnContractId"];
+    int? idContr = @ViewBag.MultipleContractId;
+    string? currency = null;
+    if (idContr is not null)
+    {
+        currency = @Contract?.GetById((int)idContr)?.Сurrency is null ? "BYN" : @Contract?.GetById((int)idContr)?.Сurrency;
+    }
 }
+    
 <style>
     div#CurDC_chosen {
         max-width: 85%;
@@ -17,7 +25,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" style="max-width:500px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if ((int)ViewData["returnContractId"] != 0)
@@ -33,15 +41,20 @@
                 <form class="row align-content-start" method="post" enctype="multipart/form-data">
                     <input asp-for="Id" value="null" hidden />                    
                     <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>
-                    <div>                       
-                        <div class="form-group">
+                    <input asp-for="Сurrency" value="@currency" hidden>
+                    <div class="row">
+                        <div class="form-group col-9">
                             <label asp-for="ContractPrice" for="CDC"></label>
                             <div class="input-group">
                                 <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
                                 <input name="ContractPrice" type="text" class="form-control" id="CDC">
                             </div>
                         </div>
-                        <div class="form-group mt-1">
+                        <div class="col-3">
+                            <label asp-for="Сurrency"></label>
+                            <input asp-for="Сurrency" type="text" value="@currency" class="form-control" disabled>
+                        </div>
+                        @*<div class="form-group mt-1">
                             <label asp-for="Сurrency" for="CurDC"></label>
                             <div class="input-group">
                                 <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
@@ -52,6 +65,19 @@
                                     }
                                 </select>
                             </div>
+                        </div>
+                        *@
+                        <div class="form-group mt-1">
+                            <label asp-for="DateBeginWork">Начало работ</label>
+                            <input asp-for="DateBeginWork" type="date" class="form-control" id="DateBeginWork">
+                        </div>
+                        <div class="form-group mt-1">
+                            <label asp-for="DateEndWork">Окончание работ</label>
+                            <input asp-for="DateEndWork" type="date" class="form-control" id="DateEndWork">
+                        </div>
+                        <div class="form-group mt-1">
+                            <label asp-for="EnteringTerm"></label>
+                            <input asp-for="EnteringTerm" type="date" class="form-control" id="EnteringTerm">
                         </div>
                         <div class="col-12 mt-2">
                             <label>Наименование объекта</label>
@@ -76,5 +102,67 @@
             });
             digits_float('#CDC');
         });
+
+        ////    проверка вводимых дат /////////********/
+        //////////////////////////////////////********/
+        /*
+
+        Дата договора  -  a / id = DateDC
+        Начало работ   -  b / id = DateBeginWork
+        Окончание работ - c / id = DateEndWork
+        Срок ввода      - d / id = EnteringTerm
+        Срок действия   - e / id = ContractTerm
+
+         a<=b
+         b<c
+         c<=d
+         c<e
+        */
+       
+        let beginWork = document.querySelector("#DateBeginWork");
+        let endWork = document.querySelector("#DateEndWork");
+        let enteringTm = document.querySelector("#EnteringTerm");
+
+       
+        beginWork.addEventListener('change', (e) => {
+            let date = beginWork.value;
+            let dateEnd = endWork.value;
+
+            // let datePlusOne = addDays(new Date(date), 1);
+
+            if (date > dateEnd && dateEnd.length > 0) {
+                $("#DateEndWork").val(datePlusOne);
+            }
+
+            endWork.setAttribute('min', date);
+        });
+
+        endWork.addEventListener('change', (e) => {
+            let dateET = enteringTm.value;
+            let dateEnd = endWork.value;
+
+            let datePlusOne = addDays(new Date(dateEnd), 1);
+
+            if (dateET < dateEnd && dateET.length > 0) {
+                $("#EnteringTerm").val(dateEnd);
+            }          
+
+            enteringTm.setAttribute('min', dateEnd);
+        });
+
+        function addDays(date, countDays) {
+            let dateOfyear = date.getFullYear() + ""; // год;
+            console.log(dateOfyear);
+            let newDateOfyear = dateOfyear/* .slice(2) */; // год последние две цифры;
+
+            let day = date.getDate(); // текущий день
+            day = day < 10 ? "0" + day + countDays : day + countDays;
+            let month = date.getMonth() + 1; //текущий месяцж
+            month = month < 10 ? "0" + month : month;
+
+            return +newDateOfyear + '-' + +month + '-' + +day;
+        }
+        //////////////////////////////////////////
+        //////////////////////////////////////////
     </script>
 }

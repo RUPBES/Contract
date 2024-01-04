@@ -14,5 +14,11 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         void DeleteAfterScopeWork(int id);
         public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org);
         public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org);
+        //////////////////////////////////////////
+        ///
+        bool IsThereSubObjs(int contarctId);
+        bool IsThereScopeWorks(int contarctId);
+        bool IsThereSWCosts(int contarctId);
+        bool IsThereAmendment(int contarctId);
     }
 }

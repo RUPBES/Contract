@@ -198,5 +198,20 @@ namespace BusinessLayer.Services
                             userName: user);
             }
         }
+
+        public (DateTime?, DateTime?)? GetPeriodRangeOfContractById(int contractId)
+        {
+            (DateTime?, DateTime?) range = (null, null);
+
+            var lastAmendment = _database.Amendments.Find(x => x.ContractId == contractId).LastOrDefault();
+            range.Item1 = lastAmendment.DateBeginWork;
+            range.Item2 = lastAmendment.DateEndWork;
+
+            if (range.Item1 is null && range.Item2 is null)
+            {
+                return null;
+            }
+            return range;
+        }
     }
 }

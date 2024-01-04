@@ -137,8 +137,12 @@ namespace MvcLayer.Controllers
             if (viewModel is not null)
             {
                 var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
-                oldContract.IsMultiple = true;
-                _contractService.Update(oldContract);
+                if (!oldContract.IsMultiple)
+                {
+                    oldContract.IsMultiple = true;
+                    _contractService.Update(oldContract);
+                }
+                
                 viewModel.IsOneOfMultiple = true;
                 viewModel.Author = organizationName;
                 viewModel.Owner = organizationName;

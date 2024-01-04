@@ -52,15 +52,11 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPage(int pageSize, int pageNum, string org)
-        {
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
-            Debug.WriteLine("start" +"-"+watch.ElapsedMilliseconds);
-            
+        {            
             int skipEntities = (pageNum - 1) * pageSize;
-            Debug.WriteLine("get contract start" + "-" + watch.ElapsedMilliseconds);
+           
             var items = _database.vContracts.GetEntitySkipTake(skipEntities, pageSize, org);
-            Debug.WriteLine("get count start" + "-" + watch.ElapsedMilliseconds);
+            
             int count = items.Count();
             var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
@@ -70,8 +66,7 @@ namespace BusinessLayer.Services
                 PageViewModel = pageViewModel,
                 Objects = t
             };
-            Debug.WriteLine("stop" + "-" + watch.ElapsedMilliseconds);
-            watch.Stop();
+           
             return viewModel;
         }
 

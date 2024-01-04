@@ -129,28 +129,29 @@
                     </tr>
                 </thead>
                 <tbody class="table_tbody">
-                    @{
+@*                     @{
 Stopwatch watch = new Stopwatch();
                         watch.Start();
                         Debug.WriteLine("star view" + "-" + watch.ElapsedMilliseconds);
-                    }
+                    } *@
                     @foreach (VContractDTO item in Model.Objects)
                     {
                         
 
-                         var ds = ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange == true).LastOrDefault();
+                       @*   var ds = ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange == true).LastOrDefault();
                         var resultScopeWork = ds is null ? ScopeWork.Find(x => x.ContractId == item.Id && x.IsOwnForces != true && x.IsChange != true).LastOrDefault() : ds;
                         var dateRange = DateTime.Now.Date.Year; ///
 
                         var sumPreviusYear = Form.Find(x => x.ContractId == item.Id && x.Period < new DateTime(dateRange, 1, 1)).Sum(x => x.TotalCost);
+                        
                         var factWork = Form.Find(x => x.ContractId == item.Id).Sum(x => x.TotalCost);
                         var sumThisYear = SWCost.Find(x => x.ScopeWorkId != null 
                                             && x.ScopeWorkId == resultScopeWork?.Id 
                                             && x.Period >= new DateTime(dateRange, 1, 1) 
                                             && x.Period <= new DateTime(dateRange, 12, 31))
-                                            .Sum(x => x.CostNds);
+                                            .Sum(x => x.CostNds); *@
 
-                        Debug.WriteLine("get row" + "-" + watch.ElapsedMilliseconds);
+                        @* Debug.WriteLine("get row" + "-" + watch.ElapsedMilliseconds); *@
 
                         if (item.DateEndWork<DateTime.Today)
                         {
@@ -256,21 +257,22 @@ Stopwatch watch = new Stopwatch();
                             @*Выполнено на начало года*@
                             <td class="text-end">
                                 <span class="table_span-realization">
-                                    @sumPreviusYear?.ToString("N2")
+                                    @item.PreYearSum?.ToString("N2")
+                                    @* @sumPreviusYear?.ToString("N2") *@
                                 </span>
                             </td>
                             @*Остаток*@
                             <td class="text-end">
                                 <span class="table_span-remains">
-                                    @{
+                                    @* @{
                                         var ostatok = item.ContractPrice - factWork;
-                                    }
-                                    @ostatok?.ToString("N2")
+                                    } *@
+                                    @item.RemainingSum?.ToString("N2")
                                 </span>
                             </td>
                             @*Объем*@
                             <td>
-                                <span class="table_span-volume">@sumThisYear?.ToString("N2")</span>
+                                <span class="table_span-volume">@item.ThisYearSum?.ToString("N2")</span>
                             </td>
                             @*Действия с договором*@
                             <td>
@@ -390,21 +392,21 @@ Stopwatch watch = new Stopwatch();
                                 @*Выполнено на начало года*@
                                 <td class="text-end">
                                     <span class="table_span-realization">
-                                        @sumPreviusYear?.ToString("N2")
+                                        @item.PreYearSum?.ToString("N2")
                                     </span>
                                 </td>
                                 @*Остаток*@
                                 <td class="text-end">
                                     <span class="table_span-remains">
-                                        @{
+                                       @*  @{
                                             var ostatok = item.ContractPrice - factWork;
-                                        }
-                                        @ostatok?.ToString("N2")
+                                        } *@
+                                        @item.RemainingSum?.ToString("N2")
                                     </span>
                                 </td>
                                 @*Объем*@
                                 <td>
-                                    <span class="table_span-volume">@sumThisYear?.ToString("N2")</span>
+                                    <span class="table_span-volume">@item.ThisYearSum?.ToString("N2")</span>
                                 </td>
                                 @*Действия с договором*@
                                 <td>
@@ -421,10 +423,10 @@ Stopwatch watch = new Stopwatch();
                             </tr>
                         }
                     }
-                    @{
+                   @*  @{
                         Debug.WriteLine("stop view" + "-" + watch.ElapsedMilliseconds);
                         watch.Stop();
-                    }
+                    } *@
                 </tbody>
             </table>
         </div>
