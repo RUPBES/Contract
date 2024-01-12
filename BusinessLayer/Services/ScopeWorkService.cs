@@ -6,7 +6,6 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 
 namespace BusinessLayer.Services
@@ -247,6 +246,7 @@ namespace BusinessLayer.Services
             return resultPeriod;
         }
 
+        //TODO: объясни что тут происходит и почему не мой метод
         public (DateTime, DateTime)? GetFullPeriodRangeScopeWork(int contractId)
         {
             (DateTime start, DateTime end) resultPeriod;
@@ -288,7 +288,163 @@ namespace BusinessLayer.Services
                 var amend = _database.Amendments.GetById((int)amendId);
                 return _mapper.Map<AmendmentDTO>(amend);
             }
-            catch (Exception ex) { return null;}
+            catch (Exception ex) { return null; }
+        }
+
+        public void AddSWCostForMainContract(int? scopeId, List<SWCostDTO> costs)
+        {
+            if (scopeId is not null && scopeId > 0)
+            {
+                var swCosts = _database.SWCosts.Find(x => x.ScopeWorkId == scopeId);
+
+                foreach (var item in costs)
+                {
+                    var oneSwCost = swCosts.FirstOrDefault(x => x.Period?.Year == item.Period?.Year && x.Period?.Month == item.Period?.Month);
+                    if (oneSwCost is not null)
+                    {
+                        oneSwCost.PnrCost += item.PnrCost ?? 0;
+                        oneSwCost.SmrCost += item.SmrCost ?? 0;
+                        oneSwCost.EquipmentCost += item.EquipmentCost ?? 0;
+                        oneSwCost.OtherExpensesCost += item.OtherExpensesCost ?? 0;
+                        oneSwCost.AdditionalCost += item.AdditionalCost ?? 0;
+                        oneSwCost.GenServiceCost += item.GenServiceCost ?? 0;
+                        oneSwCost.MaterialCost += item.MaterialCost ?? 0;
+
+                        _database.SWCosts.Update(oneSwCost);
+                    }
+                    else
+                    {
+                        _database.SWCosts.Create(new SWCost
+                        {
+                            Period = item.Period,
+                            PnrCost = item.PnrCost ?? 0,
+                            SmrCost = item.SmrCost ?? 0,
+                            EquipmentCost = item.EquipmentCost ?? 0,
+                            OtherExpensesCost = item.OtherExpensesCost ?? 0,
+                            AdditionalCost = item.AdditionalCost ?? 0,
+                            GenServiceCost = item.GenServiceCost ?? 0,
+                            MaterialCost = item.MaterialCost ?? 0,
+                            IsOwnForces = item.IsOwnForces,
+                            ScopeWorkId = scopeId,
+                        });
+                    }
+                }
+                _database.Save();
+            }
+        }
+
+        public void CreateSWCostForMainContract(int? scopeId, List<SWCostDTO> costs, bool isOwnForces)
+        {
+            if (scopeId is not null && scopeId > 0)
+            {
+                foreach (var item in costs)
+                {
+                    _database.SWCosts.Create(new SWCost
+                    {
+                        Period = item.Period,
+                        PnrCost = item.PnrCost,
+                        SmrCost = item.SmrCost,
+                        EquipmentCost = item.EquipmentCost,
+                        OtherExpensesCost = item.OtherExpensesCost,
+                        AdditionalCost = item.AdditionalCost,
+                        GenServiceCost = item.GenServiceCost,
+                        MaterialCost = item.MaterialCost,
+                        IsOwnForces = isOwnForces,
+                        ScopeWorkId = scopeId,
+                    });
+                }
+                _database.Save();
+            }
+        }
+
+        /// <summary>
+        /// Вычитание сумм объема работ подобъекта из главного объема (основного договора)
+        /// </summary>
+        /// <param name="scopeId">ID объема работ</param>
+        /// <param name="costs"> объем работ, по которому удаляем объемы работ подобъекта и эти же значения вычитаем из гланого объема</param>
+        public void SubstractSWCostForMainContract(int? mainContractScopeId, int changeScopeId, List<SWCostDTO> costs)
+        {
+            if (mainContractScopeId > 0 && changeScopeId > 0)
+            {
+                var costsOld = _database.SWCosts.Find(x => x.ScopeWorkId == changeScopeId);
+
+                foreach (var scpNew in costs)
+                {
+                    var scpMain = _database.SWCosts
+                        .Find(x => x.ScopeWorkId == mainContractScopeId && 
+                              x.Period?.Year == scpNew.Period?.Year &&
+                              x.Period?.Month == scpNew.Period?.Month)
+                        .FirstOrDefault();
+
+                    var oldSwCost = costsOld
+                        .FirstOrDefault(x => x.Period?.Year == scpNew.Period?.Year &&
+                              x.Period?.Month == scpNew.Period?.Month);
+                    
+                    if (scpMain is not null)
+                    {
+                        scpMain.PnrCost = scpMain.PnrCost + (scpNew?.PnrCost ?? 0) - (oldSwCost?.PnrCost ?? 0);
+                        scpMain.SmrCost = scpMain.SmrCost + (scpNew?.SmrCost ?? 0) - (oldSwCost?.SmrCost ?? 0);
+                        scpMain.EquipmentCost = scpMain.EquipmentCost + (scpNew?.EquipmentCost ?? 0) - (oldSwCost?.EquipmentCost ?? 0);
+                        scpMain.OtherExpensesCost = scpMain.OtherExpensesCost + (scpNew?.OtherExpensesCost ?? 0) - (oldSwCost?.OtherExpensesCost ?? 0);
+                        scpMain.AdditionalCost = scpMain.AdditionalCost + (scpNew?.AdditionalCost ?? 0) - (oldSwCost?.AdditionalCost ?? 0);
+                        scpMain.GenServiceCost = scpMain.GenServiceCost + (scpNew?.GenServiceCost ?? 0) - (oldSwCost?.GenServiceCost ?? 0);
+                        scpMain.MaterialCost = scpMain.MaterialCost + (scpNew?.MaterialCost ?? 0) - (oldSwCost?.MaterialCost ?? 0);
+                        
+                        _database.SWCosts.Update(scpMain);
+                    }                    
+                }
+                _database.Save();
+            }
+        }
+
+        /// <summary>
+        /// Удаление сумм объема работ подобъекта из главного объема (основного договора)
+        /// </summary>
+        /// <param name="scopeId">ID объема работ</param>       
+        public void RemoveSWCostFromMainContract(int multipleContractId, int subobjId)
+        {
+            //1.Удаляем все isOwnForces = true и isOwnForces = false, и вычетаем из основного isOwnForces = true и isOwnForces = false
+            //2. удаляем у основного значения подобъекта (последние значения(они явл. текущими)). Оставшиеся просто удаляем!
+
+            if (multipleContractId > 0 && subobjId > 0)
+            {
+                RemoveInMainContractCostsOfSub(multipleContractId, subobjId, true);
+                RemoveInMainContractCostsOfSub(multipleContractId, subobjId, false);
+                
+                _database.Save();
+            }
+        }
+
+        private void RemoveInMainContractCostsOfSub(int multipleContractId, int subobjId, bool isOwnForces)
+        {
+            var mainScpId = _database.ScopeWorks
+                .Find(x => x.ContractId == multipleContractId && x.IsOwnForces == isOwnForces)?
+                .LastOrDefault()?
+                .Id;
+
+            var subScpId = _database.ScopeWorks
+                .Find(x => x.ContractId == subobjId && x.IsOwnForces == isOwnForces)?
+                .LastOrDefault()?
+                .Id;
+          
+            foreach (var item in _database.SWCosts.Find(x => x.ScopeWorkId == mainScpId))
+            {
+                var removeCost = _database.SWCosts
+                    .Find(x => x.Period?.Year == item.Period?.Year && 
+                          x.Period?.Month == item.Period?.Month && 
+                          x.ScopeWorkId == subScpId)
+                    .LastOrDefault();
+
+                item.PnrCost = item.PnrCost - (removeCost?.PnrCost ?? 0);
+                item.SmrCost = item.SmrCost - (removeCost?.SmrCost ?? 0);
+                item.EquipmentCost = item.EquipmentCost - (removeCost?.EquipmentCost ?? 0);
+                item.OtherExpensesCost = item.OtherExpensesCost - (removeCost?.OtherExpensesCost ?? 0);
+                item.AdditionalCost = item.AdditionalCost - (removeCost?.AdditionalCost ?? 0);
+                item.GenServiceCost = item.GenServiceCost - (removeCost?.GenServiceCost ?? 0);
+                item.MaterialCost = item.MaterialCost - (removeCost?.MaterialCost ?? 0);
+
+                _database.SWCosts.Update(item);
+            }
         }
     }
 }

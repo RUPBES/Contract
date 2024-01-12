@@ -133,6 +133,7 @@ namespace BusinessLayer.Services
 
                         _database.Contracts.Delete(id);
                         _database.Save();
+
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"delete contract, ID={id}",
@@ -451,9 +452,20 @@ namespace BusinessLayer.Services
             return false;
         }
 
-        public bool IsThereScopeWorks(int contarctId)
+        public bool IsThereScopeWorks(int contarctId, out int? scopeId)
         {
-            var scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
+            scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
+
+            if (scopeId is not null && scopeId > 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId)
+        {
+            scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId && x.IsOwnForces == isOwnForses).LastOrDefault()?.Id;
 
             if (scopeId is not null && scopeId > 0)
             {
@@ -462,10 +474,8 @@ namespace BusinessLayer.Services
             return false;
         }
 
-        public bool IsThereSWCosts(int contarctId)
-        {
-            var scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
-
+        public bool IsThereSWCosts(int? scopeId)
+        {           
             if (scopeId is not null && scopeId > 0)
             {
                 if (_database.SWCosts.Find(x=>x.ScopeWorkId == scopeId)?.Count() > 0)

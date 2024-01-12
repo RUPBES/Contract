@@ -17,8 +17,9 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         //////////////////////////////////////////
         ///
         bool IsThereSubObjs(int contarctId);
-        bool IsThereScopeWorks(int contarctId);
-        bool IsThereSWCosts(int contarctId);
+        bool IsThereScopeWorks(int contarctId, out int? scopeId);
+        bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId);
+        bool IsThereSWCosts(int? scopeId);
         bool IsThereAmendment(int contarctId);
     }
 }

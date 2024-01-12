@@ -38,7 +38,7 @@ namespace BusinessLayer.Models
             GenServiceCost = 0;
         }
 
-        public static SWCostDTO operator +(SWCostDTO a, SWCost b) 
+        public static SWCostDTO operator + (SWCostDTO a, SWCost b) 
         {
             var result = new SWCostDTO();
             result.CostNds = a.CostNds + b.CostNds ;
@@ -50,6 +50,21 @@ namespace BusinessLayer.Models
             result.OtherExpensesCost = a.OtherExpensesCost + b.OtherExpensesCost;
             result.MaterialCost = a.MaterialCost + b.MaterialCost;
             result.GenServiceCost = a.GenServiceCost + b.GenServiceCost;
+            return result;
+        }
+
+        public static SWCostDTO operator - (SWCostDTO a, SWCost b)
+        {
+            var result = new SWCostDTO();
+            result.CostNds = a.CostNds - b.CostNds;
+            result.CostNoNds = a.CostNoNds - b.CostNoNds;
+            result.SmrCost = a.SmrCost - b.SmrCost;
+            result.PnrCost = a.PnrCost - b.PnrCost;
+            result.AdditionalCost = a.AdditionalCost - b.AdditionalCost;
+            result.EquipmentCost = a.EquipmentCost - b.EquipmentCost;
+            result.OtherExpensesCost = a.OtherExpensesCost - b.OtherExpensesCost;
+            result.MaterialCost = a.MaterialCost - b.MaterialCost;
+            result.GenServiceCost = a.GenServiceCost - b.GenServiceCost;
             return result;
         }
 
@@ -68,7 +83,22 @@ namespace BusinessLayer.Models
             return result;
         }
 
-        public static SWCostDTO operator +(SWCost a, SWCostDTO b)
+        public static SWCostDTO operator - (SWCostDTO a, SWCostDTO b)
+        {
+            var result = new SWCostDTO();
+            result.CostNds = a.CostNds - b.CostNds;
+            result.CostNoNds = a.CostNoNds - b.CostNoNds;
+            result.SmrCost = a.SmrCost - b.SmrCost;
+            result.PnrCost = a.PnrCost - b.PnrCost;
+            result.AdditionalCost = a.AdditionalCost - b.AdditionalCost;
+            result.EquipmentCost = a.EquipmentCost - b.EquipmentCost;
+            result.OtherExpensesCost = a.OtherExpensesCost - b.OtherExpensesCost;
+            result.MaterialCost = a.MaterialCost - b.MaterialCost;
+            result.GenServiceCost = a.GenServiceCost - b.GenServiceCost;
+            return result;
+        }
+
+        public static SWCostDTO operator + (SWCost a, SWCostDTO b)
         {
             var result = new SWCostDTO();
             result.CostNds = a.CostNds + b.CostNds;
@@ -80,6 +110,21 @@ namespace BusinessLayer.Models
             result.OtherExpensesCost = a.OtherExpensesCost + b.OtherExpensesCost;
             result.MaterialCost = a.MaterialCost + b.MaterialCost;
             result.GenServiceCost = a.GenServiceCost + b.GenServiceCost;
+            return result;
+        }
+
+        public static SWCostDTO operator - (SWCost a, SWCostDTO b)
+        {
+            var result = new SWCostDTO();
+            result.CostNds = a.CostNds - b.CostNds;
+            result.CostNoNds = a.CostNoNds - b.CostNoNds;
+            result.SmrCost = a.SmrCost - b.SmrCost;
+            result.PnrCost = a.PnrCost - b.PnrCost;
+            result.AdditionalCost = a.AdditionalCost - b.AdditionalCost;
+            result.EquipmentCost = a.EquipmentCost - b.EquipmentCost;
+            result.OtherExpensesCost = a.OtherExpensesCost - b.OtherExpensesCost;
+            result.MaterialCost = a.MaterialCost - b.MaterialCost;
+            result.GenServiceCost = a.GenServiceCost - b.GenServiceCost;
             return result;
         }
 

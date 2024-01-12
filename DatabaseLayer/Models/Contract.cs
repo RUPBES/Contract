@@ -35,6 +35,7 @@ namespace DatabaseLayer.Models
         public string? Owner { get; set; }
         public bool IsExpired { get; set; }
         public bool IsClosed { get; set; }
+        public bool IsArchive { get; set; }
 
         public virtual Contract MultipleContract { get; set; }
 

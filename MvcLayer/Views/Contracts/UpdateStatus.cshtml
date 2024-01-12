@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Изменить статус договора";
+    string status = ViewData["status"] as string;
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] != 0)
+    {
+        backId = (int)ViewData["returnContractId"];
+    }
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    else if (ViewBag.IsEngin != null)
+                    {
+                        <a asp-action="Engineerings" class="close-btn"></a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form asp-action="UpdateStatus" asp-controller="Contracts" asp-route-returnContractId="@ViewBag.returnContractId" class="row align-items-center" style="max-width:700px;">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" name="contractId" value="@backId" />
+
+
+                    @if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="status" id="btnradio1" value="closed" autocomplete="off" checked>
+                            <label class="btn btn-outline-secondary" for="btnradio1">Закрыт, ожидание акта ввода</label>
+                        </div>
+                        <div class="btn-group mt-1" role="group">
+                            <input type="radio" class="btn-check" name="status" id="btnradio2" value="expired" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="btnradio2">Просрочен</label>
+                        </div>
+                    }
+                    @if (status.Equals("expired", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="status" id="btnradio1" value="closed" autocomplete="off">
+                            <label class="btn btn-outline-secondary" for="btnradio1">Закрыт, ожидание акта ввода</label>
+                        </div>
+
+                        <div class="btn-group mt-1" role="group">
+                            <input type="radio" class="btn-check" name="status" id="btnradio2" value="expired" autocomplete="off" checked>
+                            <label class="btn btn-outline-secondary" for="btnradio2">Просрочен</label>
+                        </div>
+                    }
+                    <div class="btn-group" role="group">
+                    <input class="btn btn-primary btn-md mt-4" type="submit" value="Сохранить изменения" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

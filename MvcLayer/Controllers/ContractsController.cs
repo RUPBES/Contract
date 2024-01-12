@@ -22,6 +22,7 @@ namespace MvcLayer.Controllers
         private readonly IVContractService _vContractService;
         private readonly IVContractEnginService _vContractEnginService;
         private readonly IContractService _contractService;
+        private readonly IScopeWorkService _scopeWorkService;
         private readonly IOrganizationService _organization;
         private readonly IEmployeeService _employee;
 
@@ -30,7 +31,7 @@ namespace MvcLayer.Controllers
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
-            IVContractService vContractService, IVContractEnginService vContractEnginService)
+            IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -40,6 +41,7 @@ namespace MvcLayer.Controllers
             _typeWork = typeWork;
             _vContractService = vContractService;
             _vContractEnginService = vContractEnginService;
+            _scopeWorkService = scopeWorkService;
         }
 
         // GET: Contracts        
@@ -519,6 +521,13 @@ namespace MvcLayer.Controllers
 
             try
             {
+                // если у просроченного договора изменили дату окончания работ, проверяем - если больше сегодняшнего дня то удаляем (если есть) статус ЗАКРЫТ и ПРОСРОЧЕН
+                if (contract.DateEndWork is not null && contract.DateEndWork > DateTime.Now)
+                {
+                    contract.IsClosed = false;
+                    contract.IsExpired = false;
+                }
+
                 _contractService.Update(_mapper.Map<ContractDTO>(contract));
             }
             catch (DbUpdateConcurrencyException)
@@ -572,10 +581,12 @@ namespace MvcLayer.Controllers
             {              
                 if (contract.IsOneOfMultiple)
                 {
-                    //удаляем объемы работ подобъектов
+                    //вычитаем стоимости работ подобъекта из глав.договора
+                    _scopeWorkService.RemoveSWCostFromMainContract((int)contract?.MultipleContractId, contract.Id);
+                    //удаляем объемы работ подобъектов, после чего удаляем подобъект
                     _contractService.DeleteAfterScopeWork(id);
 
-                    //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной
+                    //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
                     var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
                     if (subObj == null || subObj.Count() == 0)
                     {
@@ -590,7 +601,7 @@ namespace MvcLayer.Controllers
                         {
                             return BadRequest();
                         }
-                       
+
                     }
                 }
                 else
@@ -753,6 +764,72 @@ namespace MvcLayer.Controllers
         {
             var doc = _contractService.GetById(id);
             return PartialView("_ScopeWork", _mapper.Map<ContractViewModel>(doc));
+        }
+
+        public IActionResult ChangeStatus(string status, int contrId)
+        {
+            if (!string.IsNullOrWhiteSpace(status) && contrId > 0)
+            {
+                var contract = _contractService.GetById(contrId);
+
+                if (status.Equals("archive", StringComparison.OrdinalIgnoreCase))
+                {
+                    contract.IsArchive = true;
+                }
+                if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                {
+                    contract.IsClosed = true;
+                }
+                if (status.Equals("expired", StringComparison.OrdinalIgnoreCase))
+                {
+                    contract.IsExpired = true;
+                }
+                _contractService.Update(contract);
+            }
+
+            return RedirectToAction("Index", "Contracts");
+        }
+
+       
+        public IActionResult UpdateStatus(int contractId, string status, int returnContractId = 0)
+        {
+            ViewData["returnContractId"] = returnContractId == 0? contractId:returnContractId;
+            ViewData["status"] = status;
+
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult UpdateStatus(string status, int contractId = 0)
+        {
+
+            if (!string.IsNullOrWhiteSpace(status) && contractId > 0)
+            {
+                var contract = _contractService.GetById(contractId);
+
+               
+                if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                {
+                    contract.IsClosed = true;
+                    contract.IsExpired = false;
+                }
+                if (status.Equals("expired", StringComparison.OrdinalIgnoreCase))
+                {
+                    contract.IsExpired = true;
+                    contract.IsClosed = false;
+                }
+                _contractService.Update(contract);
+            }
+
+
+            if (contractId != 0)
+            {
+                return RedirectToAction("Details", new { id = contractId });
+            }            
+            else
+            {
+                return RedirectToAction("Index");
+            }
         }
     }
 }

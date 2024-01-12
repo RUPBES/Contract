@@ -49,13 +49,13 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.SubContract)
                 .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
                 .Include(c => c.TypeWorkContracts).ThenInclude(o => o.TypeWork)
-                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x=>x.Phones)
+                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
                 .Include(c => c.SelectionProcedures)
                 .Include(c => c.Acts)
                 .Include(c => c.CommissionActs)
                 .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(c => c.FormC3as)
-                .Include(c => c.Payments)                
+                .Include(c => c.Payments)
                 .ToList();
         }
 
@@ -72,7 +72,7 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.CommissionActs)
                 .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(c => c.FormC3as)
-                .FirstOrDefault(x=>x.Id == id);
+                .FirstOrDefault(x => x.Id == id);
             }
             else
             {
@@ -99,7 +99,7 @@ namespace DatabaseLayer.Repositories
                     contract.DateEndWork = entity.DateEndWork;
                     contract.Сurrency = entity.Сurrency;
                     contract.ContractPrice = entity.ContractPrice;
-                    contract.NameObject = entity.NameObject;                    
+                    contract.NameObject = entity.NameObject;
                     contract.PaymentСonditionsAvans = entity.PaymentСonditionsAvans;
                     contract.PaymentСonditionsRaschet = entity.PaymentСonditionsRaschet;
 
@@ -112,7 +112,7 @@ namespace DatabaseLayer.Repositories
                     contract.IsMultiple = entity.IsMultiple;
                     contract.IsOneOfMultiple = entity.IsOneOfMultiple;
                     contract.IsClosed = entity.IsClosed;
-
+                    contract.IsArchive = entity.IsArchive;
                     contract.IsExpired = entity.IsExpired;
                     contract.Author = entity.Author;
                     contract.Owner = entity.Owner;
@@ -120,7 +120,7 @@ namespace DatabaseLayer.Repositories
                     foreach (var item in entity.ContractOrganizations)
                     {
                         var target = item.IsGenContractor != null ? "Gen" : "Client";
-                        var sameObject = _context.ContractOrganizations.Where(x => 
+                        var sameObject = _context.ContractOrganizations.Where(x =>
                         x.ContractId == item.ContractId &&
                         x.OrganizationId == item.OrganizationId).FirstOrDefault();
                         ContractOrganization? objectWithSameContractandType = new ContractOrganization();
@@ -138,7 +138,7 @@ namespace DatabaseLayer.Repositories
                         {
                             if (objectWithSameContractandType != null)
                             {
-                                _context.ContractOrganizations.Remove(objectWithSameContractandType);                                
+                                _context.ContractOrganizations.Remove(objectWithSameContractandType);
                             }
                             switch (target)
                             {
@@ -166,7 +166,7 @@ namespace DatabaseLayer.Repositories
                             else
                             {
                                 _context.ContractOrganizations.Remove(objectWithSameContractandType);
-                                _context.SaveChanges(); 
+                                _context.SaveChanges();
                                 objectWithSameContractandType.OrganizationId = item.OrganizationId;
                                 _context.ContractOrganizations.Add(objectWithSameContractandType);
                             }
@@ -233,7 +233,7 @@ namespace DatabaseLayer.Repositories
                         _context.SaveChanges();
                     }
 
-                    foreach (var item in entity.TypeWorkContracts) 
+                    foreach (var item in entity.TypeWorkContracts)
                     {
                         var currentObject = _context.TypeWorkContracts.Where(x => x.ContractId == item.ContractId).FirstOrDefault();
                         if (currentObject != null)
