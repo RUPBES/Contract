@@ -11,7 +11,7 @@ namespace MvcLayer.Models
         /// <summary>
         /// Полное название
         /// </summary>
-        [DisplayName("Полное название организации")]
+        [DisplayName("Полное название")]
         [Required(ErrorMessage = "Заполните полное название организации")]
         public string? Name { get; set; }
 

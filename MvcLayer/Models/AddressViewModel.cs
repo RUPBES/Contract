@@ -11,16 +11,20 @@ namespace MvcLayer.Models
         /// <summary>
         /// юр. адрес организации
         /// </summary>
-        [DisplayName("Юр.адрес организации")]
+        [DisplayName("Юр.адрес")]
         public string? FullAddress { get; set; }
         /// <summary>
         /// фактический адрес
         /// </summary>
-        public string? FullAddressFact { get; set; }       
+        /// 
+        [DisplayName("Адрес")]
+        public string? FullAddressFact { get; set; }
 
         /// <summary>
         /// сайт
         /// </summary>
+        /// 
+        [DisplayName("Сайт организации")]
         public string? SiteAddress { get; set; }
 
         public string? Author { get; set; }

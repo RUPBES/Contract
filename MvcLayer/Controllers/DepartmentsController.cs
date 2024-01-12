@@ -121,7 +121,7 @@ namespace MvcLayer.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Organizations");
             }
             ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Id", department.OrganizationId);
             return View(department);

@@ -116,11 +116,11 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Organization> FindLike(string propName, string queryString) => propName switch
         {
-            "Name" => _context.Organizations.Where(x => EF.Functions.Like(x.Name, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
-            "Abbr" => _context.Organizations.Where(x => EF.Functions.Like(x.Abbr, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
-            "Unp" => _context.Organizations.Where(x => EF.Functions.Like(x.Unp, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
-            "Email" => _context.Organizations.Where(x => EF.Functions.Like(x.Email, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
-            "PaymentAccount" => _context.Organizations.Where(x => EF.Functions.Like(x.PaymentAccount, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
+            "Name" => _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).Where(x => EF.Functions.Like(x.Name, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
+            "Abbr" => _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).Where(x => EF.Functions.Like(x.Abbr, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
+            "Unp" => _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).Where(x => EF.Functions.Like(x.Unp, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
+            "Email" => _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).Where(x => EF.Functions.Like(x.Email, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
+            "PaymentAccount" => _context.Organizations.Include(x => x.Addresses).Include(x => x.Departments).Include(x => x.Phones).Where(x => EF.Functions.Like(x.PaymentAccount, $"%{queryString}%")).OrderBy(x => x.Name).ToList(),
             _ => new List<Organization>()
         };
     }
