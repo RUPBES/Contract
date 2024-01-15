@@ -18,13 +18,13 @@
 }
 <h4>Договор субподряда</h4>
 <hr />
-<div id="modDialog" class="modal fade">
-    <div id="dialogContent" class="modal-dialog modal-dialog-centered" role="document"></div>
+<div id="modDialog4" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
+    <div id="dialogContent4" class="modal-dialog modal-dialog-centered" role="document"></div>
 </div>
-<div id="modDialog2" class="modal fade">
+<div id="modDialog2" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
     <div id="dialogContent2" class="modal-dialog modal-dialog-centered" role="document"></div>
 </div>
-<div id="modDialog3" class="modal fade">
+<div id="modDialog3" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
     <div id="dialogContent3" class="modal-dialog modal-dialog-centered" role="document"></div>
 </div>
 
@@ -556,8 +556,9 @@
                     dataType: 'html',
                     data: $("#MainForm").serialize(),
                     success: (function (result) {
-                        $('#dialogContent').html(result);
-                        $('#modDialog').modal('show');
+                        $('#dialogContent4').html(result);
+                        $('#modDialog4').modal({ backdrop: false });
+                        $('#modDialog4').modal('show');
                     })
                 });
 
@@ -574,6 +575,7 @@
                     data: $("#MainForm").serialize(),
                     success: (function (result) {
                         $('#dialogContent2').html(result);
+                        $('#modDialog2').modal({ backdrop: false });
                         $('#modDialog2').modal('show');
                     })
                 });
@@ -591,6 +593,7 @@
                     data: $("#MainForm").serialize(),
                     success: (function (result) {
                         $('#dialogContent3').html(result);
+                        $('#modDialog3').modal({ backdrop: false });
                         $('#modDialog3').modal('show');
                     })
                 });
