@@ -1,9 +1,10 @@
 ﻿@model IEnumerable<MvcLayer.Models.ContractViewModel>
-
+@using BusinessLayer.Helpers;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.IServiceCostService ScopeCostWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 
 @{
@@ -12,19 +13,11 @@
     DateTime endPeriod = new DateTime(1000, 1, 1);
     foreach (var item in Model)
     {
-        foreach (var item2 in item.ScopeWorks)
+        (DateTime start, DateTime end)? obj = ScopeWork.GetPeriodRangeScopeWork(item.Id);
+        if (obj.HasValue)
         {
-            foreach (var item3 in item2.SWCosts)
-            {
-                if (startPeriod > item3.Period)
-                {
-                    startPeriod = (DateTime)item3.Period;
-                }
-                if (endPeriod < item3.Period)
-                {
-                    endPeriod = (DateTime)item3.Period;
-                }
-            }
+            if (startPeriod > obj.Value.start) { startPeriod = obj.Value.start; }
+            if (endPeriod < obj.Value.end) { endPeriod = obj.Value.end; }
         }
     }
     int PageNumber = ViewBag.PageNum;
@@ -132,13 +125,13 @@
                                 <th rowspan="3">
                                     Виды работ по договору
                                 </th>
-                                <th colspan="@((endPeriod.Year-startPeriod.Year)*36+(endPeriod.Month-startPeriod.Month+1)*3)">в том числе</th>
+                                <th colspan="@((endPeriod.Year-startPeriod.Year)*36+(endPeriod.Month-startPeriod.Month+1)*3)-">в том числе</th>
                                 <th rowspan="3">
                                     Перевыполнение + (недовыполнение -) графика
                                 </th>
                             </tr>
                             <tr>
-                                @for (var item = startPeriod; item <= endPeriod; item = item.AddMonths(1))
+                                @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)item, (DateTime)endPeriod); item = item.AddMonths(1))
                                 {
                                     <th colspan="3">
                                         @item.ToString("MMMM yyyy")
@@ -146,7 +139,7 @@
                                 }
                             </tr>
                             <tr>
-                                @for (var item = startPeriod; item <= endPeriod; item = item.AddMonths(1))
+                                @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)item, (DateTime)endPeriod); item = item.AddMonths(1))
                                 {
                                     <th>
                                         План
@@ -163,7 +156,7 @@
                         <tbody style="height:70vh;">
                             @foreach (var item in Model)
                             {
-                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
+                                var listScopeWork = SWCosts.GetValueScopeWork(item.Id);
                                 var client = item.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
                                 var genContractor = item.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
                                 var subContractor = item.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
@@ -171,11 +164,11 @@
                                 var todayScope = 0M;
                                 var deviationTotal = 0M;
                                 var allScope = 0M;
-                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
+                                for (var itYear = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)itYear, (DateTime)endPeriod); itYear = itYear.AddMonths(1))
                                 {
                                     if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
                                     {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
+                                        var ob = listScopeWork?.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)itYear)).FirstOrDefault();
                                         if (ob != null)
                                         {
                                             todayYearScope += (decimal)ob.CostNds;
@@ -184,7 +177,7 @@
                                     }
                                     else
                                     {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
+                                        var ob = listScopeWork?.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)itYear)).FirstOrDefault();
                                         if (ob != null)
                                         {
                                             allScope += (decimal)ob.CostNds;
@@ -192,11 +185,7 @@
                                     }
 
                                 }
-                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
-                                {
-                                    todayScope += (decimal)item2.TotalCost;
-
-                                }
+                                todayScope = (decimal)Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).Select(f => f.TotalCost).Sum();                                
                                 var balanceScope = allScope - todayScope;
 
                                 <tr>
@@ -244,11 +233,11 @@
                                     <td class="second-td-elem">
                                         СМР
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = listScopeWork.Where(x => x.Period == iterator).Select(x => x.SmrCost).FirstOrDefault();
+                                                var resultPlan = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).Select(x => x.SmrCost).FirstOrDefault();
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
@@ -259,7 +248,8 @@
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.SmrCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)
+                                                && x.ContractId == item.Id).Select(x => x.SmrCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
@@ -296,11 +286,11 @@
                                     <td class="second-td-elem">
                                         ДОП. РАБОТЫ
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = listScopeWork.Where(x => x.Period == iterator).Select(x => x.AdditionalCost).FirstOrDefault();
+                                                var resultPlan = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).Select(x => x.AdditionalCost).FirstOrDefault();
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
@@ -311,7 +301,8 @@
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.AdditionalCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) 
+                                                && x.ContractId == item.Id).Select(x => x.AdditionalCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
@@ -348,11 +339,11 @@
                                     <td class="second-td-elem">
                                         ПНР
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = listScopeWork.Where(x => x.Period == iterator).Select(x => x.PnrCost).FirstOrDefault();
+                                                var resultPlan = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).Select(x => x.PnrCost).FirstOrDefault();
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
@@ -363,7 +354,8 @@
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.PnrCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)
+                                                && x.ContractId == item.Id).Select(x => x.PnrCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
@@ -400,11 +392,12 @@
                                     <td class="second-td-elem">
                                         ОБОРУДОВАНИЕ
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = listScopeWork.Where(x => x.Period == iterator).Select(x => x.EquipmentCost).FirstOrDefault();
+                                                var resultPlan = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).
+                                                Select(x => x.EquipmentCost).FirstOrDefault();
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
@@ -415,7 +408,8 @@
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.EquipmentCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)
+                                                && x.ContractId == item.Id).Select(x => x.EquipmentCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
@@ -452,11 +446,12 @@
                                     <td class="second-td-elem">
                                         ПРОЧИЕ РАБОТЫ И УСЛУГИ
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = listScopeWork.Where(x => x.Period == iterator).Select(x => x.OtherExpensesCost).FirstOrDefault();
+                                                var resultPlan = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).
+                                                Select(x => x.OtherExpensesCost).FirstOrDefault();
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
@@ -467,7 +462,8 @@
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.OtherExpensesCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && 
+                                                x.ContractId == item.Id).Select(x => x.OtherExpensesCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }
@@ -503,11 +499,11 @@
                                     <td class="second-td-elem">
                                         СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА
                                     </td>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var resultPlan = listScopeWork.Where(x => x.Period == iterator).Select(x => x.MaterialCost).FirstOrDefault();
+                                                var resultPlan = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).Select(x => x.MaterialCost).FirstOrDefault();
                                                 if (resultPlan == null)
                                                     resultPlan = 0;
                                             }
@@ -518,7 +514,8 @@
                                         </td>
                                         <td class="text-end">
                                             @{
-                                                var resultFact = Form.Find(x => x.IsOwnForces != true && x.Period?.Date == iterator && x.ContractId == item.Id).Select(x => x.MaterialCost).FirstOrDefault();
+                                                var resultFact = Form.Find(x => x.IsOwnForces != true && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && 
+                                                x.ContractId == item.Id).Select(x => x.MaterialCost).FirstOrDefault();
                                                 if (resultFact == null)
                                                     resultFact = 0;
                                             }

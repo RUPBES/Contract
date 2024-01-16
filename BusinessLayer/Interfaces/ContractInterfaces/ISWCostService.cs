@@ -8,5 +8,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     {
         (DateTime, DateTime)? GetPeriodRangeScopeWork(int contractId);
         List<SWCost>? GetValueScopeWorkByPeriod(int contractId, DateTime? start, DateTime? end, Boolean IsOwn = false);
+        List<SWCost>? GetValueScopeWork(int contractId, Boolean IsOwn = false);
     }
 }

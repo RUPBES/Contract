@@ -208,6 +208,14 @@ namespace BusinessLayer.Services
             return resultPeriod;
         }
 
+        /// <summary>
+        /// Метод для создания листа объемов работ по заданному промежутку, с просмотров всех объемов.
+        /// </summary>
+        /// <param name="contractId"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="IsOwn"></param>
+        /// <returns></returns>
         public List<SWCost>? GetValueScopeWorkByPeriod(int contractId, DateTime? start, DateTime? end, Boolean IsOwn = false)
         {
             var list = new List<SWCost>();
@@ -235,6 +243,19 @@ namespace BusinessLayer.Services
                     list.Add(answer);
                 }
             }
+            return list;
+        }
+        
+        public List<SWCost>? GetValueScopeWork(int contractId, Boolean IsOwn = false)
+        {            
+            var scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsOwnForces == IsOwn)
+                .LastOrDefault();
+            if (scope is null)
+            {
+                return null;
+            }
+            var list = _database.SWCosts.Find(s => s.ScopeWorkId == scope.Id).ToList();         
             return list;
         }
     }
