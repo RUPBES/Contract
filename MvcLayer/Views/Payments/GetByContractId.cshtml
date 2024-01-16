@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+@using BusinessLayer.Helpers;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-
+@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService sw
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
@@ -15,13 +16,16 @@
     var contract = Contract.GetById((int)id);
     decimal? form = 0;
     decimal? scopeWork = 0;
-
+    decimal? stillMust = 0;
+    decimal? contractPrice = 0;
     if (id is not null)
     {
+        contractPrice = Amendment.Find(x => x.ContractId == contract.Id).Select(x => x.ContractPrice).LastOrDefault();
+        if (contractPrice == null || contractPrice == 0) contractPrice = contract.ContractPrice;
         var sworkId = Scope?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
-        scopeWork = sw?.Find(x => x.ScopeWorkId == sworkId)?.LastOrDefault()?.CostNds;
-        form = contract?.FormC3as?.Where(x => x.ContractId == id).Select(x => x.TotalCost)?.LastOrDefault();
-
+        scopeWork = sw?.Find(x => x.ScopeWorkId == sworkId && x.Period.Value.Year == DateTime.Today.Year).Sum(x => x.CostNds);
+        form = contract?.FormC3as?.Where(x => x.ContractId == id).Sum(x => x.TotalCost);
+        stillMust = contractPrice - form;
         ViewData["Title"] = $"Денежные средства по договору № {contract?.Number}";
     }
 }
@@ -43,10 +47,10 @@
                 </div>
                 <hr class="modal-line" />
                 <div class="modal-overflow-70">
-                    <table class="table table-bordered" style="overflow-x: scroll;display: block;height: 190px;">
+                    <table class="table table-bordered" style="overflow-x: scroll;display: block;height: 220px;">
                         <thead>
                             <tr>
-                                <th rowspan="2"><span> Контрактная цена, с НДС </span></th>
+                                <th rowspan="2"><span>Контрактная цена, с НДС</span></th>
                                 <th rowspan="2"><span>Остаток по выполнению</span></th>
                                 <th rowspan="2"><span>Объем на текущий год</span></th>
                                 <th rowspan="2"><span>Выполнено с-3а</span></th>
@@ -71,8 +75,8 @@
                             <tr>
                                 @if (Model.Count() > 0)
                                 {
-                                    <td class="text-end"><span>@contract?.ContractPrice?.ToString("N2")</span></td>
-                                    <td class="text-end"><span>???</span></td>
+                                    <td class="text-end"><span>@contractPrice?.ToString("N2")</span></td>
+                                    <td class="text-end"><span>@stillMust?.ToString("N2")</span></td>
                                     <td class="text-end"><span>@scopeWork?.ToString("N2")</span></td>
                                     <td class="text-end"><span>@form?.ToString("N2")</span></td>
                                     @foreach (var item in Model)
