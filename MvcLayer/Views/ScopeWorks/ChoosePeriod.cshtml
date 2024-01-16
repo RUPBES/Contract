@@ -103,20 +103,13 @@
                             <label class="control-label">Выбрать доп.соглашение</label>
                             <select name="AmendmentId" id="AmendId" class="form-control select">
                                 <option disabled selected>Выберите</option>
-                                @if (contract.IsOneOfMultiple)
-                                {
-                                    @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == contract.MultipleContractId && contract.MultipleContractId != null))
-                                    {
-                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                                    }
+                                @{
+                                    var listAmendment = Scope.GetFreeAmendment((int)Model?.ContractId);
                                 }
-                                else
+                                @foreach (AmendmentDTO org in listAmendment)
                                 {
-                                    @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == Model?.ContractId && x.ContractId != null))
-                                    {
-                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                                    }
-                                }                                
+                                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                }
                             </select>
                         </div>
                         @if (Model?.IsOwnForces == true)
@@ -179,7 +172,7 @@
                         else
                         {
                             <input name=PeriodEnd type="date" class="form-control" />
-                        }                        
+                        }
                     </div>
                     <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
                 </form>

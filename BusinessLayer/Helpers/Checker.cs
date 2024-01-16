@@ -33,5 +33,13 @@ namespace BusinessLayer.Helpers
             else
                 return false;
         }
+
+        public static bool EquallyDateByMonth(DateTime date1, DateTime date2)
+        {            
+            if (date1.Year == date2.Year && date1.Month == date2.Month)
+                return true;
+            else
+                return false;
+        }
     }
 }

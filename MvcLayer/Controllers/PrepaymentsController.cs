@@ -100,7 +100,7 @@ namespace MvcLayer.Controllers
                 if (contract.IsOneOfMultiple)
                 {
                     var contractGen = _contractService.GetById((int)contract.MultipleContractId);
-                    if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                    if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("Без авансов"))
                     {
                         TempData["Message"] = "У контракта условие - без авансов";
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
