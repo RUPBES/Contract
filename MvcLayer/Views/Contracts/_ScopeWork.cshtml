@@ -1,4 +1,5 @@
-﻿@using BusinessLayer.Models;
+﻿@using BusinessLayer.Helpers;
+@using BusinessLayer.Models;
 @using DatabaseLayer.Models;
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
@@ -16,13 +17,13 @@
         left: -10px;
         z-index: 1;
     }
-    
+
     th.first-col,
     th.second-col,
     th.third-col,
     th.fourth-col,
     th.fifth-col,
-    th.sixth-col {        
+    th.sixth-col {
         z-index: 3;
     }
 
@@ -35,14 +36,14 @@
         position: sticky !important;
         z-index: 6 !important;
     }
-        
-    td.third-col ,
-    td.fourth-col ,
-    td.fifth-col ,
-    td.sixth-col  {
+
+    td.third-col,
+    td.fourth-col,
+    td.fifth-col,
+    td.sixth-col {
         background: #5f7b99;
-        color:white;
-        font-weight:600;
+        color: white;
+        font-weight: 600;
     }
 
 </style>
@@ -98,7 +99,7 @@
     var allScopeOwn = new SWCostDTO();
     var todayYearScopeOwn = new SWCostDTO();
     var todayScopeOwn = new SWCostDTO();
-    
+
     foreach (var item in FormC3.Find(f => f.ContractId == Model.Id))
     {
         if (item.Period < new DateTime(DateTime.Today.Year, 1, 1))
@@ -178,11 +179,11 @@
                             @*Период (месяц)*@
                             @{
                                 var iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                        <th>
-                                            <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
-                                        </th>
+                                    <th>
+                                        <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
+                                    </th>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -197,29 +198,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -232,29 +233,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                             @{
-                                    @*Период*@
+                                @*Период*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -267,29 +268,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNds;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -303,29 +304,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                             @{
-                                    @*Период*@
+                                @*Период*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = obj.TotalCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -341,29 +342,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                             @{
-                                    @*Стоимость СМР*@
+                                @*Стоимость СМР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -376,29 +377,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                             @{
-                                    @*Стоимость СМР*@
+                                @*Стоимость СМР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -411,29 +412,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                             @{
-                                    @*Стоимость СМР*@
+                                @*Стоимость СМР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -447,29 +448,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                             @{
-                                    @*Стоимость СМР*@
+                                @*Стоимость СМР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.SmrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -484,34 +485,34 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                             @{
-                                        @*Стоимость ПНР*@
-                                    iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                @*Стоимость ПНР*@
+                                iterator = PeriodStart;
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
+                                {
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    decimal? sum;
+                                    if (obj != null)
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
-                                        decimal? sum;
-                                        if (obj != null)
+                                        sum = @obj.PnrCost;
+                                        if (sum != 0)
                                         {
-                                            sum = @obj.PnrCost;
-                                            if (sum != 0)
-                                            {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
-                                            }
-                                            else
-                                            {
-                                                    <td></td>
-                                            }
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
-
-                                        iterator = iterator.Value.AddMonths(1);
                                     }
-                             }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+
+                                    iterator = iterator.Value.AddMonths(1);
+                                }
+                            }
                         </tr>
                         <tr @*ПМР - Факт*@>
                             <th class="second-col"><span>Факт</span></th>
@@ -520,29 +521,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                             @{
-                                    @*Стоимость ПНР*@
+                                @*Стоимость ПНР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -555,29 +556,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                             @{
-                                    @*Стоимость ПНР*@
+                                @*Стоимость ПНР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -590,29 +591,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                             @{
-                                    @*Стоимость ПНР*@
+                                @*Стоимость ПНР*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.PnrCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -621,36 +622,36 @@
                         </tr>
 
                         <tr id="equip" @*Оборудование - План*@>
-                            <th class="first-col" rowspan="4"><span>Оборудование</span></th>                            
+                            <th class="first-col" rowspan="4"><span>Оборудование</span></th>
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",allScope.EquipmentCost)</span></td>
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.EquipmentCost)</span></td>
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                             @{
-                                    @*Стоимость Оборудование*@
+                                @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -664,29 +665,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                             @{
-                                    @*Стоимость Оборудование*@
+                                @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td> </td>
+                                        <td> </td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -700,29 +701,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                             @{
-                                    @*Стоимость Оборудование*@
+                                @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -735,29 +736,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                             @{
-                                    @*Стоимость Оборудование*@
+                                @*Стоимость Оборудование*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.EquipmentCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -766,7 +767,7 @@
                         </tr>
 
                         <tr id="other" @*Другие работы - План*@>
-                            <th class="first-col" rowspan="4"><span>Другие работы</span></th>                            
+                            <th class="first-col" rowspan="4"><span>Другие работы</span></th>
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost)</span></td>
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.OtherExpensesCost)</span></td>
@@ -774,27 +775,27 @@
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                             @{
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -808,29 +809,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -845,27 +846,27 @@
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                             @{
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -879,29 +880,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.OtherExpensesCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -910,36 +911,36 @@
                         </tr>
 
                         <tr id="allWithoutNDS" @*Всего, без НДС - План*@>
-                            <th class="first-col" rowspan="4"><span>Всего, без НДС</span></th>                            
+                            <th class="first-col" rowspan="4"><span>Всего, без НДС</span></th>
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",allScope.CostNoNds)</span></td>
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.CostNoNds)</span></td>
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -952,29 +953,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -988,29 +989,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.CostNoNds;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1024,29 +1025,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                             @{
-                                    @*Стоимость ?*@
+                                @*Стоимость ?*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.TotalCost / (decimal)(1.2);
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -1054,36 +1055,36 @@
                         </tr>
 
                         <tr id="optionnaly" @*Доп. работы - План*@>
-                            <th class="first-col" rowspan="4"><span>Доп. работы</span></th>                            
+                            <th class="first-col" rowspan="4"><span>Доп. работы</span></th>
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",allScope.AdditionalCost)</span></td>
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.AdditionalCost)</span></td>
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                             @{
-                                    @*Стоимость Доп. работы*@
+                                @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1097,29 +1098,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                             @{
-                                    @*Стоимость Доп. работы*@
+                                @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1133,29 +1134,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                             @{
-                                    @*Стоимость Доп. работы*@
+                                @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1169,29 +1170,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                             @{
-                                    @*Стоимость Доп. работы*@
+                                @*Стоимость Доп. работы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.AdditionalCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1200,36 +1201,36 @@
                         </tr>
 
                         <tr id="material" @*Материалы - План*@>
-                            <th class="first-col" rowspan="4"><span>Материалы заказчика (справочно)</span></th>                            
+                            <th class="first-col" rowspan="4"><span>Материалы заказчика (справочно)</span></th>
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",allScope.MaterialCost)</span></td>
                             <td class="fourth-col"><span>@string.Format("{0:n}",workLastYear.MaterialCost)</span></td>
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                             @{
-                                    @*Стоимость Материалы*@
+                                @*Стоимость Материалы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
                                     iterator = iterator.Value.AddMonths(1);
                                 }
@@ -1242,29 +1243,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                             @{
-                                    @*Стоимость Материалы*@
+                                @*Стоимость Материалы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1278,29 +1279,29 @@
                             <td class="fifth-col"><span>-</span></td>
                             <td class="sixth-col"><span>-</span></td>
                             @{
-                                    @*Стоимость Материалы*@
+                                @*Стоимость Материалы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                    var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1314,29 +1315,29 @@
                             <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.MaterialCost-todayScopeOwn.MaterialCost)</span></td>
                             <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.MaterialCost)</span></td>
                             @{
-                                    @*Стоимость Материалы*@
+                                @*Стоимость Материалы*@
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                    var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                     decimal? sum;
                                     if (obj != null)
                                     {
                                         sum = @obj.MaterialCost;
                                         if (sum != 0)
                                         {
-                                                <td>
-                                                    <span>@string.Format("{0:n}",sum)</span>
-                                                </td>
+                                            <td>
+                                                <span>@string.Format("{0:n}",sum)</span>
+                                            </td>
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                     }
                                     else
                                     {
-                                            <td></td>
+                                        <td></td>
                                     }
 
                                     iterator = iterator.Value.AddMonths(1);
@@ -1344,7 +1345,7 @@
                             }
                         </tr>
                     </tbody>
-                </table>               
+                </table>
             </div>
             <button id="buttonTableType" onclick="funcCloseByTableType()" class="modal__container-button">Закрыть таблицу</button>
         </div>
@@ -1376,11 +1377,11 @@
                             @*Период (месяц)*@
                             @{
                                 iterator = PeriodStart;
-                                while (iterator <= PeriodEnd)
+                                while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                 {
-                                                <th>
-                                                    <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
-                                        </th>
+                                    <th>
+                                        <span>@iterator.Value.ToString("MMMM")-@iterator.Value.Year</span>
+                                    </th>
                                     iterator = iterator.Value.AddMonths(1);
                                 }
                             }
@@ -1397,29 +1398,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.CostNds;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1432,29 +1433,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                                 @{
-                                        @*Стоимость СМР*@
+                                    @*Стоимость СМР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1467,29 +1468,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                                 @{
-                                        @*Стоимость ПНР*@
+                                    @*Стоимость ПНР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.PnrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1503,29 +1504,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                                 @{
-                                        @*Стоимость Оборудование*@
+                                    @*Стоимость Оборудование*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.EquipmentCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1540,27 +1541,27 @@
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                                 @{
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.OtherExpensesCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1574,29 +1575,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.CostNoNds;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1609,29 +1610,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                                 @{
-                                        @*Стоимость Доп. работы*@
+                                    @*Стоимость Доп. работы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.AdditionalCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1645,29 +1646,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                                 @{
-                                        @*Стоимость Материалы*@
+                                    @*Стоимость Материалы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.MaterialCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1682,29 +1683,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNds-todayScope.CostNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNds)</span></td>
                                 @{
-                                        @*Период*@
+                                    @*Период*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.TotalCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1717,29 +1718,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                                 @{
-                                        @*Стоимость СМР*@
+                                    @*Стоимость СМР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1752,29 +1753,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.PnrCost-todayScope.PnrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.PnrCost)</span></td>
                                 @{
-                                        @*Стоимость ПНР*@
+                                    @*Стоимость ПНР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.PnrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -1787,29 +1788,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.EquipmentCost-todayScope.EquipmentCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.EquipmentCost)</span></td>
                                 @{
-                                        @*Стоимость Оборудование*@
+                                    @*Стоимость Оборудование*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.EquipmentCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td> </td>
+                                            <td> </td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1823,29 +1824,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.OtherExpensesCost-todayScope.OtherExpensesCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.OtherExpensesCost)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.OtherExpensesCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1859,29 +1860,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.CostNoNds-todayScope.CostNoNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.CostNoNds)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.TotalCost / (decimal)(1.2);
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1895,29 +1896,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.AdditionalCost-todayScope.AdditionalCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.AdditionalCost)</span></td>
                                 @{
-                                        @*Стоимость Доп. работы*@
+                                    @*Стоимость Доп. работы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.AdditionalCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1931,29 +1932,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.MaterialCost-todayScope.MaterialCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.MaterialCost)</span></td>
                                 @{
-                                        @*Стоимость Материалы*@
+                                    @*Стоимость Материалы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.MaterialCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -1969,29 +1970,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.CostNds;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2005,29 +2006,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                                 @{
-                                        @*Стоимость СМР*@
+                                    @*Стоимость СМР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2041,29 +2042,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                                 @{
-                                        @*Стоимость ПНР*@
+                                    @*Стоимость ПНР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.PnrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -2076,29 +2077,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                                 @{
-                                        @*Стоимость Оборудование*@
+                                    @*Стоимость Оборудование*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.EquipmentCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -2112,27 +2113,27 @@
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                                 @{
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.OtherExpensesCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2146,29 +2147,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.CostNoNds;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2182,29 +2183,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                                 @{
-                                        @*Стоимость Доп. работы*@
+                                    @*Стоимость Доп. работы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.AdditionalCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2218,29 +2219,29 @@
                                 <td class="fifth-col"><span>-</span></td>
                                 <td class="sixth-col"><span>-</span></td>
                                 @{
-                                        @*Стоимость Материалы*@
+                                    @*Стоимость Материалы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.MaterialCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2256,29 +2257,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNds-todayScopeOwn.CostNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNds)</span></td>
                                 @{
-                                        @*Период*@
+                                    @*Период*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = obj.TotalCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2292,29 +2293,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                                 @{
-                                        @*Стоимость СМР*@
+                                    @*Стоимость СМР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -2327,29 +2328,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.PnrCost-todayScopeOwn.PnrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.PnrCost)</span></td>
                                 @{
-                                        @*Стоимость ПНР*@
+                                    @*Стоимость ПНР*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.PnrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2363,29 +2364,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.EquipmentCost-todayScopeOwn.EquipmentCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.EquipmentCost)</span></td>
                                 @{
-                                        @*Стоимость Оборудование*@
+                                    @*Стоимость Оборудование*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.EquipmentCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2399,29 +2400,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.OtherExpensesCost-todayScopeOwn.OtherExpensesCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.OtherExpensesCost)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.OtherExpensesCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2435,29 +2436,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.CostNoNds-todayScopeOwn.CostNoNds)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.CostNoNds)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.TotalCost / (decimal)(1.2);
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -2470,29 +2471,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.AdditionalCost-todayScopeOwn.AdditionalCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.AdditionalCost)</span></td>
                                 @{
-                                        @*Стоимость Доп. работы*@
+                                    @*Стоимость Доп. работы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.AdditionalCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2506,29 +2507,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.MaterialCost-todayScopeOwn.MaterialCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.MaterialCost)</span></td>
                                 @{
-                                        @*Стоимость Материалы*@
+                                    @*Стоимость Материалы*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.MaterialCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2546,29 +2547,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWork.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -2582,29 +2583,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScope.SmrCost-todayScope.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScope.SmrCost)</span></td>
                                 @{
-                                        @*Период*@
+                                    @*Период*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
                                         iterator = iterator.Value.AddMonths(1);
                                     }
@@ -2618,29 +2619,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                                 @{
-                                        @*Стоимость ?*@
+                                    @*Стоимость ?*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = listScopeWorkOwn.Where(x => x.Period == iterator).FirstOrDefault();
+                                        var obj = listScopeWorkOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = @obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2655,29 +2656,29 @@
                                 <td class="fifth-col"><span>@string.Format("{0:n}",allScopeOwn.SmrCost-todayScopeOwn.SmrCost)</span></td>
                                 <td class="sixth-col"><span>@string.Format("{0:n}",todayYearScopeOwn.SmrCost)</span></td>
                                 @{
-                                        @*Период*@
+                                    @*Период*@
                                     iterator = PeriodStart;
-                                    while (iterator <= PeriodEnd)
+                                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)PeriodEnd))
                                     {
-                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && x.Period == iterator.Value && x.IsOwnForces == true).FirstOrDefault();
+                                        var obj = FormC3.Find(x => x.ContractId == Model.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator) && x.IsOwnForces == true).FirstOrDefault();
                                         decimal? sum;
                                         if (obj != null)
                                         {
                                             sum = obj.SmrCost;
                                             if (sum != 0)
                                             {
-                                                    <td>
-                                                        <span>@string.Format("{0:n}",sum)</span>
-                                                    </td>
+                                                <td>
+                                                    <span>@string.Format("{0:n}",sum)</span>
+                                                </td>
                                             }
                                             else
                                             {
-                                                    <td></td>
+                                                <td></td>
                                             }
                                         }
                                         else
                                         {
-                                                <td></td>
+                                            <td></td>
                                         }
 
                                         iterator = iterator.Value.AddMonths(1);
@@ -2702,7 +2703,7 @@
         let elementTable1 = document.getElementById("ConstructionInstallationWorksByCategories")
         elementTable1.classList.remove('d-none')
         elementTable1.classList.add('show')
-        toLeft(".first-col", ".second-col"); 
+        toLeft(".first-col", ".second-col");
         toLeft(".second-col", ".third-col");
         toLeft(".third-col", ".fourth-col");
         toLeft(".fourth-col", ".fifth-col");
@@ -2738,36 +2739,35 @@
         $('#modDialog').modal('toggle');
     }
 
-    function toLeft(example, target) {                
+    function toLeft(example, target) {
         var old = $(example);
         for (var i = 0; i < old.length; i++) {
             var width = $(example)[i].offsetWidth;
-            if (width != 0)
-            {
-                var leftPrev = $(example)[i].style.left; 
+            if (width != 0) {
+                var leftPrev = $(example)[i].style.left;
                 break;
-            }                
-        }                       
-        leftPrev = leftPrev.substring(0, leftPrev.indexOf("p"))        
+            }
+        }
+        leftPrev = leftPrev.substring(0, leftPrev.indexOf("p"))
         var leftPrevInt = parseInt(leftPrev);
         var all = $(target)
         for (var i = 0; i < all.length; i++) {
-            all[i].style.left = +(width+leftPrevInt) + "px";
-        } 
-    }    
+            all[i].style.left = +(width + leftPrevInt) + "px";
+        }
+    }
 
     $(function () {
         var all = $(".first-col");
         for (var i = 0; i < all.length; i++) {
-                all[i].style.left = "-10px";
-            }
-        
-        toLeft(".first-col", ".second-col"); 
+            all[i].style.left = "-10px";
+        }
+
+        toLeft(".first-col", ".second-col");
         toLeft(".second-col", ".third-col");
         toLeft(".third-col", ".fourth-col");
         toLeft(".fourth-col", ".fifth-col");
         toLeft(".fifth-col", ".sixth-col");
     });
-    
+
 
 </script>

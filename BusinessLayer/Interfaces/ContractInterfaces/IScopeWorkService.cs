@@ -10,6 +10,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         (DateTime, DateTime)? GetPeriodRangeScopeWork(int contractId);
         (DateTime, DateTime)? GetFullPeriodRangeScopeWork(int contractId);
         AmendmentDTO? GetAmendmentByScopeId(int scopeId);
+        IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId);
 
         void AddSWCostForMainContract(int? scopeId, List<SWCostDTO> costs);
         void CreateSWCostForMainContract(int? scopeId, List<SWCostDTO> costs, bool isOwnForces);

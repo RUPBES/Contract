@@ -6,6 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IAmendmentService : IService<AmendmentDTO, Amendment>
     {
-        void AddFile(int amendId, int fileId);
+        void AddFile(int amendId, int fileId);        
     }
 }

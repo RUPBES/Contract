@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
@@ -207,6 +208,14 @@ namespace BusinessLayer.Services
             return resultPeriod;
         }
 
+        /// <summary>
+        /// Метод для создания листа объемов работ по заданному промежутку, с просмотров всех объемов.
+        /// </summary>
+        /// <param name="contractId"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="IsOwn"></param>
+        /// <returns></returns>
         public List<SWCost>? GetValueScopeWorkByPeriod(int contractId, DateTime? start, DateTime? end, Boolean IsOwn = false)
         {
             var list = new List<SWCost>();
@@ -218,15 +227,15 @@ namespace BusinessLayer.Services
                 return new List<SWCost>();
             }
             
-            for (var time = start; time <= end; time = time.Value.AddMonths(1))
+            for (var time = start; Checker.LessOrEquallyFirstDateByMonth((DateTime)time, (DateTime)end); time = time.Value.AddMonths(1))
             {
                 var scopeNow = scope;
                 var answer = _database.SWCosts
-                .Find(x => x.Period == time && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
+                .Find(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)time) && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
                 while (answer == null && scopeNow != null)
                 {                    
                     answer = _database.SWCosts
-                    .Find(x => x.Period == time && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
+                    .Find(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)time) && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
                     scopeNow = scopeNow.ChangeScopeWork;
                 }
                 if (answer != null)
@@ -234,6 +243,19 @@ namespace BusinessLayer.Services
                     list.Add(answer);
                 }
             }
+            return list;
+        }
+        
+        public List<SWCost>? GetValueScopeWork(int contractId, Boolean IsOwn = false)
+        {            
+            var scope = _database.ScopeWorks
+                .Find(x => x.ContractId == contractId && x.IsOwnForces == IsOwn)
+                .LastOrDefault();
+            if (scope is null)
+            {
+                return null;
+            }
+            var list = _database.SWCosts.Find(s => s.ScopeWorkId == scope.Id).ToList();         
             return list;
         }
     }
