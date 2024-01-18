@@ -80,51 +80,76 @@
 
             @if (hasScope)
             {
-                <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-                    <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
-                    <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
+                var listAmendment = Scope.GetFreeAmendment((int)Model?.ContractId);
+                @if (listAmendment.Count() > 0)
+                {
+                    <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                        <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
+                        <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
 
-                    <div class="form-group col-12">
+
+                        <div class="form-group col-12">
+                            @if (contract.IsEngineering == true)
+                            {
+                                <div class="title-warning"><span>Объем услуг для данного договора заполнен</span></div>
+                                <label for="amendCheck">Внести изменения для объема услуг по доп.соглашению?</label>
+                            }
+                            else
+                            {
+                                <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
+                                <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+                            }
+                            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
+                        </div>
+                        <div id="chooseAmendment" class="row" hidden>
+                            <div class="form-group">
+                                <label class="control-label">Выбрать доп.соглашение</label>
+                                <select name="AmendmentId" id="AmendId" class="form-control select">
+                                    <option disabled selected>Выберите</option>
+
+                                    @foreach (AmendmentDTO org in listAmendment)
+                                    {
+                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    }
+                                </select>
+                            </div>
+                            @if (Model?.IsOwnForces == true)
+                            {
+                                <input asp-for="PeriodStart" type="datetime" hidden value="@Model.PeriodStart" />
+                                <input asp-for="PeriodEnd" type="datetime" hidden value="@Model.PeriodEnd" />
+                            }
+                            @if (Model?.IsOwnForces == false)
+                            {
+                                <div id="amendPartial">
+                                </div>
+                            }
+
+                            <button id="butSubmit" class="btn btn-primary btn-sm mt-1" disabled type="submit">Выбрать</button>
+                        </div>
+
+                    </form>
+                }
+                else
+                {
+                    <div class="d-inline-block">
                         @if (contract.IsEngineering == true)
                         {
-                            <div class="title-warning"><span>Объем услуг для данного договора заполнен</span></div>
-                            <label for="amendCheck">Внести изменения для объема услуг по доп.соглашению?</label>
+                            <label class="control-label">Объем услуг заполнен</label>
                         }
                         else
                         {
-                            <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
-                            <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
+                            <label class="control-label">Объем работ заполнен</label>
                         }
-                        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
-                    </div>
-                    <div id="chooseAmendment" class="row" hidden>
-                        <div class="form-group">
-                            <label class="control-label">Выбрать доп.соглашение</label>
-                            <select name="AmendmentId" id="AmendId" class="form-control select">
-                                <option disabled selected>Выберите</option>
-                                @{
-                                    var listAmendment = Scope.GetFreeAmendment((int)Model?.ContractId);
-                                }
-                                @foreach (AmendmentDTO org in listAmendment)
-                                {
-                                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                                }
-                            </select>
+                        <label class="control-label">Отсутствуют незаполненные дополнительные соглашения</label>
+                        <div class="">
+                            <a class="btn btn-success" asp-controller="Amendmets" asp-action="Create" asp-route-contractId="@contract.Id"
+                               asp-route-returnContractId="@ViewBag.returnContractId">Добавить доп. соглашение</a>
+                            <a class="btn btn-success" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
+                               asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
                         </div>
-                        @if (Model?.IsOwnForces == true)
-                        {
-                            <input asp-for="PeriodStart" type="datetime" hidden value="@Model.PeriodStart" />
-                            <input asp-for="PeriodEnd" type="datetime" hidden value="@Model.PeriodEnd" />
-                        }
-                        @if (Model?.IsOwnForces == false)
-                        {
-                            <div id="amendPartial">
-                            </div>
-                        }
-                        <button id="butSubmit" class="btn btn-primary btn-sm mt-1" disabled type="submit">Выбрать</button>
                     </div>
-                </form>
+                }
             }
 
             @if (!hasScope)

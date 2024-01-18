@@ -57,7 +57,7 @@ namespace MvcLayer.Controllers
 
             ViewData["IsEngineering"] = false;
             ViewData["CurrentSort"] = sortOrder;
-            ViewData["DateSortParm"] = sortOrder == "date" ? "dateDesc" : "date";
+            ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
             ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
             ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
@@ -79,7 +79,7 @@ namespace MvcLayer.Controllers
             var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             ViewData["IsEngineering"] = true;
             ViewData["CurrentSort"] = sortOrder;
-            ViewData["DateSortParm"] = sortOrder == "date" ? "dateDesc" : "date";
+            ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
             ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
             ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
