@@ -576,18 +576,37 @@ namespace MvcLayer.Controllers
             }
 
             var contract = _contractService.GetById(id);
-
+            var isNotGenContract = contract.IsOneOfMultiple || (bool)contract?.IsSubContract || (bool)contract?.IsAgreementContract;
+            int mainContractId = 0;
             if (contract != null)
-            {              
-                if (contract.IsOneOfMultiple)
+            {
+                if ((bool)contract?.IsAgreementContract)
+                {
+                    mainContractId = (int)contract?.AgreementContractId;
+                }
+                else if ((bool)contract?.IsSubContract)
+                {
+                    mainContractId = (int)contract?.SubContractId;
+                }
+                else
+                {
+                    mainContractId = (int)contract?.MultipleContractId;
+                }
+
+                if (isNotGenContract)
                 {
                     //вычитаем стоимости работ подобъекта из глав.договора
-                    _scopeWorkService.RemoveSWCostFromMainContract((int)contract?.MultipleContractId, contract.Id);
+                    _scopeWorkService.RemoveSWCostFromMainContract(mainContractId, contract.Id);
                     //удаляем объемы работ подобъектов, после чего удаляем подобъект
                     _contractService.DeleteAfterScopeWork(id);
 
                     //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
-                    var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
+
+                    if (contract.IsOneOfMultiple)
+                    {
+                        
+                    
+                    var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId );
                     if (subObj == null || subObj.Count() == 0)
                     {
                         try
@@ -602,7 +621,7 @@ namespace MvcLayer.Controllers
                             return BadRequest();
                         }
 
-                    }
+                    }}
                 }
                 else
                 {

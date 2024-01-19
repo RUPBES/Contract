@@ -20,7 +20,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="width: 900px;">
+            <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
                     @if (backId != null && backId > 0)
@@ -91,6 +91,11 @@
                                 <td>
                                     @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Acts))
                                     {
+                                        // <div>
+                                        //     <a onclick="window.open('@Url.Action("GetFile","Files", new {id=@item2.Id})', '_blank')">@item2.FileName</a>
+                                           
+                                        // </div>
+
                                         <div>
                                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                                             @if (isAdmin)

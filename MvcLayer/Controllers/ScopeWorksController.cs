@@ -5,6 +5,7 @@ using BusinessLayer.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using DatabaseLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -174,30 +175,60 @@ namespace MvcLayer.Controllers
             if (scopeWork is not null)
             {
                 var contract = scopeWork?.ContractId is not null ? _contractService.GetById((int)scopeWork?.ContractId) : null;
-                ///если без ДС
-                if (contract is not null && contract.IsOneOfMultiple && scopeWork?.IsChange != true)
-                {
-                    bool isOwnForces = (bool)(scopeWork?.IsOwnForces is null ? false : scopeWork.IsOwnForces);
-                    _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
 
-                    CreateOrUpdateSWCostsOfMainContract((int)(contract?.MultipleContractId), isOwnForces, scopeWork.SWCosts);
+                var isNotGenContract = contract.IsOneOfMultiple || (bool)contract?.IsSubContract || (bool)contract?.IsAgreementContract;
+                int mainContractId = 0;
+
+                if ((bool)contract?.IsAgreementContract)
+                {
+                    mainContractId = (int)contract?.AgreementContractId;
+                }
+                else if ((bool)contract?.IsSubContract)
+                {
+                    mainContractId = (int)contract?.SubContractId;
+                }
+                else
+                {
+                    mainContractId = (int)contract?.MultipleContractId;
+                }
+
+                ///если без ДС
+                if (contract is not null && scopeWork?.IsChange != true)
+                {
+                    _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
+                    //если генконтракт, присоздании впервый раз, создаем и объем собст. силами, с теми же значениями (далее их просто обновлять будем)
+                    if (!isNotGenContract)
+                    {
+                        scopeWork.IsOwnForces = true;
+                        _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
+                    }
+
+                    if (isNotGenContract)
+                    {
+                        bool isOwnForces = (bool)(scopeWork?.IsOwnForces is null ? false : scopeWork.IsOwnForces);
+                        CreateOrUpdateSWCostsOfMainContract(mainContractId, isOwnForces, scopeWork.SWCosts);
+                    }
                 }
 
                 ///если по ДС
-                if (contract is not null && contract.IsOneOfMultiple && scopeWork?.IsChange == true)
+                if (contract is not null && scopeWork?.IsChange == true)
                 {
-                    bool isOwnForces = (bool)(scopeWork?.IsOwnForces is null ? false : scopeWork.IsOwnForces);
+                   
                     var scopeWorkId = (int)_scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
 
-                    //проверка создается объем (основные/собственными силами) работ с изменениями или нет
+                    //проверка создается объем  работ с изменениями или нет
                     if (scopeWork?.AmendmentId is not null && scopeWork?.AmendmentId > 0)
                     {
                         _scopeWork.AddAmendmentToScopeWork((int)scopeWork?.AmendmentId, scopeWorkId);
                     }
 
-                    UpdateSWCostsOfMainContract((int)contract?.MultipleContractId, (int)scopeWork?.ChangeScopeWorkId, isOwnForces, scopeWork.SWCosts);
+                    if (isNotGenContract)
+                    {
+                        bool isOwnForces = (bool)(scopeWork?.IsOwnForces is null ? false : scopeWork.IsOwnForces);
+                        UpdateSWCostsOfMainContract(mainContractId, (int)scopeWork?.ChangeScopeWorkId, isOwnForces, scopeWork.SWCosts);
+                    } 
                 }
-                
+
                 if (scopeWork.ContractId is not null)
                 {
                     return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = scopeWork.ContractId, returnContractId = returnContractId });
@@ -218,7 +249,9 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
+            //var contract = _contractService.GetById((int)scopeWork?.ContractId) : null;
 
+            //_scopeWork.RemoveSWCostFromMainContract();
             _scopeWork.Delete((int)id);
             return RedirectToAction("GetByContractId", new { contractId = contractId });
         }
@@ -271,24 +304,28 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
         {
-            
+
             var costs = new List<SWCostDTO>();
             costs.Add(_mapper.Map<SWCostDTO>(model));
-            
-            var contrId = model?.ScopeWorkId is not null? _scopeWork?.GetById((int)model.ScopeWorkId)?.ContractId : null;
+
+            var contrId = model?.ScopeWorkId is not null ? _scopeWork?.GetById((int)model.ScopeWorkId)?.ContractId : null;
             var contract = contrId is not null ? _contractService.GetById((int)contrId) : null;
             ///если без ДС
             if (contract is not null && contract.IsOneOfMultiple)
             {
-                UpdateSWCostsOfMainContract(
-                    (int)contract?.MultipleContractId,
-                    (int)model?.ScopeWorkId, 
-                    (bool)(model?.IsOwnForces),
-                    costs
-                    );
+                UpdateSWCostsOfMainContract((int)contract?.MultipleContractId, (int)model?.ScopeWorkId, (bool)(model?.IsOwnForces), costs);
             }
+            if (contract is not null && (bool)contract?.IsSubContract)
+            {
+                UpdateSWCostsOfMainContract((int)contract?.SubContractId, (int)model?.ScopeWorkId, (bool)(model?.IsOwnForces), costs);
+            }
+            if (contract is not null && (bool)contract?.IsAgreementContract)
+            {
+                UpdateSWCostsOfMainContract((int)contract?.AgreementContractId, (int)model?.ScopeWorkId, (bool)(model?.IsOwnForces), costs);
+            }
+
             _swCostService.Update(_mapper.Map<SWCostDTO>(model));
-            return RedirectToAction("GetByContractId", new { contractId = returnContractId, returnContractId = returnContractId });
+            return RedirectToAction("GetByContractId", new { contractId = contractId, returnContractId = returnContractId });
         }
 
         public IActionResult GetPeriodAmendment(int Id)
