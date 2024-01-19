@@ -6,27 +6,30 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Drawing.Drawing2D;
 
 namespace MvcLayer.Controllers
 {
     [Authorize(Policy = "ContrViewPolicy")]
     public class PrepaymentsController : Controller
     {
-
         private readonly IContractService _contractService;
         private readonly IOrganizationService _organization;
         private readonly IPrepaymentService _prepayment;
         private readonly IPrepaymentFactService _prepaymentFact;
         private readonly IPrepaymentPlanService _prepaymentPlan;
         private readonly IScopeWorkService _scopeWork;
+        private readonly IAmendmentService _amendment;
         private readonly IMapper _mapper;
 
         public PrepaymentsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IPrepaymentService prepayment, IScopeWorkService scopeWork, IPrepaymentFactService prepaymentFact,
-            IPrepaymentPlanService prepaymentPlan)
+            IPrepaymentPlanService prepaymentPlan, IAmendmentService amendment)
         {
             _contractService = contractService;
+            _amendment = amendment;
             _mapper = mapper;
             _organization = organization;
             _prepayment = prepayment;
@@ -81,7 +84,16 @@ namespace MvcLayer.Controllers
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             ViewBag.IsEngineering = isEngineering;
-            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(_prepayment.Find(x => x.ContractId == contractId)));
+            var list = _prepayment.Find(x => x.ContractId == contractId);
+            
+            foreach( var item in list)
+            {            
+                var time = _prepayment.GetAmendmentByPrepaymentId(item.Id);
+                if (time == null) item.Period = new DateTime(1900, 1, 1);
+                else item.Period = time.Date;                
+            }
+            list = list.OrderBy(x => x.Period);            
+            return View(_mapper.Map<IEnumerable<PrepaymentViewModel>>(list));
         }
 
         /// <summary>
