@@ -53,3 +53,7 @@ $(document).ready(function () {
         disable_search_threshold: 5
     });
 });
+
+function setColor(element, color) {
+    element.style.backgroundColor = color;
+}
