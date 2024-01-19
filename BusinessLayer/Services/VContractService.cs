@@ -82,10 +82,10 @@ namespace BusinessLayer.Services
 
             switch (sortOrder)
             {
-                case "date":
+                case "number":
                     items = items.OrderBy(s => s.Date).ThenBy(s => s.Number);
                     break;
-                case "dateDesc":
+                case "numberDesc":
                     items = items.OrderByDescending(s => s.Date).ThenBy(s => s.Number);
                     break;
                 case "nameObject":
