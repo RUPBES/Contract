@@ -16,14 +16,16 @@ namespace MvcLayer.Controllers
         private readonly IFileService _fileService;
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
+        private readonly IPrepaymentFactService _prepFact;
 
-        public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork, IContractService contractService)
+        public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork, IContractService contractService, IPrepaymentFactService prepFact)
         {
             _formService = formService;
             _mapper = mapper;
             _fileService = fileService;
             _scopeWork = scopeWork;
             _contractService = contractService;
+            _prepFact = prepFact;
         }
 
         public ActionResult Index()
@@ -104,9 +106,25 @@ namespace MvcLayer.Controllers
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            var ob = _contractService.GetById(contractId);
-            if (ob.IsEngineering == true)
+            var contract = _contractService.GetById(contractId);
+            if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
+
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            {
+                ViewData["NoPrep"] = "true";
+            }
+            else
+            {
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }                
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+            }
             return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
         }
 
@@ -124,10 +142,17 @@ namespace MvcLayer.Controllers
                 formViewModel.OtherExpensesCost = formViewModel.OtherExpensesCost == null ? 0 : formViewModel.OtherExpensesCost;
                 formViewModel.GenServiceCost = formViewModel.GenServiceCost == null ? 0 : formViewModel.GenServiceCost;
                 formViewModel.MaterialCost = formViewModel.MaterialCost == null ? 0 : formViewModel.MaterialCost;
+                formViewModel.OffsetCurrentPrepayment = formViewModel.OffsetCurrentPrepayment == null ? 0 : formViewModel.OffsetCurrentPrepayment;
+                formViewModel.OffsetTargetPrepayment = formViewModel.OffsetTargetPrepayment == null ? 0 : formViewModel.OffsetTargetPrepayment;
                 int formId = (int)_formService.Create(_mapper.Map<FormDTO>(formViewModel));
                 int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);                
                 _formService.AddFile(formId, fileId);
 
+                var prepayment = new PrepaymentFactDTO();
+                prepayment.CurrentValue = formViewModel.OffsetCurrentPrepayment;
+                prepayment.TargetValue = formViewModel.OffsetTargetPrepayment;
+                prepayment.Period = formViewModel.Period;
+                _prepFact.Create(prepayment);
                 return RedirectToAction(nameof(GetByContractId), new { id = formViewModel.ContractId, returnContractId = returnContractId });
             }
             catch
