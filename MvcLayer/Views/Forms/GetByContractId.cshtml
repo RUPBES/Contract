@@ -15,7 +15,7 @@
     string redirectAction = "GetByContractId";
     string redirectController = "Forms";
     var actionName = ViewBag.IsEngineering == false ? "" : "Engineerings";
-
+    var totalForPayment = 0M;
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
@@ -54,6 +54,9 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.DateSigning)
                                 </th>
+                                <th>
+                                   Срок оплаты по договору
+                                </th>
                                 @if (ViewBag.IsEngin == null)
                                 {
                                     <th>
@@ -69,7 +72,22 @@
                                         @Html.DisplayNameFor(model => model.EquipmentCost)
                                     </th>
                                     <th>
+                                        @Html.DisplayNameFor(model => model.GenServiceCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.MaterialCost)
+                                    </th>
+                                    <th>
                                         @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.OffsetTargetPrepayment)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.OffsetCurrentPrepayment)
+                                    </th>
+                                    <th>
+                                       Всего к оплате
                                     </th>
                                 }
                                 else
@@ -87,10 +105,13 @@
                             {
                                 <tr>
                                     <td>                                        
-                                        @item.Period?.ToString("MMMM-yyyy")
+                                        @item.Period?.ToString("MMMM yyyy")
                                     </td>
                                     <td>                                        
                                         @item.DateSigning?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        
                                     </td>
                                     @if (ViewBag.IsEngin == null)
                                     {
@@ -107,7 +128,25 @@
                                             @item.EquipmentCost?.ToString("N2")
                                         </td>
                                         <td class="text-end">
+                                            @item.GenServiceCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.MaterialCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
                                             @item.OtherExpensesCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.OffsetTargetPrepayment?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.OffsetCurrentPrepayment?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @{
+                                                totalForPayment = (decimal)(item.TotalCost - item.OffsetTargetPrepayment - item.OffsetCurrentPrepayment);
+                                            }
+                                            @totalForPayment
                                         </td>
                                     }
                                     else

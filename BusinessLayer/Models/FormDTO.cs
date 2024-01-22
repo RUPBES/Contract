@@ -13,6 +13,8 @@
         public decimal? AdditionalCost { get; set; }
         public decimal? MaterialCost { get; set; }
         public decimal? GenServiceCost { get; set; }
+        public decimal? OffsetTargetPrepayment { get; set; }
+        public decimal? OffsetCurrentPrepayment { get; set; }
         public string Number { get; set; }
         public bool? IsOwnForces { get; set; }
         public int? ContractId { get; set; }

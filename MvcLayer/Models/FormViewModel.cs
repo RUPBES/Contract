@@ -38,6 +38,11 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость ген.услуг")]
         public decimal? GenServiceCost { get; set; }
 
+        [DisplayName("Зачет целевого аванса")]
+        public decimal? OffsetTargetPrepayment { get; set; }
+        [DisplayName("Зачет текущего аванса")]
+        public decimal? OffsetCurrentPrepayment { get; set; }
+
         [DisplayName("Номер")]
         public string Number { get; set; }
 
