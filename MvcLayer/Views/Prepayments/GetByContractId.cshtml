@@ -3,7 +3,13 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentService Prepayment
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentFactService PrepFact
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentPlanService PrepPlan
+@using BusinessLayer.Helpers;
 
+<style>
+    td, tr{
+        min-width: 105px;
+    }
+</style>
 
 @{
     ViewData["Title"] = string.Empty;
@@ -58,7 +64,7 @@
                                     Основание
                                 </th>
 
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th>
                                         @iterator.ToString("MMM yyyy")
@@ -71,11 +77,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.CurrentValue)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = plansNoChange.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.CurrentValue?.ToString("N2")</span>
@@ -91,11 +97,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.TargetValue)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = plansNoChange.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.TargetValue?.ToString("N2")</span>
@@ -108,11 +114,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.WorkingOutValue)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = plansNoChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = plansNoChange.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.WorkingOutValue?.ToString("N2")</span>
@@ -133,7 +139,7 @@
                                 <th class="text-uppercase fw-light">
                                     cогласно графику платежей в редакции ДС <b>@Prepayment?.GetAmendmentByPrepaymentId(item2.Id)?.Number </b>к договору
                                 </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th>
                                         @iterator.ToString("MMM yyyy")
@@ -147,11 +153,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.CurrentValue)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = plansChange.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.CurrentValue?.ToString("N2")</span>
@@ -167,11 +173,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.TargetValue)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = plansChange.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.TargetValue?.ToString("N2")</span>
@@ -184,11 +190,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.WorkingOutValue)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = plansChange.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = plansChange.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.WorkingOutValue?.ToString("N2")</span>
@@ -210,10 +216,11 @@
                                 <th class="text-uppercase fw-light">
                                     Получено фактически
                                 </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th>
                                         @iterator.ToString("MMM yyyy")
+                                        <br>
                                         @if (fact.Any(f => f.Period == iterator))
                                         {
                                             var item = fact.Where(x => x.Period == iterator).FirstOrDefault();
@@ -234,11 +241,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.CurrentValueFact)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = fact.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.CurrentValue?.ToString("N2")</span>
@@ -254,11 +261,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.TargetValueFact)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = fact.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.TargetValue?.ToString("N2")</span>
@@ -271,11 +278,11 @@
                                     <th>
                                         @Html.DisplayNameFor(model => model.WorkingOutValueFact)
                                     </th>
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                     {
                                         <td class="text-end">
                                             @{
-                                                var obj = fact.Where(p => p.Period == iterator).FirstOrDefault();
+                                                var obj = fact.Where(p => Checker.EquallyDateByMonth((DateTime)p.Period, iterator)).FirstOrDefault();
                                                 if (obj != null)
                                                 {
                                                     <span>@obj.WorkingOutValue?.ToString("N2")</span>

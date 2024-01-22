@@ -11,9 +11,10 @@
     else backId = (int)ViewData["returnContractId"];
     int? idContr = @ViewBag.MultipleContractId;
     string? currency = null;
-    if (idContr is not null)
+    var contract = @Contract?.GetById((int)idContr);
+    if (contract is not null)
     {
-        currency = @Contract?.GetById((int)idContr)?.Сurrency is null ? "BYN" : @Contract?.GetById((int)idContr)?.Сurrency;
+        currency = contract.Сurrency is null ? "BYN" : contract?.Сurrency;
     }
 }
     
@@ -21,14 +22,25 @@
     div#CurDC_chosen {
         max-width: 85%;
     }
+
+    .control-label:before {
+        content: "*";
+        color: red;
+        font-size: 20px;
+    }
+
+    label {
+        font-size: 1.1em;
+    }
 </style>
+
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal" style="max-width:500px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if ((int)ViewData["returnContractId"] != 0)
+                    @if (backId != 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }                   
@@ -40,8 +52,7 @@
                 <hr class="modal-line" />
                 <form class="row align-content-start" method="post" enctype="multipart/form-data">
                     <input asp-for="Id" value="null" hidden />                    
-                    <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>
-                    <input asp-for="Сurrency" value="@currency" hidden>
+                    <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>                    
                     <div class="row">
                         <div class="form-group col-9">
                             <label asp-for="ContractPrice" for="CDC"></label>
@@ -52,36 +63,23 @@
                         </div>
                         <div class="col-3">
                             <label asp-for="Сurrency"></label>
-                            <input asp-for="Сurrency" type="text" value="@currency" class="form-control" disabled>
-                        </div>
-                        @*<div class="form-group mt-1">
-                            <label asp-for="Сurrency" for="CurDC"></label>
-                            <div class="input-group">
-                                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
-                                <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
-                                    {
-                                        <option value="@item">@item</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        *@
+                            <input asp-for="Сurrency" type="text" value="@currency" readonly class="form-control">
+                        </div>                       
                         <div class="form-group mt-1">
                             <label asp-for="DateBeginWork">Начало работ</label>
-                            <input asp-for="DateBeginWork" type="date" class="form-control" id="DateBeginWork">
+                            <input asp-for="DateBeginWork" value="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" type="date" class="form-control" id="DateBeginWork" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.DateEndWork?.ToString("yyyy-MM-dd")">
                         </div>
                         <div class="form-group mt-1">
                             <label asp-for="DateEndWork">Окончание работ</label>
-                            <input asp-for="DateEndWork" type="date" class="form-control" id="DateEndWork">
+                            <input asp-for="DateEndWork" value="@contract.DateEndWork?.ToString("yyyy-MM-dd")" type="date" class="form-control" id="DateEndWork" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.DateEndWork?.ToString("yyyy-MM-dd")">
                         </div>
                         <div class="form-group mt-1">
-                            <label asp-for="EnteringTerm"></label>
-                            <input asp-for="EnteringTerm" type="date" class="form-control" id="EnteringTerm">
+                            <label asp-for="EnteringTerm" class="control-label"></label>
+                            <input asp-for="EnteringTerm" required type="date" value="@contract.EnteringTerm?.ToString("yyyy-MM-dd")" class="form-control" id="EnteringTerm" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.EnteringTerm?.ToString("yyyy-MM-dd")">
                         </div>
                         <div class="col-12 mt-2">
-                            <label>Наименование объекта</label>
-                            <textarea asp-for="NameObject" class="form-control" rows="3" ></textarea>
+                            <label class="control-label">Наименование объекта</label>
+                            <textarea asp-for="NameObject" required class="form-control" rows="3"></textarea>
                         </div>
                     </div>
                     <div class="col-8 mt-3">
@@ -103,51 +101,44 @@
             digits_float('#CDC');
         });
 
-        ////    проверка вводимых дат /////////********/
-        //////////////////////////////////////********/
-        /*
-
-        Дата договора  -  a / id = DateDC
-        Начало работ   -  b / id = DateBeginWork
-        Окончание работ - c / id = DateEndWork
-        Срок ввода      - d / id = EnteringTerm
-        Срок действия   - e / id = ContractTerm
-
-         a<=b
-         b<c
-         c<=d
-         c<e
-        */
-       
+        ////    проверка вводимых дат /////////********/               
         let beginWork = document.querySelector("#DateBeginWork");
         let endWork = document.querySelector("#DateEndWork");
         let enteringTm = document.querySelector("#EnteringTerm");
-
-       
-        beginWork.addEventListener('change', (e) => {
-            let date = beginWork.value;
+        
+        beginWork.addEventListener('change', (e) => {            
+            let dateBeg = beginWork.value;
             let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
 
-            // let datePlusOne = addDays(new Date(date), 1);
-
-            if (date > dateEnd && dateEnd.length > 0) {
-                $("#DateEndWork").val(datePlusOne);
-            }
-
-            endWork.setAttribute('min', date);
+            if (!dateEnd || dateBeg > dateEnd) { $("#DateEndWork").val(dateBeg); }
+            if (!dateEnter || dateBeg > dateEnter) { $("#EnteringTerm").val(dateBeg); }
+            endWork.setAttribute('min', dateBeg);
         });
 
-        endWork.addEventListener('change', (e) => {
-            let dateET = enteringTm.value;
+        endWork.addEventListener('change', (e) => {            
+            let dateBeg = beginWork.value;
             let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
 
-            let datePlusOne = addDays(new Date(dateEnd), 1);
+            if (!dateBeg || dateEnd < dateBeg) { $("#DateBeginWork").val(dateEnd); }
+            if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
 
-            if (dateET < dateEnd && dateET.length > 0) {
-                $("#EnteringTerm").val(dateEnd);
-            }          
+            let dateBegMax = beginWork.getAttribute('max');
 
-            enteringTm.setAttribute('min', dateEnd);
+            if (!dateBegMax || dateEnd < dateBegMax) { beginWork.setAttribute('max', dateEnd); }
+        });
+
+        enteringTm.addEventListener('change', (e) => {
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+
+            if (!dateBeg || dateEnter < dateBeg) { $("#DateBeginWork").val(dateEnter); }
+            if (!dateEnd || dateEnter < dateEnd) { $("#DateEndWork").val(dateEnter); }
+
+            let dateEndMax = endWork.getAttribute('max');
+            if (!dateEndMax || dateEndMax > dateEnter) { endWork.setAttribute('max', dateEnter); }            
         });
 
         function addDays(date, countDays) {
@@ -161,8 +152,7 @@
             month = month < 10 ? "0" + month : month;
 
             return +newDateOfyear + '-' + +month + '-' + +day;
-        }
-        //////////////////////////////////////////
+        }      
         //////////////////////////////////////////
     </script>
 }

@@ -5,7 +5,31 @@
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
-@{   
+<style>
+    div#CurDC_chosen {
+        max-width: 85%;
+    }
+
+    .mainContent {
+        background-color: lightsteelblue;
+    }
+
+    .flex-container {
+        background-color: grey;
+    }
+
+    .control-label:before {
+        content: "*";
+        color: red;
+        font-size: 20px;
+    }
+
+    label {
+        font-size: 1.1em;
+    }
+</style>
+
+@{
     string? inputDays = null;
     @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true)
     {
@@ -16,326 +40,318 @@
         inputDays = $"<div class='col-1'><input type='number' name='PaymentСonditionsDaysRaschet' class='form-control' placeholder='0' min='1'></div>";
     }
 }
-<h4>Соглашение с филиалом</h4>
-<hr />
-<div id="modDialog4" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
-    <div id="dialogContent4" class="modal-dialog modal-dialog-centered" role="document"></div>
-</div>
-<div id="modDialog2" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
-    <div id="dialogContent2" class="modal-dialog modal-dialog-centered" role="document"></div>
-</div>
-<div id="modDialog3" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
-    <div id="dialogContent3" class="modal-dialog modal-dialog-centered" role="document"></div>
-</div>
 
-<form class="row align-content-start" asp-action=Create method="post" id="MainForm" enctype="multipart/form-data">
-    <input asp-for="IsAgreementContract" value="true" hidden />
-    <input asp-for="AgreementContractId" hidden />
-    <input asp-for="NameObject" hidden>
-    <input asp-for="IsEngineering" value="false" hidden />
-    <input asp-for="IsSubContract" value="false" hidden />
+<div class="p-3 mainContent">
+    <h2 style="text-align: center;">Соглашение с филиалом</h2>
+    <div id="modDialog4" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
+        <div id="dialogContent4" class="modal-dialog modal-dialog-centered" role="document"></div>
+    </div>
+    <div id="modDialog2" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
+        <div id="dialogContent2" class="modal-dialog modal-dialog-centered" role="document"></div>
+    </div>
+    <div id="modDialog3" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
+        <div id="dialogContent3" class="modal-dialog modal-dialog-centered" role="document"></div>
+    </div>
 
-    <div class="col-4">
-        <div class="row">
-            <div class="col-12">
-                <label asp-for="Number" for="NumDC"></label>
-                <div class="input-group">
-                    <div class="input-group-text">№</div>
-                    <input asp-for="Number" class="form-control" id="NumDC">
-                    <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли соглашение с таким номером"></button>
+    <form class="row align-content-start" asp-action=Create method="post" id="MainForm" enctype="multipart/form-data">
+        <input asp-for="IsAgreementContract" value="true" hidden />
+        <input asp-for="AgreementContractId" hidden />
+        <input asp-for="NameObject" hidden>
+        <input asp-for="IsEngineering" value="false" hidden />
+        <input asp-for="IsSubContract" value="false" hidden />
+
+        <div class="col-4">
+            <div class="row">
+                <div class="col-12">
+                    <label asp-for="Number" class="control-label" for="NumDC"></label>
+                    <div class="input-group">
+                        <div class="input-group-text">№</div>
+                        <input asp-for="Number" class="form-control" required id="NumDC">
+                        <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли договор с таким номером"></button>
+                    </div>
+                </div>
+                @*Орагнизации *********@
+                <div class="col-12 mt-3">
+                    <fieldset class="border rounded-3 p-3">
+                        <legend class="float-none w-auto px-3">
+                            <a asp-action="AddOrganization" id="addOrganization" class="btn btn-sm btn-success">
+                                <img src="~/icons/house-add.svg" />
+                                Добавить новую организацию
+                            </a>
+                        </legend>
+                        <div class="col-12">
+                            <label>Субподрядчик</label>
+                            <input name="ContractOrganizations[0].Organization" hidden />
+                            <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen">
+                                @if (Model?.ContractOrganizations[0] is not null)
+                                {
+                                    var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
+                                    <option selected value="@item?.Id">@item?.Name</option>
+                                }
+                                @if (Model?.ContractOrganizations[0] is null)
+                                {
+                                    <option selected>Выберите организацию</option>
+                                }
+
+                                @foreach (var item in Organization.GetAll())
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <input name="ContractOrganizations[1].Organization" hidden />
+                        <input name="ContractOrganizations[2].Organization" hidden />
+                    </fieldset>
+                </div>
+
+                @*Сотрудники *********@
+                <div class="col-12 mt-3" id="EmployeeFieldSet">
+                    <fieldset class="border rounded-3 p-3">
+                        <legend class="float-none w-auto px-3">
+                            <a asp-action="AddEmployee" id="addEmployee" class="btn btn-sm btn-success">
+                                <img src="~/icons/person-plus.svg" />
+                                Добавить нового сотрудника
+                            </a>
+                        </legend>
+                        <div class="col-12">
+                            <label>Подписант договора</label>
+                            @* <input name="EmployeeContracts[0].Employee" hidden /> *@
+                            <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
+                            <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
+                                @if (Model?.EmployeeContracts[0] is not null)
+                                {
+                                    var item = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
+                                    <option selected value="@item?.Id">@item?.FullName</option>
+                                }
+                                @if (Model?.EmployeeContracts[0] is null)
+                                {
+                                    <option selected>Выберите сотрудника</option>
+                                }
+
+                                @foreach (var item in Employee.GetAll())
+                                {
+                                    <option value="@item.Id">@item.FullName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label>Ответственный за ведение договора</label>
+                            @* <input name="EmployeeContracts[1].Employee" hidden /> *@
+                            <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
+                            <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
+                                @if (Model?.EmployeeContracts[1] is not null)
+                                {
+                                    var item = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
+                                    <option selected value="@item?.Id">@item?.FullName</option>
+                                }
+                                @if (Model?.EmployeeContracts[1] is null)
+                                {
+                                    <option selected>Выберите сотрудника</option>
+                                }
+                                @foreach (var item in Employee.GetAll())
+                                {
+                                    <option value="@item.Id">@item.FullName</option>
+                                }
+                            </select>
+                        </div>
+                        <input name="EmployeeContracts[2].Employee" hidden />
+                    </fieldset>
+                </div>
+
+                @*Виды работ*********@
+                <div class="col-12 mt-3">
+                    <fieldset class="border rounded-3 p-3">
+                        <legend class="float-none w-auto px-3">
+                            <a asp-action="AddTypeWork" id="addTypeWork" class="btn btn-sm btn-success">
+                                <img src="~/icons/house-add.svg" />
+                                Добавить новый вид работ
+                            </a>
+                        </legend>
+                        <div class="col-12">
+                            <label>Вид работ</label>
+                            <input name="TypeWorkContracts[0].TypeWork" hidden />
+                            <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
+                                @if (Model?.TypeWorkContracts[0] is not null)
+                                {
+                                    var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
+                                    <option selected value="@item?.Id">@item?.Name</option>
+                                }
+                                @if (Model?.TypeWorkContracts[0] is null)
+                                {
+                                    <option selected>Выберите вид работ</option>
+                                }
+
+                                @foreach (var item in TypeWork.GetAll())
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                    </fieldset>
+
+                    <input name="TypeWorkContracts[1].TypeWork" hidden />
                 </div>
             </div>
+        </div>
+        <div class="col-4">
             <div class="col-12">
-                <label asp-for="Date" for="DateDC">Дата заключения соглашения</label>
+                <label asp-for="Date" class="control-label" for="DateDC"></label>
                 <div class="input-group">
                     <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                    <input asp-for="Date" type="date" class="form-control" id="DateDC">
+                    <input asp-for="Date" type="date" class="form-control" required id="DateDC">
                 </div>
             </div>
-            @*Орагнизации *********@
-            <div class="col-12 mt-3">
-                <fieldset class="border rounded-3 p-3">
-                    <legend class="float-none w-auto px-3">
-                        <a asp-action="AddOrganization" id="addOrganization" class="btn btn-sm btn-success">
-                            <img src="~/icons/house-add.svg" />
-                            Добавить новую организацию
-                        </a>
-                    </legend>
-                    <div class="col-12">
-                        <label>Филиал</label>  
-                        <input name="ContractOrganizations[0].Organization" hidden />
-                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
-                            @if (Model?.ContractOrganizations[0] is not null)
-                            {
-                                var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
-                                <option selected value="@item?.Id">@item?.Name</option>
-                            }
-                            @if (Model?.ContractOrganizations[0] is null)
-                            {
-                                <option selected>Выберите организацию</option>
-                            }
-
-                            @foreach (var item in Organization.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div>  
-                    
-                    <input name="ContractOrganizations[1].Organization" hidden />
-                    <input name="ContractOrganizations[2].Organization" hidden />
-                </fieldset>
-            </div>  
-
-            @*Сотрудники *********@          
-            <div class="col-12 mt-3" id="EmployeeFieldSet">
-                <fieldset class="border rounded-3 p-3">
-                    <legend class="float-none w-auto px-3">
-                        <a asp-action="AddEmployee" id="addEmployee" class="btn btn-sm btn-success">
-                            <img src="~/icons/person-plus.svg" />
-                            Добавить нового сотрудника
-                        </a>
-                    </legend>
-                    <div class="col-12">
-                        <label>Подписант соглашения</label>
-                        @* <input name="EmployeeContracts[0].Employee" hidden /> *@
-                        <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
-                        <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
-                            @if (Model?.EmployeeContracts[0] is not null)
-                            {
-                                var item = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
-                                <option selected value="@item?.Id">@item?.FullName</option>
-                            }
-                            @if (Model?.EmployeeContracts[0] is null)
-                            {
-                                <option selected>Выберите сотрудника</option>
-                            }
-
-                            @foreach (var item in Employee.GetAll())
-                            {
-                                <option value="@item.Id">@item.FullName</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label>Ответственный за ведение соглашения</label>
-                        <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
-                        <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
-                            @if (Model?.EmployeeContracts[1] is not null)
-                            {
-                                var item = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
-                                <option selected value="@item?.Id">@item?.FullName</option>
-                            }
-                            @if (Model?.EmployeeContracts[1] is null)
-                            {
-                                <option selected>Выберите сотрудника</option>
-                            }
-                            @foreach (var item in Employee.GetAll())
-                            {
-                                <option value="@item.Id">@item.FullName</option>
-                            }
-                        </select>
-                    </div>
-                    <input name="EmployeeContracts[2].Employee" hidden />
-                </fieldset>
+            <div class="form-group">
+                <label asp-for="ContractPrice" for="CDC"></label>
+                <div class="input-group">
+                    <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                    <input name="ContractPrice" type="text" class="form-control" id="CDC">
+                </div>
             </div>
-
-            @*Виды работ*********@
-            <div class="col-12 mt-3">
-                <fieldset class="border rounded-3 p-3">
-                    <legend class="float-none w-auto px-3">
-                        <a asp-action="AddTypeWork" id="addTypeWork" class="btn btn-sm btn-success">
-                            <img src="~/icons/house-add.svg" />
-                            Добавить новый вид работ
-                        </a>
-                    </legend>
-                    <div class="col-12">
-                        <label>Вид работ</label>
-                        <input name="TypeWorkContracts[0].TypeWork" hidden />
-                        <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
-                            @if (Model?.TypeWorkContracts[0] is not null)
-                            {
-                                var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
-                                <option selected value="@item?.Id">@item?.Name</option>
-                            }
-                            @if (Model?.TypeWorkContracts[0] is null)
-                            {
-                                <option selected>Выберите вид работ</option>
-                            }
-
-                            @foreach (var item in TypeWork.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div>
-                </fieldset>
-
-                <input name="TypeWorkContracts[1].TypeWork" hidden />
+            <div class="col-12">
+                <label>Наименование объекта</label>
+                <textarea asp-for="NameObject" class="form-control" rows="2" disabled></textarea>
             </div>
-        </div>
-    </div>
-    <div class="col-4">
-        <div class="form-group">
-            <label asp-for="ContractPrice" for="CDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                <input name="ContractPrice" type="text" class="form-control" id="CDC">
-            </div>
-        </div>
-        <div class="form-group mt-1">
-            <label asp-for="Сurrency" for="CurDC"></label>
-            <div class="input-group">
-                <div class="input-group-text"><img src="~/icons/currency-exchange.svg" /></div>
-                <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                    @if (Model?.Сurrency is null)
-                    {
-                        <option selected disabled>Выбрать валюту</option>
-                    }
-                    @if (Model?.Сurrency is not null)
-                    {
-                        <option selected value="@Model?.Сurrency">@Model?.Сurrency</option>
-                    }
+            <fieldset class="border rounded-1 p-3">
+                <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                @{
+                    int numberCheckbox = 0;
+                }
+                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                {
+                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                    var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
+                    string idCh = "check" + @numberCheckbox;
 
-                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
-                    {
-                        <option value="@item">@item</option>
-                    }
-                </select>
-            </div>
-        </div>
-        <div class="col-12 mt-2">
-            <label>Наименование объекта</label>
-            <textarea asp-for="NameObject" class="form-control" rows="2" disabled></textarea>
-        </div>
-
-        <fieldset class="border rounded-3 p-3 mt-2">
-            <legend class="float-none w-auto px-3">Источник финансирования</legend>
-            @foreach (var item in Enum.GetValues<FundingSourceEnum>())
-            {
-                var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
-                var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
-
-                <div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text" style="display: block;">
-                                @if (valueArray is not null)
-                                {
-                                    <input type="checkbox" name="FundingFS" value="@value" checked>
-                                }
-                                @if (valueArray is null)
-                                {
-                                    <input type="checkbox" name="FundingFS" value="@value">
-                                }
+                    <div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text" style="display: block;">
+                                    @if (valueArray is not null)
+                                    {
+                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                    }
+                                    @if (valueArray is null)
+                                    {
+                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                    }
+                                </div>
                             </div>
+                            <input type="text" class="form-control" value="@value" disabled>
                         </div>
-                        <input type="text" class="form-control" value="@value" disabled>
                     </div>
-                </div>
-            }
-        </fieldset>
+                    numberCheckbox++;
+                }
+            </fieldset>
+            <fieldset class="border rounded-1 p-3">
+                <legend class="float-none w-auto px-3">Источник финансирования</legend>
+                @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                {
+                    var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
+                    var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
 
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Условия авансирования</legend>
-            @{
-                int numberCheckbox = 0;
-            }
-            @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
-            {
-                var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
-                var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
-                string idCh = "check" + @numberCheckbox;
-
-                <div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text" style="display: block;">
-                                @if (valueArray is not null)
-                                {
-                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
-                                }
-                                @if (valueArray is null)
-                                {
-                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
-                                }
+                    <div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text" style="display: block;">
+                                    @if (valueArray is not null)
+                                    {
+                                        <input type="checkbox" name="FundingFS" value="@value" checked>
+                                    }
+                                    @if (valueArray is null)
+                                    {
+                                        <input type="checkbox" name="FundingFS" value="@value">
+                                    }
+                                </div>
                             </div>
+                            <input type="text" class="form-control" value="@value" disabled>
                         </div>
-                        <input type="text" class="form-control" value="@value" disabled>
-
                     </div>
+                }
+            </fieldset>
+        </div>
+        <div class="col-4">
+            <div class="form-group">
+                <label asp-for="Сurrency" for="CurDC"></label>
+                <div class="input-group">
+                    <div class="input-group-text" style="max-width:10%; padding: 3px;">
+                        <img style="height: 22px;" src="~/icons/currency-exchange.svg" />
+                    </div>
+                    <select name="Сurrency" class="form-control js-chosen" id="CurDC">
+                        @if (Model?.Сurrency is null)
+                        {
+                            <option selected disabled>Выбрать валюту</option>
+                        }
+                        @if (Model?.Сurrency is not null)
+                        {
+                            <option selected value="@Model?.Сurrency">@Model?.Сurrency</option>
+                        }
+                        @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                        {
+                            <option value="@item">@item</option>
+                        }
+                    </select>
                 </div>
-                numberCheckbox++;
-            }
-        </fieldset>
+            </div>
+            <fieldset class="border rounded-3 p-3">
+                <legend class="float-none w-auto px-3">Сроки</legend>
+                <label asp-for="DateBeginWork">Начало работ</label>
+                <input asp-for="DateBeginWork" type="date" class="form-control">
 
-    </div>
-    <div class="col-4">
-        
-        
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Сроки</legend>
-            <label asp-for="DateBeginWork">Начало работ</label>
-            <input asp-for="DateBeginWork" type="date" class="form-control">
+                <label asp-for="DateEndWork">Окончание работ</label>
+                <input asp-for="DateEndWork" type="date" class="form-control">
 
-            <label asp-for="DateEndWork">Окончание работ</label>
-            <input asp-for="DateEndWork" type="date" class="form-control">
+                <label asp-for="EnteringTerm"></label>
+                <input asp-for="EnteringTerm" type="date" class="form-control">
 
-            <label asp-for="EnteringTerm"></label>
-            <input asp-for="EnteringTerm" type="date" class="form-control">
+                <label asp-for="ContractTerm"></label>
+                <input asp-for="ContractTerm" type="date" class="form-control">
+            </fieldset>
+            <fieldset class="border rounded-3 p-3">
+                <legend class="float-none w-auto px-3">Процедура выбора</legend>
+                @foreach (var item in Enum.GetValues<ProcedureTypeEnum>())
+                {
+                    var name = $"{Converter.GetTypeOfProcedure((int)item)}";
+                    int numberEnum = (int)item;
+                    <div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text" style="display: block;">
+                                    @if (@Model?.SelectionProcedures?[0].TypeProcedure is not null && (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
+                                    {
+                                        <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
+                                    }
 
-            <label asp-for="ContractTerm"></label>
-            <input asp-for="ContractTerm" type="date" class="form-control">
-        </fieldset>
-
-
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Процедура выбора</legend>
-            @foreach (var item in Enum.GetValues<ProcedureTypeEnum>())
-            {
-                var name = $"{Converter.GetTypeOfProcedure((int)item)}";
-                int numberEnum = (int)item;
-                <div>
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <div class="input-group-text" style="display: block;">
-                                @if (@Model?.SelectionProcedures?[0].TypeProcedure is not null && (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
-                                {
-                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
-                                }
-
-                                @if ((@Model?.SelectionProcedures?[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
-                                {
-                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
-                                }
+                                    @if ((@Model?.SelectionProcedures?[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
+                                    {
+                                        <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
+                                    }
 
 
-                                @if ((@Model?.SelectionProcedures?[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
-                                {
-                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name">
-                                }
+                                    @if ((@Model?.SelectionProcedures?[0].TypeProcedure is null || (bool)@Model?.SelectionProcedures[0].TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
+                                    {
+                                        <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name">
+                                    }
 
+                                </div>
                             </div>
+                            <input type="text" class="form-control" value="@name" disabled>
                         </div>
-                        <input type="text" class="form-control" value="@name" disabled>
                     </div>
-                </div>
-            }
-        </fieldset>
-        
+                }
+            </fieldset>
+        </div>
+        <div class="col-8 mt-1">
+            <fieldset class="border rounded-1 p-3">
+                <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
+                @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
+                {
+                    var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
+                    bool? isValueValid = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase);
+                    bool isDayValid = Model?.PaymentСonditionsDaysRaschet is null || isValueValid is null || isValueValid == false ? false : true;
 
-    </div>
-    <div class="col-8 mt-1">
-        <fieldset class="border rounded-3 p-3">
-            <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
-            @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
-            {
-                var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
-                bool? isValueValid = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase);
-                bool isDayValid = Model?.PaymentСonditionsDaysRaschet is null || isValueValid is null || isValueValid == false ? false : true;
-
-                <div>
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-2">
                         <div class="input-group-prepend">
                             <div class="input-group-text" style="display: block;">
                                 @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
@@ -357,22 +373,22 @@
                             <input type="text" class="form-control" value="@name" disabled>
                         </div>
                     </div>
-                </div>
+                }
+            </fieldset>
+        </div>
+        <div class="col-8 mt-3" style="display:flex">
+            @if (@Model.SubContractId != null)
+            {
+                <a class="btn btn-danger" asp-action="Details" asp-route-id="@Model.SubContractId">Вернуться</a>
             }
-        </fieldset>
-    </div>
-    <div class="col-8 mt-3" style="display:flex">
-        @if (Model.AgreementContractId != null)
-        {
-            <a class="btn btn-success" asp-action="Details" asp-route-id="@Model.AgreementContractId">Вернуться</a>
-        }
-        else
-        {
-            <a class="btn btn-success" asp-action="Index">Вернуться</a>
-        }
-        <button type="submit" class="btn btn-primary k-ml-2" id="subBtn">Сохранить</button>
-    </div>
-</form>
+            else
+            {
+                <a class="btn btn-danger" asp-action="Index">Вернуться</a>
+            }
+            <button type="submit" class="btn btn-primary k-ml-2" id="subBtn">Сохранить</button>
+        </div>
+    </form>
+</div>
 @{
     if (TempData["Message"] != null)
     {
@@ -396,20 +412,6 @@
         $(document).ready(function () {
 
             ////    проверка вводимых дат /////////********/
-            //////////////////////////////////////********/
-            /*
-
-            Дата договора  -  a / id = DateDC
-            Начало работ   -  b / id = DateBeginWork
-            Окончание работ - c / id = DateEndWork
-            Срок ввода      - d / id = EnteringTerm
-            Срок действия   - e / id = ContractTerm
-
-             a<=b
-             b<c
-             c<=d
-             c<e
-            */
             let dateContract = document.querySelector("#DateDC");
             let beginWork = document.querySelector("#DateBeginWork");
             let endWork = document.querySelector("#DateEndWork");
@@ -419,44 +421,93 @@
             dateContract.addEventListener('change', (e) => {
                 let date = dateContract.value;
                 let dateBeg = beginWork.value;
+                let dateEnd = endWork.value;
+                let dateEnter = enteringTm.value;
+                let dateTerm = contractTm.value;
 
-                if (date > dateBeg && dateBeg.length > 0) {
-                    let datePlusOne = addDays(new Date(date), 0);
-                    $("#DateBeginWork").val(date);
-                }
+                if (!dateBeg || date > dateBeg) { $("#DateBeginWork").val(date); }
+                if (!dateEnd || date > dateEnd) { $("#DateEndWork").val(date); }
+                if (!dateEnter || date > dateEnter) { $("#EnteringTerm").val(date); }
+                if (!dateTerm || date > dateTerm) { $("#ContractTerm").val(date); }
+
+                let dateEndMin = endWork.getAttribute('min');
+                let dateEnterMin = enteringTm.getAttribute('min');
+                let dateTermMin = contractTm.getAttribute('min');
+                if (!dateEndMin || dateEndMin < date) { endWork.setAttribute('min', date); }
+                if (!dateEnterMin || dateEnterMin < date) { enteringTm.setAttribute('min', date); }
+                if (!dateTermMin || dateTermMin < date) { contractTm.setAttribute('min', date); }
 
                 beginWork.setAttribute('min', date);
             });
-
             beginWork.addEventListener('change', (e) => {
-                let date = beginWork.value;
+                let date = dateContract.value;
+                let dateBeg = beginWork.value;
                 let dateEnd = endWork.value;
+                let dateEnter = enteringTm.value;
+                let dateTerm = contractTm.value;
 
-                let datePlusOne = addDays(new Date(date), 1);
+                if (!date || dateBeg < date) { $("#DateDC").val(dateBeg); }
+                if (!dateEnd || dateBeg > dateEnd) { $("#DateEndWork").val(dateBeg); }
+                if (!dateEnter || dateBeg > dateEnter) { $("#EnteringTerm").val(dateBeg); }
+                if (!dateTerm || dateBeg > dateTerm) { $("#ContractTerm").val(dateBeg); }
 
-                if (date > dateEnd && dateEnd.length > 0) {
-                    $("#DateEndWork").val(datePlusOne);
-                }
 
-                endWork.setAttribute('min', datePlusOne);
+                let dateTermMin = contractTm.getAttribute('min');
+
+                if (!dateEnterMin || dateEnterMin < dateBeg) { enteringTm.setAttribute('min', dateBeg); }
+                if (!dateTermMin || dateTermMin < dateBeg) { contractTm.setAttribute('min', dateBeg); }
+
+                endWork.setAttribute('min', dateBeg);
             });
-
             endWork.addEventListener('change', (e) => {
-                let dateET = enteringTm.value;
-                let dateCT = contractTm.value;
+                let date = dateContract.value;
+                let dateBeg = beginWork.value;
                 let dateEnd = endWork.value;
+                let dateEnter = enteringTm.value;
+                let dateTerm = contractTm.value;
 
-                let datePlusOne = addDays(new Date(dateEnd), 1);
+                if (!date || dateEnd < date) { $("#DateDC").val(dateEnd); }
+                if (!dateBeg || dateEnd < dateBeg) { $("#DateBeginWork").val(dateEnd); }
+                if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
+                if (!dateTerm || dateEnd > dateTerm) { $("#ContractTerm").val(dateEnd); }
 
-                if (dateET < dateEnd && dateET.length > 0) {
-                    $("#EnteringTerm").val(dateEnd);
-                }
-                if (dateCT < dateEnd && dateCT.length > 0) {
-                    $("#ContractTerm").val(datePlusOne);
-                }
+                let dateBegMax = beginWork.getAttribute('max');
+                let dateEnterMin = enteringTm.getAttribute('min');
+                let dateTermMin = contractTm.getAttribute('min');
 
-                enteringTm.setAttribute('min', dateEnd);
-                contractTm.setAttribute('min', datePlusOne);
+                if (!dateBegMax || dateEnd < dateBegMax) { beginWork.setAttribute('max', dateEnd); }
+            });
+            enteringTm.addEventListener('change', (e) => {
+                let date = dateContract.value;
+                let dateBeg = beginWork.value;
+                let dateEnd = endWork.value;
+                let dateEnter = enteringTm.value;
+                let dateTerm = contractTm.value;
+
+                if (!date || dateEnter < date) { $("#DateDC").val(dateEnter); }
+                if (!dateBeg || dateEnter < dateBeg) { $("#DateBeginWork").val(dateEnter); }
+                if (!dateEnd || dateEnter < dateEnd) { $("#DateEndWork").val(dateEnter); }
+                if (!dateTerm || dateEnter > dateTerm) { $("#ContractTerm").val(dateEnter); }
+
+                contractTm.setAttribute('min', dateEnter);
+            });
+            contractTm.addEventListener('change', (e) => {
+                let date = dateContract.value;
+                let dateBeg = beginWork.value;
+                let dateEnd = endWork.value;
+                let dateEnter = enteringTm.value;
+                let dateTerm = contractTm.value;
+
+                if (!date || dateTerm < date) { $("#DateDC").val(dateTerm); }
+                if (!dateBeg || dateTerm < dateBeg) { $("#DateBeginWork").val(dateTerm); }
+                if (!dateEnd || dateTerm < dateEnd) { $("#DateEndWork").val(dateTerm); }
+                if (!dateEnter || dateTerm < dateEnter) { $("#EnteringTerm").val(dateTerm); }
+
+                let dateBegMax = beginWork.getAttribute('max');
+                if (!dateBegMax || dateTerm < dateBegMax) { beginWork.setAttribute('max', dateTerm); }
+                dateContract.setAttribute('max', dateTerm);
+                endWork.setAttribute('max', dateTerm);
+                enteringTm.setAttribute('max', dateTerm);
             });
 
             function addDays(date, countDays) {
@@ -470,12 +521,7 @@
                 month = month < 10 ? "0" + month : month;
 
                 return +newDateOfyear + '-' + +month + '-' + +day;
-            }
-            //////////////////////////////////////////
-            //////////////////////////////////////////
-
-
-
+            }            
             ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
 
             let ch1 = document.querySelector("#check0");
@@ -516,11 +562,6 @@
             });
 
             ///////
-
-
-
-
-
             let isCheckNumberContract = false;
 
             let styleName = "border:solid red 4px;";
@@ -564,7 +605,7 @@
                 });
             });
 
-            
+
             $("#addOrganization").click(function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -616,7 +657,7 @@
                 });
 
             });
-            
+
         });
     </script>
     <script>

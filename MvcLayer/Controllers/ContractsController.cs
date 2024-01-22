@@ -148,7 +148,7 @@ namespace MvcLayer.Controllers
                 viewModel.IsOneOfMultiple = true;
                 viewModel.Author = organizationName;
                 viewModel.Owner = organizationName;
-
+                if (viewModel.ContractPrice is null) viewModel.ContractPrice = 0;
                 _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
                 return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });
             }
@@ -252,28 +252,6 @@ namespace MvcLayer.Controllers
                 ViewData["returnContractId"] = ob;
             }
 
-            //TODO: если ничего не обваливается при создании договора, удалить закоменченую проверку, если да - то раскоментировать
-
-            //var listExistContracts = _contractService.ExistContractAndReturnListSameContracts(contract.Number, contract.Date);
-            //if (listExistContracts is not null && listExistContracts.Count > 0)
-            //{
-            //    ViewBag.Message = message;
-            //    TempData["Message"] = "Уже создан договор с таким номерам";
-            //    if (contract.IsSubContract == true)
-            //    {
-            //        return View("CreateSub", contract);
-            //    }
-            //    if (contract.IsAgreementContract == true)
-            //    {
-            //        return View("CreateAgr", contract);
-            //    }
-            //    if (contract.IsEngineering == true)
-            //    {
-            //        return View("CreateEngin", contract);
-            //    }
-            //    return View(contract);
-            //}
-
             // проверка, существует ли договор с таким номером,если да - то обратно на заполнение данных
             if (_contractService.ExistContractByNumber(contract.Number) || contract.Number is null)
             {
@@ -298,6 +276,7 @@ namespace MvcLayer.Controllers
             if (contract is not null)
             {
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
+                if (contract.PaymentCA.Count == 0) { contract.PaymentCA.Add("Без авансов"); }
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
                 if (contract.IsEngineering == true)
                     TempData["IsEngin"] = true;
@@ -361,6 +340,8 @@ namespace MvcLayer.Controllers
                 contract.Author = organizationName;
                 contract.Owner = organizationName;
 
+                if (contract.ContractPrice is null) contract.ContractPrice = 0;
+                if (contract.IsEngineering == true && contract.PaymentСonditionsPrice is null) contract.PaymentСonditionsPrice = 0;
                 _contractService.Create(_mapper.Map<ContractDTO>(contract));
                 if (ViewData["returnContractId"] != null)
                 {
