@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -17,8 +18,12 @@ namespace MvcLayer.Controllers
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
         private readonly IPrepaymentFactService _prepFact;
+        private readonly IPrepaymentService _prep;
 
-        public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork, IContractService contractService, IPrepaymentFactService prepFact)
+        public FormsController(IFormService formService, IMapper mapper, 
+                                IFileService fileService, IScopeWorkService scopeWork, 
+                                IContractService contractService, IPrepaymentFactService prepFact,
+                                IPrepaymentService prep)
         {
             _formService = formService;
             _mapper = mapper;
@@ -26,6 +31,7 @@ namespace MvcLayer.Controllers
             _scopeWork = scopeWork;
             _contractService = contractService;
             _prepFact = prepFact;
+            _prep = prep;
         }
 
         public ActionResult Index()
@@ -63,40 +69,10 @@ namespace MvcLayer.Controllers
                     IsOwnForces = isOwnForces,
                     PeriodStart = period.Value.Item1,
                     PeriodEnd = period.Value.Item2,
-                };
-
-                DateTime startDate = period.Value.Item1;         
-
-                // определяем, есть уже формы собственными силами (флаг IsOwnForces = true)
-
-                var formExist = _formService
-                    .Find(x => x.ContractId == contractId && x.IsOwnForces == isOwnForces);
+                };       
                 ViewData["contractId"] = contractId;
-                ViewData["returnContractId"] = returnContractId;
-                if (formExist.Count() > 0)
-                {
-                    //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
-                    while (startDate <= period?.Item2)
-                    {
-                        //проверяем если по данной дате уже заполненные C3-A
-                        if (_formService.Find(x => x.Period.Value.Date == startDate.Date && x.ContractId == contractId && x.IsOwnForces == true).FirstOrDefault() is null)
-                        {
-                            periodChoose.ListDates.Add(startDate);
-                        }
-
-                        startDate = startDate.AddMonths(1);
-                    }                    
-                    return View(periodChoose);
-                }
-                else
-                {
-                    while (startDate <= period?.Item2)
-                    {
-                        periodChoose.ListDates.Add(startDate);
-                        startDate = startDate.AddMonths(1);
-                    }
-                    return View(periodChoose);
-                }
+                ViewData["returnContractId"] = returnContractId;                
+                return View(periodChoose);
             }
             return View();
         }
@@ -152,7 +128,8 @@ namespace MvcLayer.Controllers
                 prepayment.CurrentValue = formViewModel.OffsetCurrentPrepayment;
                 prepayment.TargetValue = formViewModel.OffsetTargetPrepayment;
                 prepayment.Period = formViewModel.Period;
-                _prepFact.Create(prepayment);
+                prepayment.PrepaymentId = _prepFact.GetLastPrepayment((int)formViewModel.ContractId).Id;
+                _prepFact.Create(_mapper.Map<PrepaymentFactDTO>(prepayment));
                 return RedirectToAction(nameof(GetByContractId), new { id = formViewModel.ContractId, returnContractId = returnContractId });
             }
             catch
@@ -164,9 +141,24 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "ContrEditPolicy")]
         public ActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
-            var ob = _contractService.GetById(contractId);
-            if (ob.IsEngineering == true)
+            var contract = _contractService.GetById(contractId);
+            if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            {
+                ViewData["NoPrep"] = "true";
+            }
+            else
+            {
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+            }
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<FormViewModel>(_formService.GetById(id)));
@@ -182,19 +174,24 @@ namespace MvcLayer.Controllers
                 try
                 {
                     _formService.Update(_mapper.Map<FormDTO>(formViewModel));
-                    return RedirectToAction("Details", "Contracts", new { id = formViewModel.ContractId, returnContractId = returnContractId });
+                    var prepID = _prepFact.GetLastPrepayment((int)formViewModel.ContractId).Id;                       
+                    var prepayment = _prepFact.Find(x => x.PrepaymentId == prepID &&
+                    Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)formViewModel.Period)).FirstOrDefault();
+                    prepayment.CurrentValue = formViewModel.OffsetCurrentPrepayment;
+                    prepayment.TargetValue = formViewModel.OffsetTargetPrepayment;                    
+                    _prepFact.Update(_mapper.Map<PrepaymentFactDTO>(prepayment));
+                    return RedirectToAction("GetByContractId", "Forms", new { id = formViewModel.ContractId, returnContractId = returnContractId });
                 }
                 catch
                 {
                     return View();
                 }
             }
-
             return RedirectToAction(nameof(Index));
         }
 
         [Authorize(Policy = "ContrAdminPolicy")]
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int id, int returnContractId = 0)
         {
             try
             {
@@ -202,13 +199,17 @@ namespace MvcLayer.Controllers
                 {
                     _fileService.Delete(item.Id);
                 }
-
+                var form =_formService.GetById(id);
+                var prepId = _prepFact.GetLastPrepayment((int)form.ContractId).Id;
+                var prepFact = _prepFact.Find(x => x.PrepaymentId == prepId && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)form.Period)).FirstOrDefault();
                 _formService.Delete(id);
-                return RedirectToAction(nameof(Index));
+                if (prepFact != null) _prepFact.Delete(prepFact.Id);
+                ViewData["reload"] = "Yes";
+                return PartialView("_Message","Запись успешно удалена.");
             }
             catch
             {
-                return View();
+                return PartialView("_Message", "Произошла ошибка.");
             }
         }
     }

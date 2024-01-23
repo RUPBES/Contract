@@ -36,6 +36,12 @@ namespace MVC_layer.Controllers
         {
             return PartialView("_Message", message);
         }
-        //TODO: site.css 11-строка: переопределение z-index у dropdown-menu
+
+        public IActionResult MessageWithReload(string message)
+        {
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", message);
+        }
+
     }
 }

@@ -79,6 +79,8 @@ namespace DatabaseLayer.Repositories
                     form.Number = entity.Number;
                     form.IsOwnForces = entity.IsOwnForces;
                     form.ContractId = entity.ContractId;
+                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment;
+                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment;
 
                     _context.FormC3as.Update(form);
                 }

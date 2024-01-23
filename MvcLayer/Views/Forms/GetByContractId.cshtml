@@ -19,13 +19,13 @@
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = ViewBag.IsEngineering == false ? 
-        $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договору № {number}":
+        ViewData["Title"] = ViewBag.IsEngineering == false ?
+        $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договору № {number}" :
         $"Акты оказанных услуг согласно договору № {number}";
     }
-    
 
-   
+
+
 }
 
 <div class="dm-overlay">
@@ -45,145 +45,205 @@
                 </div>
                 <hr class="modal-line">
                 <div class="modal-overflow-70">
-                    <table class="table table-striped table-bordered">
-                        <thead class="custom-thead">
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.Period)                                   
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.DateSigning)
-                                </th>
-                                <th>
-                                   Срок оплаты по договору
-                                </th>
-                                @if (ViewBag.IsEngin == null)
-                                {
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.TotalCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.SmrCost)
-                                    </th>
-                                    <th >
-                                        @Html.DisplayNameFor(model => model.PnrCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.EquipmentCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.GenServiceCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.MaterialCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.OtherExpensesCost)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.OffsetTargetPrepayment)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.OffsetCurrentPrepayment)
-                                    </th>
-                                    <th>
-                                       Всего к оплате
-                                    </th>
-                                }
-                                else
-                                {
-                                    <th>
-                                        Объем работ
-                                    </th>
-                                }
-                                <th>Файлы справок</th>
-                                <th ></th>
-                            </tr>                            
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
+                    @if (Model.Count() > 0)
+                    {                        
+                        <table class="table table-striped table-bordered">
+                            <thead class="custom-thead">
                                 <tr>
-                                    <td>                                        
-                                        @item.Period?.ToString("MMMM yyyy")
-                                    </td>
-                                    <td>                                        
-                                        @item.DateSigning?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        
-                                    </td>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.Period)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.DateSigning)
+                                    </th>
+                                    <th>
+                                        Срок оплаты по договору
+                                    </th>
                                     @if (ViewBag.IsEngin == null)
                                     {
-                                        <td class="text-end">
-                                            @item.TotalCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.SmrCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.PnrCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.EquipmentCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.GenServiceCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.MaterialCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.OtherExpensesCost?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.OffsetTargetPrepayment?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @item.OffsetCurrentPrepayment?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                totalForPayment = (decimal)(item.TotalCost - item.OffsetTargetPrepayment - item.OffsetCurrentPrepayment);
-                                            }
-                                            @totalForPayment
-                                        </td>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.TotalCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.SmrCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.PnrCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.EquipmentCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.GenServiceCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.MaterialCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.OffsetTargetPrepayment)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.OffsetCurrentPrepayment)
+                                        </th>
+                                        <th>
+                                            Всего к оплате
+                                        </th>
                                     }
                                     else
                                     {
-                                        <td class="text-end">
-                                            @item.TotalCost?.ToString("N2")
-                                        </td>
+                                        <th>
+                                            Объем работ
+                                        </th>
                                     }
-                                    <td>
-                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
-                                        {
-                                            <div>
-                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                @if (isAdmin)
-                                                {
-                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
-                                                }
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>                                       
-                                        <span class="icon file-add" title="Добавить файл к форме">
-                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        </span>
-                                        <span class="icon edit" title="Редактировать форму">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        </span>
-                                        <span class="icon delete" title="Удалить форму">
-                                            <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
-                                        </span>
-                                    </td>
+                                    <th>Файлы справок</th>
+                                    <th></th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Period?.ToString("MMMM yyyy")
+                                        </td>
+                                        <td>
+                                            @item.DateSigning?.ToShortDateString()
+                                        </td>
+                                        <td>
+                                        </td>
+                                        @if (ViewBag.IsEngin == null)
+                                        {
+                                            <td class="text-end">
+                                                @item.TotalCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.SmrCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.PnrCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.EquipmentCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.GenServiceCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.MaterialCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.OtherExpensesCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.OffsetTargetPrepayment?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.OffsetCurrentPrepayment?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    totalForPayment = (decimal)(item.TotalCost - item.OffsetTargetPrepayment - item.OffsetCurrentPrepayment);
+                                                }
+                                                @totalForPayment
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="text-end">
+                                                @item.TotalCost?.ToString("N2")
+                                            </td>
+                                        }
+                                        <td>
+                                            @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
+                                            {
+                                                <div>
+                                                    <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                    @if (isAdmin)
+                                                    {
+                                                        @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                    }
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="icon file-add" title="Добавить файл к форме">
+                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </span>
+                                            <span class="icon edit" title="Редактировать форму">
+                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </span>
+                                            <span class="icon delete" title="Удалить форму">
+                                                <a onclick="confirmI(@item.Id)"></a>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <a class="btn btn-success" asp-action="ChoosePeriod" asp-controller="Forms" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">Добавить С-3А</a>
+                    }
                 </div>
             </div>
         </div>
     </div>
-</div>  
+</div>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmI(val) {
+            let mes = "Вы точно хотите удалить данную запись?";
+            console.log({ message: mes });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Message","Home")',
+                dataType: 'html',
+                data: { message: mes },
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('show');
+
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                    elementDeleteButton[0].addEventListener('click', () => {
+                        console.log('object:', { id: val })
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("Delete","Forms")',
+                            dataType: 'html',
+                            data: { id: val },
+                            success: function (result) {
+                                $('#dialogContent').html(result);
+                                $('#modDialog').modal({ backdrop: false });
+                                $('#modDialog').modal('show');
+
+                                console.log(result, 'ok result delete')
+                                let buttonElement = document.querySelectorAll('#dialogContent')
+                            },
+                            error: function (result) {
+                                console.log(result, 'Ошибка удаления');
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("Message","Home")',
+                                    dataType: 'html',
+                                    data: { message: "Во время удаления произошла ошибка" },
+                                    success: function (result) {
+                                        $('#dialogContent').html(result);
+                                    }
+                                });
+                            }
+                        });
+                    })
+                },
+                error: function (result) {
+                    console.log(result, 'error 2');
+                    alert("Ошибка отображения");
+                }
+            })
+        }
+    </script>
+}

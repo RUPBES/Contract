@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
@@ -193,6 +194,31 @@ namespace BusinessLayer.Services
                            nameSpace: typeof(FormService).Name,
                            methodName: MethodBase.GetCurrentMethod().Name,
                            userName: user);
-        }        
+        }
+
+        public IEnumerable<DateTime> GetFreeForms(int contractId)
+        {
+            var list = _database.Forms.Find(a => a.ContractId == contractId).ToList();
+            DateTime start, end;
+            var amend = _database.Amendments.Find(a => a.ContractId == contractId).OrderBy(a => a.Date).LastOrDefault();
+            if (amend == null)
+            {
+                start = (DateTime)_database.Contracts.GetById(contractId).DateBeginWork;
+                end = (DateTime)_database.Contracts.GetById(contractId).DateEndWork;
+            }
+            else
+            {
+                start = (DateTime)amend.DateBeginWork;
+                end = (DateTime)amend.DateEndWork;
+            }
+            List<DateTime> answer = new List<DateTime>();
+            for (var i = start; Checker.LessOrEquallyFirstDateByMonth(i, end); i = i.AddMonths(1))
+            {
+                var ob = list.Where(l => Checker.EquallyDateByMonth((DateTime)l.Period, i)).FirstOrDefault();
+                if (ob == null)
+                    answer.Add(i);
+            }
+            return _mapper.Map<IEnumerable<DateTime>>(answer);
+        }
     }
 }
