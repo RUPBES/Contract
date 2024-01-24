@@ -485,9 +485,12 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
         {
-            if (contract.ContractOrganizations[1].OrganizationId == 0)
+            if (contract.IsSubContract != true && contract.IsAgreementContract != true)
             {
-                contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
+                if (contract.ContractOrganizations[1].OrganizationId == 0)
+                {
+                    contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
+                }
             }
             if (contract.ContractOrganizations[0].OrganizationId == 0)
             {
@@ -510,7 +513,9 @@ namespace MvcLayer.Controllers
 
             contract.FundingSource = string.Join(", ", contract.FundingFS);
             contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-
+            if (contract.IsEngineering == true)
+                TempData["IsEngin"] = true;
+            contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
             try
             {
                 // если у просроченного договора изменили дату окончания работ, проверяем - если больше сегодняшнего дня то удаляем (если есть) статус ЗАКРЫТ и ПРОСРОЧЕН

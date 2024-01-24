@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    public class FormService: IFormService
+    public class FormService : IFormService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
@@ -220,7 +220,6 @@ namespace BusinessLayer.Services
             }
             return _mapper.Map<IEnumerable<DateTime>>(answer);
         }
-        }
 
         public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period)
         {
@@ -233,13 +232,13 @@ namespace BusinessLayer.Services
 
                 foreach (var item in agrContr)
                 {
-                    var formAgr =_mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
-                   
+                    var formAgr = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
+
                     if (formAgr is not null)
                     {
                         formList.Add(formAgr);
                     }
-                    
+
                 }
                 foreach (var item in subContr)
                 {
@@ -249,12 +248,10 @@ namespace BusinessLayer.Services
                     {
                         formList.Add(formSub);
                     }
-                    
+
                 }
             }
-
             return formList;
         }
-
     }
 }

@@ -3,6 +3,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @{
     ViewData["Title"] = "Редактирование договора";
@@ -387,6 +388,7 @@
                             var subName = $"{sub[0]} {sub[1]}";
                             bool? isValueValid = Model?.PaymentСonditionsRaschet?.Contains(subName, StringComparison.OrdinalIgnoreCase);
                             bool isDayValid = isValueValid == true ? true : false;
+                            var number = Contract.GetDayOfRaschet(Model.Id);
 
                             <div class="input-group mb-2">
                                 <div class="input-group-prepend">
@@ -402,9 +404,9 @@
 
                                     </div>
                                 </div>
-                                @if (Model?.PaymentСonditionsDaysRaschet.HasValue == true && isValueValid == true)
+                                @if (number.HasValue == true && isValueValid == true)
                                 {
-                                    <div class="col-1" id="inpValueRaschet"><input type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@Model?.PaymentСonditionsDaysRaschet.Value" min="1"></div>
+                                    <div class="col-1"><input id="dayInput" type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@number" min="1"></div>
                                 }
                                 <div class="col-9">
                                     <input type="text" class="form-control" value="@name" disabled>
@@ -499,9 +501,7 @@
                     //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                     $("#dayInput").parent().remove();
                 }
-
-                $(this).parent().parent().last().after(`<div class='col-1'>
-                                                                                        <input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+                $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
             });
         </script>
     }

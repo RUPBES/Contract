@@ -451,11 +451,12 @@ namespace BusinessLayer.Services
                     raschet = raschet.Replace("Расчет за выполненные работы производится в течение ", "");
                     raschet = raschet.Replace("Расчет за выполненные работы производится не позднее ", "");
                     var daysStr =raschet.Split(' ')[0];
-                    return Convert.ToInt32(daysStr);
+                    int answer;
+                    var isParse = int.TryParse(daysStr, out answer);
+                    if (isParse) return answer;
+                    else return 0;                    
                 }
             }
-            
-
             return null;
         }
 
