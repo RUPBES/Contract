@@ -159,7 +159,7 @@ namespace MvcLayer.Controllers
         /// <summary>
         /// Создание соглашения с филиалом
         /// </summary>
-        /// <param name="id">Договора к которому добавляем субкдоговор</param>
+        /// <param name="id">Договора к которому добавляем субдоговор</param>
         /// <param name="nameObject">название объекта</param>
         /// <returns></returns>
         public IActionResult CreateAgr(int? id, string? nameObject)
@@ -212,7 +212,7 @@ namespace MvcLayer.Controllers
         /// <summary>
         /// Создание субподрядного договора
         /// </summary>
-        /// <param name="id">Договора к которому добавляем субкдоговор</param>
+        /// <param name="id">Договора к которому добавляем субдоговор</param>
         /// <param name="nameObject">название объекта</param>
         /// <returns></returns>
         public IActionResult CreateSub(int? id, string? nameObject)
@@ -372,21 +372,32 @@ namespace MvcLayer.Controllers
                 return NotFound();
             }
 
-            if (contract.ContractOrganizations.Count < 1)
+            if ((contract.IsSubContract == null || contract.IsSubContract == false) &&
+                (contract.IsAgreementContract == null || contract.IsAgreementContract == false))
             {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsClient = true });
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsGenContractor = true });
-            }
-            else if (contract.ContractOrganizations.Count < 2)
-            {
-                if (contract.ContractOrganizations[0].IsGenContractor != true || contract.ContractOrganizations[0].IsClient != true)
+                if (contract.ContractOrganizations.Count < 1)
                 {
-                    contract.ContractOrganizations.Add(new ContractOrganizationDTO
+                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsClient = true });
+                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsGenContractor = true });
+                }
+                else if (contract.ContractOrganizations.Count < 2)
+                {
+                    if (contract.ContractOrganizations[0].IsGenContractor != true || contract.ContractOrganizations[0].IsClient != true)
                     {
-                        ContractId = (int)id,
-                        IsGenContractor = contract.ContractOrganizations[0].IsGenContractor == true ? false : true,
-                        IsClient = contract.ContractOrganizations[0].IsGenContractor == true ? true : false
-                    });
+                        contract.ContractOrganizations.Add(new ContractOrganizationDTO
+                        {
+                            ContractId = (int)id,
+                            IsGenContractor = contract.ContractOrganizations[0].IsGenContractor == true ? false : true,
+                            IsClient = contract.ContractOrganizations[0].IsGenContractor == true ? true : false
+                        });
+                    }
+                }
+            }
+            else
+            {
+                if (contract.ContractOrganizations.Count < 1)
+                {
+                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id});                    
                 }
             }
 
@@ -708,11 +719,11 @@ namespace MvcLayer.Controllers
         {
             if (!string.IsNullOrWhiteSpace(payment) && days.HasValue)
             {
-                if (TempData["IsEngin"] != null)
+                if (TempData["IsEngin"] == null)
                 {
                     if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
                     {
-                        return $"Расчет за выполненные работы производится в течение {days} дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ";
+                        return $"Расчет за выполненные работы производится в течение {days} календарных дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ";
                     }
                     if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
                     {
