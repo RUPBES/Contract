@@ -10,7 +10,7 @@
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"]; 
+    else backId = (int)ViewData["returnContractId"];
 
     bool isFact = Model.IsFact == true ? true : false;
     string actionName = isFact ? "EditPrepayments" : "Create";
@@ -93,11 +93,11 @@
                                         {
                                             if (Model.PrepaymentPlans[index].TargetValue != null && Model.PrepaymentPlans[index].TargetValue != 0)
                                             {
-                                                <td><input name="PrepaymentPlans[@index].TargetValue" value="@Model.PrepaymentPlans[index].TargetValue" type="text" class="form-control cost" /></td>
+                                                <td><input name="PrepaymentPlans[@index].TargetValue" value="@Model.PrepaymentPlans[index].TargetValue" type="text" class="target form-control cost" /></td>
                                             }
                                             else
                                             {
-                                                <td><input name="PrepaymentPlans[@index].TargetValue" type="text" class="form-control cost" /></td>
+                                                <td><input name="PrepaymentPlans[@index].TargetValue" type="text" class="target form-control cost" /></td>
                                             }
                                             index++;
                                         }
@@ -111,11 +111,11 @@
                                         {
                                             if (Model.PrepaymentPlans[index].WorkingOutValue != null && Model.PrepaymentPlans[index].WorkingOutValue != 0)
                                             {
-                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" value="@Model.PrepaymentPlans[index].WorkingOutValue" type="text" class="form-control cost" /></td>
+                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" value="@Model.PrepaymentPlans[index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
                                             }
                                             else
                                             {
-                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" type="text" class="form-control cost" /></td>
+                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
                                             }
                                             index++;
                                         }
@@ -212,8 +212,21 @@
                             <input asp-for="@Model.ChangePrepaymentId" hidden />
                         </table>
                     </div>
-                    <div class="form-group">
-                        <input type="submit" value="Создать" class="btn btn-primary mt-1" />
+                    <div class="form-group mt-3">
+                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
+                        @if (ViewBag.Target != null)
+                        {
+
+                            var target = Model.PrepaymentPlans.Sum(x => x.TargetValue);
+                            var workTarget = Model.PrepaymentPlans.Sum(x => x.WorkingOutValue);
+                            var result = target - workTarget;
+
+                            <input id="sumTarget" value="@target?.ToString("N2")" readonly />
+                            <span> - </span>
+                            <input id="sumTargetWork" value="@workTarget?.ToString("N2")" readonly />
+                            <span> = </span>
+                            <input id="result" value="@result?.ToString("N2")" readonly />
+                        }
                     </div>
                 </form>
             </div>
@@ -233,6 +246,50 @@
                     digits_float(this);
                 });
             });
+            $('body').on('input', '.target', function (e) {
+                check();
+            });
+            $('body').on('input', '.targetWork', function (e) {
+                check();
+            });
+
+            function check() {
+                let btn = document.getElementById("createButton");
+
+                let target = $(".target");
+                let targetWork = $(".targetWork");
+                let sumTarget = 0;
+                let sumTargetWork = 0;
+                let result = 0;
+                for (let item of target) {
+                    const regExp = /,/g;
+                    let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                    console.log(num, 'number:', +num, 'num - target')
+                    sumTarget += +num;
+                }
+                for (let item of targetWork) {
+                    const regExp = /,/g;
+                    let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                    console.log(num, 'number:', +num, 'num - targetWork')
+
+                    sumTargetWork += +num;
+                }
+
+                result = sumTarget - sumTargetWork;
+                if (result === 0) {
+
+                    btn.removeAttribute('disabled')
+
+                } else {
+                    btn.setAttribute('disabled', true)
+
+                }
+
+                $("#sumTarget").val(sumTarget);
+                $("#sumTargetWork").val(sumTargetWork);
+                $("#result").val(result.toFixed(2));
+            }
+
         </script>
     }
 }

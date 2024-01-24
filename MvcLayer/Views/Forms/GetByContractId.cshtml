@@ -26,6 +26,9 @@
         $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договору № {number}" :
         $"Акты оказанных услуг согласно договору № {number}";
     }
+    
+
+   
 }
 
 <div class="dm-overlay">
@@ -314,4 +317,58 @@
             </div>
         </div>
     </div>
-</div>  
+</div>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmI(val) {
+            let mes = "Вы точно хотите удалить данную запись?";
+            console.log({ message: mes });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Message","Home")',
+                dataType: 'html',
+                data: { message: mes },
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('show');
+
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                    elementDeleteButton[0].addEventListener('click', () => {
+                        console.log('object:', { id: val })
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("Delete","Forms")',
+                            dataType: 'html',
+                            data: { id: val },
+                            success: function (result) {
+                                $('#dialogContent').html(result);
+                                $('#modDialog').modal({ backdrop: false });
+                                $('#modDialog').modal('show');
+
+                                console.log(result, 'ok result delete')
+                                let buttonElement = document.querySelectorAll('#dialogContent')
+                            },
+                            error: function (result) {
+                                console.log(result, 'Ошибка удаления');
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("Message","Home")',
+                                    dataType: 'html',
+                                    data: { message: "Во время удаления произошла ошибка" },
+                                    success: function (result) {
+                                        $('#dialogContent').html(result);
+                                    }
+                                });
+                            }
+                        });
+                    })
+                },
+                error: function (result) {
+                    console.log(result, 'error 2');
+                    alert("Ошибка отображения");
+                }
+            })
+        }
+    </script>
+}

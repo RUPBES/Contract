@@ -219,19 +219,7 @@
                                 @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th>
-                                        @iterator.ToString("MMM yyyy")
-                                        <br>
-                                        @if (fact.Any(f => f.Period == iterator))
-                                        {
-                                            var item = fact.Where(x => x.Period == iterator).FirstOrDefault();
-                                            <a class="icon edit" asp-action="EditFact" asp-controller="Prepayments"
-                                               asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        }
-                                        else
-                                        {
-                                            <a class="icon view_to_add_pages" asp-action="ChoosePeriod" asp-controller="Prepayments"
-                                               asp-route-contractId="@contractId" asp-route-isFact="true" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        }
+                                        @iterator.ToString("MMM yyyy")                                        
                                     </th>
                                 }
                             </tr>

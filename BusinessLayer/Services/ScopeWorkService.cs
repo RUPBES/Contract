@@ -459,5 +459,23 @@ namespace BusinessLayer.Services
             }
             return _mapper.Map<IEnumerable<AmendmentDTO>>(answer);
         }
+
+        public ScopeWork GetLastScope(int contractId)
+        {
+            var list = _database.ScopeWorks.Find(a => a.ContractId == contractId).ToList();
+            List<(ScopeWork, DateTime)> listSort = new List<(ScopeWork, DateTime)>();
+            foreach (var item in list)
+            {
+                (ScopeWork, DateTime) obj;
+                var ob = _database.ScopeWorkAmendments.Find(s => s.ScopeWorkId == item.Id).FirstOrDefault();
+                if (ob == null)
+                    obj.Item2 = new DateTime(1900, 1, 1);
+                else obj.Item2 = (DateTime)_database.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault();
+                obj.Item1 = item;
+                listSort.Add(obj);
+            }
+            listSort = listSort.OrderBy(x => x.Item2).ToList();
+            return _mapper.Map<ScopeWork>(listSort.Select(x => x.Item1).LastOrDefault());
+        }
     }
 }
