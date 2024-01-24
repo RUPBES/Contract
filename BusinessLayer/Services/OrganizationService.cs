@@ -6,6 +6,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.SqlServer.Server;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 
@@ -149,6 +150,12 @@ namespace BusinessLayer.Services
             }
         }
 
+        public string? GetNameByContractId(int contrId)
+        {
+            var orgContr = _database.ContractOrganizations?.Find(x => x.ContractId == contrId)?.FirstOrDefault()?.Organization;
+
+            return orgContr is null ? null : orgContr.Name;
+        }
         public OrganizationDTO GetByEmployeeId(int employeeId)
         {
             var empDepartments = _database.DepartmentEmployees?.Find(x=>x.EmployeeId == employeeId)?.FirstOrDefault()?.Department?.Organization;

@@ -43,6 +43,9 @@ namespace MvcLayer.Models
         [DisplayName("Зачет текущего аванса")]
         public decimal? OffsetCurrentPrepayment { get; set; }
 
+        [DisplayName("К оплате")]
+        public decimal? TotalCostToBePaid { get; set; }
+
         [DisplayName("Номер")]
         public string Number { get; set; }
 
@@ -50,6 +53,9 @@ namespace MvcLayer.Models
         public bool? IsOwnForces { get; set; }
        
         public int? ContractId { get; set; }
+
+        public string? OrganizationName { get; set; }
+
         public IFormFileCollection FilesEntity { get; set; }
 
         [DisplayName("Договор")]

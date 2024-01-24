@@ -441,6 +441,24 @@ namespace BusinessLayer.Services
             return t;
         }
 
+        public int? GetDayOfRaschet(int contrId)
+        {
+            if (contrId > 0)
+            {
+                var raschet = _database.Contracts.GetById(contrId).PaymentСonditionsRaschet;
+                if (raschet is not null)
+                {
+                    raschet = raschet.Replace("Расчет за выполненные работы производится в течение ", "");
+                    raschet = raschet.Replace("Расчет за выполненные работы производится не позднее ", "");
+                    var daysStr =raschet.Split(' ')[0];
+                    return Convert.ToInt32(daysStr);
+                }
+            }
+            
+
+            return null;
+        }
+
         public bool IsThereSubObjs(int contarctId)
         {
             var subObjs = _database.Contracts.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contarctId);

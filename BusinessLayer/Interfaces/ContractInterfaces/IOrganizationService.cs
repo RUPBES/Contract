@@ -9,5 +9,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder);
         public IndexViewModel GetPage(int pageSize, int pageNum);
         OrganizationDTO GetByEmployeeId(int employeeId);
+        string? GetNameByContractId(int contrId);
     }
 }

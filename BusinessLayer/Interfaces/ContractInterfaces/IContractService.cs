@@ -21,5 +21,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId);
         bool IsThereSWCosts(int? scopeId);
         bool IsThereAmendment(int contarctId);
+        int? GetDayOfRaschet(int contrId);
     }
 }

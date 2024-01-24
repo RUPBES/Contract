@@ -193,6 +193,41 @@ namespace BusinessLayer.Services
                            nameSpace: typeof(FormService).Name,
                            methodName: MethodBase.GetCurrentMethod().Name,
                            userName: user);
-        }        
+        }
+
+        public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period)
+        {
+            List<FormDTO> formList = new List<FormDTO>();
+
+            if (contractId > 0 && period != default)
+            {
+                var subContr = _database.Contracts.Find(x => x.SubContractId == contractId && x.IsSubContract == true);
+                var agrContr = _database.Contracts.Find(x => x.AgreementContractId == contractId && x.IsAgreementContract == true);
+
+                foreach (var item in agrContr)
+                {
+                    var formAgr =_mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
+                   
+                    if (formAgr is not null)
+                    {
+                        formList.Add(formAgr);
+                    }
+                    
+                }
+                foreach (var item in subContr)
+                {
+                    var formSub = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
+                    //formSub.OrganizationName = _database.ContractOrganizations.Find(x=>x.ContractId == item.Id).FirstOrDefault()?.Organization?.Name;
+                    if (formSub is not null)
+                    {
+                        formList.Add(formSub);
+                    }
+                    
+                }
+            }
+
+            return formList;
+        }
+
     }
 }

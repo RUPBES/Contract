@@ -31,7 +31,35 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.GetAll()));
         }
 
-        public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0)
+        public IActionResult GetPeriod(int id, int returnContractId = 0)
+        {
+            var period = _scopeWork.GetFullPeriodRangeScopeWork(id);
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["id"] = id;
+            if (period is null)
+            {
+                TempData["Message"] = "Заполните объем работ";
+                var urlReturn = returnContractId == 0 ? id : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            }
+            var periodChoose = new PeriodChooseViewModel
+            {
+                ContractId = id,
+                PeriodStart = period.Value.Item1,
+                PeriodEnd = period.Value.Item2,
+            };
+
+            DateTime startDate = period.Value.Item1;
+
+            while (startDate <= period?.Item2)
+            {
+                periodChoose.ListDates.Add(startDate);
+                startDate = startDate.AddMonths(1);
+            }
+            return View(periodChoose);
+        }
+
+        public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0,DateTime? chosePeriod = null)
         {
             var ob = _contractService.GetById(id);
             if (ob.IsEngineering == true)
@@ -39,7 +67,18 @@ namespace MvcLayer.Controllers
             ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
-            return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id)));
+            if (chosePeriod is not null && chosePeriod != default)
+            {
+                return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => 
+                x.ContractId == id && 
+                x.Period?.Year == chosePeriod?.Year && 
+                x.Period?.Month == chosePeriod?.Month)));
+            }
+            else
+            {
+                return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id)));
+            }
+            
         }
 
         public IActionResult ChoosePeriod(int contractId, bool isOwnForces, int returnContractId = 0)
@@ -132,6 +171,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                //TODO: такой вьюхи нет, ошибку выбрасывает!!
                 return View();
             }
         }

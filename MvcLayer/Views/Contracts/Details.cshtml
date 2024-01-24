@@ -122,7 +122,7 @@
                                     @if (isEngineering)
                                     {
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isEngineering="true">Oбъем услуг</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-id="@Model?.Id" asp-route-isEngineering="true">Акт оказанных услуг</a>
+                                        <a class="dropdown-item" asp-action="GetPeriod" asp-controller="Forms" asp-route-id="@Model?.Id" asp-route-isEngineering="true">Акт оказанных услуг</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id" asp-route-isEngineering="true">Авансы</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id" asp-route-isEngineering="true">Акт ввода</a>
@@ -133,7 +133,7 @@
                                     @if (!isEngineering)
                                     {
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Oбъем работ</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-id="@Model?.Id">Форма С-3а</a>
+                                        <a class="dropdown-item" asp-action="GetPeriod" asp-controller="Forms" asp-route-id="@Model?.Id">Форма С-3а</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Авансы</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@Model?.Id">Стоимость материалов</a>
@@ -436,11 +436,8 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="icon scope_work" title="Объем работ">
-
                                 <a id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)"></a>
-
                             </div>
                             <div class="icon edit" title="Редактировать">
                                 <a asp-action="EditSubObj" asp-route-id="@contractBranch.Id" asp-route-returnContractId="@Model.Id"></a>
@@ -448,7 +445,6 @@
                             <div class="icon delete" title="Удалить">
                                 <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
                             </div>
-
                         </td>
                         <td colspan="3" class="text-center text-uppercase">Подобъект:</td>
                         <td>
