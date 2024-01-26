@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Helpers;
 using Microsoft.AspNetCore.Http;
+using BusinessLayer.ServicesCOM;
 
 namespace BusinessLayer.IoC
 {
@@ -55,6 +56,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IVContractService, VContractService>();
 
             services.AddTransient<IStreamFileUploadService, StreamFileUploadLocalService>();
+            services.AddTransient<IParsService, ParsService>();
         }
     }
 }
