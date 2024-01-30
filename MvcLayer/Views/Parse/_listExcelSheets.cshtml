@@ -1,0 +1,51 @@
+﻿@using OfficeOpenXml;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
+@model IEnumerable<ExcelWorksheet>
+@{
+    var list = Form.GetFreeForms((int)TempData["id"]);
+}
+<form id="target" asp-action="ReadC3_A" asp-controller="Forms" asp-route-path="@TempData["path"]">
+    <div>
+        <label class="control-label">Лист</label>
+        <select name="page" id="ex">
+            @foreach (var item in Model)
+            {
+                @if (item.Name.ToLower() == "справка")
+                {
+                    <option value="@item.Index" selected>
+                        <span>
+                            @item.Name
+                        </span>
+                    </option>
+                }
+                else
+                {
+                    <option value="@item.Index">
+                        <span>
+                            @item.Name
+                        </span>
+                    </option>
+                }
+            }
+        </select>
+    </div>
+    <div>
+        <label class="control-label mt-5">Период</label>
+        <select id="periodId" name="ChoosePeriod" class="form-control select">
+            <option disabled selected>Выберите период</option>
+            @foreach (var item in list)
+            {
+                <option value="@item">@item.ToString("MMMM-yyyy")</option>
+            }
+        </select>
+    </div>
+    @* <button class="mt-5 k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" type="submit">Извлечь данные</button> *@
+</form>
+
+    
+    <script type="text/javascript">
+        $("#periodId").on("change", function () {
+            $("#target").trigger("submit");
+        });
+    </script>
+

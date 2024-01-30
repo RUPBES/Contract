@@ -1,7 +1,7 @@
-﻿<form asp-action="AddFile" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+﻿<form id="files" method="post" enctype="multipart/form-data">
     <div id="example" style="min-width:400px; max-width: 800px;">
         <div class="demo-section">
-            <input name="files" id="files" type="file" aria-label="files" multiple="multiple" />
+            <input name="files" type="file" aria-label="files" multiple="multiple" />
             <p style="padding-top: 1em; text-align: right">
                 <button type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md">Загрузить</button>
             </p>
@@ -9,54 +9,22 @@
     </div>
     <div id="result">123</div>
 </form>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>    
+    $("form#files").submit(function () {       
+        let formData = new FormData(files);        
+        $.ajax({
+            url: '@Url.Action("AddFile", "Parse")',
+            type: 'POST',
+            data: formData,
+            dataType: "html",
+            success: function (data) {
+                $("#result").html(data)
+            },
+            contentType: false,
+            processData: false
+        });
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        // <script>
-        //     $(document).ready(function () {
-        //         $("#files").kendoUpload({
-        //             multiple: true,
-        //             template: kendo.template($('#fileTemplate').html())
-        //         });
-
-        //         $("#files").closest(".k-upload").find("span").text("Выберите файл..");
-        //     });
-
-        //     function addExtensionClass(extension) {
-        //         switch (extension) {
-        //             case '.jpg':
-        //             case '.img':
-        //             case '.png':
-        //             case '.gif':
-        //                 return "img-file";
-        //             case '.doc':
-        //             case '.docx':
-        //                 return "doc-file";
-        //             case '.xls':
-        //             case '.xlsx':
-        //                 return "xls-file";
-        //             case '.pdf':
-        //                 return "pdf-file";
-        //             case '.zip':
-        //             case '.rar':
-        //                 return "zip-file";
-        //             default:
-        //                 return "default-file";
-        //         }
-        //     }
-        // </script>
-        // <script id="fileTemplate" type="text/x-kendo-template">
-
-        //     <div class='file-wrapper'>
-        //         <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
-        //         <h4 class='file-heading file-name-heading'>Название: #=name#</h4>
-        //         <h4 class='file-heading file-size-heading'>Размер: #=size# bytes</h4>
-        //         <strong class="k-upload-status">
-        //             <button type='button' class='k-upload-action'></button>
-        //             <button type='button' class='k-upload-action'></button>
-        //         </strong>
-        //     </div>
-        // </script>
-    }
-}
+        return false;
+    });
+</script>

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -19,11 +20,12 @@ namespace MvcLayer.Controllers
         private readonly IMapper _mapper;
         private readonly IPrepaymentFactService _prepFact;
         private readonly IPrepaymentService _prep;
+        private readonly IParsService _pars;
 
         public FormsController(IFormService formService, IMapper mapper, 
                                 IFileService fileService, IScopeWorkService scopeWork, 
                                 IContractService contractService, IPrepaymentFactService prepFact,
-                                IPrepaymentService prep)
+                                IPrepaymentService prep, IParsService pars)
         {
             _formService = formService;
             _mapper = mapper;
@@ -32,6 +34,7 @@ namespace MvcLayer.Controllers
             _contractService = contractService;
             _prepFact = prepFact;
             _prep = prep;
+            _pars = pars;
         }
 
         public ActionResult Index()
@@ -251,6 +254,62 @@ namespace MvcLayer.Controllers
             {
                 return PartialView("_Message", "Произошла ошибка.");
             }
+        }
+
+        [Authorize(Policy = "ContrAdminPolicy")]
+        public ActionResult CreateFormByFile(int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+
+        public ActionResult ReadC3_A(string path, int page, DateTime ChoosePeriod)
+        {
+            var form = _pars.Pars_C3A(path, page);
+            FileInfo fileInf = new FileInfo(path);
+            if (fileInf.Exists)
+            {
+                fileInf.Delete();
+            }
+
+            var viewForm = new FormViewModel
+            {
+                SmrCost = form.SmrCost,
+                PnrCost = form.PnrCost,
+                EquipmentCost = form.EquipmentCost,
+                OtherExpensesCost = form.OtherExpensesCost,
+                AdditionalCost = form.AdditionalCost,
+                MaterialCost = form.MaterialCost,
+                GenServiceCost = form.GenServiceCost,
+                OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
+                OffsetTargetPrepayment = form.OffsetTargetPrepayment,
+                Period = ChoosePeriod,
+                ContractId = (int)TempData["contractId"]
+            };
+            ViewData["contractId"] = TempData["contractId"];
+            ViewData["returnContractId"] = TempData["returnContractId"];            
+
+            var contract = _contractService.GetById((int)ViewData["contractId"]);
+            if (contract.IsEngineering == true)
+                ViewData["IsEngin"] = true;
+
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            {
+                ViewData["NoPrep"] = "true";
+            }
+            else
+            {
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+            }
+            return View("AddForm", viewForm);
         }
     }
 }
