@@ -69,6 +69,10 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int id, bool isEngineering, int returnContractId = 0,DateTime? chosePeriod = null)
         {
+            if (id < 1)
+            {
+                return RedirectToAction("Index", "Contracts");
+            }
             var ob = _contractService.GetById(id);
             if (ob.IsEngineering == true)
                 ViewData["IsEngin"] = true;
@@ -122,20 +126,20 @@ namespace MvcLayer.Controllers
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             var contract = _contractService.GetById(contractId);
-            if (contract.IsEngineering == true)
+            if (contract?.IsEngineering == true)
                 ViewData["IsEngin"] = true;
 
-            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            if (contract?.PaymentСonditionsAvans != null && contract?.PaymentСonditionsAvans?.Contains("Без авансов") == true)
             {
                 ViewData["NoPrep"] = "true";
             }
             else
             {
-                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                if (contract?.PaymentСonditionsAvans != null && contract?.PaymentСonditionsAvans?.Contains("текущего аванса") == true)
                 {
                     ViewData["Current"] = "true";
                 }                
-                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                if (contract?.PaymentСonditionsAvans != null && contract?.PaymentСonditionsAvans?.Contains("целевого аванса") == true)
                 {
                     ViewData["Target"] = "true";
                 }
@@ -163,12 +167,27 @@ namespace MvcLayer.Controllers
                 int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);                
                 _formService.AddFile(formId, fileId);
 
-                var prepayment = new PrepaymentFactDTO();
-                prepayment.CurrentValue = formViewModel.OffsetCurrentPrepayment;
-                prepayment.TargetValue = formViewModel.OffsetTargetPrepayment;
-                prepayment.Period = formViewModel.Period;
-                prepayment.PrepaymentId = _prepFact.GetLastPrepayment((int)formViewModel.ContractId).Id;
-                _prepFact.Create(_mapper.Map<PrepaymentFactDTO>(prepayment));
+                if (formViewModel.OffsetCurrentPrepayment > 0 || formViewModel.OffsetTargetPrepayment > 0)
+                {
+                    var prepaymentFact = new PrepaymentFactDTO();
+                    prepaymentFact.CurrentValue = formViewModel.OffsetCurrentPrepayment;
+                    prepaymentFact.TargetValue = formViewModel.OffsetTargetPrepayment;
+                    prepaymentFact.Period = formViewModel.Period;
+                    var prepayment = _prepFact.GetLastPrepayment((int)formViewModel.ContractId);
+                    if (prepayment is null)
+                    {
+                        var prepmnt = new PrepaymentDTO();
+                        prepmnt.ContractId = formViewModel.ContractId;
+                        prepmnt.PrepaymentFacts.Add(prepaymentFact);
+                        _prep.Create(prepmnt);
+                    }
+                    else
+                    {
+                        prepaymentFact.PrepaymentId = _prepFact.GetLastPrepayment((int)formViewModel.ContractId).Id;
+                        _prepFact.Create(_mapper.Map<PrepaymentFactDTO>(prepaymentFact));
+                    }
+                }
+                
                 return RedirectToAction(nameof(GetByContractId), new { id = formViewModel.ContractId, returnContractId = returnContractId });
             }
             catch

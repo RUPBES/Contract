@@ -220,7 +220,6 @@ namespace BusinessLayer.Services
             }
             return _mapper.Map<IEnumerable<DateTime>>(answer);
         }
-        }
 
         public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period)
         {

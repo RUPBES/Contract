@@ -1,6 +1,5 @@
 ﻿using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using File = DatabaseLayer.Models.File;
 
 namespace DatabaseLayer.Data;

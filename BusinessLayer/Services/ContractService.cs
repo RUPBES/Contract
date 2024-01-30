@@ -121,7 +121,6 @@ namespace BusinessLayer.Services
                     try
                     {
                         var scopes = _database.ScopeWorks.Find(x => x.ContractId == id);
-
                         foreach (var item in scopes)
                         {
                             foreach (var item1 in item.SWCosts)
@@ -372,7 +371,7 @@ namespace BusinessLayer.Services
                            message: $"not create file of contract, object is null",
                            nameSpace: typeof(ContractService).Name,
                            methodName: MethodBase.GetCurrentMethod().Name,
-                           userName: user); 
+                           userName: user);
             }
         }
 
@@ -450,12 +449,15 @@ namespace BusinessLayer.Services
                 {
                     raschet = raschet.Replace("Расчет за выполненные работы производится в течение ", "");
                     raschet = raschet.Replace("Расчет за выполненные работы производится не позднее ", "");
-                    var daysStr =raschet.Split(' ')[0];
-                    return Convert.ToInt32(daysStr);
+                    var daysStr = raschet.Split(' ')[0];
+                    int answer;
+                    var isParse = int.TryParse(daysStr, out answer);
+                    if (isParse)
+                    {
+                        return answer;
+                    }                   
                 }
             }
-            
-
             return null;
         }
 
@@ -487,16 +489,16 @@ namespace BusinessLayer.Services
 
             if (scopeId is not null && scopeId > 0)
             {
-                    return true;
+                return true;
             }
             return false;
         }
 
         public bool IsThereSWCosts(int? scopeId)
-        {           
+        {
             if (scopeId is not null && scopeId > 0)
             {
-                if (_database.SWCosts.Find(x=>x.ScopeWorkId == scopeId)?.Count() > 0)
+                if (_database.SWCosts.Find(x => x.ScopeWorkId == scopeId)?.Count() > 0)
                 {
                     return true;
                 }
@@ -509,8 +511,8 @@ namespace BusinessLayer.Services
             var amendmentId = _database.Amendments.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
 
             if (amendmentId is not null && amendmentId > 0)
-            {               
-                    return true;
+            {
+                return true;
             }
             return false;
         }

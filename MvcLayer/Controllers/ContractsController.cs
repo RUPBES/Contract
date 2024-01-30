@@ -144,7 +144,7 @@ namespace MvcLayer.Controllers
                     oldContract.IsMultiple = true;
                     _contractService.Update(oldContract);
                 }
-                
+
                 viewModel.IsOneOfMultiple = true;
                 viewModel.Author = organizationName;
                 viewModel.Owner = organizationName;
@@ -244,8 +244,8 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ContractViewModel contract, string? message = null)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";           
-            
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+
             if (contract != null && (contract.IsSubContract == true || contract.IsAgreementContract == true))
             {
                 var ob = contract.SubContractId != null && contract.SubContractId > 0 ? contract.SubContractId : contract.AgreementContractId;
@@ -426,19 +426,19 @@ namespace MvcLayer.Controllers
 
             return View(viewContract);
         }
-        
+
         [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> EditSubObj(int? id, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
-           
+
             var contract = _contractService.GetById((int)id);
             if (contract == null)
             {
                 return NotFound();
             }
-            
-            var viewContract = _mapper.Map<ContractViewModel>(contract);           
+
+            var viewContract = _mapper.Map<ContractViewModel>(contract);
 
             return View(viewContract);
         }
@@ -446,7 +446,7 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
-        {           
+        {
             try
             {
                 _contractService.Update(_mapper.Map<ContractDTO>(contract));
@@ -585,24 +585,22 @@ namespace MvcLayer.Controllers
 
                     if (contract.IsOneOfMultiple)
                     {
-                        
-                    
-                    var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId );
-                    if (subObj == null || subObj.Count() == 0)
-                    {
-                        try
+                        var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
+                        if (subObj == null || subObj.Count() == 0)
                         {
-                            var contractEdit = _contractService.GetById((int)contract.MultipleContractId);
-                            _contractService.DeleteScopeWorks((int)contract.MultipleContractId);
-                            contractEdit.IsMultiple = false;
-                            _contractService.Update(contractEdit);
+                            try
+                            {
+                                var contractEdit = _contractService.GetById((int)contract.MultipleContractId);
+                                _contractService.DeleteScopeWorks((int)contract.MultipleContractId);
+                                contractEdit.IsMultiple = false;
+                                _contractService.Update(contractEdit);
+                            }
+                            catch (Exception)
+                            {
+                                return BadRequest();
+                            }
                         }
-                        catch (Exception)
-                        {
-                            return BadRequest();
-                        }
-
-                    }}
+                    }
                 }
                 else
                 {
@@ -790,10 +788,10 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-       
+
         public IActionResult UpdateStatus(int contractId, string status, int returnContractId = 0)
         {
-            ViewData["returnContractId"] = returnContractId == 0? contractId:returnContractId;
+            ViewData["returnContractId"] = returnContractId == 0 ? contractId : returnContractId;
             ViewData["status"] = status;
 
             return View();
@@ -807,7 +805,7 @@ namespace MvcLayer.Controllers
             {
                 var contract = _contractService.GetById(contractId);
 
-               
+
                 if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
                 {
                     contract.IsClosed = true;
@@ -825,7 +823,7 @@ namespace MvcLayer.Controllers
             if (contractId != 0)
             {
                 return RedirectToAction("Details", new { id = contractId });
-            }            
+            }
             else
             {
                 return RedirectToAction("Index");
