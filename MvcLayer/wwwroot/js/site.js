@@ -37,11 +37,16 @@ window.onclick = function (event) {
 }
 //Разбиение строки по разрядам числа
 function digits_float(target) {    
-    val = $(target).val().replace(/[^0-9,]/g, '');
+    val = $(target).val().replace(/[^0-9,][-]/g, '');        
+    val = val.replace(/\s/g, "");
+    val = val.replace(/(?!^)-/g, '');    
     if (val.indexOf(",") != '-1') {
-        val = val.substring(0, val.indexOf(",") + 3);
-    }
-    val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        first = val.substring(0, val.indexOf(",")+1);        
+        second = val.substring(val.indexOf(",")+1, val.indexOf(",") + 3);        
+        second = second.replace(/[^0-9]/g, '');        
+        val = first + second;        
+    }    
+    val = val.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');    
     $(target).val(val);    
 }
 

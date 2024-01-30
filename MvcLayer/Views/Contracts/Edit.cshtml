@@ -3,6 +3,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @{
     ViewData["Title"] = "Редактирование договора";
@@ -87,7 +88,38 @@
                     </div>
                     @foreach (var contrOrg in Model.ContractOrganizations)
                     {
-                        if (contrOrg.IsGenContractor == true)
+                        if (Model.IsSubContract == true || Model.IsAgreementContract == true)
+                        {
+                            <div class="col-6">
+                                @if (Model.IsSubContract == true)
+                                {
+                                    <label>Субподрядчик</label>
+                                }
+                                @if (Model.IsAgreementContract == true)
+                                {
+                                    <label>Филиал</label>
+                                }
+                                <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
+                                    @if (contrOrg.OrganizationId != 0)
+                                    {
+                                        var item = Organization.GetById((int)contrOrg?.OrganizationId);
+                                        <option disabled selected value="@item?.Id">@item?.Name</option>
+                                    }
+                                    @if (contrOrg.OrganizationId == 0)
+                                    {
+                                        <option selected>Выберите организацию</option>
+                                    }
+
+                                    @foreach (var item in Organization.GetAll())
+                                    {
+                                        <option value="@item.Id">@item.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                        else
+                            if (contrOrg.IsGenContractor == true)
                         {
                             <div class="col-6">
                                 <label>Генподрядчик</label>
@@ -134,7 +166,7 @@
                                 </div>
                             }
                         }
-                        else
+                        else if (contrOrg.IsClient == true)
                         {
                             <div class="col-6">
                                 <label>Заказчик</label>
@@ -286,69 +318,102 @@
                         <input asp-for="NameObject" class="form-control" />
                         <span asp-validation-for="NameObject" class="text-danger"></span>
                     </div>
-                    <fieldset class="border rounded-1 p-3">
-                        <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                        @foreach (var item in Enum.GetValues<FundingSourceEnum>())
-                        {
-                            var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
-                            var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
+                    <div class="row">
 
-                            <div>
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text" style="display: block;">
-                                            @if (valueArray is not null)
-                                            {
-                                                <input type="checkbox" name="FundingFS" value="@value" checked>
-                                            }
-                                            @if (valueArray is null)
-                                            {
-                                                <input type="checkbox" name="FundingFS" value="@value">
-                                            }
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control" value="@value" disabled>
-                                </div>
-                            </div>
-                        }
-                    </fieldset>
-                    <fieldset class="border rounded-1 p-3">
-                        <legend class="float-none w-auto px-3">Условия авансирования</legend>
-                        @{
-                            int numberCheckbox = 0;
-                        }
-                        @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
-                        {
-                            var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
-                            var valueArray = Model?.PaymentСonditionsAvans;
-                            if (valueArray == null) { valueArray = ""; }
-                            string idCh = "check" + @numberCheckbox;
-                            <div>
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text" style="display: block;">
-                                            @if (valueArray.Contains(value))
-                                            {
-                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
-                                            }
-                                            else
-                                            {
-                                                <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
-                                            }
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control" value="@value" disabled>
+                        <fieldset class="border rounded-1 p-3 col">
+                            <legend class="float-none w-auto px-3">Источник финансирования</legend>
+                            @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                            {
+                                var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
+                                var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
 
+                                <div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text" style="display: block;">
+                                                @if (valueArray is not null)
+                                                {
+                                                    <input type="checkbox" name="FundingFS" value="@value" checked>
+                                                }
+                                                @if (valueArray is null)
+                                                {
+                                                    <input type="checkbox" name="FundingFS" value="@value">
+                                                }
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control" value="@value" disabled>
+                                    </div>
                                 </div>
-                            </div>
-                            numberCheckbox++;
-                        }
-                    </fieldset>
-                    <div class="form-group">
-                        <label asp-for="PaymentСonditionsRaschet" class="control-label"></label>
-                        <input type="text" name="PaymentСonditionsRaschet" value="@Model.PaymentСonditionsRaschet" class="form-control" />
-                        <span asp-validation-for="PaymentСonditionsRaschet" class="text-danger"></span>
+                            }
+                        </fieldset>
+                        <fieldset class="border rounded-1 p-3 col">
+                            <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                            @{
+                                int numberCheckbox = 0;
+                            }
+                            @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                            {
+                                var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                var valueArray = Model?.PaymentСonditionsAvans;
+                                if (valueArray == null) { valueArray = ""; }
+                                string idCh = "check" + @numberCheckbox;
+                                <div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text" style="display: block;">
+                                                @if (valueArray.Contains(value))
+                                                {
+                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                                }
+                                                else
+                                                {
+                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                                }
+                                            </div>
+                                        </div>
+                                        <input type="text" class="form-control" value="@value" disabled>
+
+                                    </div>
+                                </div>
+                                numberCheckbox++;
+                            }
+                        </fieldset>
                     </div>
+                    <fieldset class="border rounded-1 p-3">
+                        <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
+                        @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
+                        {
+                            var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
+                            var sub = name.Split(" ");
+                            var subName = $"{sub[0]} {sub[1]}";
+                            bool? isValueValid = Model?.PaymentСonditionsRaschet?.Contains(subName, StringComparison.OrdinalIgnoreCase);
+                            bool isDayValid = isValueValid == true ? true : false;
+                            var number = Contract.GetDayOfRaschet(Model.Id);
+
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text" style="display: block;">
+                                        @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid  == true)
+                                        {
+                                            <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name"  checked>
+                                        }
+                                        @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
+                                        {
+                                            <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name">
+                                        }
+
+                                    </div>
+                                </div>
+                                @if (number.HasValue == true && isValueValid == true)
+                                {
+                                    <div class="col-1"><input id="dayInput" type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@number" min="1"></div>
+                                }
+                                <div class="col-9">
+                                    <input type="text" class="form-control" value="@name" disabled>
+                                </div>
+                            </div>
+                        }
+                    </fieldset>
                     <div class="form-group mt-3">
                         <input type="submit" value="Редактировать" class="btn btn-primary" />
                     </div>
@@ -436,9 +501,7 @@
                     //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                     $("#dayInput").parent().remove();
                 }
-
-                $(this).parent().parent().last().after(`<div class='col-1'>
-                                                                <input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+                $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
             });
         </script>
     }
