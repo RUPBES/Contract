@@ -257,15 +257,16 @@ namespace MvcLayer.Controllers
         {
             try
             {
+                
                 foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Form3C))
                 {
                     _fileService.Delete(item.Id);
                 }
                 var form =_formService.GetById(id);
-                var prepId = _prepFact.GetLastPrepayment((int)form.ContractId).Id;
-                var prepFact = _prepFact.Find(x => x.PrepaymentId == prepId && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)form.Period)).FirstOrDefault();
+                //var prepId = _prepFact.GetLastPrepayment((int)form.ContractId).Id;
+                //var prepFact = _prepFact.Find(x => x.PrepaymentId == prepId && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)form.Period)).FirstOrDefault();
                 _formService.Delete(id);
-                if (prepFact != null) _prepFact.Delete(prepFact.Id);
+                //if (prepFact != null) _prepFact.Delete(prepFact.Id);
                 ViewData["reload"] = "Yes";
                 return PartialView("_Message","Запись успешно удалена.");
             }

@@ -55,6 +55,10 @@
         color: mediumblue;
     }
 
+    #tab-c3a {
+        overflow-wrap: break-word;
+    }
+
     #tab-c3a button { 
         color: mediumblue;
     }
@@ -64,7 +68,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" >
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (backId != null && backId > 0)
@@ -121,7 +125,10 @@
                                         Зачет текущего аванса
                                     </th>
                                     <th class="col-tog-av">
-                                        Зачет материалов и других
+                                        Материалы
+                                    </th>
+                                    <th class="col-tog-av">
+                                        Другие
                                     </th>
                                     <th class="col-tog-av">
                                         Генуслуги
@@ -224,11 +231,11 @@
                                         <td class=" col-tog-av">
                                             @item.OffsetCurrentPrepayment?.ToString("N2")
                                         </td>
-                                        <td class=" col-tog-av">
-                                            @{
-                                                otherPayment = (item.MaterialCost ?? 0) + (item.OtherExpensesCost ?? 0);
-                                            }
-                                            @otherPayment.ToString("N2")
+                                        <td class=" col-tog-av">                                           
+                                            @item.MaterialCost?.ToString("N2")
+                                        </td>
+                                        <td class=" col-tog-av">                                           
+                                            @item.OtherExpensesCost?.ToString("N2")
                                         </td>
                                         <td class=" col-tog-av">
                                             @item.GenServiceCost?.ToString("N2")
@@ -364,11 +371,12 @@
                                             <td class=" col-tog-av">
                                                 @sub?.OffsetCurrentPrepayment?.ToString("N2")
                                             </td>
+                                            <td class=" col-tog-av">                                               
+                                                @sub?.MaterialCost?.ToString("N2")
+                                            </td>
                                             <td class=" col-tog-av">
-                                                @{
-                                                    otherPayment = (sub?.MaterialCost ?? 0) + (sub?.OtherExpensesCost ?? 0);
-                                                }
-                                                @otherPayment.ToString("N2")
+                                               
+                                                @sub?.OtherExpensesCost?.ToString("N2")
                                             </td>
                                             <td class=" col-tog-av">
                                                 @sub?.GenServiceCost?.ToString("N2")
@@ -432,10 +440,12 @@
                                             @offsetCPrepSum.ToString("N2")
                                         </td>
                                         <td class=" col-tog-av">
-                                            @{
-                                                otherSubSum = mtrlSum + otherSum;
-                                            }
-                                            @otherSubSum.ToString("N2")
+                                           
+                                            @mtrlSum.ToString("N2")
+                                        </td>
+                                        <td class=" col-tog-av">
+                                           
+                                            @otherSum.ToString("N2")
                                         </td>
                                         <td class=" col-tog-av">
                                             @genSerSum.ToString("N2")
@@ -443,10 +453,10 @@
                                         <td class="">
                                             <div @* style="width:100px !important;" *@>
                                                 @{
-                                                    var totalSubCostToBePaid = smrSum + pnrSum + addSum +
-                                                    eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum;
+                                                    var totalSubCostToBePaid1 = smrSum + pnrSum + addSum +
+                                                    eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum + genSerSum;
                                                 }
-                                                @totalSubCostToBePaid.ToString("N2")
+                                                @totalSubCostToBePaid1.ToString("N2")
                                             </div>
                                         </td>
                                         <td></td>
@@ -510,9 +520,15 @@
                                         </td>
                                         <td class=" col-tog-av">
                                             @{
-                                                var otherOwnSubSum = (item?.MaterialCost ?? 0 + item?.OtherExpensesCost ?? 0) - (mtrlSum + otherSum);
+                                                var otherOwnSubSum1 = (item?.MaterialCost ?? 0) - mtrlSum;
                                             }
-                                            @otherOwnSubSum.ToString("N2")
+                                            @otherOwnSubSum1.ToString("N2")
+                                        </td>
+                                        <td class=" col-tog-av">
+                                            @{
+                                                var otherOwnSubSum2 = (item?.OtherExpensesCost ?? 0) - otherSum;
+                                            }
+                                            @otherOwnSubSum2.ToString("N2")
                                         </td>
                                         <td class=" col-tog-av">
                                             @{
@@ -542,9 +558,8 @@
     </div>
 </div>
 @section Scripts {
-
     <script type="text/javascript">
-        function d() {
+        function toggeleColumnTable() {
             let numberColspan;
             const devideTable = document.querySelector(".devide-table");
             const btn1 = document.querySelector(".totalW");
@@ -563,11 +578,11 @@
                 else if (numberColspan === '12') {
                     numberColspan = 9;
                 }
-                else if (numberColspan === '16') {
-                    numberColspan = 13;
+                else if (numberColspan === '17') {
+                    numberColspan = 14;
                 }
-                else if (numberColspan === '13') {
-                    numberColspan = 16;
+                else if (numberColspan === '14') {
+                    numberColspan = 17;
                 }
                 devideTable.setAttribute('colspan', numberColspan);
             });
@@ -579,21 +594,21 @@
                 numberColspan = devideTable.getAttribute('colspan');
                 
                 if (numberColspan === '9') {
-                    numberColspan = 13;
+                    numberColspan = 14;
                 }
                 else if (numberColspan === '12') {
-                    numberColspan = 16;
+                    numberColspan = 17;
                 }
-                else if (numberColspan === '13') {
+                else if (numberColspan === '14') {
                     numberColspan = 9;
                 }
-                else if (numberColspan === '16') {
+                else if (numberColspan === '17') {
                     numberColspan = 12;
                 }
                 devideTable.setAttribute('colspan', numberColspan);
             });
         }
-        d();
+        toggeleColumnTable();
 
         function confirmI(val) {
             let mes = "Вы точно хотите удалить данную запись?";
