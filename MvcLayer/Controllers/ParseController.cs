@@ -31,7 +31,12 @@ namespace MvcLayer.Controllers
 
         public ActionResult GetListCount(IFormCollection collection)
         {
-            var path = _env.WebRootPath + "\\Temp\\" + collection.Files.FirstOrDefault().FileName;
+            var path = _env.WebRootPath + "\\Temp\\";
+            bool exists = System.IO.Directory.Exists(path);
+
+            if (!exists)
+                System.IO.Directory.CreateDirectory(path);
+            path = path + collection.Files.FirstOrDefault().FileName;
             try
             {                
                 using (var fileStream = new FileStream(path, FileMode.Create))
