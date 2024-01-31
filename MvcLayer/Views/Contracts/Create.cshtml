@@ -487,12 +487,9 @@
                 if (!dateBeg || dateEnd < dateBeg) { $("#DateBeginWork").val(dateEnd); }
                 if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
                 if (!dateTerm || dateEnd > dateTerm) { $("#ContractTerm").val(dateEnd); }
-
-                let dateBegMax = beginWork.getAttribute('max');
+               
                 let dateEnterMin = enteringTm.getAttribute('min');
                 let dateTermMin = contractTm.getAttribute('min');
-
-                if (!dateBegMax || dateEnd < dateBegMax) { beginWork.setAttribute('max', dateEnd); }
             });
             enteringTm.addEventListener('change', (e) => {
                 let date = dateContract.value;
@@ -519,12 +516,6 @@
                 if (!dateBeg || dateTerm < dateBeg) { $("#DateBeginWork").val(dateTerm); }
                 if (!dateEnd || dateTerm < dateEnd) { $("#DateEndWork").val(dateTerm); }
                 if (!dateEnter || dateTerm < dateEnter) { $("#EnteringTerm").val(dateTerm); }
-
-                let dateBegMax = beginWork.getAttribute('max');
-                if (!dateBegMax || dateTerm < dateBegMax) { beginWork.setAttribute('max', dateTerm); }
-                dateContract.setAttribute('max', dateTerm);
-                endWork.setAttribute('max', dateTerm);
-                enteringTm.setAttribute('max', dateTerm);
             });
             function addDays(date, countDays) {
                 let dateOfyear = date.getFullYear() + ""; // год;
