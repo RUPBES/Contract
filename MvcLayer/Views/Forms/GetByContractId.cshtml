@@ -269,7 +269,7 @@
                                                 <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                             </span>
                                             <span class="icon delete" title="Удалить форму">
-                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                                <a onclick="confirmI(@item.Id)"></a>
                                             </span>
                                         </td>
                                     }
@@ -308,7 +308,7 @@
                                                 <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                             </span>
                                             <span class="icon delete" title="Удалить форму">
-                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                                <a onclick="confirmI(@item.Id)"></a>
                                             </span>
                                         </td>
                                     }
@@ -611,8 +611,7 @@
         toggeleColumnTable();
 
         function confirmI(val) {
-            let mes = "Вы точно хотите удалить данную запись?";
-            console.log({ message: mes });
+            let mes = "Вы точно хотите удалить данную запись?";            
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("Message", "Home")',
