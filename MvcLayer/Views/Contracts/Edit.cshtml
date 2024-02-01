@@ -56,33 +56,30 @@
                         </div>
                         <div class="col-4">
                             <label asp-for="Date" class="control-label"></label>
-                            <input type="datetime" asp-for="Date" class="form-control datepickersNull" />
+                            <input type="date" asp-for="Date" class="form-control" id="DateDC" />
                             <span asp-validation-for="Date" class="text-danger"></span>
                         </div>
                         @if (ViewBag.IsEngin == null)
                         {
                             <div class="col-4">
                                 <label asp-for="EnteringTerm" class="control-label"></label>
-                                <input type="datetime" asp-for="EnteringTerm" class="form-control datepickersNull" />
+                                <input type="date" asp-for="EnteringTerm" class="form-control" id="EnteringTerm" />
                                 <span asp-validation-for="EnteringTerm" class="text-danger"></span>
                             </div>
-                        }
-                        @if (ViewBag.IsEngin == null)
-                        {
                             <div class="col-4">
                                 <label asp-for="ContractTerm" class="control-label"></label>
-                                <input type="datetime" asp-for="ContractTerm" class="form-control datepickersNull" />
+                                <input type="date" asp-for="ContractTerm" class="form-control" id="ContractTerm" />
                                 <span asp-validation-for="ContractTerm" class="text-danger"></span>
                             </div>
                         }
                         <div class="col-4">
                             <label asp-for="DateBeginWork" class="control-label"></label>
-                            <input type="datetime" asp-for="DateBeginWork" class="form-control datepickersNull" />
+                            <input type="date" asp-for="DateBeginWork" class="form-control" id="DateBeginWork" />
                             <span asp-validation-for="DateBeginWork" class="text-danger"></span>
                         </div>
                         <div class="col-4">
                             <label asp-for="DateEndWork" class="control-label"></label>
-                            <input type="datetime" asp-for="DateEndWork" class="form-control datepickersNull" />
+                            <input type="date" asp-for="DateEndWork" class="form-control" id="DateEndWork" />
                             <span asp-validation-for="DateEndWork" class="text-danger"></span>
                         </div>
                     </div>
@@ -393,9 +390,9 @@
                             <div class="input-group mb-2">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text" style="display: block;">
-                                        @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid  == true)
+                                        @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
                                         {
-                                            <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name"  checked>
+                                            <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
                                         }
                                         @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
                                         {
@@ -423,86 +420,217 @@
     </div>
 </div>
 
-@section Scripts
-    {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script>
-            $(function ($) {
-                var allCost = $(".cost")
-                for (let el of allCost) {
-                    digits_float(el)
-                }
-                $('body').on('input', '.cost', function (e) {
-                    digits_float(this);
-                });
+@section Scripts{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    <script>
+        $(function ($) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
             });
+        });
 
-            //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+        ////    проверка вводимых дат ////
+        //dateContract(a) - Дата контракта
+        //beginWork(b) - Дата начало работы
+        //endWork(c) - Дата окончания работы
+        //enteringTm(d) - Дата ввода объекта
+        //contractTm(e) - Дата дествия договора
+        //a <= b < c <= d < e
+        //////********/
+        let dateContract = document.querySelector("#DateDC");
+        let beginWork = document.querySelector("#DateBeginWork");
+        let endWork = document.querySelector("#DateEndWork");
+        let enteringTm = document.querySelector("#EnteringTerm");
+        let contractTm = document.querySelector("#ContractTerm");
 
-            let ch1 = document.querySelector("#check0");
-            let ch2 = document.querySelector("#check1");
-            let ch3 = document.querySelector("#check2");
+        dateContract.addEventListener('change', (e) => {
+            let date = dateContract.value;
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+            let dateTerm = contractTm.value;
 
-            let mod = @Html.Raw(Json.Serialize(Model.PaymentСonditionsAvans))
+            let datePlusOne = addDays(new Date(date), 1);
+            let datePlusTwo = addDays(new Date(date), 2);
 
-                window.onload = function () {
-                    if (mod != null) {
-                        if (ch1.checked) {
-                            ch2.setAttribute("disabled", true);
-                            ch3.setAttribute("disabled", true);
-                        }
-                        else {
-                            ch1.setAttribute("disabled", true)
-                        }
+            if (!dateBeg || date > dateBeg) { $("#DateBeginWork").val(date); }
+            if (!dateEnd || date > dateEnd) { $("#DateEndWork").val(datePlusOne); }
+            if (!dateEnter || date > dateEnter) { $("#EnteringTerm").val(datePlusOne); }
+            if (!dateTerm || date > dateTerm) { $("#ContractTerm").val(datePlusTwo); }
+
+            beginWork.setAttribute('min', date);
+            endWork.setAttribute('min', datePlusOne);
+            enteringTm.setAttribute('min', datePlusOne);
+            contractTm.setAttribute('min', datePlusTwo);
+        });
+        beginWork.addEventListener('change', (e) => {
+            let date = dateContract.value;
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+            let dateTerm = contractTm.value;
+
+            let datePlusOne = addDays(new Date(dateBeg), 1);
+            let datePlusTwo = addDays(new Date(dateBeg), 2);
+            if (!date || dateBeg < date) { $("#DateDC").val(dateBeg); }
+            if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
+            if (!dateEnter || dateBeg >= dateEnter) { $("#EnteringTerm").val(datePlusOne); }
+            if (!dateTerm || dateBeg >= dateTerm) { $("#ContractTerm").val(datePlusTwo); }
+
+            endWork.setAttribute('min', datePlusOne);
+            enteringTm.setAttribute('min', datePlusOne);
+            contractTm.setAttribute('min', datePlusTwo);
+        });
+        endWork.addEventListener('change', (e) => {
+            let date = dateContract.value;
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+            let dateTerm = contractTm.value;
+
+            let dateDecOne = addDays(new Date(dateEnd), -1);
+            let datePlusOne = addDays(new Date(dateEnd), 1);
+            if (!date || dateEnd <= date) { $("#DateDC").val(dateDecOne); }
+            if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+            if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
+            if (!dateTerm || dateEnd >= dateTerm) { $("#ContractTerm").val(datePlusOne); }
+
+            enteringTm.setAttribute('min', dateEnd);
+            contractTm.setAttribute('min', datePlusOne);
+        });
+        enteringTm.addEventListener('change', (e) => {
+            let date = dateContract.value;
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+            let dateTerm = contractTm.value;
+
+            let dateDecOne = addDays(new Date(dateEnter), -1);
+            let datePlusOne = addDays(new Date(dateEnter), 1);
+            if (!date || dateEnter <= date) { $("#DateDC").val(dateDecOne); }
+            if (!dateBeg || dateEnter <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+            if (!dateEnd || dateEnter < dateEnd) { $("#DateEndWork").val(dateEnter); }
+            if (!dateTerm || dateEnter >= dateTerm) { $("#ContractTerm").val(datePlusOne); }
+
+            contractTm.setAttribute('min', datePlusOne);
+        });
+        contractTm.addEventListener('change', (e) => {
+            let date = dateContract.value;
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+            let dateTerm = contractTm.value;
+
+            let dateDecOne = addDays(new Date(dateTerm), -1);
+            let dateDecTwo = addDays(new Date(dateTerm), -2);
+            if (!date || dateTerm <= date) { $("#DateDC").val(dateDecTwo); }
+            if (!dateBeg || dateTerm <= dateBeg) { $("#DateBeginWork").val(dateDecTwo); }
+            if (!dateEnd || dateTerm <= dateEnd) { $("#DateEndWork").val(dateDecOne); }
+            if (!dateEnter || dateTerm <= dateEnter) { $("#EnteringTerm").val(dateDecOne); }
+        });
+        function addDays(date, countDays) {
+            let newDateOfyear = date.getFullYear() + "";; // год
+
+            let day = date.getDate() + countDays; // текущий день
+            let month = date.getMonth() + 1; //текущий месяц
+
+            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
+            if (day > maxDateToday) {
+                month = month + 1;
+                if (month > 12) {
+                    newDateOfyear = newDateOfyear + 1;
+                    month = 1;
+                    day = (day - 31);
+                }
+                else {
+                    day = (day - maxDateToday);
+                }
+            }
+            if (day < 1) {
+                month = month - 1;
+                if (month < 1) {
+                    newDateOfyear = newDateOfyear - 1;
+                    month = 12;
+                    day = 31 + day;
+                }
+                else {
+                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
+                    day = maxDate + day;
+                }
+            }
+
+            let dayStr = day < 10 ? "0" + String(day) : String(day);
+            let monthStr = month < 10 ? "0" + String(month) : String(month);
+            return newDateOfyear + '-' + monthStr + '-' + dayStr;
+        }
+        //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+
+        let ch1 = document.querySelector("#check0");
+        let ch2 = document.querySelector("#check1");
+        let ch3 = document.querySelector("#check2");
+
+        let mod = @Html.Raw(Json.Serialize(Model.PaymentСonditionsAvans))
+
+            window.onload = function () {
+                if (mod != null) {
+                    if (ch1.checked) {
+                        ch2.setAttribute("disabled", true);
+                        ch3.setAttribute("disabled", true);
+                    }
+                    else {
+                        ch1.setAttribute("disabled", true)
                     }
                 }
-            ch1.addEventListener('change', (e) => {
-                if (e.currentTarget.checked) {
-                    ch2.setAttribute("disabled", true);
-                    ch3.setAttribute("disabled", true);
-                }
+            }
+        ch1.addEventListener('change', (e) => {
+            if (e.currentTarget.checked) {
+                ch2.setAttribute("disabled", true);
+                ch3.setAttribute("disabled", true);
+            }
 
-                if (!e.currentTarget.checked) {
-                    ch2.removeAttribute("disabled");
-                    ch3.removeAttribute("disabled");
-                }
-            });
+            if (!e.currentTarget.checked) {
+                ch2.removeAttribute("disabled");
+                ch3.removeAttribute("disabled");
+            }
+        });
 
-            ch2.addEventListener('change', (e) => {
-                if (e.currentTarget.checked) {
-                    ch1.setAttribute("disabled", true);
-                }
+        ch2.addEventListener('change', (e) => {
+            if (e.currentTarget.checked) {
+                ch1.setAttribute("disabled", true);
+            }
 
-                if (!e.currentTarget.checked && !ch3.checked) {
-                    ch1.removeAttribute("disabled");
-                }
-            });
+            if (!e.currentTarget.checked && !ch3.checked) {
+                ch1.removeAttribute("disabled");
+            }
+        });
 
-            ch3.addEventListener('change', (e) => {
-                if (e.currentTarget.checked) {
-                    ch1.setAttribute("disabled", true);
-                }
+        ch3.addEventListener('change', (e) => {
+            if (e.currentTarget.checked) {
+                ch1.setAttribute("disabled", true);
+            }
 
-                if (!e.currentTarget.checked && !ch2.checked) {
-                    ch1.removeAttribute("disabled");
-                }
-            });
+            if (!e.currentTarget.checked && !ch2.checked) {
+                ch1.removeAttribute("disabled");
+            }
+        });
 
-            let styleName = "border:solid red 4px;";
+        let styleName = "border:solid red 4px;";
 
-            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
-            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
+        checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
+        checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
 
-            // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
-            $(".checkChoise").click(function (e) {
-                let elemNumber = $("#dayInput");
-                if (elemNumber !== null || elemNumber !== undefined) {
-                    //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
-                    $("#dayInput").parent().remove();
-                }
-                $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
-            });
-        </script>
-    }
+        // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
+        $(".checkChoise").click(function (e) {
+            let elemNumber = $("#dayInput");
+            if (elemNumber !== null || elemNumber !== undefined) {
+                //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
+                $("#dayInput").parent().remove();
+            }
+            $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+        });
+    </script>
 }

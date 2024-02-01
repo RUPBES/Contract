@@ -48,7 +48,7 @@ namespace MvcLayer.Controllers
 
                 if (answer.Count() < 1) { throw new Exception(); }
                 TempData["path"] = path;
-                return PartialView("_listExcelSheets", answer);
+                return PartialView("_listExcelSheetsWithPeriod", answer);
             }
             catch {
                 FileInfo fileInf = new FileInfo(path);
@@ -60,27 +60,36 @@ namespace MvcLayer.Controllers
             }
         }
 
-            //public ActionResult ReadC3_A(string path, int page)
-            //{
-            //    var form = _pars.Pars_C3A(path, page);
-            //    FileInfo fileInf = new FileInfo(path);
-            //    if (fileInf.Exists)
-            //    {
-            //        fileInf.Delete();
-            //    }
-            //    var viewForm = new FormViewModel
-            //    {
-            //        SmrCost = form.SmrCost,
-            //        PnrCost = form.PnrCost,
-            //        EquipmentCost = form.EquipmentCost,
-            //        OtherExpensesCost = form.OtherExpensesCost,
-            //        AdditionalCost = form.AdditionalCost,
-            //        MaterialCost = form.MaterialCost,
-            //        GenServiceCost = form.GenServiceCost,
-            //        OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
-            //        OffsetTargetPrepayment = form.OffsetTargetPrepayment
-            //    };
-            //    return View("AddForm",viewForm);
-            //}
-        }
+        public ActionResult GetListCountWithoutPeriod(IFormCollection collection)
+        {
+            var path = _env.WebRootPath + "\\Temp\\";
+            bool exists = System.IO.Directory.Exists(path);
+
+            if (!exists)
+                System.IO.Directory.CreateDirectory(path);
+            path = path + collection.Files.FirstOrDefault().FileName;
+            try
+            {
+                using (var fileStream = new FileStream(path, FileMode.Create))
+                {
+                    collection.Files.FirstOrDefault().CopyTo(fileStream);
+                }
+                var answer = _pars.getListOfBook(path);
+
+
+                if (answer.Count() < 1) { throw new Exception(); }
+                TempData["path"] = path;
+                return PartialView("_listExcelSheets", answer);
+            }
+            catch
+            {
+                FileInfo fileInf = new FileInfo(path);
+                if (fileInf.Exists)
+                {
+                    fileInf.Delete();
+                }
+                return PartialView("_error", "Загрузите файл excel (кроме Excel книга 97-2033)");
+            }
+        }        
+    }
 }

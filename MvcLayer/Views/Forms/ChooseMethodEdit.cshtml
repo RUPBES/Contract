@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Чтение данных из файла форма С-3А";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+    TempData["contractId"] = (int)ViewData["contractId"];
+    TempData["returnContractId"] = (int)ViewData["returnContractId"];   
+    TempData.Keep();
+}
+
+@section Table {
+    <div class="dm-overlay">
+        <div class="dm-table">
+            <div class="dm-cell">
+                <div class="dm-modal" style="width:500px;">
+                    <div class="top-modal-block">
+                        <label class="my-modal-title">@ViewData["Title"]</label>
+                        @if (backId != null && backId > 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                        }
+                        @if (backId == null || backId == 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        }
+                    </div>
+                    <hr class="modal-line">
+                    <div id="buttons">
+                        <a class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" asp-action="Edit" asp-route-id="@TempData["Id"]" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">Ручное редактирование</a>
+                        <button class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" onclick="ShowInputFile()">Взять данные из файла</button>
+                    </div>
+                    <div id="hiddenFile" style="display:none">
+                        <form id="files" method="post" enctype="multipart/form-data">
+                            <div id="example" style="min-width:400px; max-width: 800px;">
+                                <div class="demo-section">
+                                    <input name="files" type="file" aria-label="files" multiple="multiple" />
+                                    <p style="padding-top: 1em; text-align: right">
+                                        <button type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md">Загрузить</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="result">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        $("form#files").submit(function () {
+            let formData = new FormData(files);
+            $.ajax({
+                url: '@Url.Action("GetListCountWithoutPeriod", "Parse")',
+                type: 'POST',
+                data: formData,
+                dataType: "html",
+                success: function (data) {
+                    $("#result").html(data)
+                },
+                contentType: false,
+                processData: false
+            });
+
+            return false;
+        });
+
+        function ShowInputFile() {
+            $("#buttons").hide();
+            $("#hiddenFile").show();
+        }
+    </script>
+}

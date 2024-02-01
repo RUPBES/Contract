@@ -400,7 +400,7 @@
         if (TempData["Message"] != null)
         {
             var mes = (string)TempData["Message"];
-                <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+                                    <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
         }
     }
 </div>
@@ -428,7 +428,14 @@
         }
         $(document).ready(function () {
 
-            ////    проверка вводимых дат /////////********/
+            ////    проверка вводимых дат ////
+            //dateContract(a) - Дата контракта
+            //beginWork(b) - Дата начало работы
+            //endWork(c) - Дата окончания работы
+            //enteringTm(d) - Дата ввода объекта
+            //contractTm(e) - Дата дествия договора
+            //a <= b < c <= d < e
+            //////********/
             let dateContract = document.querySelector("#DateDC");
             let beginWork = document.querySelector("#DateBeginWork");
             let endWork = document.querySelector("#DateEndWork");
@@ -442,17 +449,18 @@
                 let dateEnter = enteringTm.value;
                 let dateTerm = contractTm.value;
 
-                let val = addDays(dateBeg, 1);
-                let val1 = addDays(dateBeg, 2);
+                let datePlusOne = addDays(new Date(date), 1);
+                let datePlusTwo = addDays(new Date(date), 2);
+
                 if (!dateBeg || date > dateBeg) { $("#DateBeginWork").val(date); }
-                if (!dateEnd || date > dateEnd) { $("#DateEndWork").val(val); }
-                if (!dateEnter || date > dateEnter) { $("#EnteringTerm").val(val); }
-                if (!dateTerm || date > dateTerm) { $("#ContractTerm").val(val1); }
+                if (!dateEnd || date > dateEnd) { $("#DateEndWork").val(datePlusOne); }
+                if (!dateEnter || date > dateEnter) { $("#EnteringTerm").val(datePlusOne); }
+                if (!dateTerm || date > dateTerm) { $("#ContractTerm").val(datePlusTwo); }
 
                 beginWork.setAttribute('min', date);
-                endWork.setAttribute('min', val);
-                enteringTm.setAttribute('min', val);
-                contractTm.setAttribute('min', val1);
+                endWork.setAttribute('min', datePlusOne);
+                enteringTm.setAttribute('min', datePlusOne);
+                contractTm.setAttribute('min', datePlusTwo);
             });
             beginWork.addEventListener('change', (e) => {
                 let date = dateContract.value;
@@ -461,16 +469,16 @@
                 let dateEnter = enteringTm.value;
                 let dateTerm = contractTm.value;
 
-                let val = addDays(dateBeg, 1);
-                let val1 = addDays(dateBeg, 2);
+                let datePlusOne = addDays(new Date(dateBeg), 1);
+                let datePlusTwo = addDays(new Date(dateBeg), 2);
                 if (!date || dateBeg < date) { $("#DateDC").val(dateBeg); }
-                if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(val); }
-                if (!dateEnter || dateBeg >= dateEnter) { $("#EnteringTerm").val(val); }
-                if (!dateTerm || dateBeg >= dateTerm) { $("#ContractTerm").val(val1); }
+                if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
+                if (!dateEnter || dateBeg >= dateEnter) { $("#EnteringTerm").val(datePlusOne); }
+                if (!dateTerm || dateBeg >= dateTerm) { $("#ContractTerm").val(datePlusTwo); }
 
-                enteringTm.setAttribute('min', val);
-                contractTm.setAttribute('min', val);
-                endWork.setAttribute('min', val1);
+                endWork.setAttribute('min', datePlusOne);
+                enteringTm.setAttribute('min', datePlusOne);
+                contractTm.setAttribute('min', datePlusTwo);
             });
             endWork.addEventListener('change', (e) => {
                 let date = dateContract.value;
@@ -479,15 +487,15 @@
                 let dateEnter = enteringTm.value;
                 let dateTerm = contractTm.value;
 
-                let val = addDays(dateEnd, -1);
-                let val1 = addDays(dateEnd, 1);
-                if (!date || dateEnd <= date) { $("#DateDC").val(val); }
-                if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(val); }
+                let dateDecOne = addDays(new Date(dateEnd), -1);
+                let datePlusOne = addDays(new Date(dateEnd), 1);
+                if (!date || dateEnd <= date) { $("#DateDC").val(dateDecOne); }
+                if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
                 if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
-                if (!dateTerm || dateEnd >= dateTerm) { $("#ContractTerm").val(val1); }
+                if (!dateTerm || dateEnd >= dateTerm) { $("#ContractTerm").val(datePlusOne); }
 
                 enteringTm.setAttribute('min', dateEnd);
-                contractTm.setAttribute('min', val1);
+                contractTm.setAttribute('min', datePlusOne);
             });
             enteringTm.addEventListener('change', (e) => {
                 let date = dateContract.value;
@@ -496,14 +504,14 @@
                 let dateEnter = enteringTm.value;
                 let dateTerm = contractTm.value;
 
-                let val = addDays(dateEnd, -1);
-                let val1 = addDays(dateEnd, 1);
-                if (!date || date <= dateTerm) { $("#DateDC").val(val); }
-                if (!dateBeg || dateBeg <= dateTerm) { $("#DateBeginWork").val(val); }
-                if (!dateEnd || dateEnd < dateTerm) { $("#DateEndWork").val(dateEnter); }
-                if (!dateTerm || dateEnter >= dateTerm) { $("#ContractTerm").val(val1); }
+                let dateDecOne = addDays(new Date(dateEnter), -1);
+                let datePlusOne = addDays(new Date(dateEnter), 1);
+                if (!date || dateEnter <= date) { $("#DateDC").val(dateDecOne); }
+                if (!dateBeg || dateEnter <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+                if (!dateEnd || dateEnter < dateEnd) { $("#DateEndWork").val(dateEnter); }
+                if (!dateTerm || dateEnter >= dateTerm) { $("#ContractTerm").val(datePlusOne); }
 
-                contractTm.setAttribute('min', val1);
+                contractTm.setAttribute('min', datePlusOne);
             });
             contractTm.addEventListener('change', (e) => {
                 let date = dateContract.value;
@@ -512,29 +520,48 @@
                 let dateEnter = enteringTm.value;
                 let dateTerm = contractTm.value;
 
-                let val = addDays(dateEnd, -1);
-                let val1 = addDays(dateEnd, -2);
-                if (!date || dateTerm <= date) { $("#DateDC").val(val1); }
-                if (!dateBeg || dateTerm <= dateBeg) { $("#DateBeginWork").val(val1); }
-                if (!dateEnd || dateTerm <= dateEnd) { $("#DateEndWork").val(val); }
-                if (!dateEnter || dateTerm <= dateEnter) { $("#EnteringTerm").val(val); }
+                let dateDecOne = addDays(new Date(dateTerm), -1);
+                let dateDecTwo = addDays(new Date(dateTerm), -2);
+                if (!date || dateTerm <= date) { $("#DateDC").val(dateDecTwo); }
+                if (!dateBeg || dateTerm <= dateBeg) { $("#DateBeginWork").val(dateDecTwo); }
+                if (!dateEnd || dateTerm <= dateEnd) { $("#DateEndWork").val(dateDecOne); }
+                if (!dateEnter || dateTerm <= dateEnter) { $("#EnteringTerm").val(dateDecOne); }
             });
             function addDays(date, countDays) {
-                let dateOfyear = date.getFullYear() + ""; // год;                
-                let newDateOfyear = dateOfyear/* .slice(2) */; // год последние две цифры;
+                let newDateOfyear = date.getFullYear() + "";; // год
 
-                let day = date.getDate(); // текущий день
-                day = day < 10 ? "0" + day + countDays : day + countDays;
-                let month = date.getMonth() + 1; //текущий месяцж
-                month = month < 10 ? "0" + month : month;
+                let day = date.getDate() + countDays; // текущий день
+                let month = date.getMonth() + 1; //текущий месяц
 
-                return +newDateOfyear + '-' + +month + '-' + +day;
-            }
-            //////////////////////////////////////////
-            //////////////////////////////////////////
+                let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
+                if (day > maxDateToday) {
+                    month = month + 1;
+                    if (month > 12) {
+                        newDateOfyear = newDateOfyear + 1;
+                        month = 1;
+                        day = (day - 31);
+                    }
+                    else {
+                        day = (day - maxDateToday);
+                    }
+                }
+                if (day < 1) {
+                    month = month - 1;
+                    if (month < 1) {
+                        newDateOfyear = newDateOfyear - 1;
+                        month = 12;
+                        day = 31 + day;
+                    }
+                    else {
+                        let maxDate = new Date(newDateOfyear, month, 0).getDate();
+                        day = maxDate + day;
+                    }
+                }
 
-
-
+                let dayStr = day < 10 ? "0" + String(day) : String(day);
+                let monthStr = month < 10 ? "0" + String(month) : String(month);
+                return newDateOfyear + '-' + monthStr + '-' + dayStr;
+            }          
             ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
 
             let ch1 = document.querySelector("#check0");
