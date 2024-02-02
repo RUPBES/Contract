@@ -58,6 +58,34 @@
     #chooseAmendment {
         margin: 0 auto 30px auto;
     }
+
+
+    .dm-modal {
+        display: flex;
+        flex-direction: column;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .d-inline-block {
+        text-align: center;
+        font-weight: 600;
+        color:black;
+    }
+
+    .label-block {
+        height: 70px;
+        text-align: center;
+        font-weight: 600;
+        color: black;
+    }
+
+    .btn-block {
+        display: flex;
+        justify-content: space-between;
+    }
+
+
 </style>
 
 <div class="dm-overlay">
@@ -132,7 +160,7 @@
                 }
                 else
                 {
-                    <div class="d-inline-block">
+                    <div class="d-inline-block alert alert-success">
                         @if (contract.IsEngineering == true)
                         {
                             <label class="control-label">Объем услуг заполнен</label>
@@ -142,13 +170,13 @@
                             <label class="control-label">Объем работ заполнен</label>
                         }
                     </div>
-                    <div>
+                    <div class="label-block alert alert-danger">
                         <label class="control-label">Отсутствуют незаполненные дополнительные соглашения</label>
                     </div>
-                    <div>
+                    <div class="btn-block">
                         <a class="btn btn-success" asp-controller="Amendments" asp-action="Create" asp-route-contractId="@contract.Id"
-                           asp-route-returnContractId="@ViewBag.returnContractId">Добавить доп. соглашение</a>
-                        <a class="btn btn-success" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">+ доп. соглашение</a>
+                        <a class="btn btn-warning" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
                            asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
                     </div>
                 }

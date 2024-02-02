@@ -6,7 +6,19 @@
     else backId = (int)ViewData["returnContractId"];    
 }
 
+
 @section Table {
+    <style>
+        #buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .demo-section {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
     <div class="dm-overlay">
         <div class="dm-table">
             <div class="dm-cell">
@@ -31,9 +43,13 @@
                         <form id="files" method="post" enctype="multipart/form-data">
                             <div id="example" style="min-width:400px; max-width: 800px;">
                                 <div class="demo-section">
-                                    <input name="files" type="file" aria-label="files" multiple="multiple" />
+  
+                                    <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
+                                    <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
+                                        <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
+                                    </div>
                                     <p style="padding-top: 1em; text-align: right">
-                                        <button type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md">Загрузить</button>
+                                        <button type="submit" class="btn btn-success">Загрузить</button>
                                     </p>
                                 </div>
                             </div>
@@ -72,13 +88,35 @@
             });
 
             let formData = new FormData(files);
+            event.preventDefault()
+            function setProgress(e) {
+                if (e.lengthComputable) {
+                    $("#container_progress").removeAttr('style');
+
+                    var complete = e.loaded / e.total;
+                    var completeFloor = Math.floor(complete * 100)
+                    $("#pBar").attr('style', `width:${completeFloor}%`);
+                    $("#pBar").text(`${completeFloor}%`);
+                    console.log(e.loaded)
+                    console.log(completeFloor)
+                }
+            }
             $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", setProgress, false);
+                    xhr.addEventListener("progress", setProgress, false);
+                    return xhr;
+                },
+                url: '@Url.Action("GetListCountWithoutPeriod", "Parse")',
                 url: '@Url.Action("GetListCount", "Parse")',
                 type: 'POST',
                 data: formData,
                 dataType: "html",
                 success: function (data) {
                     $("#result").html(data)
+                    $("#container_progress").attr('style', `display:none`);
+
                 },
                 contentType: false,
                 processData: false

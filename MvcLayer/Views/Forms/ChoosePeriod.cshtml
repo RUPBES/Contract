@@ -10,7 +10,11 @@
     Model.ListDates = list;
 }
 
-
+<style>
+.btn_load {
+        margin-left: 70%;
+}
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
@@ -36,7 +40,7 @@
                             @if (Model?.ListDates.Count > 0)
                             {
                                 <label class="control-label">Период</label>
-                                <select id="periodId" name="ChoosePeriod" class="form-control select">
+                                <select id="periodId" name="ChoosePeriod" class="form-select">
                                     <option disabled selected>Выберите период</option>
                                     @foreach (var item in Model?.ListDates)
                                     {
@@ -50,7 +54,7 @@
                             }
                         </div>
                     </form>
-                    <a class="btn btn-success mt-5" asp-action="CreateFormByFile" asp-route-returnContractId="@ViewData["returnContractId"]" asp-route-contractId="@ViewData["contractId"]">Считать с файла</a>
+                    <a  class="btn btn-success mt-5 btn_load" btn_load" asp-action="CreateFormByFile" asp-route-returnContractId="@ViewData["returnContractId"]" asp-route-contractId="@ViewData["contractId"]">Считать с файла</a>
                 }
                 else
                 {
