@@ -16,12 +16,18 @@ namespace MvcLayer.Controllers
         private readonly IFileService _file;
         private readonly IWebHostEnvironment _env;
         private readonly IParsService _pars;
+        private static int _contractId;
+        private static int _returnContractId;
+        private static int _formId;
 
         public ParseController(IFileService file, IWebHostEnvironment env, IParsService pars)
         {
             _file = file;
             _env = env;
             _pars = pars;
+            _contractId = 0;
+            _returnContractId = 0;
+            _formId = 0;
         }
 
         public IActionResult Index()
@@ -29,7 +35,26 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        public ActionResult GetListCount(IFormCollection collection)
+        public IActionResult SetContractId(string contractId)
+        {
+            Int32.TryParse(contractId, out _contractId);
+            return Ok(_contractId);
+        }
+
+
+        public IActionResult SetReturnContractId(string returnContractId)
+        {
+            Int32.TryParse(returnContractId, out _returnContractId);
+            return Ok(_returnContractId);
+        }
+
+        public IActionResult SetFormId(string formId)
+        {
+            Int32.TryParse(formId, out _formId);
+            return Ok(_formId);
+        }
+
+        public ActionResult GetListCountWithPeriod(IFormCollection collection)
         {
             var path = _env.WebRootPath + "\\Temp\\";
             bool exists = System.IO.Directory.Exists(path);
@@ -47,7 +72,9 @@ namespace MvcLayer.Controllers
                 
 
                 if (answer.Count() < 1) { throw new Exception(); }
-                TempData["path"] = path;
+                ViewData["path"] = path;
+                ViewData["contractId"] = _contractId;
+                ViewData["returnContractId"] = _returnContractId;
                 return PartialView("_listExcelSheetsWithPeriod", answer);
             }
             catch {
@@ -60,7 +87,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult GetListCountWithoutPeriod(IFormCollection collection)
+        public ActionResult GetListCount(IFormCollection collection)
         {
             var path = _env.WebRootPath + "\\Temp\\";
             bool exists = System.IO.Directory.Exists(path);
@@ -78,7 +105,10 @@ namespace MvcLayer.Controllers
 
 
                 if (answer.Count() < 1) { throw new Exception(); }
-                TempData["path"] = path;
+                ViewData["path"] = path;
+                ViewData["formId"] = _formId;
+                ViewData["contractId"] = _contractId;
+                ViewData["returnContractId"] = _returnContractId;
                 return PartialView("_listExcelSheets", answer);
             }
             catch

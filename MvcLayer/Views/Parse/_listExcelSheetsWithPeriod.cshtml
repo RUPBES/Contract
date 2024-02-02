@@ -2,9 +2,9 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @model IEnumerable<ExcelWorksheet>
 @{
-    var list = Form.GetFreeForms((int)TempData["id"]);
+    var list = Form.GetFreeForms(ViewBag.contractId);
 }
-<form id="target" asp-action="ReadC3_A" asp-controller="Forms" asp-route-path="@TempData["path"]">
+<form id="target" asp-action="ReadC3_A" asp-controller="Forms" asp-route-path="@ViewBag.path">
     <div>
         <label class="control-label">Лист</label>
         <select name="page" id="ex">
@@ -38,8 +38,7 @@
                 <option value="@item">@item.ToString("MMMM-yyyy")</option>
             }
         </select>
-    </div>
-    @* <button class="mt-5 k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" type="submit">Извлечь данные</button> *@
+    </div>    
 </form>
 
     

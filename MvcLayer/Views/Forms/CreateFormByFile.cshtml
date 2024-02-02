@@ -4,9 +4,6 @@
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
-    TempData["contractId"] = (int)ViewData["contractId"];
-    TempData["returnContractId"] = (int)ViewData["returnContractId"];
-    TempData["id"] = (int)ViewData["contractId"];
 }
 
 @section Table {
@@ -43,15 +40,31 @@
             </div>
         </div>
     </div>
+    <input id="contractId" value="@ViewBag.contractId" hidden/>
+    <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>
         $("form#files").submit(function () {
+            let contractId = $("#contractId").val();
+            let returnContractId = $("#returnContractId").val();         
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetContractId", "Parse")',
+                data: { contractId: contractId }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetReturnContractId", "Parse")',
+                data: { returnContractId: returnContractId }
+            });
+
             let formData = new FormData(files);
             $.ajax({
-                url: '@Url.Action("GetListCount", "Parse")',
                 type: 'POST',
-                data: formData,
+                url: '@Url.Action("GetListCountWithPeriod", "Parse")',
                 dataType: "html",
+                data: formData,
                 success: function (data) {
                     $("#result").html(data)
                 },

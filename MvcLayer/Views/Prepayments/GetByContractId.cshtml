@@ -22,7 +22,7 @@
     if (contractId is not null)
     {
         var number = Contract.GetById((int)contractId).Number;
-        ViewData["Title"] = $"Ведомость по СМР и авансам № {number}";
+        ViewData["Title"] = $"Ведомость использования авансов № {number}";
     }
     Model.listSmrWithAvans = Model.listSmrWithAvans.OrderBy(x => x.Period).ToList();
     var countSmr = 2 + Model.listSmrWithAvans.Count * 2;
@@ -31,7 +31,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="width:850px;">
+            <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (backId != null && backId > 0)
@@ -44,7 +44,7 @@
                     }
                 </div>
                 <hr class="modal-line">
-                <div style="max-height:700px; max-width:800px; overflow:scroll">
+                <div style="max-height:auto; max-width:auto; overflow:scroll">
                     <table class="table table-bordered table-main table-main-short">
                         <thead>
                             <tr>

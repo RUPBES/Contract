@@ -384,7 +384,7 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "ContrEditPolicy")]
         public ActionResult ChooseMethodEdit(int id, int contractId, int returnContractId = 0)
         {
-            TempData["Id"] = id;
+            ViewData["formId"] = id;
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View();

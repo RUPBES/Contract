@@ -3,10 +3,7 @@
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
-    TempData["contractId"] = (int)ViewData["contractId"];
-    TempData["returnContractId"] = (int)ViewData["returnContractId"];   
-    TempData.Keep();
+    else backId = (int)ViewData["returnContractId"];    
 }
 
 @section Table {
@@ -27,7 +24,7 @@
                     </div>
                     <hr class="modal-line">
                     <div id="buttons">
-                        <a class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" asp-action="Edit" asp-route-id="@TempData["Id"]" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">Ручное редактирование</a>
+                        <a class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" asp-action="Edit" asp-route-id="@ViewBag.formId" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">Ручное редактирование</a>
                         <button class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" onclick="ShowInputFile()">Взять данные из файла</button>
                     </div>
                     <div id="hiddenFile" style="display:none">
@@ -48,9 +45,32 @@
             </div>
         </div>
     </div>
+    <input id="contractId" value="@ViewBag.contractId" hidden />
+    <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
+    <input id="formId" value="@ViewBag.formId" hidden />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>
         $("form#files").submit(function () {
+            let contractId = $("#contractId").val();
+            let returnContractId = $("#returnContractId").val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetContractId", "Parse")',
+                data: { contractId: contractId }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetReturnContractId", "Parse")',
+                data: { returnContractId: returnContractId }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetFormId", "Parse")',
+                data: { formId: formId }
+            });
+
             let formData = new FormData(files);
             $.ajax({
                 url: '@Url.Action("GetListCountWithoutPeriod", "Parse")',
