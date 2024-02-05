@@ -235,5 +235,19 @@ namespace BusinessLayer.Services
             listSort = listSort.OrderBy(x => x.Item2).ToList(); 
             return _mapper.Map<Prepayment>(listSort.Select(x => x.Item1).LastOrDefault());
         }
+
+        public Prepayment GetPrepaymentByAmendment(int amendmentId)
+        {
+            if (amendmentId != 0)
+            {
+                var prepaymentId = _database.PrepaymentAmendments.Find(a => a.AmendmentId == amendmentId).Select(a => a.PrepaymentId).FirstOrDefault();
+                if (prepaymentId != null && prepaymentId != 0)
+                {
+                    return _database.Prepayments.GetById(prepaymentId);
+                }
+                return null;
+            }
+            else return null;
+        }
     }
 }

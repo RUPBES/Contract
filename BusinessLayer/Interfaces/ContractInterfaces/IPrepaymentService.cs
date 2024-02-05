@@ -12,5 +12,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId);
         IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId);
         Prepayment GetLastPrepayment(int contractId);
+        Prepayment GetPrepaymentByAmendment(int amendmentId);
     }
 }

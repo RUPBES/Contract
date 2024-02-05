@@ -12,6 +12,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         AmendmentDTO? GetAmendmentByScopeId(int scopeId);
         IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId);
         ScopeWork GetLastScope(int contractId);
+        ScopeWork GetScopeByAmendment(int amendmentId);
 
         void AddSWCostForMainContract(int? scopeId, List<SWCostDTO> costs);
         void CreateSWCostForMainContract(int? scopeId, List<SWCostDTO> costs, bool isOwnForces);

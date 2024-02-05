@@ -506,5 +506,19 @@ namespace BusinessLayer.Services
             listSort = listSort.OrderBy(x => x.Item2).ToList();
             return _mapper.Map<ScopeWork>(listSort.Select(x => x.Item1).LastOrDefault());
         }
+
+        public ScopeWork GetScopeByAmendment(int amendmentId)
+        {
+            if (amendmentId != 0)
+            {
+                var scopeId = _database.ScopeWorkAmendments.Find(a => a.AmendmentId == amendmentId).Select(a => a.ScopeWorkId).FirstOrDefault();
+                if (scopeId != null && scopeId != 0)
+                {
+                    return _database.ScopeWorks.GetById(scopeId);
+                }
+                return null;
+            }
+            else return null;
+        }
     }
 }
