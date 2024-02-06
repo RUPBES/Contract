@@ -98,7 +98,7 @@ namespace MvcLayer.Controllers
                 if (amend.Count > 0)
                 {
                     answer.minStartPeriod = amend.LastOrDefault().DateBeginWork;
-                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
+                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;                   
                 }
                 else
                 {
@@ -112,7 +112,7 @@ namespace MvcLayer.Controllers
                 }
                 answer.endPeriod = answer.startPeriod;
             }
-            
+
             List<int> formId;
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
