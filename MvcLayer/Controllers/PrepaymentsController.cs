@@ -58,6 +58,14 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
         {
+            var prepCheck = _prepayment.FindByContractId(contractId);
+            if (prepCheck.Count() == 0)
+            {
+                TempData["Message"] = "Не заполнены авансы!";
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+
+            }
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
 
@@ -84,14 +92,14 @@ namespace MvcLayer.Controllers
                 answer.TargetReceived = _form.Find(x => x.ContractId == contractId).Sum(x => x.OffsetTargetPrepayment);
                 answer.TargetRepaid = 0;
                 answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
-                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();                
+                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
                 var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
                 if (amend.Count > 0)
                 {
                     answer.minStartPeriod = amend.LastOrDefault().DateBeginWork;
-                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;                   
+                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
                 }
-                else 
+                else
                 {
                     var contract = _contractService.GetById(contractId);
                     answer.minStartPeriod = contract.DateBeginWork;
@@ -211,7 +219,7 @@ namespace MvcLayer.Controllers
             List<int> formId;
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
-                formId = _form.Find(x =>    
+                formId = _form.Find(x =>
                     x.ContractId == contractId &&
                     Checker.LessOrEquallyFirstDateByMonth((DateTime)viewModel.startPeriod, (DateTime)x.Period) &&
                     Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)viewModel.endPeriod)).
