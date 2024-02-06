@@ -16,18 +16,12 @@ namespace MvcLayer.Controllers
         private readonly IFileService _file;
         private readonly IWebHostEnvironment _env;
         private readonly IParsService _pars;
-        private static int _contractId;
-        private static int _returnContractId;
-        private static int _formId;
 
         public ParseController(IFileService file, IWebHostEnvironment env, IParsService pars)
         {
             _file = file;
             _env = env;
             _pars = pars;
-            _contractId = 0;
-            _returnContractId = 0;
-            _formId = 0;
         }
 
         public IActionResult Index()
@@ -36,12 +30,6 @@ namespace MvcLayer.Controllers
         }
 
         public ActionResult DownloadFile(IFormCollection collection)
-        {
-            Int32.TryParse(formId, out _formId);
-            return Ok(_formId);
-        }
-
-        public ActionResult GetListCountWithPeriod(IFormCollection collection)
         {
             var path = _env.WebRootPath + "\\Temp\\";
             if (collection.Files.Count < 1)
