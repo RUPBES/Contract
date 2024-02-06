@@ -288,7 +288,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        public ActionResult ReadC3_A(string path, int page, DateTime ChoosePeriod)
+        public ActionResult ReadC3_A(string path, int page, DateTime ChoosePeriod, int contractId, int returnContractId = 0)
         {
             var form = _pars.Pars_C3A(path, page);
             FileInfo fileInf = new FileInfo(path);
@@ -309,12 +309,12 @@ namespace MvcLayer.Controllers
                 OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
                 OffsetTargetPrepayment = form.OffsetTargetPrepayment,
                 Period = ChoosePeriod,
-                ContractId = (int)TempData["contractId"]
+                ContractId = contractId
             };
-            ViewData["contractId"] = TempData["contractId"];
-            ViewData["returnContractId"] = TempData["returnContractId"];            
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;            
 
-            var contract = _contractService.GetById((int)ViewData["contractId"]);
+            var contract = _contractService.GetById(contractId);
             if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
 
@@ -336,7 +336,7 @@ namespace MvcLayer.Controllers
             return View("AddForm", viewForm);
         }
 
-        public ActionResult EditByFile(string path, int page, int id)
+        public ActionResult EditByFile(string path, int page, int id, int contractId, int returnContractId = 0)
         {
             var currentForm = _formService.GetById(id);
             var form = _pars.Pars_C3A(path, page);
@@ -356,10 +356,10 @@ namespace MvcLayer.Controllers
             currentForm.OffsetCurrentPrepayment = form.OffsetCurrentPrepayment;
             currentForm.OffsetTargetPrepayment = form.OffsetTargetPrepayment;                                
             
-            ViewData["contractId"] = TempData["contractId"];
-            ViewData["returnContractId"] = TempData["returnContractId"];
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
 
-            var contract = _contractService.GetById((int)ViewData["contractId"]);
+            var contract = _contractService.GetById(contractId);
             if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
 

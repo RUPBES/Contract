@@ -54,31 +54,17 @@
     <script>
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
-            let returnContractId = $("#returnContractId").val();         
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("SetContractId", "Parse")',
-                data: { contractId: contractId }
-            });
-
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("SetReturnContractId", "Parse")',
-                data: { returnContractId: returnContractId }
-            });
-
-            let formData = new FormData(files);
+            let returnContractId = $("#returnContractId").val();      
+            
+            let formData = new FormData(files);            
             event.preventDefault()
             function setProgress(e) {
                 if (e.lengthComputable) {
                     $("#container_progress").removeAttr('style');
-
                     var complete = e.loaded / e.total;
                     var completeFloor = Math.floor(complete * 100)
                     $("#pBar").attr('style', `width:${completeFloor}%`);
                     $("#pBar").text(`${completeFloor}%`);
-                    console.log(e.loaded)
-                    console.log(completeFloor)
                 }
             }
             $.ajax({
@@ -88,15 +74,33 @@
                     xhr.addEventListener("progress", setProgress, false);
                     return xhr;
                 },
-                url: '@Url.Action("GetListCount", "Parse")',
                 type: 'POST',
-                url: '@Url.Action("GetListCountWithPeriod", "Parse")',
-                dataType: "html",
+                url: '@Url.Action("DownloadFile", "Parse")',
                 data: formData,
                 success: function (data) {
-                    $("#result").html(data)
+                    let path = data;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetListCountWithPeriod", "Parse")',
+                        data: { path: path, contractId: contractId, returnContractId: returnContractId},
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#result").html(data)
+                        }
+                    });
                     $("#container_progress").attr('style', `display:none`);
-
+                },
+                error: function (result) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowError", "Parse")',
+                        data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
+                        dataType: 'html',
+                        success: function (data) {                         
+                            $("#result").html(data)
+                            $("#container_progress").attr('style', `display:none`);
+                        }
+                    });                    
                 },
                 contentType: false,
                 processData: false

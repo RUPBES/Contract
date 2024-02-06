@@ -2,9 +2,10 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @model IEnumerable<ExcelWorksheet>
 @{
-    var list = Form.GetFreeForms(ViewBag.contractId);
+    var contractId = int.Parse(ViewBag.contrId);
+    var returnContractId = int.Parse(ViewBag.returnContrId);
+    var list = Form.GetFreeForms(contractId);
 }
-
 
 <style>
     .form_select{
@@ -12,8 +13,10 @@
         flex-direction: column;
     }
 </style>
-<form id="target" class="form_select" asp-action="ReadC3_A" asp-controller="Forms" asp-route-path="@TempData["path"]">
+
 <form id="target" asp-action="ReadC3_A" asp-controller="Forms" asp-route-path="@ViewBag.path">
+    <input name="contractId" value="@contractId" hidden />
+    <input name="returnContractId" value="@returnContractId" hidden />
     <div>
         <label class="control-label">Лист:</label>
         <select name="page" id="ex" class="form-select">

@@ -201,17 +201,25 @@ namespace BusinessLayer.Services
             var list = _database.Forms.Find(a => a.ContractId == contractId).ToList();
             DateTime start, end;
             var amend = _database.Amendments.Find(a => a.ContractId == contractId).OrderBy(a => a.Date).LastOrDefault();
+
             if (amend == null)
             {
-                start = (DateTime)_database.Contracts.GetById(contractId).DateBeginWork;
-                end = (DateTime)_database.Contracts.GetById(contractId).DateEndWork;
+                var contract = _database?.Contracts?.GetById(contractId);
+                if (!contract.DateBeginWork.HasValue || !contract.DateEndWork.HasValue)
+                {
+                    return new List<DateTime>();
+                }
+                start = (DateTime)contract?.DateBeginWork;
+                end = (DateTime)contract?.DateEndWork;
             }
             else
             {
-                start = (DateTime)amend.DateBeginWork;
-                end = (DateTime)amend.DateEndWork;
+                start = (DateTime)amend?.DateBeginWork;
+                end = (DateTime)amend?.DateEndWork;
             }
+
             List<DateTime> answer = new List<DateTime>();
+
             for (var i = start; Checker.LessOrEquallyFirstDateByMonth(i, end); i = i.AddMonths(1))
             {
                 var ob = list.Where(l => Checker.EquallyDateByMonth((DateTime)l.Period, i)).FirstOrDefault();

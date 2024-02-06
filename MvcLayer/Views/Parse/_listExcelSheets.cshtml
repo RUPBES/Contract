@@ -1,7 +1,12 @@
 ﻿@using OfficeOpenXml;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @model IEnumerable<ExcelWorksheet>
-
+@{
+    var path = ViewBag.path;
+    var formId = int.Parse(ViewBag.forId);
+    var contractId = int.Parse(ViewBag.contrId);
+    var returnContractId = int.Parse(ViewBag.returnContrId);
+}
 
 <style>
     .form_select {
@@ -13,9 +18,11 @@
     }
 </style>
 
-<form id="target" asp-action="EditByFile" asp-controller="Forms" asp-route-path="@TempData["path"]">
+<form id="target" asp-action="EditByFile" asp-controller="Forms" asp-route-path="@path">
     <div>
-        <input name="id" value="@TempData["Id"]" hidden/>
+        <input name="id" value="@formId" hidden />
+        <input name="contractId" value="@contractId" hidden />
+        <input name="returnContractId" value="@returnContractId" hidden />
         <label class="control-label">Лист:</label>
         <select name="page" id="ex" class="form-select">
             @foreach (var item in Model)

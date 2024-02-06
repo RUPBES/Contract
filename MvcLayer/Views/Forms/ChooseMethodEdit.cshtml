@@ -3,10 +3,8 @@
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];    
+    else backId = (int)ViewData["returnContractId"];
 }
-
-
 @section Table {
     <style>
         #buttons {
@@ -43,7 +41,7 @@
                         <form id="files" method="post" enctype="multipart/form-data">
                             <div id="example" style="min-width:400px; max-width: 800px;">
                                 <div class="demo-section">
-  
+
                                     <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
                                     <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
                                         <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
@@ -69,36 +67,17 @@
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("SetContractId", "Parse")',
-                data: { contractId: contractId }
-            });
-
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("SetReturnContractId", "Parse")',
-                data: { returnContractId: returnContractId }
-            });
-
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("SetFormId", "Parse")',
-                data: { formId: formId }
-            });
-
-            let formData = new FormData(files);
+            let formId = $("#formId").val();
+            
+            let formData = new FormData(files);            
             event.preventDefault()
             function setProgress(e) {
                 if (e.lengthComputable) {
                     $("#container_progress").removeAttr('style');
-
                     var complete = e.loaded / e.total;
                     var completeFloor = Math.floor(complete * 100)
                     $("#pBar").attr('style', `width:${completeFloor}%`);
                     $("#pBar").text(`${completeFloor}%`);
-                    console.log(e.loaded)
-                    console.log(completeFloor)
                 }
             }
             $.ajax({
@@ -107,15 +86,34 @@
                     xhr.upload.addEventListener("progress", setProgress, false);
                     xhr.addEventListener("progress", setProgress, false);
                     return xhr;
-                },                
-                url: '@Url.Action("GetListCount", "Parse")',
+                },
                 type: 'POST',
+                url: '@Url.Action("DownloadFile", "Parse")',
                 data: formData,
-                dataType: "html",
                 success: function (data) {
-                    $("#result").html(data)
+                    let path = data;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetListCount", "Parse")',
+                        data: { path: path, contractId: contractId, returnContractId: returnContractId, formId: formId },
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#result").html(data)
+                        }
+                    });
                     $("#container_progress").attr('style', `display:none`);
-
+                },
+                error: function (result) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowError", "Parse")',
+                        data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#result").html(data)
+                            $("#container_progress").attr('style', `display:none`);
+                        }
+                    });
                 },
                 contentType: false,
                 processData: false
