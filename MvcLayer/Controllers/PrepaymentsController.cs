@@ -62,7 +62,7 @@ namespace MvcLayer.Controllers
             ViewData["returnContractId"] = returnContractId;
 
             var answer = new PrepaymentStatementViewModel();
-            if (viewModel.maxEndPeriod != null)
+            if (viewModel != null && viewModel.maxEndPeriod != null)
             {
                 answer = viewModel;
                 if (answer.NameAmendment == null)
@@ -84,16 +84,26 @@ namespace MvcLayer.Controllers
                 answer.TargetReceived = _form.Find(x => x.ContractId == contractId).Sum(x => x.OffsetTargetPrepayment);
                 answer.TargetRepaid = 0;
                 answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
-                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
-                answer.endPeriod = answer.startPeriod;
+                answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();                
                 var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
                 if (amend.Count > 0)
                 {
                     answer.minStartPeriod = amend.LastOrDefault().DateBeginWork;
-                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
+                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;                   
                 }
+                else 
+                {
+                    var contract = _contractService.GetById(contractId);
+                    answer.minStartPeriod = contract.DateBeginWork;
+                    answer.maxEndPeriod = contract.DateEndWork;
+                }
+                if (answer.startPeriod == null)
+                {
+                    answer.startPeriod = answer.maxEndPeriod;
+                }
+                answer.endPeriod = answer.startPeriod;
             }
-            
+
             List<int> formId;
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
@@ -201,9 +211,11 @@ namespace MvcLayer.Controllers
             List<int> formId;
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
-                formId = _form.Find(x => x.ContractId == contractId &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)viewModel.startPeriod, (DateTime)x.Period) &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)viewModel.endPeriod)).Select(x => x.Id).ToList();
+                formId = _form.Find(x =>    
+                    x.ContractId == contractId &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)viewModel.startPeriod, (DateTime)x.Period) &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)viewModel.endPeriod)).
+                        Select(x => x.Id).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
@@ -236,7 +248,7 @@ namespace MvcLayer.Controllers
                 var scope = _scopeWork.GetScopeByAmendment(item.Id);
                 if (scope != null)
                 {
-                    var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();                    
+                    var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
                     for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
                     {
                         var ob = new ElementOfListSmrPrepByAmend();
@@ -266,7 +278,7 @@ namespace MvcLayer.Controllers
                                 ob.Current = 0;
                             }
                         }
-                        ob.Period = i;                        
+                        ob.Period = i;
                         listSmrWithAvans.Add(ob);
                     }
                     var planlist = new ListSmrPrepByAmendment();
