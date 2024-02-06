@@ -210,12 +210,10 @@ namespace BusinessLayer.Services
             if (amend == null)
             {
                 var contract = _database?.Contracts?.GetById(contractId);
-                
                 if (!contract.DateBeginWork.HasValue || !contract.DateEndWork.HasValue)
                 {
                     return new List<DateTime>();
                 }
-
                 start = (DateTime)contract?.DateBeginWork;
                 end = (DateTime)contract?.DateEndWork;
             }
