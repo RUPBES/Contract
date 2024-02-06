@@ -112,7 +112,7 @@ namespace MvcLayer.Controllers
                 }
                 answer.endPeriod = answer.startPeriod;
             }
-
+            
             List<int> formId;
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
