@@ -65,6 +65,10 @@ namespace MvcLayer.Controllers
             if (viewModel.maxEndPeriod != null)
             {
                 answer = viewModel;
+                if (answer.NameAmendment == null)
+                {
+                    answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
+                }
             }
             else
             {
@@ -89,7 +93,7 @@ namespace MvcLayer.Controllers
                     answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
                 }
             }
-
+            
             List<int> formId;
             if (answer.startPeriod != null && answer.endPeriod != null)
             {

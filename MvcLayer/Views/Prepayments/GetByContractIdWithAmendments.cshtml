@@ -61,7 +61,7 @@
                     <button class="btn btn-warning" type="submit"> выбрать период</button>
                 </form>
                 
-                <form id="Amendment" asp-action="GetByContract">
+                <form id="Amendment" asp-action="GetByContractId">
                     <input id="anotherStart" asp-for="startPeriod" type="date" hidden />
                     <input id="anotherEnd" asp-for="endPeriod" type="date" hidden />
                     <input name="contractId" value="@ViewBag.contractId" hidden />                    
@@ -355,13 +355,13 @@
         if (!valStart || valEnd < valStart) { $("#end").val(valEnd); }
     });
 
-    // function ShowAmendment() {
-    //     let dateStart = document.querySelector("#start");
-    //     let dateEnd = document.querySelector("#end");
-    //     let valStart = dateStart.value;
-    //     let valEnd = dateEnd.value;
-    //     $("#anotherStart").val(valStart);
-    //     $("#anotherEnd").val(valEnd);
-    //     $("#Amendment").submit();
-    // }
+    function ShowAmendment() {
+        let dateStart = document.querySelector("#start");
+        let dateEnd = document.querySelector("#end");
+        let valStart = dateStart.value;
+        let valEnd = dateEnd.value;
+        $("#anotherStart").val(valStart);
+        $("#anotherEnd").val(valEnd);
+        $("#Amendment").submit();
+    }
 </script>
