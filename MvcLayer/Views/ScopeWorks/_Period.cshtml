@@ -3,15 +3,31 @@
 @{
     var amendment = Amendment.GetById(Model);
 }
-<div class="row mt-3" id="date-box">
-    <div class="form-group col-6 mb-3">
-        <label for="amendCheck1">Начало периода</label>
-        <input name=PeriodStart type="datetime" value="@amendment.DateBeginWork" hidden/>
-        <input type="datetime" id="amendCheck1" value="@amendment.DateBeginWork.Value.ToString("MMMM yyyy")" readonly />
+
+<style>
+    .period_block {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .amendCheck {
+        width: 100%;
+    }
+    .label_period {
+        font-weight: 600;
+    }
+</style>
+
+
+<div class="row mt-3 period_block" id="date-box">
+    <div class="form-group col-6 mb-3 amendCheck">
+        <label for="amendCheck1" class="form-label label_period ">Начало периода:</label>
+        <input name="PeriodStart" class="form-control" type="datetime" value="@amendment.DateBeginWork" hidden />
+        <input type="datetime" class="form-control" id="amendCheck1" value="@amendment.DateBeginWork.Value.ToString("MMMM yyyy")" readonly />
     </div>
-    <div class="form-group col-6 mb-3">
-        <label for="amendCheck2">Окончание периода</label>
-        <input name=PeriodEnd type="datetime" value="@amendment.DateEndWork" hidden/>
-        <input type="datetime" id="amendCheck2" value="@amendment.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
+    <div class="form-group col-6 mb-3 amendCheck">
+        <label for="amendCheck2" class="form-label label_period ">Окончание периода:</label>
+        <input name=PeriodEnd type="datetime" class="form-control" value="@amendment.DateEndWork" hidden />
+        <input type="datetime" id="amendCheck2" class="form-control" value="@amendment.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
     </div>
 </div>

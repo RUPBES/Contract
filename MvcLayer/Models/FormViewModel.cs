@@ -51,7 +51,10 @@ namespace MvcLayer.Models
 
         [DisplayName("Собственными силами?")]
         public bool? IsOwnForces { get; set; }
-       
+
+        [DisplayName("Утвержденный вариант")]
+        public bool? IsFinal { get; set; }
+
         public int? ContractId { get; set; }
 
         public string? OrganizationName { get; set; }

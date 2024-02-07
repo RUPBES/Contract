@@ -610,7 +610,19 @@ namespace BusinessLayer.Services
 
             return scpMain;
         }
-        #endregion
 
+        public ScopeWork GetScopeByAmendment(int amendmentId)
+        {
+            if (amendmentId != 0)
+            {
+                var scopeId = _database.ScopeWorkAmendments.Find(a => a.AmendmentId == amendmentId).Select(a => a.ScopeWorkId).FirstOrDefault();
+                if (scopeId != null && scopeId != 0)
+                {
+                    return _database.ScopeWorks.GetById(scopeId);
+                }
+                return null;
+            }
+            else return null;
+        }
     }
 }

@@ -51,13 +51,45 @@
     }
 
     #target {
-        margin: 100px auto;
+        margin: 20px auto;
         width: 50%;
     }
 
     #chooseAmendment {
         margin: 0 auto 30px auto;
     }
+
+
+    .dm-modal {
+        display: flex;
+        flex-direction: column;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .d-inline-block {
+        text-align: center;
+        font-weight: 600;
+        color:black;
+    }
+
+    .label-block {
+        height: 70px;
+        text-align: center;
+        font-weight: 600;
+        color: black;
+    }
+
+    .btn-block {
+        display: flex;
+        justify-content: space-between;
+    } 
+
+    .label_period {
+        font-weight: 600;
+    }
+
+
 </style>
 
 <div class="dm-overlay">
@@ -104,7 +136,7 @@
                         </div>
                         <div id="chooseAmendment" class="row" hidden>
                             <div class="form-group">
-                                <label class="control-label">Выбрать доп.соглашение</label>
+                                <label class="control-label label_period">Выбрать доп.соглашение:</label>
                                 <select name="AmendmentId" id="AmendId" class="form-control select">
                                     <option disabled selected>Выберите</option>
 
@@ -125,14 +157,14 @@
                                 </div>
                             }
 
-                            <button id="butSubmit" class="btn btn-primary btn-sm mt-1" disabled type="submit">Выбрать</button>
+                            <button id="butSubmit" class="btn btn-primary btn-sm mt-2" disabled type="submit">Выбрать</button>
                         </div>
 
                     </form>
                 }
                 else
                 {
-                    <div class="d-inline-block">
+                    <div class="d-inline-block alert alert-success">
                         @if (contract.IsEngineering == true)
                         {
                             <label class="control-label">Объем услуг заполнен</label>
@@ -141,13 +173,15 @@
                         {
                             <label class="control-label">Объем работ заполнен</label>
                         }
+                    </div>
+                    <div class="label-block alert alert-danger">
                         <label class="control-label">Отсутствуют незаполненные дополнительные соглашения</label>
-                        <div class="">
-                            <a class="btn btn-success" asp-controller="Amendmets" asp-action="Create" asp-route-contractId="@contract.Id"
-                               asp-route-returnContractId="@ViewBag.returnContractId">Добавить доп. соглашение</a>
-                            <a class="btn btn-success" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
-                               asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
-                        </div>
+                    </div>
+                    <div class="btn-block">
+                        <a class="btn btn-success" asp-controller="Amendments" asp-action="Create" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">+ доп. соглашение</a>
+                        <a class="btn btn-warning" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
                     </div>
                 }
             }

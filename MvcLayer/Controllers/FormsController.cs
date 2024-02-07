@@ -6,6 +6,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Query;
 using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
@@ -263,10 +264,13 @@ namespace MvcLayer.Controllers
                     _fileService.Delete(item.Id);
                 }
                 var form =_formService.GetById(id);
-                //var prepId = _prepFact.GetLastPrepayment((int)form.ContractId).Id;
-                //var prepFact = _prepFact.Find(x => x.PrepaymentId == prepId && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)form.Period)).FirstOrDefault();
                 _formService.Delete(id);
-                //if (prepFact != null) _prepFact.Delete(prepFact.Id);
+                var prep = _prepFact.GetLastPrepayment((int)form.ContractId);
+                if (prep != null)
+                {
+                    var prepFact = _prepFact.Find(x => x.PrepaymentId == prep.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)form.Period)).FirstOrDefault();                    
+                    if (prepFact != null) _prepFact.Delete(prepFact.Id);
+                }
                 ViewData["reload"] = "Yes";
                 return PartialView("_Message","Запись успешно удалена.");
             }
@@ -284,7 +288,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        public ActionResult ReadC3_A(string path, int page, DateTime ChoosePeriod)
+        public ActionResult ReadC3_A(string path, int page, DateTime ChoosePeriod, int contractId, int returnContractId = 0)
         {
             var form = _pars.Pars_C3A(path, page);
             FileInfo fileInf = new FileInfo(path);
@@ -305,12 +309,12 @@ namespace MvcLayer.Controllers
                 OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
                 OffsetTargetPrepayment = form.OffsetTargetPrepayment,
                 Period = ChoosePeriod,
-                ContractId = (int)TempData["contractId"]
+                ContractId = contractId
             };
-            ViewData["contractId"] = TempData["contractId"];
-            ViewData["returnContractId"] = TempData["returnContractId"];            
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;            
 
-            var contract = _contractService.GetById((int)ViewData["contractId"]);
+            var contract = _contractService.GetById(contractId);
             if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
 
@@ -330,6 +334,60 @@ namespace MvcLayer.Controllers
                 }
             }
             return View("AddForm", viewForm);
+        }
+
+        public ActionResult EditByFile(string path, int page, int id, int contractId, int returnContractId = 0)
+        {
+            var currentForm = _formService.GetById(id);
+            var form = _pars.Pars_C3A(path, page);
+            FileInfo fileInf = new FileInfo(path);
+            if (fileInf.Exists)
+            {
+                fileInf.Delete();
+            }
+
+            currentForm.SmrCost = form.SmrCost;
+            currentForm.PnrCost = form.PnrCost;
+            currentForm.EquipmentCost = form.EquipmentCost;
+            currentForm.OtherExpensesCost = form.OtherExpensesCost;
+            currentForm.AdditionalCost = form.AdditionalCost;
+            currentForm.MaterialCost = form.MaterialCost;
+            currentForm.GenServiceCost = form.GenServiceCost;
+            currentForm.OffsetCurrentPrepayment = form.OffsetCurrentPrepayment;
+            currentForm.OffsetTargetPrepayment = form.OffsetTargetPrepayment;                                
+            
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+
+            var contract = _contractService.GetById(contractId);
+            if (contract.IsEngineering == true)
+                ViewData["IsEngin"] = true;
+
+            if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
+            {
+                ViewData["NoPrep"] = "true";
+            }
+            else
+            {
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
+                {
+                    ViewData["Current"] = "true";
+                }
+                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
+                {
+                    ViewData["Target"] = "true";
+                }
+            }
+            return View("Edit", _mapper.Map<FormViewModel>(currentForm));
+        }
+
+        [Authorize(Policy = "ContrEditPolicy")]
+        public ActionResult ChooseMethodEdit(int id, int contractId, int returnContractId = 0)
+        {
+            ViewData["formId"] = id;
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
         }
     }
 }

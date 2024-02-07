@@ -100,59 +100,86 @@
             });
             digits_float('#CDC');
         });
-
-        ////    проверка вводимых дат /////////********/               
+        //////////////////////////////////////////
+        ////    проверка вводимых дат ////
+        //dateContract(a) - Дата контракта
+        //beginWork(b) - Дата начало работы
+        //endWork(c) - Дата окончания работы
+        //enteringTm(d) - Дата ввода объекта
+        //contractTm(e) - Дата дествия договора
+        //a <= b < c <= d < e
+        //////********/
         let beginWork = document.querySelector("#DateBeginWork");
         let endWork = document.querySelector("#DateEndWork");
         let enteringTm = document.querySelector("#EnteringTerm");
-        
-        beginWork.addEventListener('change', (e) => {            
+
+        beginWork.addEventListener('change', (e) => {
             let dateBeg = beginWork.value;
             let dateEnd = endWork.value;
             let dateEnter = enteringTm.value;
 
-            if (!dateEnd || dateBeg > dateEnd) { $("#DateEndWork").val(dateBeg); }
-            if (!dateEnter || dateBeg > dateEnter) { $("#EnteringTerm").val(dateBeg); }
-            endWork.setAttribute('min', dateBeg);
+            let datePlusOne = addDays(new Date(dateBeg), 1);            
+            if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
+            if (!dateEnter || dateBeg >= dateEnter) { $("#EnteringTerm").val(datePlusOne); }
+
+            endWork.setAttribute('min', datePlusOne);
+            enteringTm.setAttribute('min', datePlusOne);
         });
-
-        endWork.addEventListener('change', (e) => {            
+        endWork.addEventListener('change', (e) => {
             let dateBeg = beginWork.value;
             let dateEnd = endWork.value;
             let dateEnter = enteringTm.value;
 
-            if (!dateBeg || dateEnd < dateBeg) { $("#DateBeginWork").val(dateEnd); }
+            let dateDecOne = addDays(new Date(dateEnd), -1);            
+            if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
             if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
 
-            let dateBegMax = beginWork.getAttribute('max');
-
-            if (!dateBegMax || dateEnd < dateBegMax) { beginWork.setAttribute('max', dateEnd); }
+            enteringTm.setAttribute('min', dateEnd);
         });
-
         enteringTm.addEventListener('change', (e) => {
             let dateBeg = beginWork.value;
             let dateEnd = endWork.value;
             let dateEnter = enteringTm.value;
 
-            if (!dateBeg || dateEnter < dateBeg) { $("#DateBeginWork").val(dateEnter); }
-            if (!dateEnd || dateEnter < dateEnd) { $("#DateEndWork").val(dateEnter); }
-
-            let dateEndMax = endWork.getAttribute('max');
-            if (!dateEndMax || dateEndMax > dateEnter) { endWork.setAttribute('max', dateEnter); }            
+            let dateDecOne = addDays(new Date(dateEnter), -1);
+            if (!dateBeg || dateTerm <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+            if (!dateEnd || dateTerm < dateEnd) { $("#DateEndWork").val(dateEnter); }
         });
-
         function addDays(date, countDays) {
-            let dateOfyear = date.getFullYear() + ""; // год;
-            console.log(dateOfyear);
-            let newDateOfyear = dateOfyear/* .slice(2) */; // год последние две цифры;
+            let newDateOfyear = date.getFullYear() + "";; // год
 
-            let day = date.getDate(); // текущий день
-            day = day < 10 ? "0" + day + countDays : day + countDays;
-            let month = date.getMonth() + 1; //текущий месяцж
-            month = month < 10 ? "0" + month : month;
+            let day = date.getDate() + countDays; // текущий день
+            let month = date.getMonth() + 1; //текущий месяц
 
-            return +newDateOfyear + '-' + +month + '-' + +day;
-        }      
-        //////////////////////////////////////////
+
+            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
+            if (day > maxDateToday) {
+                month = month + 1;
+                if (month > 12) {
+                    newDateOfyear = newDateOfyear + 1;
+                    month = 1;
+                    day = (day - 31);
+                }
+                else {
+                    day = (day - maxDateToday);
+                }
+            }
+            if (day < 1) {
+                month = month - 1;
+                if (month < 1) {
+                    newDateOfyear = newDateOfyear - 1;
+                    month = 12;
+                    day = 31 + day;
+                }
+                else {
+                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
+                    day = maxDate + day;
+                }
+            }
+
+            let dayStr = day < 10 ? "0" + String(day) : String(day);
+            let monthStr = month < 10 ? "0" + String(month) : String(month);
+            return newDateOfyear + '-' + monthStr + '-' + dayStr;
+        }
     </script>
 }

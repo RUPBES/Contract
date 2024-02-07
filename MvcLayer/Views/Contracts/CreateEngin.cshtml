@@ -350,58 +350,86 @@
         });
 
         $(document).ready(function () {
-            ////    проверка вводимых дат /////////********/
+            ////    проверка вводимых дат ////
+            //dateContract(a) - Дата контракта
+            //beginWork(b) - Дата начало работы
+            //endWork(c) - Дата окончания работы
+            //a <= b < c 
+            //////********/
             let dateContract = document.querySelector("#DateDC");
             let beginWork = document.querySelector("#DateBeginWork");
-            let endWork = document.querySelector("#DateEndWork");
+            let endWork = document.querySelector("#DateEndWork");            
 
             dateContract.addEventListener('change', (e) => {
                 let date = dateContract.value;
                 let dateBeg = beginWork.value;
-                let dateEnd = endWork.value;                
+                let dateEnd = endWork.value;
+
+                let datePlusOne = addDays(new Date(date), 1);                
 
                 if (!dateBeg || date > dateBeg) { $("#DateBeginWork").val(date); }
-                if (!dateEnd || date > dateEnd) { $("#DateEndWork").val(date); }                
-
-                let dateEndMin = endWork.getAttribute('min');                
-                if (!dateEndMin || dateEndMin < date) { endWork.setAttribute('min', date); }                
+                if (!dateEnd || date >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
 
                 beginWork.setAttribute('min', date);
+                endWork.setAttribute('min', datePlusOne);
             });
             beginWork.addEventListener('change', (e) => {
                 let date = dateContract.value;
                 let dateBeg = beginWork.value;
-                let dateEnd = endWork.value;                
+                let dateEnd = endWork.value;
+
+                let datePlusOne = addDays(new Date(dateBeg), 1);
 
                 if (!date || dateBeg < date) { $("#DateDC").val(dateBeg); }
-                if (!dateEnd || dateBeg > dateEnd) { $("#DateEndWork").val(dateBeg); }   
-                endWork.setAttribute('min', dateBeg);
+                if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
+
+                endWork.setAttribute('min', datePlusTwo);
             });
             endWork.addEventListener('change', (e) => {
                 let date = dateContract.value;
                 let dateBeg = beginWork.value;
-                let dateEnd = endWork.value;                
+                let dateEnd = endWork.value;
 
-                if (!date || dateEnd < date) { $("#DateDC").val(dateEnd); }
-                if (!dateBeg || dateEnd < dateBeg) { $("#DateBeginWork").val(dateEnd); }                
-
-                let dateBegMax = beginWork.getAttribute('max');                
-
-                if (!dateBegMax || dateEnd < dateBegMax) { beginWork.setAttribute('max', dateEnd); }
+                let dateDecOne = addDays(new Date(dateEnd), -1);
+                if (!date || dateEnd <= date) { $("#DateDC").val(dateDecOne); }
+                if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
             });
-
+          
             function addDays(date, countDays) {
-                let dateOfyear = date.getFullYear() + ""; // год;
-                console.log(dateOfyear);
-                let newDateOfyear = dateOfyear/* .slice(2) */; // год последние две цифры;
+                let newDateOfyear = date.getFullYear() + "";; // год
 
-                let day = date.getDate(); // текущий день
-                day = day < 10 ? "0" + day + countDays : day + countDays;
-                let month = date.getMonth() + 1; //текущий месяцж
-                month = month < 10 ? "0" + month : month;
+                let day = date.getDate() + countDays; // текущий день
+                let month = date.getMonth() + 1; //текущий месяц
 
-                return +newDateOfyear + '-' + +month + '-' + +day;
-            }           
+                let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
+                if (day > maxDateToday) {
+                    month = month + 1;
+                    if (month > 12) {
+                        newDateOfyear = newDateOfyear + 1;
+                        month = 1;
+                        day = (day - 31);
+                    }
+                    else {
+                        day = (day - maxDateToday);
+                    }
+                }
+                if (day < 1) {
+                    month = month - 1;
+                    if (month < 1) {
+                        newDateOfyear = newDateOfyear - 1;
+                        month = 12;
+                        day = 31 + day;
+                    }
+                    else {
+                        let maxDate = new Date(newDateOfyear, month, 0).getDate();
+                        day = maxDate + day;
+                    }
+                }
+
+                let dayStr = day < 10 ? "0" + String(day) : String(day);
+                let monthStr = month < 10 ? "0" + String(month) : String(month);
+                return newDateOfyear + '-' + monthStr + '-' + dayStr;
+            }
             ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
 
             let ch1 = document.querySelector("#check0");

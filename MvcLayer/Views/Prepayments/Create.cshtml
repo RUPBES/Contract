@@ -25,6 +25,37 @@
     td {
         min-width: 250px;
     }
+
+    .input-group {
+        width:auto;
+    }
+    .dm-modal {
+        background-color:lightblue;
+        max-width: 1200px;
+    }
+    .input_result {
+        width:150px;
+    }
+
+    .result_block {
+        display:flex;
+        justify-content: space-between;
+    }
+
+    .input_block--result{
+        display: flex
+    }
+
+    .text_error{
+        color:red;
+        font-weight:700;
+
+    }
+
+
+    #txt1.focused {
+        border-color: red;
+    }
 </style>
 
 
@@ -67,7 +98,7 @@
                                 @if (ViewBag.Current != null)
                                 {
                                     <tr>
-                                        <th>Текущие авансы</th>
+                                        <th>Текущие авансы:</th>
                                         @foreach (var item in Model.PrepaymentPlans)
                                         {
                                             if (Model.PrepaymentPlans[index].CurrentValue != null && Model.PrepaymentPlans[index].CurrentValue != 0)
@@ -128,7 +159,7 @@
                             @if (isFact)
                             {
                                 <tr>
-                                    <th>Период</th>
+                                    <th>Период:</th>
                                     @foreach (var item in Model.PrepaymentFacts)
                                     {
                                         <td>
@@ -144,7 +175,7 @@
                                 @if (ViewBag.Current != null)
                                 {
                                     <tr>
-                                        <th>Текущие авансы по факту</th>
+                                        <th>Текущие авансы по факту:</th>
                                         @foreach (var item in Model.PrepaymentFacts)
                                         {
                                             if (Model.PrepaymentFacts[index].CurrentValue != null && Model.PrepaymentFacts[index].CurrentValue != 0)
@@ -165,7 +196,7 @@
                                 @if (ViewBag.Target != null)
                                 {
                                     <tr>
-                                        <th>Текущие авансы по факту</th>
+                                        <th>Текущие авансы по факту:</th>
                                         @foreach (var item in Model.PrepaymentFacts)
                                         {
                                             if (Model.PrepaymentFacts[index].TargetValue != null && Model.PrepaymentFacts[index].TargetValue != 0)
@@ -183,7 +214,7 @@
                                         }
                                     </tr>
                                     <tr>
-                                        <th>Отработка целевых по факту</th>
+                                        <th>Отработка целевых по факту:</th>
                                         @foreach (var item in Model.PrepaymentFacts)
                                         {
                                             if (Model.PrepaymentFacts[index].WorkingOutValue != null && Model.PrepaymentFacts[index].WorkingOutValue != 0)
@@ -212,22 +243,36 @@
                             <input asp-for="@Model.ChangePrepaymentId" hidden />
                         </table>
                     </div>
-                    <div class="form-group mt-3">
-                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
+                    <div class="form-group mt-3 result_block">
                         @if (ViewBag.Target != null)
                         {
 
                             var target = Model.PrepaymentPlans.Sum(x => x.TargetValue);
                             var workTarget = Model.PrepaymentPlans.Sum(x => x.WorkingOutValue);
                             var result = target - workTarget;
+                            <div class="input_block--result">
+                                <div class="input-group">
+                                    <span class="input-group-text">Целевой:</span>
 
-                            <input id="sumTarget" value="@target?.ToString("N2")" readonly />
-                            <span> - </span>
-                            <input id="sumTargetWork" value="@workTarget?.ToString("N2")" readonly />
-                            <span> = </span>
-                            <input id="result" value="@result?.ToString("N2")" readonly />
+                            <input class="input_result" id="sumTarget" value="@target?.ToString("N2")" readonly />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">Отработка целевого:</span>
+                                <input class="input_result" id="sumTargetWork" value="@workTarget?.ToString("N2")" readonly />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">Разница </span>
+                                <input class=" input_result" id="result" value="@result?.ToString("N2")" readonly />
+                                </div>
+
+                            </div>
                         }
+                        <span id="text_error" class="text_error"></span>
+
+                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
+
                     </div>
+
                 </form>
             </div>
         </div>
@@ -236,60 +281,63 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script>
-            $(function ($) {
+    <script>
+                    $(function ($) {
                 var allCost = $(".cost")
-                for (let el of allCost) {
-                    digits_float(el)
-                }
-                $('body').on('input', '.cost', function (e) {
-                    digits_float(this);
-                });
-            });
-            $('body').on('input', '.target', function (e) {
-                check();
-            });
-            $('body').on('input', '.targetWork', function (e) {
-                check();
-            });
+                        for (let el of allCost) {
+                            digits_float(el)
+                        }
+                        $('body').on('input', '.cost', function (e) {
+                            digits_float(this);
+                        });
+                    });
+                    $('body').on('input', '.target', function (e) {
+                        check();
+                    });
+                    $('body').on('input', '.targetWork', function (e) {
+                        check();
+                    });
 
-            function check() {
-                let btn = document.getElementById("createButton");
+                    function check() {
+                        let btn = document.getElementById("createButton");
 
-                let target = $(".target");
-                let targetWork = $(".targetWork");
-                let sumTarget = 0;
-                let sumTargetWork = 0;
-                let result = 0;
-                for (let item of target) {
-                    const regExp = /,/g;
-                    let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                    console.log(num, 'number:', +num, 'num - target')
-                    sumTarget += +num;
-                }
-                for (let item of targetWork) {
-                    const regExp = /,/g;
-                    let num = item.value.replaceAll(' ', '').replace(regExp, '.')
-                    console.log(num, 'number:', +num, 'num - targetWork')
+                        let target = $(".target");
+                        let targetWork = $(".targetWork");
+                        let sumTarget = 0;
+                        let sumTargetWork = 0;
+                        let result = 0;
+                        for (let item of target) {
+                            const regExp = /,/g;
+                            let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                            console.log(num, 'number:', +num, 'num - target')
+                            sumTarget += +num;
+                        }
+                        for (let item of targetWork) {
+                            const regExp = /,/g;
+                            let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                            console.log(num, 'number:', +num, 'num - targetWork')
 
-                    sumTargetWork += +num;
-                }
+                            sumTargetWork += +num;
+                        }
 
-                result = sumTarget - sumTargetWork;
-                if (result === 0) {
+                        result = sumTarget - sumTargetWork;
+                        if (result === 0) {
+                            $("#result").focus(function () { $(this).addClass("focused") });
+                            btn.removeAttribute('disabled')
+                            $('#text_error').text('')
 
-                    btn.removeAttribute('disabled')
 
                 } else {
-                    btn.setAttribute('disabled', true)
+                            btn.setAttribute('disabled', true)
+                            $('#text_error').text('Сумма не сходится!')
 
-                }
+                        }
 
-                $("#sumTarget").val(sumTarget);
-                $("#sumTargetWork").val(sumTargetWork);
-                $("#result").val(result.toFixed(2));
-            }
+                        $("#sumTarget").val(sumTarget);
+                        $("#sumTargetWork").val(sumTargetWork);
+                        $("#result").val(result.toFixed(2));
+                    }
 
-        </script>
+    </script>
     }
 }
