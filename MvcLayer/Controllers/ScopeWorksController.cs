@@ -5,9 +5,8 @@ using BusinessLayer.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using Microsoft.Extensions.Hosting;
 using DatabaseLayer.Models;
-using System.Diagnostics.Contracts;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace MvcLayer.Controllers
 {
@@ -177,25 +176,32 @@ namespace MvcLayer.Controllers
             if (scopeWork is not null)
             {
                 int mainContractId = 0;
-                var isNotGenContract = IsNotGenContract(scopeWork?.ContractId, out mainContractId);
+                var isNotGenContract = _contractService.IsNotGenContract(scopeWork?.ContractId, out mainContractId);
                 var contract = scopeWork?.ContractId is not null ? _contractService.GetById((int)scopeWork?.ContractId) : null;
 
                 ///если без ДС
                 if (contract is not null && scopeWork?.IsChange != true)
                 {
-                    _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
+                    var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
                     //если генконтракт, присоздании впервый раз, создаем и объем собст. силами, с теми же значениями (далее их просто обновлять будем)
-                    if (!isNotGenContract)
+                    if (!isNotGenContract && newScpId.HasValue)
                     {
-                        scopeWork.IsOwnForces = true;
-                        _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
+                        if (_scopeWork.GetById((int)newScpId) is null)
+                        {
+                            scopeWork.IsOwnForces = true;
+                            _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
+                        }
                     }
                     if (isNotGenContract)
                     {
-                        CreateOrUpdateSWCostsOfMainContract(mainContractId, false, scopeWork.SWCosts);
-                        if ((bool)contract?.IsOneOfMultiple)
+                        if (contract?.IsOneOfMultiple ?? false)
                         {
+                            CreateOrUpdateSWCostsOfMainContract(mainContractId, false, scopeWork.SWCosts);
                             CreateOrUpdateSWCostsOfMainContract(mainContractId, true, scopeWork.SWCosts);
+                        }
+                        else
+                        {
+                            _scopeWork.AddOrSubstractCostsOwnForceMnContract(mainContractId, scopeWork.SWCosts, -1);
                         }
                     }
                 }
@@ -231,6 +237,8 @@ namespace MvcLayer.Controllers
             return View(scopeWork);
         }
 
+
+
         [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id, int contractId)
         {
@@ -251,10 +259,12 @@ namespace MvcLayer.Controllers
             return RedirectToAction("GetByContractId", new { contractId = contractId });
         }
 
+
         public async Task<IActionResult> ShowDelete(int? id)
         {
             return PartialView("_ViewDelete");
         }
+
 
         public async Task<IActionResult> ShowResultDelete(int? id)
         {
@@ -268,20 +278,28 @@ namespace MvcLayer.Controllers
                 if (contract is not null)
                 {
                     int mainContractId = 0;
-                   
-                    if (IsNotGenContract(contrId, out mainContractId))
+
+                    if (_contractService.IsNotGenContract(contrId, out mainContractId))
                     {
                         int? mainContrScpId = 0;
                         var costs = _swCostService.GetById((int)id);
-
-                        if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
+                        if (contract?.IsOneOfMultiple ?? false)
                         {
-                            _scopeWork.SubstractCostFromMainContract(mainContrScpId, costs);                           
+
+
+                            if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
+                            {
+                                _scopeWork.RemoveOneCostOfMainContract(mainContrScpId, costs);
+                            }
+
+                            if (_contractService.IsThereScopeWorks(mainContractId, true, out mainContrScpId))
+                            {
+                                _scopeWork.RemoveOneCostOfMainContract(mainContrScpId, costs);
+                            }
                         }
-
-                        if (_contractService.IsThereScopeWorks(mainContractId, true, out mainContrScpId))
+                        else
                         {
-                            _scopeWork.SubstractCostFromMainContract(mainContrScpId, costs);
+                            _scopeWork.AddOrSubstractCostsOwnForceMnContract(mainContractId, new List<SWCostDTO> { costs }, 1);
                         }
                     }
                 }
@@ -296,6 +314,9 @@ namespace MvcLayer.Controllers
             ViewData["reload"] = "Yes";
             return PartialView("_Message", "Запись успешно удалена.");
         }
+
+
+
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
         {
@@ -318,6 +339,8 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
 
+
+
         [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
@@ -329,30 +352,33 @@ namespace MvcLayer.Controllers
             var obj = _swCostService.GetById(id);
             return View(_mapper.Map<SWCostViewModel>(obj));
         }
+
         [HttpPost]
         [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
         {
-            var costs = new List<SWCostDTO>();
-            costs.Add(_mapper.Map<SWCostDTO>(model));
+            List<SWCostDTO> costs = new List<SWCostDTO>
+            {
+                _mapper.Map<SWCostDTO>(model)
+            };
 
             var contrId = model?.ScopeWorkId is not null ? _scopeWork?.GetById((int)model.ScopeWorkId)?.ContractId : null;
-            var contract = contrId is not null ? _contractService.GetById((int)contrId) : null;
-            ///если без ДС
-            if (contract is not null && contract.IsOneOfMultiple)
+            var contract = contrId.HasValue ? _contractService.GetById((int)contrId) : null;
+
+            if (contract is not null)
             {
-                UpdateSWCostsOfMainContract((int)contract?.MultipleContractId, (int)model?.ScopeWorkId, false, costs);
-                UpdateSWCostsOfMainContract((int)contract?.MultipleContractId, (int)model?.ScopeWorkId, true, costs);
-            }
-            if (contract is not null && (bool)contract?.IsSubContract)
-            {
-                UpdateSWCostsOfMainContract((int)contract?.SubContractId, (int)model?.ScopeWorkId, false, costs);
-                UpdateSWCostsOfMainContract((int)contract?.SubContractId, (int)model?.ScopeWorkId, true, costs);
-            }
-            if (contract is not null && (bool)contract?.IsAgreementContract)
-            {
-                UpdateSWCostsOfMainContract((int)contract?.AgreementContractId, (int)model?.ScopeWorkId, false, costs);
-                UpdateSWCostsOfMainContract((int)contract?.AgreementContractId, (int)model?.ScopeWorkId, true, costs);
+                int mainContractId = 0;
+                if (_contractService.IsNotGenContract(contract.Id, out mainContractId))
+                {
+                    if (!contract.IsOneOfMultiple)
+                    {
+                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs);
+                    }
+                    else
+                    {
+                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs, true);
+                    }
+                }
             }
 
             _swCostService.Update(_mapper.Map<SWCostDTO>(model));
@@ -371,6 +397,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
 
+        #region AdditionsMethods
         private void CreateOrUpdateSWCostsOfMainContract(int multipleContractId, bool isOwnForses, List<SWCostDTO> costs)
         {
             int? scopeId = null;
@@ -420,35 +447,10 @@ namespace MvcLayer.Controllers
             //если есть объем работ у главного договора, проверяем стоимости
             if (_contractService.IsThereScopeWorks(contractMultiple.Id, isOwnForses, out scopeId))
             {
-                //есть стоимости у гл.дог-ра (ищем по ID объема работ), если нет то заканчиваем обновление                
-                if (_contractService.IsThereSWCosts(scopeId))
-                {
-                    ///обновляем соответствующие периоды, вычетаем из объема договора старый объем подобъекта и добавляем новый объем
-                    _scopeWork.SubstractSWCostForMainContract(scopeId, changeScopeId, costs);
-                }
+                ///обновляем соответствующие периоды, вычетаем из объема договора старый объем подобъекта и добавляем новый объем
+                _scopeWork.UpdateCostOwnForceMnContract(multipleContractId, changeScopeId, costs);
             }
         }
-
-        private bool IsNotGenContract(int? contractId, out int mainContrId)
-        {
-            mainContrId = 0;
-            var contract = contractId.HasValue ? _contractService.GetById((int)contractId) : null;
-            var isNotGenContract = (bool)contract?.IsOneOfMultiple || (bool)contract?.IsSubContract || (bool)contract?.IsAgreementContract;
-
-            if ((bool)contract?.IsAgreementContract)
-            {
-                mainContrId = (int)contract?.AgreementContractId;
-            }
-            else if ((bool)contract?.IsSubContract)
-            {
-                mainContrId = (int)contract?.SubContractId;
-            }
-            else if ((bool)contract?.IsOneOfMultiple)
-            {
-                mainContrId = (int)contract?.MultipleContractId;
-            }
-
-            return isNotGenContract;
-        }
+        #endregion
     }
 }

@@ -69,12 +69,17 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
         {
-            
+            var list = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<VContractEngin> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.vContractEngins.FindContract(request).Where(x => x.Author == org || x.Owner == org); }
-            else { items = _database.vContractEngins.GetAll().Where(x => x.Author == org || x.Owner == org); }
+            { 
+                items = _database.vContractEngins.FindContract(request).Where(x => list.Contains(x.Author) || list.Contains(x.Owner)); 
+            }
+            else 
+            { 
+                items = _database.vContractEngins.Find(x => list.Contains(x.Author) || list.Contains(x.Owner));
+            }
             int count = items.Count();
 
             switch (sortOrder)

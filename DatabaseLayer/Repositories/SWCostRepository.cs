@@ -68,14 +68,14 @@ namespace DatabaseLayer.Repositories
                     scWork.Period = entity.Period;
                     scWork.CostNoNds = entity.CostNoNds;
                     scWork.CostNds = entity.CostNds;
-                    scWork.SmrCost = entity.SmrCost < 0 ? 0: entity.SmrCost;
-                    scWork.PnrCost = entity.PnrCost < 0 ? 0 : entity.PnrCost;
+                    scWork.SmrCost = entity.SmrCost?? 0;
+                    scWork.PnrCost = entity.PnrCost?? 0;
 
-                    scWork.EquipmentCost = entity.EquipmentCost < 0 ? 0 : entity.EquipmentCost;
-                    scWork.OtherExpensesCost = entity.OtherExpensesCost < 0 ? 0 : entity.OtherExpensesCost;
-                    scWork.AdditionalCost = entity.AdditionalCost < 0 ? 0 : entity.AdditionalCost;
-                    scWork.MaterialCost = entity.MaterialCost < 0 ? 0 : entity.MaterialCost;
-                    scWork.GenServiceCost = entity.GenServiceCost < 0 ? 0 : entity.GenServiceCost;
+                    scWork.EquipmentCost = entity.EquipmentCost ?? 0;
+                    scWork.OtherExpensesCost = entity.OtherExpensesCost ?? 0 ;
+                    scWork.AdditionalCost = entity.AdditionalCost ?? 0 ;
+                    scWork.MaterialCost = entity.MaterialCost ?? 0 ;
+                    scWork.GenServiceCost = entity.GenServiceCost ?? 0 ;
                     scWork.ScopeWorkId = entity.ScopeWorkId;
                     scWork.IsOwnForces = entity.IsOwnForces;
 

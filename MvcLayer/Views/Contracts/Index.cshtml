@@ -16,6 +16,7 @@
     bool isAdmin = true;
     string redirectAction = "Index";
     string redirectController = "Contracts";
+    var actionMethod = isEngineering is true ? "Engineerings" : "Index";
 }
 
 
@@ -37,7 +38,7 @@
                 @if (ViewBag.IsEngineering)
                 {
                     <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">Новый договор на оказание инжиниринговых услуг</button>
-                    @using (Html.BeginForm("Engineerings", "Contracts", FormMethod.Get))
+                    @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                     {
                         <form style="search-form" method="get">
                             <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
@@ -48,7 +49,7 @@
                 @if (!ViewBag.IsEngineering)
                 {
                     <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
-                    @using (Html.BeginForm("Index", "Contracts", FormMethod.Get))
+                    @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                     {
                         <form style="search-form" method="get">
                             <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
@@ -65,24 +66,24 @@
         <div class="full-width">
             <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
                 <thead>
-                    <tr class="tr-head-main-table">                        
+                    <tr class="tr-head-main-table">
                         <th>
                             <span class="table_span-numberanddate">
                                 Номер и дата договора
-                                @Html.ActionLink(" ", "Index", new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayNumberanddate", @class = "up" })
+                                @Html.ActionLink(" ", @actionMethod, new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayNumberanddate", @class = "up" })
                             </span>
                         </th>
                         <th>
                             <span class="table_span-nameobject">
                                 Наименование объекта
-                                @Html.ActionLink("", "Index", new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayNameObject", @class = "up" })
+                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayNameObject", @class = "up" })
 
                             </span>
                         </th>
                         <th>
                             <span class="table_span-customer">
                                 Заказчик
-                                @Html.ActionLink("", "Index", new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayCustomer", @class = "up" })
+                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayCustomer", @class = "up" })
                             </span>
                         </th>
                         @if (isEngineering != true)
@@ -91,7 +92,7 @@
                                 <span class="table_span-contractor">
 
                                     <span>Генподрядчик</span>
-                                    @Html.ActionLink("", "Index", new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayGeneralContractor", @class = "up" })
+                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayGeneralContractor", @class = "up" })
 
 
                                     @*  @if (isEngineering == true)
@@ -104,7 +105,7 @@
                         <th>
                             <span class="table_span-deadlines">
                                 Cроки
-                                @Html.ActionLink(" ", "Index", new { sortOrder = ViewData["EnterSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayTerms", @class = "up" })
+                                @Html.ActionLink(" ", actionMethod, new { sortOrder = ViewData["EnterSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayTerms", @class = "up" })
                             </span>
                         </th>
                         <th><span class="table_span-conditions">    Условия оплаты              </span></th>
@@ -127,7 +128,7 @@
                     </tr>
                 </thead>
                 <tbody class="table_tbody">
-                    
+
                     @foreach (VContractDTO item in Model.Objects)
                     {
                         if (item.DateEndWork < DateTime.Today)
@@ -254,42 +255,42 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
-                                    <div class="icon view" title="Просмотр детальной информации по договору">
-                                        <a asp-action="Details" asp-route-id="@item.Id"></a>
-                                    </div>
-                                    <div class="icon edit" title="Редактировать договор">
-                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                    </div>
-                                    <div class="icon delete" title="Удалить договор">
-                                        <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                    </div>
-                                    @if (!item.IsArchive)
-                                    {
-                                        <div class="icon archive" title="Переместить в архив">
+                                        <div class="icon view" title="Просмотр детальной информации по договору">
+                                            <a asp-action="Details" asp-route-id="@item.Id"></a>
+                                        </div>
+                                        <div class="icon edit" title="Редактировать договор">
+                                            <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                        </div>
+                                        <div class="icon delete" title="Удалить договор">
+                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                        </div>
+                                        @if (!item.IsArchive)
+                                        {
+                                            <div class="icon archive" title="Переместить в архив">
                                                 <a asp-action="ChangeStatus" asp-route-status="archive" asp-route-contrId="@item.Id"></a>
-                                        </div>
-                                    }
-                                    @if (item.IsExpired)
-                                    {
-                                        <div class="icon expired" title="Договор просрочен">
+                                            </div>
+                                        }
+                                        @if (item.IsExpired)
+                                        {
+                                            <div class="icon expired" title="Договор просрочен">
                                                 <div></div>
-                                        </div>
-                                    }
-                                    @if (item.IsClosed)
-                                    {
+                                            </div>
+                                        }
+                                        @if (item.IsClosed)
+                                        {
                                             <div class="icon closed" title="Договор закрыт, ожидается акта ввода">
                                                 <div></div>
                                             </div>
-                                    }
-                                    @if (!item.IsExpired && !item.IsClosed)
-                                    {
+                                        }
+                                        @if (!item.IsExpired && !item.IsClosed)
+                                        {
                                             <div class="icon expired warning_icon" title="Договор просрочен">
                                                 <a asp-action="ChangeStatus" asp-route-status="expired" asp-route-contrId="@item.Id"></a>
-                                        </div>
+                                            </div>
                                             <div class="icon closed warning_icon" title="Договор закрыт, ожидается акта ввода">
                                                 <a asp-action="ChangeStatus" asp-route-status="closed" asp-route-contrId="@item.Id"></a>
-                                        </div>
-                                    }
+                                            </div>
+                                        }
                                     </span>
                                 </td>
                             </tr>
@@ -417,15 +418,15 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
-                                    <div class="icon view" title="Просмотр детальной информации по договору">
-                                        <a asp-action="Details" asp-route-id="@item.Id"></a>
-                                    </div>
-                                    <div class="icon edit" title="Редактировать договор">
-                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                    </div>
-                                    <div class="icon delete" title="Удалить договор">
-                                        <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                    </div>     
+                                        <div class="icon view" title="Просмотр детальной информации по договору">
+                                            <a asp-action="Details" asp-route-id="@item.Id"></a>
+                                        </div>
+                                        <div class="icon edit" title="Редактировать договор">
+                                            <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                        </div>
+                                        <div class="icon delete" title="Удалить договор">
+                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                        </div>
                                     </span>
                                 </td>
                             </tr>

@@ -2,6 +2,7 @@
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace DatabaseLayer.Repositories.ViewRepo
 {
@@ -41,8 +42,14 @@ namespace DatabaseLayer.Repositories.ViewRepo
         }
 
         public IEnumerable<VContract> GetEntitySkipTake(int skip, int take, string org)
-        {           
-            return _context.VContracts.Where(x => x.Author == org || x.Owner == org).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+        {   
+            var list = org.Split(',');
+            return _context.VContracts
+                .Where(x => list.Contains(x.Author) || list.Contains(x.Owner))
+                .OrderByDescending(x => x.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
         }
 
         public IEnumerable<VContract> GetEntityWithSkipTake(int skip, int take, int legalPersonId)

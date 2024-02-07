@@ -461,15 +461,25 @@ namespace BusinessLayer.Services
             return null;
         }
 
-        public bool IsThereSubObjs(int contarctId)
+        public bool IsNotGenContract(int? contractId, out int mainContrId)
         {
-            var subObjs = _database.Contracts.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contarctId);
+            mainContrId = 0;
+            var contract = contractId.HasValue ? _database.Contracts.GetById((int)contractId) : null;
 
-            if (subObjs is not null && subObjs.Count() > 0)
+            if ((contract?.IsAgreementContract ?? false))
             {
-                return true;
+                mainContrId = contract?.AgreementContractId??0;
             }
-            return false;
+            else if ((contract?.IsSubContract ?? false))
+            {
+                mainContrId = contract?.SubContractId??0;
+            }
+            else if (contract?.IsOneOfMultiple ?? false)
+            {
+                mainContrId = contract?.MultipleContractId??0;
+            }
+
+            return (contract?.IsOneOfMultiple??false) || (contract?.IsSubContract??false) || (contract?.IsAgreementContract??false);
         }
 
         public bool IsThereScopeWorks(int contarctId, out int? scopeId)

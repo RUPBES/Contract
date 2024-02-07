@@ -5,13 +5,7 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
-using DatabaseLayer.Data;
-using DatabaseLayer.Models;
-using System.Diagnostics.Contracts;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
-using AngleSharp.Dom;
-using static System.Net.WebRequestMethods;
 
 namespace MvcLayer.Controllers
 {
@@ -25,13 +19,15 @@ namespace MvcLayer.Controllers
         private readonly IScopeWorkService _scopeWorkService;
         private readonly IOrganizationService _organization;
         private readonly IEmployeeService _employee;
+        private readonly ISWCostService _swCostService;
 
         private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
-            IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService)
+            IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService,
+            ISWCostService sWCostService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -42,17 +38,26 @@ namespace MvcLayer.Controllers
             _vContractService = vContractService;
             _vContractEnginService = vContractEnginService;
             _scopeWorkService = scopeWorkService;
+            _swCostService = sWCostService;
         }
 
         // GET: Contracts        
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
-            //TODO: 1. здесь название организации, ее вставить в _vContractService.GetPage и _vContractService.GetPageFilter чтобы взять инфу по организации
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+            //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
 
             if (pageNum < 1)
             {
                 pageNum = 1;
+            }
+            if (searchString != null)
+            {
+                pageNum = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
             }
 
             ViewData["IsEngineering"] = false;
@@ -62,21 +67,32 @@ namespace MvcLayer.Controllers
             ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            if (searchString != null)
-            { pageNum = 1; }
-            else
-            { searchString = currentFilter; }
             ViewData["CurrentFilter"] = searchString;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+            {
                 return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
-            else return View(_vContractService.GetPage(100, pageNum ?? 1, organizationName));
+            }
+            else
+            {
+                return View(_vContractService.GetPage(100, pageNum ?? 1, organizationName));
+            }
         }
 
         // GET: Contracts of Engineerings
         public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+            //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            if (searchString != null)
+            {
+                pageNum = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
             ViewData["IsEngineering"] = true;
             ViewData["CurrentSort"] = sortOrder;
             ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
@@ -84,15 +100,16 @@ namespace MvcLayer.Controllers
             ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            if (searchString != null)
-            { pageNum = 1; }
-            else
-            { searchString = currentFilter; }
             ViewData["CurrentFilter"] = searchString;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+            {
                 return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
-            else return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1, organizationName));
+            }
+            else
+            {
+                return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1, organizationName));
+            }
         }
 
         public async Task<IActionResult> Details(int? id, string? message = null)
@@ -397,7 +414,7 @@ namespace MvcLayer.Controllers
             {
                 if (contract.ContractOrganizations.Count < 1)
                 {
-                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id});                    
+                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id });
                 }
             }
 
@@ -567,38 +584,38 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_contractService.GetAll() == null)
+            if (id < 1)
             {
-                return Problem("Entity set 'ContractsContext.Contracts'  is null.");
+                return View();
             }
 
             var contract = _contractService.GetById(id);
-            var isNotGenContract = contract.IsOneOfMultiple || (bool)contract?.IsSubContract || (bool)contract?.IsAgreementContract;
-            int mainContractId = 0;
+
             if (contract != null)
             {
-                if ((bool)contract?.IsAgreementContract)
-                {
-                    mainContractId = (int)contract?.AgreementContractId;
-                }
-                else if ((bool)contract?.IsSubContract)
-                {
-                    mainContractId = (int)contract?.SubContractId;
-                }
-                else
-                {
-                    mainContractId = (int)contract?.MultipleContractId;
-                }
+                int mainContractId = 0;
+                var isNotGenContract = _contractService.IsNotGenContract(contract.Id, out mainContractId);
 
                 if (isNotGenContract)
                 {
-                    //вычитаем стоимости работ подобъекта из глав.договора
-                    _scopeWorkService.RemoveSWCostFromMainContract(mainContractId, contract.Id);
+                    if (contract.IsOneOfMultiple)
+                    {
+                        //вычитаем стоимости работ подобъекта из глав.договора
+                        _scopeWorkService.RemoveCostsOfMainContract(mainContractId, contract.Id);
+                    }
+                    else
+                    {
+                        var scpId = _scopeWorkService.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
+                        var costs = scpId.HasValue ? _swCostService.Find(x => x.ScopeWorkId == scpId) : new List<SWCostDTO>();
+
+                        _scopeWorkService.AddOrSubstractCostsOwnForceMnContract(mainContractId, (List<SWCostDTO>)costs, 1);
+                    }
                     //удаляем объемы работ подобъектов, после чего удаляем подобъект
                     _contractService.DeleteAfterScopeWork(id);
 
                     //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
 
+                    ///проверить на нулевые значения у главного договора
                     if (contract.IsOneOfMultiple)
                     {
                         var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
