@@ -27,6 +27,29 @@
     td {
         min-width: 250px;
     }
+
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -47,7 +70,7 @@
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row">
                     <div class="cont-table">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped table-main">
                             <tr>
                                 <th>Процент генуслуг</th>
                                 <td>
@@ -60,10 +83,10 @@
                                 <th>Период</th>
                                 @foreach (var item in d.ServiceCosts)
                                 {
-                                    <td>
+                                    <th>
                                         @item.Period?.ToString("MMM yyyy")
                                         <input asp-for="ServiceCosts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                    </td>
+                                    </th>
                                     index++;
                                 }
                                 @{

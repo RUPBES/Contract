@@ -8,9 +8,60 @@
 @using MvcLayer.Models.Reports;
 
 <style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
     td, tr {
         min-width: 105px;
     }
+
+
+    .form_period {
+        display: flex;
+        margin-bottom: 1%;
+    }
+
+    .period_input {
+        width: 15.5%;
+        margin-right: 1%;
+    }
+
+    .input-group-text {
+        font-weight: 600;
+    }
+
+    .td-pointer {
+        cursor: pointer;
+        background-color: #73d5e9 !important;
+        border-color: #73d5e9 !important;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px !important;
+        border-radius: 5px !important;
+        transition-property: background-color;
+        transition-duration: 0.5s;
+    }
+
+        .td-pointer:hover {
+            background-color: #1bcbef !important;
+            border-color: #1bcbef !important;
+        }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 
 @{
@@ -46,9 +97,13 @@
                     }
                 </div>
                 <hr class="modal-line">
-                <form asp-action="GetByContractIdWithAmendments">
-                    <input id="start" asp-for="startPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
-                    <input id="end" asp-for="endPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                <form asp-action="GetByContractIdWithAmendments" class="form_period">
+                    <label class="input-group-text" for="start">Начало:</label>
+
+                    <input id="start" class="form-control period_input" asp-for="startPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <label class="input-group-text" for="end">Конец:</label>
+
+                    <input id="end" class="form-control period_input" asp-for="endPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
                     <input name="contractId" value="@ViewBag.contractId" hidden />
                     <input asp-for="Client" hidden />
                     <input asp-for="NameObject" hidden />
@@ -184,11 +239,9 @@
                                 </td>
                                 @if (Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment != "Факт")
                                 {
-                                    <td rowspan="2">
+                                    <td class="td-pointer" rowspan="2" onclick="ShowAmendment()">
                                         <div>
-                                            Дс <span>@Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment</span>
-                                            <button class="icon view" onclick="ShowAmendment()">
-                                            </button>
+                                            <span >ДC @Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment</span>
                                         </div>
                                     </td>
                                 }

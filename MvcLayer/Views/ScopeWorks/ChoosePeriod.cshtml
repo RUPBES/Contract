@@ -42,8 +42,11 @@
         font-weight: 700;
         line-height: 22px;
         letter-spacing: -0.34px;
-        border: solid #e83c14 1px;
-        border-radius: 5px;
+        color: #fff;
+        background-color: #e83c14;
+        border-color: #e83c14;
+        padding: 0.6rem;
+        border-radius: 10px;
     }
 
     label {
@@ -65,6 +68,7 @@
         flex-direction: column;
         max-width: 600px;
         margin: 0 auto;
+        background-color: lightsteelblue;
     }
 
     .d-inline-block {
@@ -89,6 +93,23 @@
         font-weight: 600;
     }
 
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -123,16 +144,13 @@
                             @if (contract.IsEngineering == true)
                             {
                                 <div class="title-warning"><span>Объем услуг для данного договора заполнен</span></div>
-                                <label for="amendCheck">Внести изменения для объема услуг по доп.соглашению?</label>
                             }
                             else
                             {
                                 <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
-                                <label for="amendCheck">Внести изменения для объема работ по доп.соглашению?</label>
                             }
-                            <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
                         </div>
-                        <div id="chooseAmendment" class="row" hidden>
+                        <div id="chooseAmendment" class="row" >
                             <div class="form-group">
                                 <label class="control-label label_period">Выбрать доп.соглашение:</label>
                                 <select name="AmendmentId" id="AmendId" class="form-control select">
@@ -253,24 +271,24 @@
             })
         });
 
-        $("#amendCheck").on("change", function () {
-            let isChange = $(this).prop('checked');
-            let besInput = document.querySelector("#chooseAmendment");
+        // $("#amendCheck").on("change", function () {
+        //     let isChange = $(this).prop('checked');
+        //     let besInput = document.querySelector("#chooseAmendment");
 
-            if (besInput.hidden != true) {
-                besInput.hidden = true;
-            }
-            else {
-                besInput.hidden = null;
-            }
+        //     if (besInput.hidden != true) {
+        //         besInput.hidden = true;
+        //     }
+        //     else {
+        //         besInput.hidden = null;
+        //     }
 
-            if (isChange === false) {
-                $(this).attr("value", "false")
-            }
-            else {
-                $(this).attr("value", "true")
-            }
-        });
+        //     if (isChange === false) {
+        //         $(this).attr("value", "false")
+        //     }
+        //     else {
+        //         $(this).attr("value", "true")
+        //     }
+        // });
 
         $(document).ready(function () {
             kendo.culture("by-BY");
