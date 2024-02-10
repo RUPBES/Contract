@@ -268,6 +268,16 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(predicate));
         }
 
+        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select, Func<Contract, bool> order)
+        {
+            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select, order));
+        }
+
+        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
+        {
+            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select));
+        }
+
         public bool ExistContractByNumber(string numberContract)
         {
             bool result = false;
@@ -382,60 +392,57 @@ namespace BusinessLayer.Services
             List<Contract> itemsT = new List<Contract>();
             if (!String.IsNullOrEmpty(request))
             {
-                items = _database.Contracts.
-                    Find(c => c.IsEngineering == false && c.IsAgreementContract == false
-                    && c.IsOneOfMultiple == false && c.IsSubContract == false &&
-                    (c.Author == org || c.Owner == org));
-                foreach (var item in items)
-                {
-                    if (item.NameObject != null && item.NameObject.Contains(request) || item.Number != null && item.Number.Contains(request))
-                        itemsT.Add(item);
-                }
-                items = itemsT;
-                switch (filter)
-                {
-                    case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
-                    case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
-                    case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
-                    default: break;
-                }
+                items = _database.Contracts.Find(c => 
+                    c.IsEngineering == false && 
+                    c.IsAgreementContract == false && 
+                    c.IsOneOfMultiple == false && 
+                    c.IsSubContract == false &&
+                    (c.Author == org || c.Owner == org) 
+                    &&
+                    ((c.NameObject != null &&
+                    c.NameObject.Contains(request)) 
+                    ||
+                    (c.Number != null && 
+                    c.Number.Contains(request))));                               
             }
             else
             {
-                items = _database.Contracts.GetAll();
-                switch (filter)
-                {
-                    case "Scope": items = items.Where(i => i.ScopeWorks.Count > 0); break;
-                    case "Payment": items = items.Where(i => i.Payments.Count > 0); break;
-                    case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
-                    default: break;
-                }
+                items = _database.Contracts.Find(c =>
+                c.IsEngineering == false &&
+                c.IsAgreementContract == false &&
+                c.IsOneOfMultiple == false &&
+                c.IsSubContract == false &&
+                (c.Author == org || c.Owner == org));
             }
             count = items.Count();
-            items = items.OrderBy(s => s.NameObject);
-            items = items.Skip(skipEntities).Take(pageSize);
+            items = items.OrderBy(s => s.NameObject).Skip(skipEntities).Take(pageSize);            
             var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }
 
         public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org)
         {
+            Func<Contract, bool> where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                (w.Author == org || w.Owner == org);
+            Func<Contract, Contract> select = s => new Contract{
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice
+            };
             int skipEntities = (pageNum - 1) * pageSize;
-            IEnumerable<Contract> items;
-            items = _database.Contracts.
-                Find(c => c.IsEngineering == false && c.IsAgreementContract == false && c.IsOneOfMultiple == false
-                && c.IsSubContract == false &&
-                    (c.Author == org || c.Owner == org));
-            switch (filter)
-            {
-                case "Scope": items = items.Where(x => x.ScopeWorks.Count() > 0); break;
-                case "Payment": items = items.Where(x => x.Payments.Count() > 0); break;
-                case "Material": items = items.Where(i => i.MaterialGcs.Count > 0); break;
-                default: break;
-            }
+            IEnumerable<Contract> items = _database.Contracts.Find(where, select);
+            
             count = items.Count();
-            items = items.OrderBy(s => s.NameObject);
-            items = items.Skip(skipEntities).Take(pageSize);
+            items = items.Skip(skipEntities).Take(pageSize);            
             var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }

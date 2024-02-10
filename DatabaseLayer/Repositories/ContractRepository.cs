@@ -46,6 +46,17 @@ namespace DatabaseLayer.Repositories
                 .Include(p => p.Payments).
                 Include(c => c.MaterialGcs).ThenInclude(c => c.MaterialCosts).Where(predicate).ToList();
         }
+        public IEnumerable<Contract> Find(Func<Contract, bool> where, Func<Contract, Contract> select, Func<Contract, bool> order)
+        {           
+            return _context.Contracts
+                .Where(where).OrderBy(order).Select(select).ToList();
+        }
+
+        public IEnumerable<Contract> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
+        {
+            return _context.Contracts
+                .Where(where).Select(select).ToList();
+        }
 
         public IEnumerable<Contract> GetAll()
         {

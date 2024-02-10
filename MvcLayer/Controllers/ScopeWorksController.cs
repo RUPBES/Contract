@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using Microsoft.Extensions.Hosting;
 using DatabaseLayer.Models;
+using System.Diagnostics.Contracts;
+using static System.Formats.Asn1.AsnWriter;
+using MvcLayer.Models.Reports;
 
 namespace MvcLayer.Controllers
 {
@@ -14,6 +17,7 @@ namespace MvcLayer.Controllers
     public class ScopeWorksController : Controller
     {
         private readonly IContractService _contractService;
+        private readonly IAmendmentService _amendmentService;
         private readonly IOrganizationService _organization;
         private readonly IScopeWorkService _scopeWork;
         private readonly ISWCostService _swCostService;
@@ -21,7 +25,8 @@ namespace MvcLayer.Controllers
         private readonly IMapper _mapper;
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService)
+            IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
+            IAmendmentService amendmentService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -29,6 +34,7 @@ namespace MvcLayer.Controllers
             _scopeWork = scopeWork;
             _formService = formService;
             _swCostService = swCostService;
+            _amendmentService = amendmentService;
         }
 
         public IActionResult Index()
@@ -279,18 +285,17 @@ namespace MvcLayer.Controllers
                 {
                     int mainContractId = 0;
 
-                    if (_contractService.IsNotGenContract(contrId, out mainContractId))
+                    if (IsNotGenContract(contrId, out mainContractId))
                     {
                         int? mainContrScpId = 0;
                         var costs = _swCostService.GetById((int)id);
                         if (contract?.IsOneOfMultiple ?? false)
                         {
 
-
-                            if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
-                            {
-                                _scopeWork.RemoveOneCostOfMainContract(mainContrScpId, costs);
-                            }
+                        if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
+                        {
+                            _scopeWork.SubstractCostFromMainContract(mainContrScpId, costs);
+                        }
 
                             if (_contractService.IsThereScopeWorks(mainContractId, true, out mainContrScpId))
                             {
@@ -336,6 +341,67 @@ namespace MvcLayer.Controllers
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
+
+            var viewModel = new List<GetCostDeviationScopeWorkViewModel>();
+            foreach (var contract in list)
+            {
+                var itemViewModel = new GetCostDeviationScopeWorkViewModel();
+                itemViewModel.number = contract.Number;
+                itemViewModel.nameObject = contract.NameObject;
+                itemViewModel.currency = contract.Сurrency;
+                itemViewModel.dateContract = contract.Date;
+                #region Доп. соглашения
+                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
+                var amend = listAmend.LastOrDefault();
+                #endregion
+                itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
+                #region Лист. Факт значений
+                Func<FormC3a, bool> where = w => w.ContractId == contract.Id;
+                Func<FormC3a, FormC3a> select = s => new FormC3a
+                {
+                    Period = s.Period,
+                    SmrCost = s.SmrCost,
+                    AdditionalCost = s.AdditionalCost,
+                    PnrCost = s.PnrCost,
+                    EquipmentCost = s.EquipmentCost,
+                    OtherExpensesCost = s.OtherExpensesCost,
+                    MaterialCost = s.MaterialCost,
+                    TotalCost = s.TotalCost
+                };
+                var listFact = _formService.Find(where, select);
+                #endregion
+                itemViewModel.remainingWork = itemViewModel.contractPrice - listFact.Sum(x => x.TotalCost);
+                #region                
+                for (var i = listAmend.Count()-1; i >= 0; i--)
+                {
+                    var item = listAmend[i];
+                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            SmrCost = s.SmrCost,
+                            AdditionalCost = s.AdditionalCost,
+                            PnrCost = s.PnrCost,
+                            EquipmentCost = s.EquipmentCost,
+                            OtherExpensesCost = s.OtherExpensesCost,
+                            MaterialCost = s.MaterialCost,
+                            CostNds = s.CostNds
+                        };
+                        var listScope = _swCostService.Find(whereSw, selectSw);
+                        break;
+                    }
+                }
+                #endregion
+                if (listScope.Count() > 0)
+                {
+                    itemViewModel.currentYearScopeWork = listScope.Where(x =>
+                    Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)x.Period) &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period), new DateTime(DateTime.Now.Year, 12, 1));
+                }
+            }
             return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
         }
 

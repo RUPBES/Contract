@@ -1,7 +1,7 @@
 ﻿using BusinessLayer.Models;
 using System.ComponentModel;
 
-namespace MvcLayer.Models
+namespace MvcLayer.Models.Reports
 {
     public class PrepaymentStatementViewModel
     {
@@ -14,11 +14,11 @@ namespace MvcLayer.Models
         [DisplayName("Период окончания")]
         public DateTime? maxEndPeriod { get; set; }
         [DisplayName("Объект")]
-        public string? NameObject {get; set;}        
+        public string? NameObject { get; set; }
         [DisplayName("Заказчик")]
-        public string? Client {get; set;}
+        public string? Client { get; set; }
         [DisplayName("Целевого")]
-        public decimal? TheoryTarget {get; set;}
+        public decimal? TheoryTarget { get; set; }
         [DisplayName("Текущего")]
         public decimal? TheoryCurrent { get; set; }
         [DisplayName("Получено")]
@@ -96,7 +96,7 @@ namespace MvcLayer.Models
         [DisplayName("Текущий")]
         public decimal? Current { get; set; }
         [DisplayName("СМР")]
-        public decimal? Smr{ get; set; }
+        public decimal? Smr { get; set; }
     }
 
 

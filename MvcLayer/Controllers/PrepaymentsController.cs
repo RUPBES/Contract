@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SqlServer.Server;
 using MvcLayer.Models;
+using MvcLayer.Models.Reports;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;

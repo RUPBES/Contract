@@ -40,6 +40,12 @@ namespace DatabaseLayer.Repositories
             return _context.SWCosts.Where(predicate).ToList();
         }
 
+        public IEnumerable<SWCost> Find(Func<SWCost, bool> where, Func<SWCost, SWCost> select)
+        {
+            return _context.SWCosts
+                .Where(where).Select(select).ToList();
+        }
+
         public IEnumerable<SWCost> GetAll()
         {
             return _context.SWCosts.ToList();

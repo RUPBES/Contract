@@ -113,6 +113,11 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(predicate));
         }
 
+        public IEnumerable<FormDTO> Find(Func<FormC3a, bool> where, Func<FormC3a, FormC3a> select)
+        {
+            return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(where, select));
+        }
+
         public IEnumerable<FormDTO> GetAll()
         {
             return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.GetAll());
