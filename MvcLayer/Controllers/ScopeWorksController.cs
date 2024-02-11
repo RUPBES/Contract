@@ -17,6 +17,7 @@ namespace MvcLayer.Controllers
     public class ScopeWorksController : Controller
     {
         private readonly IContractService _contractService;
+        private readonly IContractOrganizationService _contractOrganizationService;
         private readonly IAmendmentService _amendmentService;
         private readonly IOrganizationService _organization;
         private readonly IScopeWorkService _scopeWork;
@@ -26,7 +27,7 @@ namespace MvcLayer.Controllers
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
-            IAmendmentService amendmentService)
+            IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -35,6 +36,7 @@ namespace MvcLayer.Controllers
             _formService = formService;
             _swCostService = swCostService;
             _amendmentService = amendmentService;
+            _contractOrganizationService = contractOrganizationService;
         }
 
         public IActionResult Index()
@@ -285,17 +287,19 @@ namespace MvcLayer.Controllers
                 {
                     int mainContractId = 0;
 
-                    if (IsNotGenContract(contrId, out mainContractId))
+                    if (_contractService.IsNotGenContract(contrId, out mainContractId))
                     {
                         int? mainContrScpId = 0;
                         var costs = _swCostService.GetById((int)id);
                         if (contract?.IsOneOfMultiple ?? false)
                         {
 
-                        if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
-                        {
-                            _scopeWork.SubstractCostFromMainContract(mainContrScpId, costs);
-                        }
+                            if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
+                            {
+                                ///TODO: Ошибка непонятно с чем связанная
+                                //_scopeWork.SubstractCostFromMainContract(mainContrScpId, costs);
+                                _scopeWork.RemoveOneCostOfMainContract(mainContrScpId, costs);
+                            }
 
                             if (_contractService.IsThereScopeWorks(mainContractId, true, out mainContrScpId))
                             {
@@ -355,6 +359,25 @@ namespace MvcLayer.Controllers
                 var amend = listAmend.LastOrDefault();
                 #endregion
                 itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
+                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
+                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
+                itemViewModel.dateEnter = amend == null ? contract.EnteringTerm : amend.DateEntryObject;
+                #region Проверка дат
+
+                if (itemViewModel.dateBeginWork == null)
+                {
+                    itemViewModel.dateBeginWork = DateTime.Today;
+                }
+                if (itemViewModel.dateEndWork == null)
+                {
+                    itemViewModel.dateEndWork = DateTime.Today;
+                }
+                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
+                {
+                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
+                }
+
+                #endregion
                 #region Лист. Факт значений
                 Func<FormC3a, bool> where = w => w.ContractId == contract.Id;
                 Func<FormC3a, FormC3a> select = s => new FormC3a
@@ -371,8 +394,9 @@ namespace MvcLayer.Controllers
                 var listFact = _formService.Find(where, select);
                 #endregion
                 itemViewModel.remainingWork = itemViewModel.contractPrice - listFact.Sum(x => x.TotalCost);
-                #region                
-                for (var i = listAmend.Count()-1; i >= 0; i--)
+                #region Плановые значения Объема работ
+                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
+                for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
                     var scope = _scopeWork.GetScopeByAmendment(item.Id);
@@ -390,19 +414,91 @@ namespace MvcLayer.Controllers
                             MaterialCost = s.MaterialCost,
                             CostNds = s.CostNds
                         };
-                        var listScope = _swCostService.Find(whereSw, selectSw);
+                        listScope = _swCostService.Find(whereSw, selectSw);
                         break;
+                    }
+                }
+                if (listScope.Count() == 0)
+                {
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            SmrCost = s.SmrCost,
+                            AdditionalCost = s.AdditionalCost,
+                            PnrCost = s.PnrCost,
+                            EquipmentCost = s.EquipmentCost,
+                            OtherExpensesCost = s.OtherExpensesCost,
+                            MaterialCost = s.MaterialCost,
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
                     }
                 }
                 #endregion
                 if (listScope.Count() > 0)
                 {
-                    itemViewModel.currentYearScopeWork = listScope.Where(x =>
+                    itemViewModel.currentYearScopeWork = listScope.ToList().Where(x =>
                     Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period), new DateTime(DateTime.Now.Year, 12, 1));
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, new DateTime(DateTime.Now.Year, 12, 1))).Sum(x => x.CostNds);
                 }
+                itemViewModel.listScopeWork = new List<ItemScopeDeviationReport>();
+                #region Заполнение месяцев
+
+                for (var date = itemViewModel.dateBeginWork;
+                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     date = date.Value.AddMonths(1))
+                {
+                    var item = new ItemScopeDeviationReport();
+                    item.period = date;
+                    item.planScopeWork = new ScopeWorkForReport();
+                    item.factScopeWork = new ScopeWorkForReport();
+                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (plan != null)
+                    {
+                        item.planScopeWork.AdditionalCost = plan.AdditionalCost;
+                        item.planScopeWork.EquipmentCost = plan.EquipmentCost;
+                        item.planScopeWork.MaterialCost = plan.MaterialCost;
+                        item.planScopeWork.OtherExpensesCost = plan.OtherExpensesCost;
+                        item.planScopeWork.PnrCost = plan.PnrCost;
+                        item.planScopeWork.SmrCost = plan.SmrCost;
+                    }
+                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (fact != null)
+                    {
+                        item.factScopeWork.AdditionalCost = fact.AdditionalCost;
+                        item.factScopeWork.EquipmentCost = fact.EquipmentCost;
+                        item.factScopeWork.MaterialCost = fact.MaterialCost;
+                        item.factScopeWork.OtherExpensesCost = fact.OtherExpensesCost;
+                        item.factScopeWork.PnrCost = fact.PnrCost;
+                        item.factScopeWork.SmrCost = fact.SmrCost;
+                    }
+                    itemViewModel.listScopeWork.Add(item);
+                }
+
+                #endregion
+                #region Нахождение клиента и генподрядчика
+                var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (clientId != null && clientId != 0)
+                {
+                    itemViewModel.client = _organization.GetById(clientId).Abbr;
+                }
+                var genId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (genId != null && genId != 0)
+                {
+                    itemViewModel.genContractor = _organization.GetNameByContractId(genId);
+                }
+                #endregion
+                viewModel.Add((itemViewModel));
             }
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+            return View(viewModel);
         }
 
 

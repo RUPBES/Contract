@@ -16,6 +16,8 @@ namespace MvcLayer.Models.Reports
         public string? nameObject { get; set; }
         [DisplayName("Генподрядчик")]
         public string? genContractor { get; set; }
+        [DisplayName("Cубподрядчик")]
+        public string? subContractor { get; set; }
         [DisplayName("Заказчик")]
         public string? client { get; set; }
         [DisplayName("Дата начала работ")]

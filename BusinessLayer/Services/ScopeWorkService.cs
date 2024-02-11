@@ -576,7 +576,7 @@ namespace BusinessLayer.Services
 
             return scpMain;
         }
-
+        #endregion
         public ScopeWork GetScopeByAmendment(int amendmentId)
         {
             if (amendmentId != 0)

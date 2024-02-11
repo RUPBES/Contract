@@ -45,7 +45,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetPeriod(int id, int returnContractId = 0)
         {
-            var period = _scopeWork.GetFullPeriodRangeScopeWork(id);
+            var period = _scopeWork.GetPeriodRangeScopeWork(id);
             ViewData["returnContractId"] = returnContractId;
             ViewData["id"] = id;
             if (period is null)
@@ -102,7 +102,7 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 // по объему работ, берем начало и окончание периода
-                var period = _scopeWork.GetFullPeriodRangeScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
                 if (period is null)
                 {
