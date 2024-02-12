@@ -295,9 +295,7 @@ namespace MvcLayer.Controllers
                         {
 
                             if (_contractService.IsThereScopeWorks(mainContractId, false, out mainContrScpId))
-                            {
-                                ///TODO: Ошибка непонятно с чем связанная
-                                //_scopeWork.SubstractCostFromMainContract(mainContrScpId, costs);
+                            {                                
                                 _scopeWork.RemoveOneCostOfMainContract(mainContrScpId, costs);
                             }
 
@@ -350,6 +348,7 @@ namespace MvcLayer.Controllers
             foreach (var contract in list)
             {
                 var itemViewModel = new GetCostDeviationScopeWorkViewModel();
+                itemViewModel.Id = contract.Id;
                 itemViewModel.number = contract.Number;
                 itemViewModel.nameObject = contract.NameObject;
                 itemViewModel.currency = contract.Сurrency;
@@ -502,6 +501,207 @@ namespace MvcLayer.Controllers
         }
 
 
+        public IActionResult DetailsCostDeviation(int contractId)
+        {
+            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+                w.AgreementContractId == contractId ||
+                w.MultipleContractId == contractId ||
+                w.SubContractId == contractId;
+                
+            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice,
+                IsAgreementContract = s.IsAgreementContract,
+                IsSubContract = s.IsSubContract,
+                IsOneOfMultiple = s.IsOneOfMultiple
+            };
+            var list = _contractService.Find(where,select);
+
+            var viewModel = new List<GetCostDeviationScopeWorkViewModel>();
+            foreach (var contract in list)
+            {
+                var itemViewModel = new GetCostDeviationScopeWorkViewModel();
+                itemViewModel.number = contract.Number;
+                itemViewModel.nameObject = contract.NameObject;
+                itemViewModel.currency = contract.Сurrency;
+                itemViewModel.dateContract = contract.Date;
+                #region Доп. соглашения
+                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
+                var amend = listAmend.LastOrDefault();
+                #endregion
+                itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
+                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
+                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
+                itemViewModel.dateEnter = amend == null ? contract.EnteringTerm : amend.DateEntryObject;
+                #region Проверка дат
+
+                if (itemViewModel.dateBeginWork == null)
+                {
+                    itemViewModel.dateBeginWork = DateTime.Today;
+                }
+                if (itemViewModel.dateEndWork == null)
+                {
+                    itemViewModel.dateEndWork = DateTime.Today;
+                }
+                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
+                {
+                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
+                }
+
+                #endregion
+                #region Лист. Факт значений
+                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id;
+                Func<FormC3a, FormC3a> selectF = s => new FormC3a
+                {
+                    Period = s.Period,
+                    SmrCost = s.SmrCost,
+                    AdditionalCost = s.AdditionalCost,
+                    PnrCost = s.PnrCost,
+                    EquipmentCost = s.EquipmentCost,
+                    OtherExpensesCost = s.OtherExpensesCost,
+                    MaterialCost = s.MaterialCost,
+                    TotalCost = s.TotalCost
+                };
+                var listFact = _formService.Find(whereF, selectF);
+                #endregion
+                itemViewModel.remainingWork = itemViewModel.contractPrice - listFact.Sum(x => x.TotalCost);
+                #region Плановые значения Объема работ
+                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
+                for (var i = listAmend.Count() - 1; i >= 0; i--)
+                {
+                    var item = listAmend[i];
+                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            SmrCost = s.SmrCost,
+                            AdditionalCost = s.AdditionalCost,
+                            PnrCost = s.PnrCost,
+                            EquipmentCost = s.EquipmentCost,
+                            OtherExpensesCost = s.OtherExpensesCost,
+                            MaterialCost = s.MaterialCost,
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                        break;
+                    }
+                }
+                if (listScope.Count() == 0)
+                {
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            SmrCost = s.SmrCost,
+                            AdditionalCost = s.AdditionalCost,
+                            PnrCost = s.PnrCost,
+                            EquipmentCost = s.EquipmentCost,
+                            OtherExpensesCost = s.OtherExpensesCost,
+                            MaterialCost = s.MaterialCost,
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                    }
+                }
+                #endregion
+                if (listScope.Count() > 0)
+                {
+                    itemViewModel.currentYearScopeWork = listScope.ToList().Where(x =>
+                    Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)x.Period) &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, new DateTime(DateTime.Now.Year, 12, 1))).Sum(x => x.CostNds);
+                }
+                itemViewModel.listScopeWork = new List<ItemScopeDeviationReport>();
+                #region Заполнение месяцев
+
+                for (var date = itemViewModel.dateBeginWork;
+                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     date = date.Value.AddMonths(1))
+                {
+                    var item = new ItemScopeDeviationReport();
+                    item.period = date;
+                    item.planScopeWork = new ScopeWorkForReport();
+                    item.factScopeWork = new ScopeWorkForReport();
+                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (plan != null)
+                    {
+                        item.planScopeWork.AdditionalCost = plan.AdditionalCost;
+                        item.planScopeWork.EquipmentCost = plan.EquipmentCost;
+                        item.planScopeWork.MaterialCost = plan.MaterialCost;
+                        item.planScopeWork.OtherExpensesCost = plan.OtherExpensesCost;
+                        item.planScopeWork.PnrCost = plan.PnrCost;
+                        item.planScopeWork.SmrCost = plan.SmrCost;
+                    }
+                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (fact != null)
+                    {
+                        item.factScopeWork.AdditionalCost = fact.AdditionalCost;
+                        item.factScopeWork.EquipmentCost = fact.EquipmentCost;
+                        item.factScopeWork.MaterialCost = fact.MaterialCost;
+                        item.factScopeWork.OtherExpensesCost = fact.OtherExpensesCost;
+                        item.factScopeWork.PnrCost = fact.PnrCost;
+                        item.factScopeWork.SmrCost = fact.SmrCost;
+                    }
+                    itemViewModel.listScopeWork.Add(item);
+                }
+
+                #endregion
+                #region Нахождение клиента и генподрядчика
+                var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (clientId != null && clientId != 0)
+                {
+                    itemViewModel.client = _organization.GetById(clientId).Abbr;
+                }
+                var genId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (genId != null && genId != 0)
+                {
+                    itemViewModel.genContractor = _organization.GetNameByContractId(genId);
+                }
+                var subId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor != true && 
+                x.IsClient != true && contract.IsSubContract == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();                
+                if (subId != null && subId != 0)
+                {
+                    itemViewModel.subContractor = _organization.GetNameByContractId(subId);
+                }
+                if (contract.IsSubContract == true)
+                {
+                    itemViewModel.typeContract = "Sub";
+                }
+                else if (contract.IsAgreementContract == true)
+                {
+                    itemViewModel.typeContract = "Agr";
+                }
+                else if (contract.IsOneOfMultiple == true)
+                {
+                    itemViewModel.typeContract = "Obj";
+                }
+                else
+                {
+                    itemViewModel.typeContract = "Main";
+                }
+                #endregion
+                viewModel.Add((itemViewModel));
+            }
+            return View(viewModel);
+        }
 
         [Authorize(Policy = "ContrEditPolicy")]
         public IActionResult Edit(int id, int contractId, int returnContractId = 0)
@@ -552,12 +752,6 @@ namespace MvcLayer.Controllers
             return PartialView("_Period", Id);
         }
 
-        public IActionResult DetailsCostDeviation(int contractId)
-        {
-            var list = _contractService.Find(c => c.Id == contractId ||
-            c.AgreementContractId == contractId || c.MultipleContractId == contractId || c.SubContractId == contractId);
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
-        }
 
         #region AdditionsMethods
         private void CreateOrUpdateSWCostsOfMainContract(int multipleContractId, bool isOwnForses, List<SWCostDTO> costs)

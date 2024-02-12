@@ -268,11 +268,6 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(predicate));
         }
 
-        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select, Func<Contract, bool> order)
-        {
-            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select, order));
-        }
-
         public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
         {
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select));
@@ -387,35 +382,41 @@ namespace BusinessLayer.Services
 
         public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org)
         {
+            Func<Contract, bool> where;
+            Func<Contract, string> orderBy = o => o.NameObject;
+            Func<Contract, Contract> select = s => new Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice
+            };
             int skipEntities = (pageNum - 1) * pageSize;
-            IEnumerable<Contract> items;
-            List<Contract> itemsT = new List<Contract>();
             if (!String.IsNullOrEmpty(request))
             {
-                items = _database.Contracts.Find(c => 
-                    c.IsEngineering == false && 
-                    c.IsAgreementContract == false && 
-                    c.IsOneOfMultiple == false && 
-                    c.IsSubContract == false &&
-                    (c.Author == org || c.Owner == org) 
-                    &&
-                    ((c.NameObject != null &&
-                    c.NameObject.Contains(request)) 
-                    ||
-                    (c.Number != null && 
-                    c.Number.Contains(request))));                               
+                where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                (w.Author == org || w.Owner == org) &&
+                (w.NameObject.Contains(request) || w.Number.Contains(filter));
             }
             else
             {
-                items = _database.Contracts.Find(c =>
-                c.IsEngineering == false &&
-                c.IsAgreementContract == false &&
-                c.IsOneOfMultiple == false &&
-                c.IsSubContract == false &&
-                (c.Author == org || c.Owner == org));
+                where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                (w.Author == org || w.Owner == org) ;
             }
+            IEnumerable<Contract> items = _database.Contracts.Find(where:where, select:select).OrderBy(o => o.NameObject);
             count = items.Count();
-            items = items.OrderBy(s => s.NameObject).Skip(skipEntities).Take(pageSize);            
+            items = items.Skip(skipEntities).Take(pageSize);            
             var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }

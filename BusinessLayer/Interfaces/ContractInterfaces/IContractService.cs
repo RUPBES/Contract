@@ -6,6 +6,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IContractService : IService<ContractDTO, Contract>
     {
+        IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select);
         List<ContractDTO>? ExistContractAndReturnListSameContracts(string numberContract, DateTime? dateContract);
         bool ExistContractByNumber(string numberContract);
 
