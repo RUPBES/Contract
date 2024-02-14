@@ -50,6 +50,17 @@
             transform: scale(1);
             font-weight: bold;
         }
+        .form-label {
+            font-weight: bold;
+            margin-right: 1%;
+        }
+
+    #formFileMultiple {
+        width: 20%;
+        }
+        .mb-2 {
+        display: flex;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -69,15 +80,13 @@
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row">
+                    <div class="mb-2">
+                        <label for="formFileMultiple" class="form-label">Проценты:</label>
+                        <input asp-for="ServicePercent" id="formFileMultiple" class="form-control" type="number" step="0.01" min="0" max="100" />
+                    </div>
                     <div class="cont-table">
                         <table class="table table-bordered table-striped table-main">
-                            <tr>
-                                <th>Процент генуслуг</th>
-                                <td>
-                                    @Model.ServicePercent
-                                    <input asp-for="ServicePercent" class="form-control" type="number" step="0.01" min="0" max="100"/>
-                                </td>
-                            </tr>
+      
                             <tr>
 
                                 <th>Период</th>
@@ -115,7 +124,7 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                        <input type="submit" value="Создать" class="btn btn-primary" />
                     </div>
                 </form>
 
