@@ -1,0 +1,481 @@
+﻿@using BusinessLayer.Helpers;
+@model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
+@{
+    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
+    DateTime startPeriod = new DateTime(4000, 1, 1);
+    DateTime endPeriod = new DateTime(1000, 1, 1);
+    foreach (var item in Model)
+    {
+        if (item.dateBeginWork != null)
+        {
+            if (startPeriod > item.dateBeginWork)
+            {
+                startPeriod = (DateTime)item.dateBeginWork;
+            }
+        }
+
+        if (item.dateEndWork != null)
+        {
+            if (endPeriod < item.dateEndWork)
+            {
+                endPeriod = (DateTime)item.dateEndWork;
+            }
+        }
+    }
+}
+<style>
+    table {
+        text-align: center;
+    }
+
+    .wrapper-table {
+        width: 88vw;
+        height: 75vh;
+        overflow: scroll;
+    }
+
+        .wrapper-table tbody, td, tfoot, th, thead, tr {
+            /* border-color: #373b3e; */
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .wrapper-table table td:first-child {
+            position: sticky;
+            z-index: 10;
+            left: -1px;
+            background-color: #adadad;
+        }
+
+        .wrapper-table table tr:first-child th:first-child {
+            position: sticky;
+            z-index: 20;
+            left: -1px;
+            top: 0;
+        }
+
+        .wrapper-table thead {
+            position: sticky;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            opacity: 1;
+            border-color: #373b3e;
+        }
+
+    .Agreement {
+        background-color: #ccf3ff !important;
+    }
+
+    .SubContract {
+        background-color: #d8f3d8 !important;
+    }
+
+    .Multiple {
+        background-color: lightsalmon !important;
+    }
+
+    .square {
+        width: 20px;
+        height: 20px;
+    }
+
+    .second-td-elem {
+        z-index: 5 !important;
+        box-shadow: inset 0 0 0 9999px #bdbac3 !important;
+        background-color: grey !important;
+    }
+
+
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="min-width:90vw;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-action="GetPayableCash" class="close-btn"></a>
+                </div>
+                <div style="display:flex">
+                    <div class="square Agreement"></div>
+                    <label> - Соглашения с филиалом </label>
+                    <div class="square SubContract k-ml-1"></div>
+                    <label> - Договор Субподряда </label>
+                    <div class="square Multiple k-ml-1"></div>
+                    <label> - Подобъект</label>
+                </div>
+                <hr class="modal-line" />
+                <div class="wrapper-table">
+                    <table class="table table-bordered table-main table-main-short">
+                        <thead class="text-center text-white align-top" style="position:sticky">
+                            <tr>
+                                <th rowspan="2">
+                                    Номер и дата договора
+                                </th>
+                                <th rowspan="2">
+                                    Наименование объекта
+                                </th>
+                                <th rowspan="2">
+                                    Заказчик
+                                </th>
+                                <th rowspan="2">
+                                    Генподрядчик (филиал-исполнитель по приказу)
+                                </th>
+                                <th rowspan="2">
+                                    Субподрядчик (филиал-исполнитель по приказу)
+                                </th>
+                                <th rowspan="2">
+                                    Сроки выполнения работ
+                                </th>
+                                <th rowspan="2">
+                                    Срок ввода
+                                </th>
+                                <th rowspan="2">
+                                    Валюта расчетов
+                                </th>
+                                <th rowspan="2">
+                                    Контракная договорная цена, с учетом НДС
+                                </th>
+                                <th rowspan="2">
+                                    Остаток по выполнению от стоимости контрактной цены
+                                </th>
+                                <th rowspan="2">
+                                    Объем на текущий год
+                                </th>
+                                <th rowspan="2">
+                                    Фактическое выполнение по справке С-3а, в т.ч.
+                                </th>
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
+                                {
+                                    <th colspan="2">
+                                        @iterator.ToString("MMMM yyyy")
+                                    </th>
+                                }
+                            </tr>
+
+                            <tr>
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
+                                {
+                                    <th>
+                                        к оплате
+                                    </th>
+                                    <th>
+                                        из них на счет РУП "БЭС"-УКХ"
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody style="max-height:70vh;">
+                            @foreach (var item in Model.Where(m => m.typeContract == "Main"))
+                            {
+                                <tr>
+                                    <td>
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.nameObject
+                                    </td>
+                                    <td>
+                                        @item.client
+                                    </td>
+                                    <td>
+                                        @item.genContractor
+                                    </td>
+                                    <td>
+                                        @item.subContractor
+                                    </td>
+                                    <td>
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.dateEnter?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.currency
+                                    </td>
+                                    <td class="text-end">
+                                        @item.contractPrice?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.remainingWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.currentYearScopeWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.factWorkByC3A?.ToString("N2")
+                                    </td>
+
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator,endPeriod); 
+                                    iterator = iterator.AddMonths(1))
+                                    {
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
+                                                {
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
+                                                {
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
+                                    }
+                                </tr>
+                            }
+
+                            @foreach (var item in Model.Where(m => m.typeContract == "Agr"))
+                            {                               
+                                <tr class="Agreement">
+                                    <td>
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.nameObject
+                                    </td>
+                                    <td>
+                                        @item.client
+                                    </td>
+                                    <td>
+                                        @item.genContractor
+                                    </td>
+                                    <td>
+                                        @item.subContractor
+                                    </td>
+                                    <td>
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.dateEnter?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.currency
+                                    </td>
+                                    <td class="text-end">
+                                        @item.contractPrice?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.remainingWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.currentYearScopeWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.factWorkByC3A?.ToString("N2")
+                                    </td>
+
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
+                                    {
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
+                                                {
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
+                                                {
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
+                                    }
+                                </tr>
+                            }
+
+                            @foreach (var item in Model.Where(m => m.typeContract == "Sub"))
+                            {                               
+                                <tr class="SubContract">
+                                    <td>
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.nameObject
+                                    </td>
+                                    <td>
+                                        @item.client
+                                    </td>
+                                    <td>
+                                        @item.genContractor
+                                    </td>
+                                    <td>
+                                        @item.subContractor
+                                    </td>
+                                    <td>
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.dateEnter?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.currency
+                                    </td>
+                                    <td class="text-end">
+                                        @item.contractPrice?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.remainingWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.currentYearScopeWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.factWorkByC3A?.ToString("N2")
+                                    </td>
+
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
+                                    {
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
+                                                {
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
+                                                {
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
+                                    }
+                                </tr>
+                            }
+
+                            @foreach (var item in Model.Where(m => m.typeContract == "Obj"))
+                            {                                
+                                <tr class="Multiple">
+                                    <td>
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.nameObject
+                                    </td>
+                                    <td>
+                                        @item.client
+                                    </td>
+                                    <td>
+                                        @item.genContractor
+                                    </td>
+                                    <td>
+                                        @item.subContractor
+                                    </td>
+                                    <td>
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.dateEnter?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.currency
+                                    </td>
+                                    <td class="text-end">
+                                        @item.contractPrice?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.remainingWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.currentYearScopeWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.factWorkByC3A?.ToString("N2")
+                                    </td>
+
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
+                                    {
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
+                                                {
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
+                                                {
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

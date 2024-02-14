@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Отдел/управление
-/// </summary>
-public partial class Department
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Department
+    {
 
-    /// <summary>
-    /// Название
-    /// </summary>
-    public string? Name { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int? OrganizationId { get; set; }
 
-    public int? OrganizationId { get; set; }
-
-    public virtual Organization? Organization { get; set; }
-
-    public virtual List<Employee> Employees { get; set; } = new List<Employee>();
+        public virtual Organization Organization { get; set; }
+        public virtual List<DepartmentEmployee> DepartmentEmployees { get; set; } = new List<DepartmentEmployee>();
+    }
 }

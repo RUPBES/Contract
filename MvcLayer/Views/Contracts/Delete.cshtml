@@ -4,11 +4,11 @@
     ViewData["Title"] = "Delete";
 }
 
-<h1>Delete</h1>
+<h1>Удаление</h1>
 
-<h3>Are you sure you want to delete this?</h3>
+<h3>Вы уверенны что хотите удалить этот договор?</h3>
 <div>
-    <h4>Contract</h4>
+    <h4>Договор</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -17,36 +17,40 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Number)
         </dd>
+        
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Date)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
+            @Model.Date?.ToShortDateString()
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.EnteringTerm)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EnteringTerm)
+            @Model.EnteringTerm?.ToShortDateString()
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ContractTerm)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ContractTerm)
+            @Model.ContractTerm?.ToShortDateString()
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.DateBeginWork)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateBeginWork)
+            @Model.DateBeginWork?.ToShortDateString()
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.DateEndWork)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateEndWork)
+            @Model.DateEndWork?.ToShortDateString()
         </dd>
+        
+        
+        
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Сurrency)
         </dt>
@@ -64,54 +68,19 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.NameObject)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Client)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Client)
-        </dd>
+        </dd>        
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.FundingSource)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.FundingSource)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsSubContract)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsSubContract)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsEngineering)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsEngineering)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsAgreementContract)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsAgreementContract)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AgreementContract)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AgreementContract.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SubContract)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SubContract.Id)
-        </dd>
+        
     </dl>
     
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        <input type="submit" value="Удалить" class="btn btn-danger" /> |
+        <a asp-action="Index">Вернуться назад</a>
     </form>
 </div>

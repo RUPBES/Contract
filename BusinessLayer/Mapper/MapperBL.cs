@@ -1,12 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Azure.Core.HttpHeader;
 
 namespace BusinessLayer.Mapper
 {
@@ -17,21 +11,47 @@ namespace BusinessLayer.Mapper
             CreateMap<Act, ActDTO>().ReverseMap();
             CreateMap<Address, AddressDTO>().ReverseMap();
             CreateMap<Amendment, AmendmentDTO>().ReverseMap();
+            CreateMap<AmendmentFile, AmendmentFileDTO>().ReverseMap();
+
+            CreateMap<PrepaymentFact, PrepaymentFactDTO>().ReverseMap();
+            CreateMap<PrepaymentPlan, PrepaymentPlanDTO>().ReverseMap();
+
             CreateMap<Contract, ContractDTO>().ReverseMap();
+            CreateMap<ContractFile, ContractFileDTO>().ReverseMap();
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
+            CreateMap<CommissionActDTO, CommissionAct>().ReverseMap();
+            CreateMap<CommissionActFileDTO, CommissionActFile>().ReverseMap();
             CreateMap<Correspondence, CorrespondenceDTO>().ReverseMap();
             CreateMap<Department, DepartmentDTO>().ReverseMap();
+            CreateMap<DepartmentEmployee, DepartmentEmployeeDTO>().ReverseMap();
             CreateMap<Employee, EmployeeDTO>().ReverseMap();
+            CreateMap<EmployeeContract, EmployeeContractDTO>().ReverseMap();
+            CreateMap<EstimateDocDTO, EstimateDoc>().ReverseMap();
+            CreateMap<EstimateDocFileDTO, EstimateDocFile>().ReverseMap();
+            CreateMap<FormC3a, FormDTO>().ReverseMap();
             CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
+            CreateMap<Log, LogDTO>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
-            CreateMap<Phone, PhoneDTO>().ReverseMap(); 
-            CreateMap<TypeOrganization, TypeOrganizationDTO>().ReverseMap();
+            CreateMap<MaterialDTO, MaterialGc>().ReverseMap();
+            CreateMap<MaterialCostDTO, MaterialCost>().ReverseMap();
+            CreateMap<MaterialAmendmentDTO, MaterialAmendment>().ReverseMap();
+            CreateMap<Payment, PaymentDTO>().ReverseMap();
+            CreateMap<PrepaymentDTO, Prepayment>().ReverseMap();
+            CreateMap<PrepaymentAmendmentDTO, PrepaymentAmendment>().ReverseMap();
+            CreateMap<Phone, PhoneDTO>().ReverseMap();
+            CreateMap<SelectionProcedure, SelectionProcedureDTO>().ReverseMap();
+            CreateMap<ServiceAmendmentDTO, ServiceAmendment>().ReverseMap();
+            CreateMap<ServiceGCDTO, ServiceGc>().ReverseMap();
+            CreateMap<ServiceCostDTO, ServiceCost>().ReverseMap();
+            CreateMap<ScopeWork, ScopeWorkDTO>().ReverseMap();
+            CreateMap<ScopeWorkAmendment, ScopeWorkAmendmentDTO>().ReverseMap();
+            CreateMap<SWCost, SWCostDTO>().ReverseMap();
+            CreateMap<TypeWork, TypeWorkDTO>().ReverseMap();
+            CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
+            CreateMap<VContract, ContractDTO>().ReverseMap();
+            CreateMap<VContract, VContractDTO>().ReverseMap();
+            CreateMap<VContractEngin, VContractDTO>().ReverseMap();
 
-            //CreateMap<VEmployeeDepartment, Department>()
-            //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))
-            //    .ForMember(x => x.InverseDepartment, y => y.Ignore())
-            //    .ForMember(t => t.Name, o => o.MapFrom(s => s.Department))
-            //    .ReverseMap();        
         }
     }
 }

@@ -8,7 +8,7 @@ namespace BusinessLayer.Enums
 {
     public enum PrepaymentConditionEnum
     {
-        NoPrepayment = 1,
+        NoPrepayment,
         CurrentPrepayment,
         TargetPrepayment
 

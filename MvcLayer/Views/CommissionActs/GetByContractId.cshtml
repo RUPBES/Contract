@@ -1,0 +1,121 @@
+﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
+@model IEnumerable<MvcLayer.Models.CommissionActViewModel>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+    ViewData["Title"] = "Акты ввода ";
+    bool isAdmin = true;
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+    string redirectAction = "GetByContractId";
+    string redirectController = "CommissionActs";
+    var contract = Contract.GetById((int)ViewData["contractId"]);
+    var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
+}
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Index" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <table class="table table-main">
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Number)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Date)
+                            </th>                            
+                            <th>Файлы</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Number)
+                                </td>
+                                <td>
+                                    @item.Date.Value.ToString("dd MMMM yyyy")
+                                </td>
+                               
+                                <td>
+                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.CommissionActs))
+                                    {
+                                        <div>
+                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                            @if (isAdmin)
+                                            {
+                                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="icon file-add" title="Добавить файл к акту">
+                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.CommissionActs" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                    </span>                                   
+                                    <span class="icon delete" title="Удалить акт">
+                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
+}

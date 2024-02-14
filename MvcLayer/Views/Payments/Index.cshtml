@@ -1,0 +1,58 @@
+﻿@using MvcLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@model IEnumerable<MvcLayer.Models.PaymentViewModel>
+
+<h1>Список оплат по договорам</h1>
+<table class="table table-striped table-bordered table-main" id="contractTable">
+    <thead>
+        <tr>
+            <th>
+                Период
+            </th>
+            <th>
+                Всего к оплате
+            </th>
+            <th>
+                Из них на счет РУП "БЭС"-УКХ"
+            </th>            
+            <th>
+                Договор
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (PaymentViewModel item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Period?.ToString("MMM yyyy")
+                </td>
+                <td>
+                    @item.PaySum?.ToString("N2")
+                </td>
+                <td>
+                    @item.PaySumForRupBes?.ToString("N2")
+                </td>
+                <td>
+                    @if (@item.ContractId is not null)
+                    {
+                        @item.Contract?.Number
+                    }
+                </td>
+                <td>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>            
+        }
+    </tbody>
+</table>
+<div>
+    <a class="button" asp-action="Index" asp-controller="Home">Вернуться на главную</a>
+</div>
+@section Scripts {
+    <script type="text/javascript">
+
+    </script>
+}
+

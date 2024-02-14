@@ -1,0 +1,362 @@
+﻿@using MvcLayer.Models;
+@using Newtonsoft.Json;
+@model MvcLayer.Models.PrepaymentViewModel
+
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@{
+    ViewData["Title"] = "Авансы";
+    int index = 0;
+
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+
+    bool isFact = Model.IsFact == true ? true : false;
+    string actionName = isFact ? "EditPrepayments" : "Create";
+    var contract = Contract.GetById((int)Model.ContractId);
+}
+<style>
+    .cont-table {
+        overflow-x: scroll;
+    }
+
+    th,
+    td {
+        min-width: 250px;
+    }
+
+    .input-group {
+        width:auto;
+    }
+
+    .dm-modal {
+        background-color: lightsteelblue;
+        max-width: 1200px;
+    }
+    .input_result {
+        width:150px;
+    }
+
+    .result_block {
+        display:flex;
+        justify-content: space-between;
+    }
+
+    .input_block--result{
+        display: flex
+    }
+
+    .text_error{
+        color:red;
+        font-weight:700;
+
+    }
+
+
+    #txt1.focused {
+        border-color: red;
+    }
+
+    .close-btn {
+        color: red;
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+             color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
+                    <div class="cont-table">
+                        <table class="table table-bordered table-striped table-main">
+
+                            @if (!isFact)
+                            {
+                                <tr>
+                                    <th>Период</th>
+                                    @foreach (var item in Model.PrepaymentPlans)
+                                    {
+                                        <th>
+                                            @item.Period?.ToString("MMM yyyy")
+                                            <input asp-for="@Model.PrepaymentPlans[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                        </th>
+                                        index++;
+                                    }
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                                @if (ViewBag.Current != null)
+                                {
+                                    <tr>
+                                        <th>Текущие авансы:</th>
+                                        @foreach (var item in Model.PrepaymentPlans)
+                                        {
+                                            if (Model.PrepaymentPlans[index].CurrentValue != null && Model.PrepaymentPlans[index].CurrentValue != 0)
+                                            {
+                                                <td><input name="PrepaymentPlans[@index].CurrentValue" value="@Model.PrepaymentPlans[index].CurrentValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td><input name="PrepaymentPlans[@index].CurrentValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+                                    </tr>
+                                }
+                                @if (ViewBag.Target != null)
+                                {
+                                    <tr>
+                                        <th>Целевые авансы</th>
+                                        @foreach (var item in Model.PrepaymentPlans)
+                                        {
+                                            if (Model.PrepaymentPlans[index].TargetValue != null && Model.PrepaymentPlans[index].TargetValue != 0)
+                                            {
+                                                <td><input name="PrepaymentPlans[@index].TargetValue" value="@Model.PrepaymentPlans[index].TargetValue" type="text" class="target form-control cost" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td><input name="PrepaymentPlans[@index].TargetValue" type="text" class="target form-control cost" /></td>
+                                            }
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th>Отработка целевых авансов</th>
+                                        @foreach (var item in Model.PrepaymentPlans)
+                                        {
+                                            if (Model.PrepaymentPlans[index].WorkingOutValue != null && Model.PrepaymentPlans[index].WorkingOutValue != 0)
+                                            {
+                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" value="@Model.PrepaymentPlans[index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
+                                            }
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+                                    </tr>
+                                }
+                            }
+                            @if (isFact)
+                            {
+                                <tr>
+                                    <th>Период:</th>
+                                    @foreach (var item in Model.PrepaymentFacts)
+                                    {
+                                        <td>
+                                            @item.Period?.ToString("MMM yyyy")
+                                            <input asp-for="@Model.PrepaymentFacts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                        </td>
+                                        index++;
+                                    }
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
+                                @if (ViewBag.Current != null)
+                                {
+                                    <tr>
+                                        <th>Текущие авансы по факту:</th>
+                                        @foreach (var item in Model.PrepaymentFacts)
+                                        {
+                                            if (Model.PrepaymentFacts[index].CurrentValue != null && Model.PrepaymentFacts[index].CurrentValue != 0)
+                                            {
+                                                <td><input name="PrepaymentFacts[@index].CurrentValue" value="@Model.PrepaymentFacts[index].CurrentValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td><input name="PrepaymentFacts[@index].CurrentValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+                                    </tr>
+                                }
+                                @if (ViewBag.Target != null)
+                                {
+                                    <tr>
+                                        <th>Текущие авансы по факту:</th>
+                                        @foreach (var item in Model.PrepaymentFacts)
+                                        {
+                                            if (Model.PrepaymentFacts[index].TargetValue != null && Model.PrepaymentFacts[index].TargetValue != 0)
+                                            {
+                                                <td><input name="PrepaymentFacts[@index].TargetValue" value="@Model.PrepaymentFacts[index].TargetValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td><input name="PrepaymentFacts[@index].TargetValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+                                    </tr>
+                                    <tr>
+                                        <th>Отработка целевых по факту:</th>
+                                        @foreach (var item in Model.PrepaymentFacts)
+                                        {
+                                            if (Model.PrepaymentFacts[index].WorkingOutValue != null && Model.PrepaymentFacts[index].WorkingOutValue != 0)
+                                            {
+                                                <td><input name="PrepaymentFacts[@index].WorkingOutValue" value="@Model.PrepaymentFacts[index].WorkingOutValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            else
+                                            {
+                                                <td><input name="PrepaymentFacts[@index].WorkingOutValue" type="text" class="form-control cost" /></td>
+                                            }
+                                            index++;
+                                        }
+                                        @{
+                                            index = 0;
+                                        }
+                                    </tr>
+                                }
+                            }
+                            @if (isFact)
+                            {
+                                <input asp-for="@Model.Id" hidden />
+                            }
+                            <input asp-for="@Model.AmendmentId" hidden />
+                            <input asp-for="@Model.ContractId" hidden />
+                            <input asp-for="@Model.IsChange" hidden />
+                            <input asp-for="@Model.ChangePrepaymentId" hidden />
+                        </table>
+                    </div>
+                    <div class="form-group mt-3 result_block">
+                        @if (ViewBag.Target != null)
+                        {
+
+                            var target = Model.PrepaymentPlans.Sum(x => x.TargetValue);
+                            var workTarget = Model.PrepaymentPlans.Sum(x => x.WorkingOutValue);
+                            var result = target - workTarget;
+                            <div class="input_block--result">
+                                <div class="input-group">
+                                    <span class="input-group-text">Целевой:</span>
+
+                            <input class="input_result" id="sumTarget" value="@target?.ToString("N2")" readonly />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">Отработка целевого:</span>
+                                <input class="input_result" id="sumTargetWork" value="@workTarget?.ToString("N2")" readonly />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">Разница </span>
+                                <input class=" input_result" id="result" value="@result?.ToString("N2")" readonly />
+                                </div>
+
+                            </div>
+                        }
+                        <span id="text_error" class="text_error"></span>
+
+                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
+
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    <script>
+                    $(function ($) {
+                var allCost = $(".cost")
+                        for (let el of allCost) {
+                            digits_float(el)
+                        }
+                        $('body').on('input', '.cost', function (e) {
+                            digits_float(this);
+                        });
+                    });
+                    $('body').on('input', '.target', function (e) {
+                        check();
+                    });
+                    $('body').on('input', '.targetWork', function (e) {
+                        check();
+                    });
+
+                    function check() {
+                        let btn = document.getElementById("createButton");
+
+                        let target = $(".target");
+                        let targetWork = $(".targetWork");
+                        let sumTarget = 0;
+                        let sumTargetWork = 0;
+                        let result = 0;
+                        for (let item of target) {
+                            const regExp = /,/g;
+                            let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                            console.log(num, 'number:', +num, 'num - target')
+                            sumTarget += +num;
+                        }
+                        for (let item of targetWork) {
+                            const regExp = /,/g;
+                            let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                            console.log(num, 'number:', +num, 'num - targetWork')
+
+                            sumTargetWork += +num;
+                        }
+
+                        result = sumTarget - sumTargetWork;
+                        if (result === 0) {
+                            $("#result").focus(function () { $(this).addClass("focused") });
+                            btn.removeAttribute('disabled')
+                            $('#text_error').text('')
+
+
+                } else {
+                            btn.setAttribute('disabled', true)
+                            $('#text_error').text('Сумма не сходится!')
+
+                        }
+
+                        $("#sumTarget").val(sumTarget);
+                        $("#sumTargetWork").val(sumTargetWork);
+                        $("#result").val(result.toFixed(2));
+                    }
+
+    </script>
+    }
+}

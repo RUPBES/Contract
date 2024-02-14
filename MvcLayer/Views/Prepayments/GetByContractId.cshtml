@@ -1,0 +1,368 @@
+﻿@model PrepaymentStatementViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentService Prepayment
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentFactService PrepFact
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPrepaymentPlanService PrepPlan
+@using BusinessLayer.Helpers;
+@using MvcLayer.Models;
+@using MvcLayer.Models.Reports;
+
+<style>
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+    td, tr {
+        min-width: 105px;
+    }
+
+
+    .form_period {
+        display: flex;
+        margin-bottom: 1%;
+    }
+    .period_input {
+        width: 15.5%; 
+        margin-right: 1%;
+    }
+
+    .input-group-text {
+        font-weight: 600;
+    }
+
+
+    .td-pointer {
+        cursor: pointer;
+        background-color: #73d5e9 !important;
+        border-color: #73d5e9 !important;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px !important;
+        border-radius: 5px !important;
+        transition-property: background-color;
+        transition-duration: 0.5s;
+    }
+
+    .td-pointer:hover {
+            background-color: #1bcbef !important;
+            border-color: #1bcbef !important;
+        }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+@{
+    ViewData["Title"] = string.Empty;
+    var contractId = ViewBag.contractId;
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+    if (contractId is not null)
+    {
+        var number = Contract.GetById((int)contractId).Number;
+        ViewData["Title"] = $"Ведомость использования авансов № {number}";
+    }
+    Model.listSmrWithAvans = Model.listSmrWithAvans.OrderBy(x => x.Period).ToList();
+    var countSmr = 2 + Model.listSmrWithAvans.Count * 2;
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <form asp-action="GetByContractId" class="form_period">
+                    <label class="input-group-text" for="start">Начало:</label>
+
+                    <input id="start" class="form-control period_input" asp-for="startPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <label class="input-group-text" for="end">Конец:</label>
+
+                    <input id="end" class="form-control period_input" asp-for="endPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <input name="contractId" value="@ViewBag.contractId" hidden />
+                    <input asp-for="NameAmendment" hidden />
+                    <input asp-for="Client" hidden />
+                    <input asp-for="NameObject" hidden />
+                    <input asp-for="minStartPeriod" hidden />
+                    <input asp-for="maxEndPeriod" hidden />
+                    <input asp-for="TheoryCurrent" hidden />
+                    <input asp-for="TheoryTarget" hidden />
+                    <input asp-for="TargetRepaid" hidden />
+                    <input asp-for="TargetReceived" hidden />
+                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+                    <button class="btn btn-warning" type="submit"> выбрать период</button>
+                </form>
+                <form id="Amendment" asp-action="GetByContractIdWithAmendments">
+                    <input id="anotherStart" asp-for="startPeriod" type="date" hidden/>
+                    <input id="anotherEnd" asp-for="endPeriod" type="date" hidden/>
+                    <input name="contractId" value="@ViewBag.contractId" hidden />
+                    <input asp-for="NameAmendment" hidden />
+                    <input asp-for="Client" hidden />
+                    <input asp-for="NameObject" hidden />
+                    <input asp-for="minStartPeriod" hidden />
+                    <input asp-for="maxEndPeriod" hidden />
+                    <input asp-for="TheoryCurrent" hidden />
+                    <input asp-for="TheoryTarget" hidden />
+                    <input asp-for="TargetRepaid" hidden />
+                    <input asp-for="TargetReceived" hidden />
+                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+                </form>
+                <div style="max-height:auto; max-width:80vw; overflow:scroll">
+                    <table class="table table-bordered table-main table-main-short">
+                        <thead>
+                            <tr>
+                                <th rowspan="3">
+                                    <span>Объект</span>
+                                </th>
+                                <th rowspan="3">
+                                    <span>Заказчик</span>
+                                </th>
+                                <th rowspan="2" colspan="2">
+                                    <span>Всего по договору аванса</span>
+                                </th>
+                                <th colspan="3">
+                                    <span>Целевой аванс, руб.</span>
+                                </th>
+                                <th>
+                                    <span></span>
+                                </th>
+                                <th colspan="@countSmr">
+                                    <span>СМР и Погашение аванса по месяцам, согласно графикам платежей к договору</span>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th rowspan="2">
+                                    <span>Получено</span>
+                                </th>
+                                <th rowspan="2">
+                                    <span>Погашено</span>
+                                </th>
+                                <th rowspan="2">
+                                    <span>Не погашено</span>
+                                </th>
+                                <th rowspan="2">
+                                    <span>Документ</span>
+                                </th>
+                                <th rowspan="2">
+                                    <span></span>
+                                </th>
+                                <th rowspan="2">
+                                    <span>Согласно ДС @Model.NameAmendment</span>
+                                </th>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    <th colspan="2">
+                                        <span>@item.Period?.ToString("MMMM yyyy")</span>
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                <th>
+                                    <span>Получено</span>
+                                </th>
+                                <th>
+                                    <span>Текущего</span>
+                                </th>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    <th>
+                                        <span>Стоимость работ по графику</span>
+                                    </th>
+                                    <th>
+                                        <span>Отработка аванса по графику</span>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="4">
+                                    <span>
+                                        @Model.NameObject
+                                    </span>
+                                </td>
+                                <td rowspan="4">
+                                    <span>
+                                        @Model.Client
+                                    </span>
+                                </td>
+                                <td rowspan="4">
+                                    <span>
+                                        @Model.TheoryTarget?.ToString("N2")
+                                    </span>
+                                </td>
+                                <td rowspan="4">
+                                    <span>
+                                        @Model.TheoryCurrent?.ToString("N2")
+                                    </span>
+                                </td>
+                                <td rowspan="4">
+                                    <span>
+                                        @Model.TargetRepaid?.ToString("N2")
+                                    </span>
+                                </td>
+                                <td rowspan="4">
+                                    <span>
+                                        @Model.TargetReceived?.ToString("N2")
+                                    </span>
+                                </td>
+                                <td rowspan="4">
+                                    <span>
+                                        @((Model.TargetRepaid - Model.TargetReceived)?.ToString("N2"))
+                                    </span>
+                                </td>
+                                <td class="td-pointer" onclick="ShowAmendment()" rowspan="2">
+                                    <div>
+                                        <span class="btn-text">ДС @Model.NameAmendment</span>
+                                    </div>
+                                </td>
+                                <td rowspan="2">
+                                    <span>
+                                        План
+                                    </span>
+                                </td>
+                                <td>
+                                    <span>
+                                        Целевой
+                                    </span>
+                                </td>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    <td rowspan="2">
+                                        <span>
+                                            @item.SmrPlan?.ToString("N2")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            @item.TargetPlan?.ToString("N2")
+                                        </span>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span>
+                                        Текущий
+                                    </span>
+                                </td>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    <td>
+                                        <span>
+                                            @item.CurrentPlan?.ToString("N2")
+                                        </span>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td rowspan="2">
+                                    @foreach (var item in Model.listFiles)
+                                    {
+                                        <span>
+                                            <a href="~/Files/GetFile?id=@item.Id" target="_blank">@item.FileName</a>
+                                        </span>
+                                    }
+                                </td>
+                                <td rowspan="2">
+                                    <span>
+                                        Факт
+                                    </span>
+                                </td>
+                                <td>
+                                    <span>
+                                        Целевой
+                                    </span>
+                                </td>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    <td rowspan="2">
+                                        <span>
+                                            @item.SmrFact?.ToString("N2")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            @item.TargetFact?.ToString("N2")
+                                        </span>
+                                    </td>
+                                }
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span>
+                                        Текущий
+                                    </span>
+                                </td>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    <td>
+                                        <span>
+                                            @item.CurrentFact?.ToString("N2")
+                                        </span>
+                                    </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let dateStart = document.querySelector("#start");
+    let dateEnd = document.querySelector("#end");
+    dateStart.addEventListener('change', (e) => {
+        let valStart = dateStart.value;
+        let valEnd = dateEnd.value;
+        if (!valEnd || valStart > valEnd) 
+        {            
+            $("#end").val(valStart);                     
+        }
+    });
+    dateEnd.addEventListener('change', (e) => {
+        let valStart = dateStart.value;
+        let valEnd = dateEnd.value;
+
+        if (!valStart || valEnd < valStart) 
+        { 
+            $("#start").val(valEnd);
+        }
+    });
+
+    function ShowAmendment() {
+        let dateStart = document.querySelector("#start");
+        let dateEnd = document.querySelector("#end");
+        let valStart = dateStart.value;
+        let valEnd = dateEnd.value;
+        $("#anotherStart").val(valStart);
+        $("#anotherEnd").val(valEnd);
+        $("#Amendment").submit();
+    }
+</script>

@@ -1,41 +1,113 @@
 ﻿@model IEnumerable<MvcLayer.Models.DepartmentViewModel>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Отделы";
 }
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
 
-<h1>Index</h1>
+    .close-btn {
+        color: red
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Organization)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Organization.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="" class="close-btn "></a>
+                </div>
+                <p>
+                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Departments")'">Новый договор</button>
+                    @using (Html.BeginForm("Index", "Departments", FormMethod.Get))
+                    {
+                        <form style="search-form">
+                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("query", ViewBag.CurrentFilter as string)
+                            <input type="submit" value="Найти" />
+                        </form>
+                    }
+                </p>
+                <table class="table"> 
+                    <thead>
+                        <tr>
+                            <th>
+                                @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.ActionLink("Организация", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayOrganization", @class=""})
+                                @Html.DisplayNameFor(model => model.Organization)
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Name)
+                                </td>
+                                <td>
+                                    @item.Organization.Name
+                                </td>
+                                <td>
+                                    <span class="icon edit" title="Редактировать">
+                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                    </span>
+                                    <span class="icon delete" title="Удалить">
+                                        <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let actualUrl = window.location.search;
+    let elementArrayNumberanddate = document.getElementById("arrayName");
+    let elementArrayNameObject = document.getElementById("arrayOrganization");
+
+    if (actualUrl.includes('nameDesc')) {
+        elementArrayNumberanddate.classList.remove("up")
+        elementArrayNumberanddate.classList.add('down')
+    } else if (actualUrl.includes('name')) {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.add('up')
+    } else {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.remove("up")
+    }
+
+    if (actualUrl.includes('organizationDesc')) {
+        elementArrayNumberanddate.classList.remove("up")
+        elementArrayNumberanddate.classList.add('down')
+    } else if (actualUrl.includes('organization')) {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.add('up')
+    } else {
+        elementArrayNumberanddate.classList.remove("down")
+        elementArrayNumberanddate.classList.remove("up")
+    }
+</script>

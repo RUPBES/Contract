@@ -1,0 +1,102 @@
+﻿@model MvcLayer.Models.PrepaymentViewModel
+@{
+    ViewData["Title"] = "Добавление аванса, полученного фактически";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+}
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+    .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+    .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                
+                <form asp-action="Create" class="row" enctype="multipart/form-data">           
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                    <input asp-for="@Model.PrepaymentFacts[0].PrepaymentId" value="@Model?.Id" hidden />
+                    <input asp-for="Period" value="@Model?.Period" hidden />
+                    <input asp-for="PrepaymentFacts[0].Period" value="@Model.Period" type="datetime" hidden />
+
+                    <div class="form-group col-6">
+                        <label class="control-label">Месяц</label>
+                        <input asp-for="PrepaymentFacts[0].Period" value="@Model.Period?.ToShortDateString()" type="datetime" class="form-control" disabled />
+                    </div>
+                    @if (ViewBag.Current != null)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="CurrentValueFact" class="control-label"></label>
+                            <input name="PrepaymentFacts[0].CurrentValue" type="text" class="form-control cost" />
+                        </div>
+                    }                   
+                    @if (ViewBag.Target != null)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="TargetValueFact" class="control-label"></label>
+                            <input name="PrepaymentFacts[0].TargetValue" type="text" class="form-control cost" />
+
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="WorkingOutValueFact" class="control-label"></label>
+                            <input name="PrepaymentFacts[0].WorkingOutValue" type="text" class="form-control cost" />
+                        </div>
+                    }
+                    <div class="form-group mt-1 btn_block">
+                        <input type="submit" value="Создать" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                var allCost = $(".cost")
+                for (let el of allCost) {
+                    digits_float(el)
+                }
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+            });
+        </script>
+    }
+}

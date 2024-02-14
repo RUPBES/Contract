@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Models;
 using Microsoft.Extensions.Logging;
 
 namespace BusinessLayer.Helpers
@@ -20,16 +21,26 @@ namespace BusinessLayer.Helpers
         {
             try
             {
-                LogDTO log = new LogDTO();
+                _contract.Logs.Create(new Log
+                {
+                    LogLevel = logLevel.ToString(),
+                    Message = message,
+                    NameSpace = nameSpace,
+                    MethodName = methodName,
+                    UserName = userName,
+                    DateTime = DateTime.Now
+                });
+                _contract.Save();
+                //LogDTO log = new LogDTO();
 
-                log.LogLevel = logLevel.ToString();
-                log.Message = message;
-                log.NameSpace = nameSpace;
-                log.MethodName = methodName;
-                log.UserName = userName;
-                log.Date = DateTime.Now;
+                //log.LogLevel = logLevel.ToString();
+                //log.Message = message;
+                //log.NameSpace = nameSpace;
+                //log.MethodName = methodName;
+                //log.UserName = userName;
+                //log.Date = DateTime.Now;
 
-                _contract.Logs.Create(_mapper.Map<Log>(log));
+                //_contract.Logs.Create(_mapper.Map<Log>(log));
             }
             catch (Exception)
             {

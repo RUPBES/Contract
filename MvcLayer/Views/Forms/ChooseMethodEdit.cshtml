@@ -1,0 +1,153 @@
+﻿@{
+    ViewData["Title"] = "Чтение данных из файла форма С-3А";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+}
+@section Table {
+    <style>
+        #buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .demo-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dm-modal {
+            background-color: lightsteelblue;
+        }
+
+        .close-btn {
+            color: red
+        }
+
+
+            .close-btn::after {
+                border: 2px solid #F00 !important;
+            }
+
+            .close-btn:hover::after {
+                border-color: red !important;
+                color: red !important;
+                -webkit-transform: scale(1);
+                -moz-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
+                font-weight: bold;
+            }
+    </style>
+    <div class="dm-overlay">
+        <div class="dm-table">
+            <div class="dm-cell">
+                <div class="dm-modal" style="width:500px;">
+                    <div class="top-modal-block">
+                        <label class="my-modal-title">@ViewData["Title"]</label>
+                        @if (backId != null && backId > 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                        }
+                        @if (backId == null || backId == 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        }
+                    </div>
+                    <hr class="modal-line">
+                    <div id="buttons">
+                        <a class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" asp-action="Edit" asp-route-id="@ViewBag.formId" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">Ручное редактирование</a>
+                        <button class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md" onclick="ShowInputFile()">Взять данные из файла</button>
+                    </div>
+                    <div id="hiddenFile" style="display:none">
+                        <form id="files" method="post" enctype="multipart/form-data">
+                            <div id="example" style="min-width:400px; max-width: 800px;">
+                                <div class="demo-section">
+
+                                    <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
+                                    <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
+                                        <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
+                                    </div>
+                                    <p style="padding-top: 1em; text-align: right">
+                                        <button type="submit" class="btn btn-success">Загрузить</button>
+                                    </p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="result">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input id="contractId" value="@ViewBag.contractId" hidden />
+    <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
+    <input id="formId" value="@ViewBag.formId" hidden />
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        $("form#files").submit(function () {
+            let contractId = $("#contractId").val();
+            let returnContractId = $("#returnContractId").val();
+            let formId = $("#formId").val();
+            
+            let formData = new FormData(files);            
+            event.preventDefault()
+            function setProgress(e) {
+                if (e.lengthComputable) {
+                    $("#container_progress").removeAttr('style');
+                    var complete = e.loaded / e.total;
+                    var completeFloor = Math.floor(complete * 100)
+                    $("#pBar").attr('style', `width:${completeFloor}%`);
+                    $("#pBar").text(`${completeFloor}%`);
+                }
+            }
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", setProgress, false);
+                    xhr.addEventListener("progress", setProgress, false);
+                    return xhr;
+                },
+                type: 'POST',
+                url: '@Url.Action("DownloadFile", "Parse")',
+                data: formData,
+                success: function (data) {
+                    let path = data;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetListCount", "Parse")',
+                        data: { path: path, contractId: contractId, returnContractId: returnContractId, formId: formId },
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#result").html(data)
+                        }
+                    });
+                    $("#container_progress").attr('style', `display:none`);
+                },
+                error: function (result) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowError", "Parse")',
+                        data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#result").html(data)
+                            $("#container_progress").attr('style', `display:none`);
+                        }
+                    });
+                },
+                contentType: false,
+                processData: false
+            });
+
+            return false;
+        });
+
+        function ShowInputFile() {
+            $("#buttons").hide();
+            $("#hiddenFile").show();
+        }
+    </script>
+}

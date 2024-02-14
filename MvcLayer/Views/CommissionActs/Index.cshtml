@@ -1,0 +1,80 @@
+﻿@model IEnumerable<MvcLayer.Models.CommissionActViewModel>
+@using BusinessLayer.Enums;
+@using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+
+@{
+    ViewData["Title"] = "Акты ввода";
+    bool isAdmin = true;
+    string redirectAction = "Index";
+    string redirectController = "CommissionActs";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Create">Добавить</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Number)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Date)
+            </th>            
+            <th>Файлы</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Number)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Date)
+                </td>
+               
+                <td>
+                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.CommissionActs))
+                    {
+                        <div>
+                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            @if (isAdmin)
+                            {
+                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                            }
+                        </div>
+                    }
+                </td>
+                <td>
+                    <a asp-action="AddFile" asp-controller="Files" 
+                    asp-route-entityId="@item.Id" 
+                    asp-route-fileCategory="@FolderEnum.CommissionActs"
+                    asp-route-redirectAction=@redirectAction 
+                    asp-route-redirectController=@redirectController>Добавить файл</a> |
+
+                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
+}

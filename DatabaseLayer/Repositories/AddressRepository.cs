@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,12 +28,7 @@ namespace DatabaseLayer.Repositories
 
         public void Delete(int id, int? secondId = null)
         {
-            Address address = null;
-
-            if (id > 0)
-            {
-                address = _context.Addresses.Find(id);
-            }
+            Address address  = _context.Addresses.Find(id);
 
             if (address is not null)
             {
@@ -47,7 +43,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Address> GetAll()
         {
-            return _context.Addresses.ToList();
+            return _context.Addresses.Include(x=>x.Organization).ToList();
         }
 
         public Address GetById(int id, int? secondId = null)

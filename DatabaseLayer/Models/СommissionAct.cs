@@ -1,25 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// акт ввода
-/// </summary>
-public partial class СommissionAct
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class CommissionAct
+    {
+        public CommissionAct()
+        {
+            СommissionActFiles = new HashSet<CommissionActFile>();
+        }
 
-    public string? Number { get; set; }
+        public int Id { get; set; }
+        public string Number { get; set; }
+        public DateTime? Date { get; set; }
+        public int? ContractId { get; set; }
 
-    /// <summary>
-    /// Дата акта ввода
-    /// </summary>
-    public DateTime? Date { get; set; }
-
-    public int? ContractId { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<File> Files { get; set; } = new List<File>();
+        public virtual Contract Contract { get; set; }
+        public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
+    }
 }

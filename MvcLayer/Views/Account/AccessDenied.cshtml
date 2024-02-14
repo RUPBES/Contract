@@ -1,0 +1,41 @@
+﻿<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+
+
+    .close-btn {
+        color: red
+    }
+
+    .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+    .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width:40%; height:25%;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-action="Index" asp-controller="Home" class="close-btn"></a>
+                </div>
+                <div style="display:flex;flex-direction:column; justify-content:flex-start; gap:15px;padding:0 30px;">
+                    <h1>Доступ запрещен</h1>
+                    <p>Недостаточно прав у пользователя, для просмотра страницы</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

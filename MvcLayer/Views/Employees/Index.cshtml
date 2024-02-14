@@ -1,59 +1,305 @@
-﻿@model IEnumerable<MvcLayer.Models.EmployeeViewModel>
+﻿@model BusinessLayer.Models.IndexViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
+@inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPhoneService Phone
 
+@using BusinessLayer.Models;
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Cотрудники";
 }
+<style>
+    #org_table {
+        min-width: 700px;
+    }
 
-<h1>Index</h1>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Fio)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Position)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Contract)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fio)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Position)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Contract.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block flex-column">
+                    <div class="input-group m-2">
+                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
+                        <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                    </div>
+                    <div class="input-group m-2">
+                        <div class="nav_panel_btns">
+                            <div class="link_add_emp"></div>
+                            <div class="btn_panel_search">
+                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Employees")'">Добавить сотрудника</button>
+                                <form asp-controller="Employees" asp-action="Index" style="search-form" method="get">                                    
+                                    <input type="text" name="searchString" placeholder="Поиск по ФИО" value="@ViewData["CurrentFilter"]" id="er" />
+                                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>                    
+                    <div style="max-height:650px; overflow-y:scroll">
+                        <table class="table table-bordered table-main table-main-short" id="org_table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <span class="column_250">
+                                            Фамилия, имя, отчество
+                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.FullNameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayFullName", @class="up"})
+                                        </span>
+                                    </th>                                    
+                                    <th>
+                                        <span class="column_200">
+                                            Должность
+                                            @Html.ActionLink("", "Index", new { sortOrder = ViewBag.PositionSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayPosition", @class = "up" })
+                                        </span>
+                                    </th>
+                                    <th>
+                                        <span class="column_150">
+                                            Электронная почта
+                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.EmailSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayEmail", @class="up"})
+                                        </span>
+                                    </th>
+                                    <th>
+                                        <span class="column_130">
+                                            Телефон
+                                        </span>
+                                    </th>
+                                    <th>
+                                        <span class="column_200">
+                                            Организация
+                                        </span>
+                                    </th>
+                                    <th>
+                                        <span class="column_100">
+                                            Отдел
+                                        </span>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (EmployeeDTO item in Model.Objects)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="column_250">
+                                                @Html.DisplayFor(modelItem => item.FullName)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="column_200">
+                                                @Html.DisplayFor(modelItem => item.Position)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="column_150">
+                                                @Html.DisplayFor(modelItem => item.Email)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="column_130">
+                                                @foreach (var phone in Phone.Find(x=>x.EmployeeId == item.Id))
+                                                {
+                                                    <span>@phone.Number</span>
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="column_200">
+                                                @*@foreach (var department in item.DepartmentEmployees)
+                                                {
+                                                     <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Abbr</span> *@
+                                                <span>@Organization?.GetByEmployeeId(item.Id)?.Abbr</span>
+                                                @* } *@
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="column_100">
+                                                @foreach (var department in item.DepartmentEmployees)
+                                                {
+                                                    <span>@Department.GetById(@department.DepartmentId).Name</span>
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-row">
+                                                <a class="icon edit" asp-action="Edit" asp-route-id="@item.Id"></a>                                                
+                                                <a class="icon delete" onclick="confirm(@item.Id)"></a>                                                
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav aria-label="Page navigation example" style="margin-top:10px;">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item previous_btn">
+                                @{
+                                    @if (Model.PageViewModel.PageNumber > 1)
+                                    {
+                                        <a class="page-link" asp-action="Index" 
+                                        asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                        asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
+                                    }
+                                    @if (Model.PageViewModel.PageNumber <= 1)
+                                    {
+                                        <a class="page-link" asp-action="Index" 
+                                        asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                        asp-route-currentFilter="@ViewData["CurrentFilter"]" 
+                                        tabindex="-1" aria-disabled="true">&lt;</a>
+                                    }
+                                }
+
+                            </li>
+                            @{
+                                int counter = 1;
+                                int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
+                                for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
+                                {
+                                    <li class="page-item pag_btn_num"><a class="page-link " 
+                                    asp-action="Index" 
+                                    asp-route-pageNum="@i"
+                                    asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                    asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                       value="@i">@i</a></li>
+                                    if (counter == 5)
+                                    {
+                                        counter = 1;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            <li class="page-item next_btn">
+                                @{
+                                    @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
+                                    {
+                                        <a class="page-link" asp-action="Index" 
+                                        asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                        asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
+                                    }
+                                    else
+                                    {
+                                        <a class="page-link" asp-action="Index" 
+                                        asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                        asp-route-currentFilter="@ViewData["CurrentFilter"]" 
+                                        aria-disabled="true">&gt;</a>
+                                    }
+                                }
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script type="text/javascript">
+        addition_nav_bar();
+        ////// Pagination
+        paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
+        //////ENd pagination
+        function confirm(val) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ShowDelete","Employees")',
+                contentType: "application/html; charset=utf-8",
+                dataType: 'html',
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('show');
+
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                    elementDeleteButton[0].addEventListener('click', () => {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("ShowResultDelete","Employees")',
+                            dataType: 'html',
+                            data: { id: val },
+                            success: function (result) {
+                                let buttonElement = document.querySelectorAll('#dialogContent')
+                                $('#dialogContent').html(result);                                
+                            },
+                            error: function (result) {                            
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("Message","Home")',
+                                    dataType: 'html',
+                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
+                                    success: function (result) {
+                                        $('#dialogContent').html(result);
+                                    }
+                                });
+                            }
+                        });
+                    })
+                },
+                error: function (result) {                   
+                    alert("Ошибка отображения");
+                }
+            })
+        }
+        window.onload = function () 
+        {           
+            let actualUrl = window.location.search;
+            let elementArrayFullName = document.getElementById("arrayFullName");
+            let elementArrayPosition = document.getElementById("arrayPosition");
+            let elementArrayEmail = document.getElementById("arrayEmail");
+
+            if (actualUrl.includes('fullNameDesc')) 
+            {
+                elementArrayFullName.classList.remove("up")
+                elementArrayFullName.classList.add("up-down-active")
+                elementArrayFullName.classList.add('down')
+            } 
+                else if (actualUrl.includes('fullName')) 
+                {
+                    elementArrayFullName.classList.add("up-down-active")
+                }
+            else if (actualUrl.includes('positionDesc'))
+            {
+                elementArrayPosition.classList.remove("up")
+                elementArrayPosition.classList.add("up-down-active")
+                elementArrayPosition.classList.add('down')
+            }
+                else if (actualUrl.includes('position')) {
+                    elementArrayPosition.classList.add("up-down-active")
+                }
+            else if (actualUrl.includes('emailDesc'))
+            {
+                elementArrayEmail.classList.remove("up")
+                elementArrayEmail.classList.add("up-down-active")
+                elementArrayEmail.classList.add('down')
+            }
+                else if (actualUrl.includes('email')) {
+                    elementArrayEmail.classList.add("up-down-active")
+                }
+        }
+    </script>
 }
-    </tbody>
-</table>

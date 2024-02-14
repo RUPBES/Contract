@@ -1,0 +1,91 @@
+﻿@model BusinessLayer.Models.PrepaymentFactDTO
+@{
+    ViewData["Title"] = "Редактирование аванса, полученного фактически";
+    var contract = ViewBag.contractId;
+}
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (contract != null && contract > 0)
+                    {
+                        <a asp-controller="Prepayments" asp-action="GetByContractId" asp-route-contractId="@contract" asp-route-returnContractId="@ViewBag.returnContractId" class="close-btn"></a>
+                    }
+                    @if (contract == null || contract == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+
+                <form asp-action="EditFact" asp-route-contractId="@contract" asp-route-returnContractId="@ViewBag.returnContractId" class="row" enctype="multipart/form-data">
+                    <input asp-for="Id" hidden />
+                    <input asp-for="PrepaymentId" hidden />
+                    <input asp-for="Period" hidden/>
+                    <div class="form-group col-6">
+                        <label class="control-label">Месяц</label>
+                        <input asp-for="Period" value="@Model.Period?.ToString("MMMM-yyyy")" type="datetime" class="form-control" disabled/>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="CurrentValue" class="control-label"></label>
+                        <input name="CurrentValue" type="text" value="@Model.CurrentValue" class="form-control cost" />
+
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="TargetValue" class="control-label"></label>
+                        <input name="TargetValue" type="text" value="@Model.TargetValue" class="form-control cost" />
+
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="WorkingOutValue" class="control-label"></label>
+                        <input name="WorkingOutValue" type="text" value="@Model.WorkingOutValue" class="form-control cost" />
+                    </div>
+                    <div class="form-group mt-1 btn_block">
+                        <input type="submit" value="Редактировать" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                var allCost = $(".cost")
+                for (let el of allCost) {
+                    digits_float(el)
+                }
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+            });
+        </script>
+    }
+}

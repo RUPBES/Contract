@@ -1,43 +1,125 @@
 ﻿@model MvcLayer.Models.OrganizationViewModel
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Новая организация";
 }
 
-<h1>Создать</h1>
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
 
-<h4>Организация</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+
+                    <a asp-controller="Organizations" asp-action="" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form asp-action="Create" class="row">
+                    @*Организация*@
+                    <div class="col-5">
+                        <div class="form-group">
+                            <label asp-for="Name" for="name"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/buildings.svg" /></div>
+                                <input asp-for="Name" class="form-control" id="name">
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Abbr" for="abb"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/buildings.svg" /></div>
+                                <input asp-for="Abbr" class="form-control" id="abb">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Unp" class="control-label"></label>
+                            <input asp-for="Unp" class="form-control" />
+                            <span asp-validation-for="Unp" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="PaymentAccount" pattern="^[А-Яа-яЁё\s]+$" for="ac"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/account_balance_wallet.svg" /></div>
+                                <input asp-for="PaymentAccount" type="text" class="form-control" id="ac" placeholder="BY20OLMP31350000001000000933">
+                            </div>
+                            <span asp-validation-for="PaymentAccount" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Phones[0].Number" class="control-label">Номер телефона</label>
+                            <input asp-for="Phones[0].Number" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" />
+                            <span asp-validation-for="Phones[0].Number" class="text-danger"></span>
+                        </div>
+                    </div>
+                    @*Добавляем отдел со значением NULL*@
+                    <input asp-for="Departments[0].Name" value="@string.Empty" hidden />
+
+                    <div class="col-7">
+                        @*Адрес*@
+                        <div>
+                            <div class="form-group">
+                                <label asp-for="Addresses[0].FullAddress" class="control-label">Юр.адрес</label>
+                                <input asp-for="Addresses[0].FullAddress" class="form-control" placeholder="РБ, г.Минск, ул.Чичерина, д.19,...." />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Addresses[0].FullAddressFact" class="control-label">Адрес</label>
+                                <input asp-for="Addresses[0].FullAddressFact" class="form-control" placeholder="РБ, г.Минск, ул.Чичерина, д.19,...." />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Addresses[0].PostIndex" class="control-label">Почтовый индекс</label>
+                                <input asp-for="Addresses[0].PostIndex" class="form-control"/>
+                                <span asp-validation-for="Addresses[0].PostIndex" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Addresses[0].SiteAddress" class="control-label">Сайт организации</label>
+                                <input asp-for="Addresses[0].SiteAddress" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Email" for="em"></label>
+                                <div class="input-group">
+                                    <div class="input-group-text"><img src="~/icons/alternate_email.svg" /></div>
+                                    <input asp-for="Email" type="email" class="form-control" id="em">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-3 btn_block">
+                        <input type="submit" value="Добавить" class="btn btn-primary" />
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label asp-for="Abbr" class="control-label"></label>
-                <input asp-for="Abbr" class="form-control" />
-                <span asp-validation-for="Abbr" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Unp" class="control-label"></label>
-                <input asp-for="Unp" class="form-control" />
-                <span asp-validation-for="Unp" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Сохранить" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        fillPhoneInput();
+    </script>
 }

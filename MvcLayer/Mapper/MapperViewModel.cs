@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
+using MvcLayer.Controllers;
 using MvcLayer.Models;
 
 namespace MvcLayer.Mapper
@@ -9,18 +10,32 @@ namespace MvcLayer.Mapper
     {
         public MapperViewModel()
         {
-            //CreateMap<Act, ActDTO>().ReverseMap();
+            CreateMap<ActDTO, ActViewModel>().ReverseMap();
             CreateMap<AddressViewModel, AddressDTO>().ReverseMap();
-            //CreateMap<Amendment, AmendmentDTO>().ReverseMap();
             CreateMap<ContractViewModel, ContractDTO>().ReverseMap();
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
-            //CreateMap<Correspondence, CorrespondenceDTO>().ReverseMap();
+            CreateMap<CorrespondenceDTO, CorrespondenceViewModel>().ReverseMap();
+            CreateMap<CommissionActDTO, CommissionActViewModel>().ReverseMap();
+            CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
+            CreateMap<AmendmentViewModel, AmendmentDTO>().ReverseMap();
             CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();
+            CreateMap<EstimateDocDTO, EstimateDocViewModel>().ReverseMap();
+            CreateMap<FileDTO, FileViewModel>().ReverseMap();
+            CreateMap<FormDTO, FormViewModel>().ReverseMap();
             CreateMap<EmployeeViewModel, EmployeeDTO>().ReverseMap();
-            //CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
+
+            CreateMap<MaterialViewModel, MaterialDTO>().ReverseMap();
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
-            CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap(); 
-            //CreateMap<TypeOrganization, TypeOrganizationDTO>().ReverseMap();
+            CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap();
+            CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
+            CreateMap<SWCostViewModel, SWCostDTO>().ReverseMap();
+
+            CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();
+            CreateMap<DepartmentDTO, DepartmentsJson>().ReverseMap();
+            CreateMap<PrepaymentDTO, PrepaymentViewModel>().ReverseMap();
+            CreateMap<PaymentDTO, PaymentViewModel>().ReverseMap();
+            CreateMap<ServiceGCViewModel, ServiceGCDTO>().ReverseMap();
+            CreateMap<SelectionProcedureViewModel, SelectionProcedureDTO>().ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))

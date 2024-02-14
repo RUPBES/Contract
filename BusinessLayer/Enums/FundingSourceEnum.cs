@@ -8,7 +8,7 @@ namespace BusinessLayer.Enums
 {
     public enum FundingSourceEnum
     {
-        OwnFunds=1,
+        OwnFunds,
         BudgetFunds
     }
 }

@@ -1,0 +1,88 @@
+﻿@using BusinessLayer.Enums;
+@model List<BusinessLayer.Models.FileDTO>
+@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+
+<link href="~/kendoui/upload_style.css" rel="stylesheet" />
+@{
+    ViewData["Title"] = $"Файлы договора";
+    var isAdmin = true;
+    string controller = ViewBag.redirectController is not null || ViewBag.redirectController == "Files" ? ViewBag.redirectController : "Contracts";
+    string action = ViewBag.redirectAction is not null ? ViewBag.redirectAction : "Index";
+    var routeValue = !action.Equals("Index", StringComparison.OrdinalIgnoreCase) && ViewBag.entityId is not null ? ViewBag.entityId : null;
+    if (ViewBag.returnContractId != 0)
+        routeValue = ViewBag.returnContractId;
+}
+
+<style>
+    .file_list_item {
+        display: flex;
+        align-items: center;
+    }
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width:800px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a href="~/@controller/@action/@routeValue" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <div id="example" style="min-width:400px; max-width: 800px;">
+                    <div class='file-wrapper'>
+                        @foreach (var item in Model)
+                        {
+                            var pointIndex = item?.FileName?.LastIndexOf('.');
+                            var typeFileValue = item?.FileName?.Substring((int)pointIndex + 1);
+                            var classType = Converter.GetFileClass(typeFileValue);
+
+                            <div class="file_list_item">
+                                <span class="file-icon @classType"></span>
+                                <h4 class='file-heading file-name-heading'>
+                                    Название: <a href="~/Files/GetFile?id=@item.Id" target="_blank">@item.FileName</a>
+                                </h4>
+
+                                <strong style="display:flex; align-items:center">
+                                    @if (isAdmin)
+                                    {
+                                        <div class="icon delete">
+                                            @Html.ActionLink("", "Delete", "Files", new {id = item.Id, redirectAction = "GetByContractId", redirectController="Files",fileCategory= FolderEnum.Contracts, contractId =@ViewBag.entityId,  pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                        </div>
+                                    }
+                                </strong>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+}

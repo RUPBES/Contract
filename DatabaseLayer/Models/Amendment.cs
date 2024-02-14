@@ -1,74 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Изменения к договору
-/// </summary>
-public partial class Amendment
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Amendment
+    {
+        public int Id { get; set; }
+        public string Number { get; set; }
+        public DateTime? Date { get; set; }
+        public string Reason { get; set; }
+        public decimal? ContractPrice { get; set; }
+        public DateTime? DateBeginWork { get; set; }
+        public DateTime? DateEndWork { get; set; }
+        public DateTime? DateEntryObject { get; set; }
+        public string ContractChanges { get; set; }
+        public string Comment { get; set; }
+        public int? ContractId { get; set; }
 
-    /// <summary>
-    /// номер изменений
-    /// </summary>
-    public string? Number { get; set; }
-
-    /// <summary>
-    /// дата изменения
-    /// </summary>
-    public DateTime? Date { get; set; }
-
-    /// <summary>
-    /// Причина
-    /// </summary>
-    public string? Reason { get; set; }
-
-    /// <summary>
-    /// договорная (контрактная) цена, руб. с НДС
-    /// </summary>
-    public decimal? ContractPrice { get; set; }
-
-    /// <summary>
-    /// срок выполнения работ (Начало)
-    /// </summary>
-    public DateTime? DateBeginWork { get; set; }
-
-    /// <summary>
-    /// срок выполнения работ (Окончание)
-    /// </summary>
-    public DateTime? DateEndWork { get; set; }
-
-    /// <summary>
-    /// срок ввода объекта в эксплуатацию
-    /// </summary>
-    public DateTime? DateEntryObject { get; set; }
-
-    /// <summary>
-    /// существенные изменения пунктов Договора
-    /// </summary>
-    public string? ContractChanges { get; set; }
-
-    /// <summary>
-    /// коментарии к изменениям
-    /// </summary>
-    public string? Comment { get; set; }
-
-    /// <summary>
-    /// Договор
-    /// </summary>
-    public int? ContractId { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<File> Files { get; set; } = new List<File>();
-
-    public virtual ICollection<MaterialGc> Materials { get; set; } = new List<MaterialGc>();
-
-    public virtual ICollection<Prepayment> Prepayments { get; set; } = new List<Prepayment>();
-
-    public virtual ICollection<ScopeWork> ScopeWorks { get; set; } = new List<ScopeWork>();
-
-    public virtual ICollection<ServiceGc> Services { get; set; } = new List<ServiceGc>();
+        public virtual Contract Contract { get; set; }
+        public virtual List<AmendmentFile> AmendmentFiles { get; set; }
+        public virtual List<MaterialAmendment> MaterialAmendments { get; set; } = new List<MaterialAmendment>();
+        public virtual List<PrepaymentAmendment> PrepaymentAmendments { get; set; } = new List<PrepaymentAmendment>();
+        public virtual List<ScopeWorkAmendment> ScopeWorkAmendments { get; set; } = new List<ScopeWorkAmendment>();
+        public virtual List<ServiceAmendment> ServiceAmendments { get; set; } = new List<ServiceAmendment>();
+    }
 }

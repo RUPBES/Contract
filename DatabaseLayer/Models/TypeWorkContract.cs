@@ -1,29 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// вид работ - договор
-/// </summary>
-public partial class TypeWorkContract
+namespace DatabaseLayer.Models
 {
-    /// <summary>
-    /// Ссылка на типовые работы
-    /// </summary>
-    public int TypeWorkId { get; set; }
+    public partial class TypeWorkContract
+    {
+        public int TypeWorkId { get; set; }
+        public int ContractId { get; set; }
+        public string AdditionalName { get; set; }
 
-    /// <summary>
-    /// Контракт
-    /// </summary>
-    public int ContractId { get; set; }
-
-    /// <summary>
-    /// Название работ
-    /// </summary>
-    public string? AdditionalName { get; set; }
-
-    public virtual Contract Contract { get; set; } = null!;
-
-    public virtual TypeWork TypeWork { get; set; } = null!;
+        public virtual Contract Contract { get; set; }
+        public virtual TypeWork TypeWork { get; set; }
+    }
 }

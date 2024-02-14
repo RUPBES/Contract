@@ -1,46 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Проектно-сметная документация
-/// </summary>
-public partial class EstimateDoc
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class EstimateDoc
+    {
+        public EstimateDoc()
+        {
+            EstimateDocFiles = new HashSet<EstimateDocFile>();
+        }
 
-    /// <summary>
-    /// № п/п
-    /// </summary>
-    public string? Number { get; set; }
+        public int Id { get; set; }
+        public string Number { get; set; }
+        public DateTime? DateChange { get; set; }
+        public DateTime? DateOutput { get; set; }
+        public string Reason { get; set; }
+        public int? ContractId { get; set; }
+        public bool? IsChange { get; set; }
 
-    /// <summary>
-    /// Дата изменения в проектно-сметную документацию
-    /// </summary>
-    public DateTime? DateChange { get; set; }
-
-    /// <summary>
-    /// Дата выхода смет
-    /// </summary>
-    public DateTime? DateOutput { get; set; }
-
-    /// <summary>
-    /// Причины изменения проектно-сметной документации
-    /// </summary>
-    public string? Reason { get; set; }
-
-    /// <summary>
-    /// Контракт
-    /// </summary>
-    public int? ContractId { get; set; }
-
-    /// <summary>
-    /// Проверка: изменения / оригинал
-    /// </summary>
-    public bool? IsChange { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<File> Files { get; set; } = new List<File>();
+        public virtual Contract Contract { get; set; }
+        public virtual ICollection<EstimateDocFile> EstimateDocFiles { get; set; }
+    }
 }

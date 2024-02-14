@@ -70,7 +70,7 @@ namespace DatabaseLayer.Repositories
                     log.NameSpace = entity.NameSpace;
                     log.MethodName = entity.MethodName;
                     log.UserName = entity.UserName;
-                    log.Date = entity.Date;
+                    log.DateTime = entity.DateTime;
 
 
                     _context.Logs.Update(log);

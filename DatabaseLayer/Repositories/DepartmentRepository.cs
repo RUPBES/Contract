@@ -46,7 +46,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Department> GetAll()
         {
-            return _context.Departments.ToList();
+            return _context.Departments.Include(x=>x.Organization).Include(x=>x.DepartmentEmployees).ThenInclude(x=>x.Employee).ToList();
         }
 
         public Department GetById(int id, int? secondId = null)
@@ -70,9 +70,7 @@ namespace DatabaseLayer.Repositories
                 if(department is not null)
                 {
                     department.Name = dep.Name;
-                    department.OrganizationId = dep.OrganizationId;
-                    department.Employees.Clear();
-                    department.Employees.AddRange(dep.Employees);
+                    department.OrganizationId = dep.OrganizationId;                   
 
                     _context.Departments.Update(department);
                 }

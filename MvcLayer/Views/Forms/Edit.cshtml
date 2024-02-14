@@ -1,0 +1,170 @@
+﻿@model MvcLayer.Models.FormViewModel
+@{
+    ViewData["Title"] = "Редактирование";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+    var filter = new DateOnly(Model.Period.Value.Year, Model.Period.Value.Month, 1);
+}
+<style>
+    legend {
+        margin-bottom: 0px;
+    }
+
+    .form-group{
+        text-align:right;
+    }
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width:850px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" method="post" class="row" enctype="multipart/form-data">
+                    <input asp-for="ContractId" value="@Model.ContractId" hidden />
+                    <input asp-for="IsOwnForces" value="@Model.IsOwnForces" hidden />
+                    <input asp-for="Period" type="datetime" value="@Model.Period" hidden />
+
+                    <div class="col">
+                        <fieldset class="border rounded-1 p-3">
+                            <div class="form-group">
+                                <label asp-for="Period" class="control-label"></label>
+                                <input type="text" value="@Model.Period?.ToString("MMMM yyyy")" class="form-control" disabled />
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="DateSigning" class="control-label"></label>
+                                <input asp-for="DateSigning" type="datetime" min="@filter.ToString("yyyy-MM-dd")" class="form-control datepickers" />
+                                <span asp-validation-for="DateSigning" class="text-danger"></span>
+                            </div>
+                            @if (ViewBag.IsEngin == null)
+                            {
+                                <div class="form-group">
+                                    <label asp-for="SmrCost" class="control-label"></label>
+                                    <input name="SmrCost" value="@Model.SmrCost" type="text" class="form-control cost" />
+                                    <span asp-validation-for="SmrCost" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="PnrCost" class="control-label"></label>
+                                    <input name="PnrCost" value="@Model.PnrCost" type="text" class="form-control cost" />
+                                    <span asp-validation-for="PnrCost" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="AdditionalCost" class="control-label"></label>
+                                    <input name="AdditionalCost" value="@Model.AdditionalCost" type="text" class="form-control cost" />
+                                    <span asp-validation-for="AdditionalCost" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="EquipmentCost" class="control-label"></label>
+                                    <input name="EquipmentCost" value="@Model.EquipmentCost" type="text" class="form-control cost" />
+                                    <span asp-validation-for="EquipmentCost" class="text-danger"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">Объем работ</label>
+                                    <input name="SmrCost" value="@Model.SmrCost" type="text" class="form-control cost" />
+                                    <span asp-validation-for="SmrCost" class="text-danger"></span>
+                                </div>
+                            }
+                            @*<div class="form-group">
+                            <label asp-for="FilesEntity" class="control-label">Файл</label>
+                            <input asp-for="FilesEntity" data-val-required="Загрузите файл справки" type="file" class="form-control" />
+                            <span asp-validation-for="FilesEntity" class="text-danger"></span>
+                            </div>*@
+                        </fieldset>
+                    </div>
+                    <div class="col">
+                        <fieldset class="border rounded-1 p-3">
+                            @if (ViewBag.Current != null)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">Текущие</label>
+                                    <input name="OffsetCurrentPrepayment" value="@Model.OffsetCurrentPrepayment" type="text" class="form-control cost" />
+                                    <span asp-validation-for="OffsetCurrentPrepayment" class="text-danger"></span>
+                                </div>
+                            }
+                            @if (ViewBag.Target != null)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">Целевые</label>
+                                    <input name="OffsetTargetPrepayment" value="@Model.OffsetTargetPrepayment" type="text" class="form-control cost" />
+                                    <span asp-validation-for="OffsetTargetPrepayment" class="text-danger"></span>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <label asp-for="OtherExpensesCost" class="control-label"></label>
+                                <input name="OtherExpensesCost" value="@Model.OtherExpensesCost" type="text" class="form-control cost" />
+                                <span asp-validation-for="OtherExpensesCost" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="MaterialCost" class="control-label"></label>
+                                <input name="MaterialCost" value="@Model.MaterialCost" type="text" class="form-control cost" />
+                                <span asp-validation-for="MaterialCost" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="GenServiceCost" class="control-label"></label>
+                                <input name="GenServiceCost" value="@Model.GenServiceCost" type="text" class="form-control cost" />
+                                <span asp-validation-for="GenServiceCost" class="text-danger"></span>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <div class="form-group mt-3">
+                        <input type="submit" value="Редактировать" class="btn btn-primary" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            $(function ($) {
+                var allCost = $(".cost")
+                for (let el of allCost) {
+                    digits_float(el)
+                }
+                $('body').on('input', '.cost', function (e) {
+                    digits_float(this);
+                });
+            });
+        </script>
+    }
+}

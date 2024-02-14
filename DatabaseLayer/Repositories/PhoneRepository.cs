@@ -46,7 +46,7 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Phone> GetAll()
         {
-            return _context.Phones.ToList();
+            return _context.Phones.Include(x=>x.Employee).Include(x=>x.Organization).ToList();
         }
 
         public Phone GetById(int id, int? secondId = null)

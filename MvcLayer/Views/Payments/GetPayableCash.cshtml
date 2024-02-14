@@ -1,0 +1,325 @@
+﻿@model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel>
+@using BusinessLayer.Helpers;
+@using MvcLayer.Models.Reports;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
+@{
+    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
+    DateTime startPeriod = new DateTime(4000, 1, 1);
+    DateTime endPeriod = new DateTime(1000, 1, 1);
+    foreach (var item in Model)
+    {
+        if (item.dateBeginWork != null)
+        {
+            if (startPeriod > item.dateBeginWork)
+            {
+                startPeriod = (DateTime)item.dateBeginWork;
+            }
+        }
+
+        if (item.dateEndWork != null)
+        {
+            if (endPeriod < item.dateEndWork)
+            {
+                endPeriod = (DateTime)item.dateEndWork;
+            }
+        }
+    }
+    int PageNumber = ViewBag.PageNum;
+}
+<style>
+    table {
+        text-align: center;
+    }
+
+    .wrapper-table {
+        width: 88vw;
+        height: 75vh;
+        overflow: scroll;
+    }
+
+        .wrapper-table tbody, td, tfoot, th, thead, tr {
+            /* border-color: #373b3e; */
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .wrapper-table table td:first-child {
+            position: sticky;
+            z-index: 10;
+            left: -1px;
+            background-color: #adadad;
+        }
+
+        .wrapper-table table tr:first-child th:first-child {
+            position: sticky;
+            z-index: 20;
+            left: -1px;
+            top: 0;
+        }
+
+        .wrapper-table thead {
+            position: sticky;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            opacity: 1;
+            border-color: #373b3e;
+        }
+
+    .second-td-elem {
+        z-index: 5 !important;
+        box-shadow: inset 0 0 0 9999px #bdbac3 !important;
+        background-color: grey !important;
+    }
+
+
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="min-width:90vw;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="" class="close-btn"></a>
+                </div>
+                @using (Html.BeginForm("GetPayableCash", "Payments", FormMethod.Get))
+                {
+                    <form style="search-form" method="get">
+                        <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                        <input type="submit" value="Найти" />
+                    </form>
+                }
+                <hr class="modal-line" />
+                <div class="wrapper-table">
+                    <table class="table table-bordered table-main table-main-short">
+                        <thead class="text-center text-white align-top" style="position:sticky">
+                            <tr>
+                                <th rowspan="2">
+                                    Номер и дата договора
+                                </th>
+                                <th rowspan="2">
+                                    Наименование объекта
+                                </th>
+                                <th rowspan="2">
+                                    Заказчик
+                                </th>
+                                <th rowspan="2">
+                                    Генподрядчик (филиал-исполнитель по приказу)
+                                </th>
+                                <th rowspan="2">
+                                    Сроки выполнения работ
+                                </th>
+                                <th rowspan="2">
+                                    Срок ввода
+                                </th>
+                                <th rowspan="2">
+                                    Валюта расчетов
+                                </th>
+                                <th rowspan="2">
+                                    Контракная договорная цена, с учетом НДС
+                                </th>
+                                <th rowspan="2">
+                                    Остаток по выполнению от стоимости контрактной цены
+                                </th>
+                                <th rowspan="2">
+                                    Объем на текущий год
+                                </th>
+                                <th rowspan="2">
+                                    Фактическое выполнение по справке С-3а, в т.ч.
+                                </th>
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
+                                {
+                                    <th colspan="2">
+                                        @iterator.ToString("MMMM-yyyy")
+                                    </th>
+                                }
+                            </tr>
+
+                            <tr>
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
+                                {
+                                    <th>
+                                        к оплате
+                                    </th>
+                                    <th>
+                                        из них на счет РУП "БЭС"-УКХ"
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody style="height:70vh;">
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-action="DetailsPayableCash" asp-route-contractId="@item.Id">
+                                            @item?.number <br>
+                                            от<br>
+                                            @item?.dateContract?.ToShortDateString()
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @item?.nameObject
+                                    </td>
+                                    <td>
+                                        @item.client
+                                    </td>
+                                    <td>
+                                        @item.genContractor
+                                    </td>
+                                    <td>
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.dateEnter?.ToShortDateString()
+                                    </td>
+                                    <td>
+                                        @item?.currency
+                                    </td>
+                                    <td class="text-end">
+                                        @item.contractPrice?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.remainingWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.currentYearScopeWork?.ToString("N2")
+                                    </td>
+                                    <td class="text-end">
+                                        @item.factWorkByC3A?.ToString("N2")
+                                    </td>
+
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                    iterator = iterator.AddMonths(1))
+                                    {
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
+                                                {
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
+                                                {
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <nav aria-label="Page navigation example" style="margin-top:10px;">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item previous_btn">
+                            @{
+                                @if (PageNumber > 1)
+                                {
+                                    <a class="page-link" asp-action="GetPayableCash"
+                                       asp-route-pageNum="@(PageNumber - 1)"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                                        &lt;
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="page-link disabled" href="#"
+                                       tabindex="-1">
+                                        &lt;
+                                    </a>
+                                }
+                            }
+
+                        </li>
+                        @{
+                            int counter = 1;
+                            int index = PageNumber <= 3 ? 1 : PageNumber - 2;
+                            int end = 0;
+                            if (PageNumber <= 3) end = ViewBag.TotalPages > 5 ? 5 : ViewBag.TotalPages;
+                            else if (ViewBag.TotalPages <= 5)
+                                end = ViewBag.TotalPages;
+                            else if (ViewBag.TotalPages >= PageNumber + 2)
+                                end = PageNumber + 2;
+                            else
+                            {
+                                end = ViewBag.TotalPages;
+                                index = ViewBag.TotalPages - 4;
+                            }
+
+                            for (int i = index; i <= end; i++)
+                            {
+                                <li class="page-item pag_btn_num">
+                                    <a class="page-link " asp-action="GetPayableCash"
+                                       asp-route-pageNum="@i"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                       value="@i">@i</a>
+                                </li>
+                                if (counter == 5)
+                                {
+                                    counter = 1;
+                                    break;
+                                }
+                            }
+                        }
+
+                        <li class="page-item next_btn">
+                            @{
+                                @if (PageNumber < ViewBag.TotalPages)
+                                {
+                                    <a class="page-link" asp-action="GetPayableCash"
+                                       asp-route-pageNum="@(ViewBag.PageNum + 1)"
+                                       asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                                        &gt;
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="page-link disabled" href="#"
+                                       tabindex="-1">
+                                        &gt;
+                                    </a>
+                                }
+                            }
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>

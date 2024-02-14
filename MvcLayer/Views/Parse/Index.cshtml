@@ -1,0 +1,30 @@
+﻿<form id="files" method="post" enctype="multipart/form-data">
+    <div id="example" style="min-width:400px; max-width: 800px;">
+        <div class="demo-section">
+            <input name="files" type="file" aria-label="files" multiple="multiple" />
+            <p style="padding-top: 1em; text-align: right">
+                <button type="submit" class="k-button k-button-solid-primary k-button-solid k-button-md k-rounded-md">Загрузить</button>
+            </p>
+        </div>
+    </div>
+    <div id="result">123</div>
+</form>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script>    
+    $("form#files").submit(function () {       
+        let formData = new FormData(files);        
+        $.ajax({
+            url: '@Url.Action("AddFile", "Parse")',
+            type: 'POST',
+            data: formData,
+            dataType: "html",
+            success: function (data) {
+                $("#result").html(data)
+            },
+            contentType: false,
+            processData: false
+        });
+
+        return false;
+    });
+</script>

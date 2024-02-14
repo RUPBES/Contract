@@ -1,26 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Сотрудники
-/// </summary>
-public partial class Employee
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Employee
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }        
+        public string Fio { get; set; }
+        public string Position { get; set; }
+        public string Email { get; set; }
+        public string? Author { get; set; }
 
-    public string? FullName { get; set; }
-
-    public string? Fio { get; set; }
-
-    public string? Position { get; set; }
-
-    public string? Email { get; set; }
-
-    public virtual ICollection<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
-
-    public virtual ICollection<Phone> Phones { get; set; } = new List<Phone>();
-
-    public virtual ICollection<Department> Departments { get; set; } = new List<Department>();
+        public virtual List<DepartmentEmployee> DepartmentEmployees { get; set; } = new List<DepartmentEmployee>();
+        public virtual List<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
+        public virtual List<Phone> Phones { get; set; } = new List<Phone>();
+    }
 }

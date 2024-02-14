@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Справочник стандартных работ
-/// </summary>
-public partial class TypeWork
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class TypeWork
+    {
+        public TypeWork()
+        {
+            TypeWorkContracts = new HashSet<TypeWorkContract>();
+        }
 
-    /// <summary>
-    /// Название работ
-    /// </summary>
-    public string? Name { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
 
-    public virtual ICollection<TypeWorkContract> TypeWorkContracts { get; set; } = new List<TypeWorkContract>();
+        public virtual ICollection<TypeWorkContract> TypeWorkContracts { get; set; }
+    }
 }

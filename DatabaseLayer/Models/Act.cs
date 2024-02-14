@@ -1,48 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Акты приостановки/возобновления работ
-/// </summary>
-public partial class Act
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Act
+    {
+        public int Id { get; set; }
+        public string Reason { get; set; }
+        public DateTime? DateAct { get; set; }
+        public DateTime? DateSuspendedFrom { get; set; }
+        public DateTime? DateSuspendedUntil { get; set; }
+        public DateTime? DateRenewal { get; set; }
+        public bool? IsSuspension { get; set; }
+        public int? ContractId { get; set; }
 
-    /// <summary>
-    /// причина
-    /// </summary>
-    public string? Reason { get; set; }
-
-    /// <summary>
-    /// дата акта
-    /// </summary>
-    public DateTime? DateAct { get; set; }
-
-    /// <summary>
-    /// приостановлено с
-    /// </summary>
-    public DateTime? DateSuspendedFrom { get; set; }
-
-    /// <summary>
-    /// приостановлено по
-    /// </summary>
-    public DateTime? DateSuspendedUntil { get; set; }
-
-    /// <summary>
-    /// дата возобновления
-    /// </summary>
-    public DateTime? DateRenewal { get; set; }
-
-    /// <summary>
-    /// приостановлено?
-    /// </summary>
-    public bool? IsSuspension { get; set; }
-
-    public int? ContractId { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<File> Files { get; set; } = new List<File>();
+        public virtual Contract Contract { get; set; }
+        public virtual List<ActFile> ActFiles { get; set; } = new List<ActFile>();
+    }
 }

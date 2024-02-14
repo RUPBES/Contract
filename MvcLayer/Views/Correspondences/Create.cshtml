@@ -1,0 +1,103 @@
+﻿@model MvcLayer.Models.CorrespondenceViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+    ViewData["Title"] = "Добавить переписку с заказчиком";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+    var contid = ViewData["contractId"];
+    var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
+}
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:860px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form asp-action="Create" asp-route-returnContractId="@ViewBag.returnContractId" class="row" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input name="ContractId" value="@contract?.Id" hidden />
+                   
+                    <div class="form-group col-6">
+                        <label asp-for="Date" class="control-label"></label>
+                        <input asp-for="Date" type="datetime" class="form-control datepickers" />
+                        <span asp-validation-for="Date" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="Number" class="control-label"></label>
+                        <input asp-for="Number" class="form-control" />
+                        <span asp-validation-for="Number" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="Summary" class="control-label"></label>
+                        <input asp-for="Summary" class="form-control" />
+                        <span asp-validation-for="Summary" class="text-danger"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label asp-for="FilesEntity" class="control-label"></label>
+                        <input name="FilesEntity" type="file" class="form-control" />
+                    </div>
+                    <div class="form-group col-6 d-inline-flex align-items-center">
+                        <label asp-for="IsInBox" class="d-inline-flex p-2">Входящее письмо?</label>
+                        <input name="IsInBox" type="checkbox" id="checkCorrId" />
+                    </div>
+                    
+                    <div class="form-group mt-3 btn_position">
+                        <input type="submit" value="Сохранить" class="btn btn-primary col-3" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $("#checkCorrId").on("change", function () {
+            let isChange = $(this).prop('checked');
+            if (isChange === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+        });
+    </script>
+}

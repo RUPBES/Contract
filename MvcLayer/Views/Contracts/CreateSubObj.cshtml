@@ -1,0 +1,185 @@
+﻿@using BusinessLayer.Enums;
+@model MvcLayer.Models.ContractViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+    ViewData["Title"] = "Добавление подобъекта";
+
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = Model.Id;
+    else backId = (int)ViewData["returnContractId"];
+    int? idContr = @ViewBag.MultipleContractId;
+    string? currency = null;
+    var contract = @Contract?.GetById((int)idContr);
+    if (contract is not null)
+    {
+        currency = contract.Сurrency is null ? "BYN" : contract?.Сurrency;
+    }
+}
+    
+<style>
+    div#CurDC_chosen {
+        max-width: 85%;
+    }
+
+    .control-label:before {
+        content: "*";
+        color: red;
+        font-size: 20px;
+    }
+
+    label {
+        font-size: 1.1em;
+    }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:500px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }                   
+                    else
+                    {
+                        <a asp-action="Index" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form class="row align-content-start" method="post" enctype="multipart/form-data">
+                    <input asp-for="Id" value="null" hidden />                    
+                    <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>                    
+                    <div class="row">
+                        <div class="form-group col-9">
+                            <label asp-for="ContractPrice" for="CDC"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                                <input name="ContractPrice" type="text" class="form-control" id="CDC">
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <label asp-for="Сurrency"></label>
+                            <input asp-for="Сurrency" type="text" value="@currency" readonly class="form-control">
+                        </div>                       
+                        <div class="form-group mt-1">
+                            <label asp-for="DateBeginWork">Начало работ</label>
+                            <input asp-for="DateBeginWork" value="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" type="date" class="form-control" id="DateBeginWork" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.DateEndWork?.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="form-group mt-1">
+                            <label asp-for="DateEndWork">Окончание работ</label>
+                            <input asp-for="DateEndWork" value="@contract.DateEndWork?.ToString("yyyy-MM-dd")" type="date" class="form-control" id="DateEndWork" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.DateEndWork?.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="form-group mt-1">
+                            <label asp-for="EnteringTerm" class="control-label"></label>
+                            <input asp-for="EnteringTerm" required type="date" value="@contract.EnteringTerm?.ToString("yyyy-MM-dd")" class="form-control" id="EnteringTerm" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.EnteringTerm?.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="col-12 mt-2">
+                            <label class="control-label">Наименование объекта</label>
+                            <textarea asp-for="NameObject" required class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-8 mt-3">
+                        <button type="submit" class="btn btn-primary" id="subBtn">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+
+        $(function ($) {
+            $('body').on('input', '#CDC', function (e) {
+                digits_float(this);
+            });
+            digits_float('#CDC');
+        });
+        //////////////////////////////////////////
+        ////    проверка вводимых дат ////
+        //dateContract(a) - Дата контракта
+        //beginWork(b) - Дата начало работы
+        //endWork(c) - Дата окончания работы
+        //enteringTm(d) - Дата ввода объекта
+        //contractTm(e) - Дата дествия договора
+        //a <= b < c <= d < e
+        //////********/
+        let beginWork = document.querySelector("#DateBeginWork");
+        let endWork = document.querySelector("#DateEndWork");
+        let enteringTm = document.querySelector("#EnteringTerm");
+
+        beginWork.addEventListener('change', (e) => {
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+
+            let datePlusOne = addDays(new Date(dateBeg), 1);            
+            if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
+            if (!dateEnter || dateBeg >= dateEnter) { $("#EnteringTerm").val(datePlusOne); }
+
+            endWork.setAttribute('min', datePlusOne);
+            enteringTm.setAttribute('min', datePlusOne);
+        });
+        endWork.addEventListener('change', (e) => {
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+
+            let dateDecOne = addDays(new Date(dateEnd), -1);            
+            if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+            if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
+
+            enteringTm.setAttribute('min', dateEnd);
+        });
+        enteringTm.addEventListener('change', (e) => {
+            let dateBeg = beginWork.value;
+            let dateEnd = endWork.value;
+            let dateEnter = enteringTm.value;
+
+            let dateDecOne = addDays(new Date(dateEnter), -1);
+            if (!dateBeg || dateTerm <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+            if (!dateEnd || dateTerm < dateEnd) { $("#DateEndWork").val(dateEnter); }
+        });
+        function addDays(date, countDays) {
+            let newDateOfyear = date.getFullYear() + "";; // год
+
+            let day = date.getDate() + countDays; // текущий день
+            let month = date.getMonth() + 1; //текущий месяц
+
+
+            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
+            if (day > maxDateToday) {
+                month = month + 1;
+                if (month > 12) {
+                    newDateOfyear = newDateOfyear + 1;
+                    month = 1;
+                    day = (day - 31);
+                }
+                else {
+                    day = (day - maxDateToday);
+                }
+            }
+            if (day < 1) {
+                month = month - 1;
+                if (month < 1) {
+                    newDateOfyear = newDateOfyear - 1;
+                    month = 12;
+                    day = 31 + day;
+                }
+                else {
+                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
+                    day = maxDate + day;
+                }
+            }
+
+            let dayStr = day < 10 ? "0" + String(day) : String(day);
+            let monthStr = month < 10 ? "0" + String(month) : String(month);
+            return newDateOfyear + '-' + monthStr + '-' + dayStr;
+        }
+    </script>
+}

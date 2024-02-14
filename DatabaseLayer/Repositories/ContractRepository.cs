@@ -2,11 +2,6 @@
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
@@ -43,7 +38,19 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Contract> Find(Func<Contract, bool> predicate)
         {
-            return _context.Contracts.Where(predicate).ToList();
+            return _context.Contracts
+                 .Include(c => c.AgreementContract)
+                .Include(c => c.SubContract)
+                .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
+                .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
+                .Include(p => p.Payments).
+                Include(c => c.MaterialGcs).ThenInclude(c => c.MaterialCosts).Where(predicate).ToList();
+        }
+
+        public IEnumerable<Contract> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
+        {
+            return _context.Contracts
+                .Where(where).Select(select).ToList();
         }
 
         public IEnumerable<Contract> GetAll()
@@ -52,6 +59,14 @@ namespace DatabaseLayer.Repositories
                 .Include(c => c.AgreementContract)
                 .Include(c => c.SubContract)
                 .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
+                .Include(c => c.TypeWorkContracts).ThenInclude(o => o.TypeWork)
+                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
+                .Include(c => c.SelectionProcedures)
+                .Include(c => c.Acts)
+                .Include(c => c.CommissionActs)
+                .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
+                .Include(c => c.FormC3as)
+                .Include(c => c.Payments)
                 .ToList();
         }
 
@@ -59,7 +74,16 @@ namespace DatabaseLayer.Repositories
         {
             if (id > 0)
             {
-                return _context.Contracts.Find(id);
+                return _context.Contracts.Include(c => c.AgreementContract)
+                .Include(c => c.SubContract)
+                .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
+                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
+                .Include(c => c.SelectionProcedures)
+                .Include(c => c.Acts)
+                .Include(c => c.CommissionActs)
+                .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
+                .Include(c => c.FormC3as)
+                .FirstOrDefault(x => x.Id == id);
             }
             else
             {
@@ -93,8 +117,150 @@ namespace DatabaseLayer.Repositories
                     contract.FundingSource = entity.FundingSource;
                     contract.IsSubContract = entity.IsSubContract;
                     contract.IsEngineering = entity.IsEngineering;
-                    contract.IsAgreementContract = entity.IsAgreementContract;                   
+                    contract.IsAgreementContract = entity.IsAgreementContract;
 
+                    contract.MultipleContractId = entity.MultipleContractId;
+                    contract.IsMultiple = entity.IsMultiple;
+                    contract.IsOneOfMultiple = entity.IsOneOfMultiple;
+                    contract.IsClosed = entity.IsClosed;
+                    contract.IsArchive = entity.IsArchive;
+                    contract.IsExpired = entity.IsExpired;
+                    contract.Author = entity.Author;
+                    contract.Owner = entity.Owner;
+
+                    foreach (var item in entity.ContractOrganizations)
+                    {
+                        var target = item.IsGenContractor != null ? "Gen" : "Client";
+                        var sameObject = _context.ContractOrganizations.Where(x =>
+                        x.ContractId == item.ContractId &&
+                        x.OrganizationId == item.OrganizationId).FirstOrDefault();
+                        ContractOrganization? objectWithSameContractandType = new ContractOrganization();
+                        objectWithSameContractandType = item.IsGenContractor != null ?
+                            _context.ContractOrganizations.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsGenContractor == item.IsGenContractor).
+                            FirstOrDefault()
+                            :
+                            _context.ContractOrganizations.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsClient == item.IsClient).
+                            FirstOrDefault();
+                        if (sameObject != null)
+                        {
+                            if (objectWithSameContractandType != null)
+                            {
+                                _context.ContractOrganizations.Remove(objectWithSameContractandType);
+                            }
+                            switch (target)
+                            {
+                                case "Gen":
+                                    sameObject.IsGenContractor = true; break;
+                                case "Client":
+                                    sameObject.IsClient = true; break;
+                            }
+                            _context.ContractOrganizations.Update(sameObject);
+                        }
+                        else if (objectWithSameContractandType != null)
+                        {
+                            if (objectWithSameContractandType.IsClient == true && objectWithSameContractandType.IsGenContractor == true)
+                            {
+                                switch (target)
+                                {
+                                    case "Gen":
+                                        objectWithSameContractandType.IsGenContractor = false; break;
+                                    case "Client":
+                                        objectWithSameContractandType.IsClient = false; break;
+                                }
+                                _context.ContractOrganizations.Update(objectWithSameContractandType);
+                                _context.ContractOrganizations.Add(item);
+                            }
+                            else
+                            {
+                                _context.ContractOrganizations.Remove(objectWithSameContractandType);
+                                _context.SaveChanges();
+                                objectWithSameContractandType.OrganizationId = item.OrganizationId;
+                                _context.ContractOrganizations.Add(objectWithSameContractandType);
+                            }
+                        }
+                        else { _context.ContractOrganizations.Add(item); }
+                        _context.SaveChanges();
+                    }
+
+                    foreach (var item in entity.EmployeeContracts)
+                    {
+                        var target = item.IsSignatory != null ? "Signatory" : "Responsible";
+                        var sameObject = _context.EmployeeContracts.Where(x =>
+                        x.ContractId == item.ContractId &&
+                        x.EmployeeId == item.EmployeeId).FirstOrDefault();
+                        EmployeeContract? objectWithSameContractandType = new EmployeeContract();
+                        objectWithSameContractandType = item.IsSignatory != null ?
+                            _context.EmployeeContracts.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsSignatory == item.IsSignatory).
+                            FirstOrDefault()
+                            :
+                            _context.EmployeeContracts.Where(x =>
+                            x.ContractId == item.ContractId &&
+                            x.IsResponsible == item.IsResponsible).
+                            FirstOrDefault();
+                        if (sameObject != null)
+                        {
+                            if (objectWithSameContractandType != null)
+                            {
+                                _context.EmployeeContracts.Remove(objectWithSameContractandType);
+                            }
+                            switch (target)
+                            {
+                                case "Signatory":
+                                    sameObject.IsSignatory = true; break;
+                                case "Responsible":
+                                    sameObject.IsResponsible = true; break;
+                            }
+                            _context.EmployeeContracts.Update(sameObject);
+                        }
+                        else if (objectWithSameContractandType != null)
+                        {
+                            if (objectWithSameContractandType.IsResponsible == true && objectWithSameContractandType.IsSignatory == true)
+                            {
+                                switch (target)
+                                {
+                                    case "Signatory":
+                                        objectWithSameContractandType.IsSignatory = false; break;
+                                    case "Responsible":
+                                        objectWithSameContractandType.IsResponsible = false; break;
+                                }
+                                _context.EmployeeContracts.Update(objectWithSameContractandType);
+                                _context.EmployeeContracts.Add(item);
+                            }
+                            else
+                            {
+                                _context.EmployeeContracts.Remove(objectWithSameContractandType);
+                                _context.SaveChanges();
+                                objectWithSameContractandType.EmployeeId = item.EmployeeId;
+                                _context.EmployeeContracts.Add(objectWithSameContractandType);
+                            }
+                        }
+                        else { _context.EmployeeContracts.Add(item); }
+                        _context.SaveChanges();
+                    }
+
+                    foreach (var item in entity.TypeWorkContracts)
+                    {
+                        var currentObject = _context.TypeWorkContracts.Where(x => x.ContractId == item.ContractId).FirstOrDefault();
+                        if (currentObject != null)
+                        {
+                            if (item.TypeWorkId != currentObject.TypeWorkId)
+                            {
+                                _context.TypeWorkContracts.Remove(currentObject);
+                                _context.SaveChanges();
+                                _context.TypeWorkContracts.Add(item);
+                            }
+                        }
+                        else
+                        {
+                            _context.TypeWorkContracts.Add(item);
+                        }
+                    }
                     _context.Contracts.Update(contract);
                 }
             }

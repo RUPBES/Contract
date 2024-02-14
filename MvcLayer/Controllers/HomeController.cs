@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MVC_layer.Models;
+using MvcLayer.Models;
 using System.Diagnostics;
 
 namespace MVC_layer.Controllers
@@ -18,6 +21,7 @@ namespace MVC_layer.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Privacy()
         {
             return View();
@@ -28,5 +32,17 @@ namespace MVC_layer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        public IActionResult Message(string message, string header, string textButton)
+        {            
+            return PartialView("_Message", new ModalViewVodel(message, header, textButton));
+        }
+
+        public IActionResult MessageWithReload(string message, string header, string textButton)
+        {
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", new ModalViewVodel(message, header, textButton));
+        }
+
     }
 }

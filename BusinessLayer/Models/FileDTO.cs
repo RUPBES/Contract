@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DatabaseLayer.Models;
 
 namespace BusinessLayer.Models
 {
@@ -36,8 +32,9 @@ namespace BusinessLayer.Models
 
         public List<CorrespondenceDTO> Correspondences { get; set; } = new List<CorrespondenceDTO>();
 
-        //public virtual ICollection<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
+        public List<EstimateDocDTO> EstimateDocs { get; set; } = new List<EstimateDocDTO>();
+        public List<ContractFileDTO> ContractFiles { get; set; } = new List<ContractFileDTO>();
 
-        //public virtual ICollection<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
+        //public List<СommissionActDTO> СommissionActs { get; set; } = new List<СommissionActDTO>();
     }
 }

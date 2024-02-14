@@ -1,28 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Связь &quot;Организации&quot; и &quot;Контракта&quot;
-/// </summary>
-public partial class ContractOrganization
+namespace DatabaseLayer.Models
 {
-    public int OrganizationId { get; set; }
+    public partial class ContractOrganization
+    {
+        public int OrganizationId { get; set; }
+        public int ContractId { get; set; }
+        public bool? IsGenContractor { get; set; }
+        public bool? IsClient { get; set; }
 
-    public int ContactId { get; set; }
-
-    /// <summary>
-    /// ген.подрядчик?
-    /// </summary>
-    public bool? IsGenContractor { get; set; }
-
-    /// <summary>
-    /// Заказчик?
-    /// </summary>
-    public bool? IsClient { get; set; }
-
-    public virtual Contract Contact { get; set; } = null!;
-
-    public virtual Organization Organization { get; set; } = null!;
+        public virtual Contract Contract { get; set; }
+        public virtual Organization Organization { get; set; }
+    }
 }

@@ -1,50 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Материалы генподрядчика
-/// </summary>
-public partial class MaterialGc
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class MaterialGc
+    {
+        public MaterialGc()
+        {
+            InverseChangeMaterial = new HashSet<MaterialGc>();
+            MaterialAmendments = new HashSet<MaterialAmendment>();
+            MaterialCosts = new HashSet<MaterialCost>();
+        }
 
-    /// <summary>
-    /// Цена по договору
-    /// </summary>
-    public decimal? Price { get; set; }
+        public int Id { get; set; }
+        public int? ContractId { get; set; }
+        public bool? IsChange { get; set; }
+        public int? ChangeMaterialId { get; set; }
 
-    /// <summary>
-    /// Цена фактическая
-    /// </summary>
-    public decimal? FactPrice { get; set; }
-
-    /// <summary>
-    /// период отчета
-    /// </summary>
-    public DateTime? Period { get; set; }
-
-    /// <summary>
-    /// Контракт
-    /// </summary>
-    public int? ContractId { get; set; }
-
-    /// <summary>
-    /// изменено?
-    /// </summary>
-    public bool? IsChange { get; set; }
-
-    /// <summary>
-    /// ID измененных материалов
-    /// </summary>
-    public int? ChangeMaterialId { get; set; }
-
-    public virtual MaterialGc? ChangeMaterial { get; set; }
-
-    public virtual Contract? Contract { get; set; }
-
-    public virtual ICollection<MaterialGc> InverseChangeMaterial { get; set; } = new List<MaterialGc>();
-
-    public virtual ICollection<Amendment> Amendments { get; set; } = new List<Amendment>();
+        public virtual MaterialGc ChangeMaterial { get; set; }
+        public virtual Contract Contract { get; set; }
+        public virtual ICollection<MaterialGc> InverseChangeMaterial { get; set; }
+        public virtual ICollection<MaterialAmendment> MaterialAmendments { get; set; }
+        public virtual ICollection<MaterialCost> MaterialCosts { get; set; }
+    }
 }

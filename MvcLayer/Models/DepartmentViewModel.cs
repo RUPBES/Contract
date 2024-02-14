@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Models;
+using System.ComponentModel;
 
 namespace MvcLayer.Models
 {
@@ -6,13 +7,11 @@ namespace MvcLayer.Models
     {
         public int Id { get; set; }
 
-        /// <summary>
-        /// Название
-        /// </summary>
+        [DisplayName("Название")]
         public string? Name { get; set; }
-
+        [DisplayName("Название организации")]
         public int? OrganizationId { get; set; }
-
+        [DisplayName("Название организации")]
         public OrganizationDTO? Organization { get; set; }
 
         public List<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();

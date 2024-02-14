@@ -1,8 +1,13 @@
 ﻿using AutoMapper;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Numerics;
+using System.Reflection;
 
 namespace BusinessLayer.Services
 {
@@ -10,14 +15,23 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
-        public PhoneService(IContractUoW database, IMapper mapper)
+        private readonly ILoggerContract _logger;
+        private readonly IHttpContextAccessor _http;
+
+        public PhoneService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
         {
             _database = database;
             _mapper = mapper;
+            _logger = logger;
+            _http = http;
         }
 
-        public void Create(PhoneDTO item)
+        public int? Create(PhoneDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 if (_database.Phones.GetById(item.Id) is null)
@@ -26,14 +40,72 @@ namespace BusinessLayer.Services
 
                     _database.Phones.Create(phone);
                     _database.Save();
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create phone, ID={phone.Id}",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+
+                    return phone.Id;
                 }
             }
+
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create phone, object is null",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+
+            return null;
         }
 
-        public void Delete(int id)
+        public void Delete(int id, int? secondId = null)
         {
-            _database.Phones.Delete(id);
-            _database.Save();
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
+            if (id > 0)
+            {
+                var phone = _database.Phones.GetById(id);
+
+                if (phone is not null)
+                {
+                    try
+                    {
+                        _database.Phones.Delete(id);
+                        _database.Save();
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"delete phone, ID={id}",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: e.Message,
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+                    }
+                }
+            }
+            else
+            {
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not delete phone, ID is not more than zero",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+            }
         }
 
         public IEnumerable<PhoneDTO> Find(Func<Phone, bool> predicate)
@@ -46,7 +118,7 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<PhoneDTO>>(_database.Phones.GetAll());
         }
 
-        public PhoneDTO GetById(int id)
+        public PhoneDTO GetById(int id, int? secondId = null)
         {
             var phone = _database.Phones.GetById(id);
 
@@ -62,10 +134,30 @@ namespace BusinessLayer.Services
 
         public void Update(PhoneDTO item)
         {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
             if (item is not null)
             {
                 _database.Phones.Update(_mapper.Map<Phone>(item));
                 _database.Save();
+
+                _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"update phone, ID={item.Id}",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+            }
+            else
+            {
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not update phone, object is null",
+                            nameSpace: typeof(OrganizationService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
             }
         }
     }

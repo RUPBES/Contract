@@ -1,45 +1,58 @@
-using BusinessLayer.IoC;
-//using DatabaseLayer.Data;
-using Microsoft.EntityFrameworkCore;
-using MvcLayer.Mapper;
-
-var builder = WebApplication.CreateBuilder(args);
-string connectionData = builder.Configuration.GetConnectionString("Data");
-string connectionIdentity = builder.Configuration.GetConnectionString("Identity");
-//Registeration OiC container from business layer
-
-Container.RegisterContainer(builder.Services, connectionData);
-
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddAutoMapper(typeof(MapperViewModel));
+using Microsoft.AspNetCore;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Hosting.WindowsServices;
+using System.Net;
 
 
-
-var app = builder.Build();
-
-
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+namespace MvcLayer
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .UseWindowsService()
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.ConfigureKestrel(op =>
+                    {
+                        op.Listen(IPAddress.Parse("0.0.0.0"), 6972);
+                        op.Limits.MaxRequestBodySize = null;
+                    })
+                    .UseStartup<Startup>();
+                });
+
+    }
+
+    //public class Program
+    //{
+    //    public static void Main(string[] args)
+    //    {
+    //        // получаем путь к файлу
+    //        var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
+    //        //путь к каталогу проекта
+    //        var pathToContentRoot = Path.GetDirectoryName(pathToExe);
+    //        // создаем хост
+    //        var host = WebHost.CreateDefaultBuilder(args)
+    //            //.ConfigureKestrel(op =>
+    //            //    {
+    //            //        op.Listen(IPAddress.Parse("0.0.0.0"), 6972);
+    //            //        op.Limits.MaxRequestBodySize = null;
+    //            //    })
+    //            .UseKestrel(op =>
+    //            {
+    //                op.Limits.MaxRequestBodySize = null;
+    //            })
+    //                .UseContentRoot(pathToContentRoot)
+    //                .UseStartup<Startup>()
+    //                .UseUrls("http://0.0.0.0:6972/")
+    //                .Build();
+    //        //запускаем в виде службы
+    //        host.RunAsService();
+    //    }
+    //}
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
-
-
-//extra methods

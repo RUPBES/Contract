@@ -1,30 +1,44 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using DatabaseLayer.Models;
-using BusinessLayer.Interfaces.Contracts;
 using MvcLayer.Models;
 using AutoMapper;
 using BusinessLayer.Models;
+using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.CommonInterfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
+    [Authorize(Policy = "ContrViewPolicy")]
     public class OrganizationsController : Controller
     {
         private readonly IOrganizationService _organizationService;
         private readonly IMapper _mapper;
+        private readonly ILoggerContract _logger;
 
-        public OrganizationsController(IOrganizationService organizationService, IMapper mapper)
+        public OrganizationsController(IOrganizationService organizationService, IMapper mapper, ILoggerContract logger)
         {
             _organizationService = organizationService;
             _mapper = mapper;
+            _logger = logger;
         }
 
         // GET: Organizations
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
-            return _organizationService.GetAll() != null ?
-                        View(_mapper.Map<IEnumerable<OrganizationViewModel>>(_organizationService.GetAll())) :
-                        Problem("Entity set 'ContractsContext.Organizations'  is null.");
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
+            ViewBag.AbbrSortParm = sortOrder == "abbr" ? "abbrDesc" : "abbr";
+            ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
+
+            if (searchString != null)
+            { pageNum = 1; }
+            else
+            { searchString = currentFilter; }
+            ViewBag.CurrentFilter = searchString;
+
+            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+                return View(_organizationService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
+            else return View(_organizationService.GetPage(100, pageNum ?? 1));
         }
 
         // GET: Organizations/Details/5
@@ -45,19 +59,22 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Create
+        [Authorize(Policy = "ContrAdminPolicy")]
         public IActionResult Create()
         {
             return View();
         }
 
+
         // POST: Organizations/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Abbr,Unp")] OrganizationViewModel organization)
+        public async Task<IActionResult> Create( OrganizationViewModel organization)
         {
-            if (ModelState.IsValid)
+            if (organization is not null)
             {
                 _organizationService.Create(_mapper.Map<OrganizationDTO>(organization));
                 return RedirectToAction(nameof(Index));
@@ -66,6 +83,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Edit/5
+        [Authorize(Policy = "ContrEditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _organizationService.GetAll() == null)
@@ -78,6 +96,11 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
+            if (organization.Addresses.Count == 0)
+            {
+                var addr = new AddressDTO();
+                organization.Addresses.Add(addr);
+            }
             return View(_mapper.Map<OrganizationViewModel>(organization));
         }
 
@@ -85,30 +108,23 @@ namespace MvcLayer.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Abbr,Unp")] OrganizationViewModel organization)
-        {
-            if (id != organization.Id)
-            {
-                return NotFound();
-            }
+        public async Task<IActionResult> Edit(OrganizationViewModel organization)
+        {          
 
-            if (ModelState.IsValid)
+            if (organization is not null)
             {
                 try
                 {
+                    if (organization.Addresses[0].FullAddress == null && organization.Addresses[0].PostIndex == null)
+                    {
+                        organization.Addresses.Clear();
+                    }
                     _organizationService.Update(_mapper.Map<OrganizationDTO>(organization));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch
                 {
-                    if (_organizationService.GetById(organization.Id) is null)
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -116,6 +132,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Delete/5
+        [Authorize(Policy = "ContrAdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _organizationService.GetAll() == null)
@@ -134,11 +151,31 @@ namespace MvcLayer.Controllers
 
         // POST: Organizations/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             _organizationService.Delete(id);
+            _logger.WriteLog(LogLevel.Information, "delete organization", typeof(OrganizationsController).Name, this.ControllerContext.RouteData.Values["action"].ToString(), User.Identity.Name);
             return RedirectToAction(nameof(Index));
         }
+
+        public JsonResult GetJsonOrganizations()
+        {           
+            return Json(_mapper.Map<IEnumerable<OrganizationsJson>>(_organizationService.GetAll()));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShowResultDelete(int id)
+        {
+            _organizationService.Delete(id);
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+        }
     }
+    class OrganizationsJson {
+        public int Id { get; set; }
+        public string Abbr { get; set; }
+    }
+
 }

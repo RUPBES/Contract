@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DatabaseLayer.Models;
+#nullable disable
 
-/// <summary>
-/// Телефон
-/// </summary>
-public partial class Phone
+namespace DatabaseLayer.Models
 {
-    public int Id { get; set; }
+    public partial class Phone
+    {
+        public int Id { get; set; }
+        public string Number { get; set; }
+        public int? OrganizationId { get; set; }
+        public int? EmployeeId { get; set; }
 
-    public string? Number { get; set; }
-
-    public int? OrganizationId { get; set; }
-
-    public int? EmployeeId { get; set; }
-
-    public virtual Employee? Employee { get; set; }
-
-    public virtual Organization? Organization { get; set; }
+        public virtual Employee Employee { get; set; }
+        public virtual Organization Organization { get; set; }
+    }
 }

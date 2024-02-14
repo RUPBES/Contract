@@ -1,0 +1,303 @@
+﻿@model MvcLayer.Models.PeriodChooseViewModel
+@using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scope
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{
+
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+    bool hasScope = false;
+    // ищем есть ли изменения, выбираем последние. если изменения есть то ID последнего помечаем что изменяем
+    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
+    if (scopes is not null)
+    {
+        hasScope = true;
+    }
+    var contract = Contract.GetById((int)Model.ContractId);
+    ContractDTO contractTwo = new ContractDTO();
+    if ((int)ViewData["returnContractId"] != 0)
+    {
+        contractTwo = Contract.GetById(ViewBag.returnContractId);
+    }
+    if (contract.IsEngineering == true)
+    {
+        ViewData["Title"] = "Добавление объема услуг";
+    }
+    else
+    {
+        ViewData["Title"] = "Добавление объема работ";
+    }
+}
+<style>
+    .title-warning {
+        display: flex;
+        justify-content: center;
+        font-family: Inter;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 22px;
+        letter-spacing: -0.34px;
+        color: #fff;
+        background-color: #e83c14;
+        border-color: #e83c14;
+        padding: 0.6rem;
+        border-radius: 10px;
+    }
+
+    label {
+        margin: 10px auto;
+    }
+
+    #target {
+        margin: 20px auto;
+        width: 50%;
+    }
+
+    #chooseAmendment {
+        margin: 0 auto 30px auto;
+    }
+
+
+    .dm-modal {
+        display: flex;
+        flex-direction: column;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: lightsteelblue;
+    }
+
+    .d-inline-block {
+        text-align: center;
+        font-weight: 600;
+        color: black;
+    }
+
+    .label-block {
+        height: 70px;
+        text-align: center;
+        font-weight: 600;
+        color: black;
+    }
+
+    .btn-block {
+        display: flex;
+        justify-content: space-between;
+    } 
+
+    .label_period {
+        font-weight: 600;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" />
+            <div class="top-modal-block">
+                <label class="my-modal-title">@ViewData["Title"]</label>
+                @if (backId != null && backId > 0)
+                {
+                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                }
+                @if (backId == null || backId == 0)
+                {
+                    <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                }
+            </div>
+            <hr class="modal-line" />
+
+
+            @if (hasScope)
+            {
+                var listAmendment = Scope.GetFreeAmendment((int)Model?.ContractId);
+                @if (listAmendment.Count() > 0)
+                {
+                    <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                        <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
+
+
+                        <div class="form-group col-12">
+                            @if (contract.IsEngineering == true)
+                            {
+                                <div class="title-warning"><span>Объем услуг для данного договора заполнен</span></div>
+                            }
+                            else
+                            {
+                                <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
+                            }
+                        </div>
+                        <div id="chooseAmendment" class="row" >
+                            <div class="form-group">
+                                <label class="control-label label_period">Выбрать доп.соглашение:</label>
+                                <select name="AmendmentId" id="AmendId" class="form-control select">
+                                    <option disabled selected>Выберите</option>
+
+                                    @foreach (AmendmentDTO org in listAmendment)
+                                    {
+                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div id="amendPartial">
+                            </div>
+
+                            <button id="butSubmit" class="btn btn-primary btn-sm mt-2" disabled type="submit">Выбрать</button>
+                        </div>
+
+                    </form>
+                }
+                else
+                {
+                    <div class="d-inline-block alert alert-success">
+                        @if (contract.IsEngineering == true)
+                        {
+                            <label class="control-label">Объем услуг заполнен</label>
+                        }
+                        else
+                        {
+                            <label class="control-label">Объем работ заполнен</label>
+                        }
+                    </div>
+                    <div class="label-block alert alert-danger">
+                        <label class="control-label">Отсутствуют незаполненные дополнительные соглашения</label>
+                    </div>
+                    <div class="btn-block">
+                        <a class="btn btn-success" asp-controller="Amendments" asp-action="Create" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">+ доп. соглашение</a>
+                        <a class="btn btn-warning" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
+                    </div>
+                }
+            }
+
+            @if (!hasScope)
+            {
+                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
+                    @if (contract.IsEngineering == true)
+                    {
+                        <h4>Выбор периода объема услуг</h4>
+                    }
+                    else
+                    {
+                        <h4>Выбор периода объема работ</h4>
+                    }
+                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                    <div class="form-group col-6 mb-3">
+                        <label for="amendCheck1">Начало периода</label>
+                        @if (contract.DateBeginWork != null)
+                        {
+                            <input name=PeriodStart type="datetime" value="@contract.DateBeginWork" hidden />
+                            <input type="text" value="@contract.DateBeginWork.Value.ToString("MMMM yyyy") " readonly />
+                        }
+                        else if (contractTwo.DateBeginWork != null)
+                        {
+                            <input name=PeriodStart type="datetime" value="@contractTwo.DateBeginWork" hidden />
+                            <input type="text" value="@contractTwo.DateBeginWork.Value.ToString("MMMM yyyy") " readonly />
+                        }
+                        else
+                        {
+                            <input name=PeriodStart type="date" class="form-control" />
+                        }
+                    </div>
+                    <div class="form-group col-6 mb-3">
+                        <label for="amendCheck2">Окончание периода</label>
+                        @if (contract.DateBeginWork != null)
+                        {
+                            <input name=PeriodEnd type="datetime" value="@contract.DateEndWork" hidden />
+                            <input type="text" value="@contract.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
+                        }
+                        else if (contractTwo.DateBeginWork != null)
+                        {
+                            <input name=PeriodEnd type="datetime" value="@contractTwo.DateEndWork" hidden />
+                            <input type="text" value="@contractTwo.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
+                        }
+                        else
+                        {
+                            <input name=PeriodEnd type="date" class="form-control" />
+                        }
+                    </div>
+                    <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
+                </form>
+            }
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+        $("#AmendId").on("change", function () {
+            var AmendId = $('#AmendId').val();
+            $('#butSubmit').prop("disabled", false);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetPeriodAmendment", "ScopeWorks")',
+                dataType: 'html',
+                data: { Id: AmendId },
+                success: function (result) {
+                    $('#amendPartial').html(result);
+                },
+                error: function (result) {
+                    console.log(result, 'Ошибка при вызове сообщения');
+                }
+            })
+        });
+
+        // $("#amendCheck").on("change", function () {
+        //     let isChange = $(this).prop('checked');
+        //     let besInput = document.querySelector("#chooseAmendment");
+
+        //     if (besInput.hidden != true) {
+        //         besInput.hidden = true;
+        //     }
+        //     else {
+        //         besInput.hidden = null;
+        //     }
+
+        //     if (isChange === false) {
+        //         $(this).attr("value", "false")
+        //     }
+        //     else {
+        //         $(this).attr("value", "true")
+        //     }
+        // });
+
+        $(document).ready(function () {
+            kendo.culture("by-BY");
+            $("input.monthYearPickers").kendoDatePicker({
+                value: new Date(),
+                format: "MM.yyyy",
+                depth: "year",
+                start: "year"
+            });
+        });
+    </script>
+}

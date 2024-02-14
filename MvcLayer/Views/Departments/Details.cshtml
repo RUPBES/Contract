@@ -1,29 +1,108 @@
 ﻿@model MvcLayer.Models.DepartmentViewModel
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Отдел";
 }
 
-<h1>Details</h1>
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
 
-<div>
-    <h4>Department</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Organization)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Organization.Id)
-        </dd>
-    </dl>
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block flex-column">
+                    <div class="input-group m-2 ">
+                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
+                        <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
+                    </div>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td class="col-sm-2">
+                                    @Html.DisplayNameFor(model => model.Name)
+                                </td>
+                                <td class="col-sm-10">
+                                    @Html.DisplayFor(model => model.Name)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="col-sm-2">
+                                    @Html.DisplayNameFor(model => model.Organization)
+                                </td>
+                                <td class="col-sm-10">
+                                    @Html.DisplayFor(model => model.Organization.Name)
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="justify-content-between d-flex">
+                        <button type="button" class="btn btn-success k-mr-2" onclick="location.href='@Url.Action("Edit", "Departments", new {id = Model.Id} )'">Изменить</button>
+
+                        <button id="button-close" type="button" class="btn btn-danger k-mr-2" onclick="confirmI()">Удалить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<script type="text/javascript">
+    let val = @Model.Id;
+
+    function confirmI() {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ShowDelete","Departments")',
+            contentType: "application/html; charset=utf-8",
+            dataType: 'html',
+            success: function (result) {
+                $('#dialogContent').html(result);
+                $('#modDialog').modal('show');
+
+                let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                elementDeleteButton[0].addEventListener('click', () => {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowResultDelete","Departments")',
+                        dataType: 'html',
+                        data: { id: val },
+                        success: function (result) {                            
+                            let buttonElement = document.querySelectorAll('.close-btn')
+                            buttonElement[0].click()
+                        },
+                        error: function (result) {
+                            console.log(result, 'Ошибка удаления');
+                            alert("Ошибка удаления");
+                        }
+                    });
+                   
+                })
+            
+             },
+            error: function (result) {
+                console.log(result,'error 2');
+                alert("Ошибка отображения");
+            }
+        })
+    }
+</script>

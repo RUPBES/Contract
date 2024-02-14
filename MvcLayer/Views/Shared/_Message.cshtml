@@ -1,0 +1,22 @@
+﻿@using MvcLayer.Models;
+@model ModalViewVodel
+
+<div class="modal-content">
+    <div class="modal-header">
+        <h4>@Model.header</h4>
+        <button class="close" data-dismiss="modal" onclick="closeModal(document.getElementById('messageInput').value)" area-hidden="true">X</button>
+    </div>
+    <div class="modal-body">
+        <span>@Model.message</span>
+        <button id="modal-button-delete" onclick="closeModal(document.getElementById('messageInput').value)" type="button" class="btn btn-danger k-mr-2">@Model.textButton</button>
+    </div>
+</div>
+<input id="messageInput" value="@ViewData["reload"]" hidden />
+<script type="text/javascript">    
+    function closeModal(result) {        
+        $('#modDialog').modal('toggle');
+        if (result === "Yes") {
+            location.reload();
+        }
+    }
+</script>
