@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using MvcLayer.Models.Reports;
 using Newtonsoft.Json;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -16,14 +19,26 @@ namespace MvcLayer.Controllers
         private readonly IPaymentService _payment;
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
+        private readonly IAmendmentService _amendmentService;
+        private readonly IFormService _formService;
+        private readonly ISWCostService _swCostService;
+        private readonly IContractOrganizationService _contractOrganizationService;
+        private readonly IOrganizationService _organization;
 
         public PaymentsController(IContractService contractService, IMapper mapper,
-            IPaymentService payment, IScopeWorkService scopeWork)
+            IPaymentService payment, IScopeWorkService scopeWork, IAmendmentService amendmentService,
+            IFormService formService, ISWCostService swCostService, IContractOrganizationService contractOrganizationService,
+            IOrganizationService organization)
         {
             _contractService = contractService;
             _mapper = mapper;
             _payment = payment;
             _scopeWork = scopeWork;
+            _amendmentService = amendmentService;
+            _formService = formService;
+            _swCostService = swCostService;
+            _contractOrganizationService = contractOrganizationService;
+            _organization = organization;
         }
 
         public IActionResult Index()
@@ -74,10 +89,11 @@ namespace MvcLayer.Controllers
                 else
                 {
                     var model = _mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId));
-                    var paymentRequest = JsonConvert.SerializeObject(model);
-                    TempData["payment"] = paymentRequest;
+
                     TempData["existPayment"] = true;
-                    return RedirectToAction("Create", new { contractId = contractId, returnContractId = returnContractId});
+                    ViewBag.contractId = contractId;
+                    ViewBag.returnContractId = returnContractId;
+                    return View("Create", model);
                 }
             }
             else
@@ -123,7 +139,7 @@ namespace MvcLayer.Controllers
                 return View();
             }
             return View(paymentViewModel);
-        }        
+        }
 
         [HttpPost]
         [Authorize(Policy = "ContrAdminPolicy")]
@@ -139,7 +155,7 @@ namespace MvcLayer.Controllers
                 }
                 return RedirectToAction("GetByContractId", new { contractId = payment.FirstOrDefault().ContractId, returnContractId = returnContractId });
             }
-            return RedirectToAction("Index","Contracts");
+            return RedirectToAction("Index", "Contracts");
         }
 
         [HttpPost]
@@ -176,14 +192,300 @@ namespace MvcLayer.Controllers
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+
+            var viewModel = new List<GetPayableCashPaymentsViewModel>();
+            foreach (var contract in list)
+            {
+                var itemViewModel = new GetPayableCashPaymentsViewModel();
+                itemViewModel.Id = contract.Id;
+                itemViewModel.number = contract.Number;
+                itemViewModel.nameObject = contract.NameObject;
+                itemViewModel.currency = contract.Сurrency;
+                itemViewModel.dateContract = contract.Date;
+                #region Доп. соглашения
+                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
+                var amend = listAmend.LastOrDefault();
+                #endregion
+                itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
+                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
+                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
+                itemViewModel.dateEnter = amend == null ? contract.EnteringTerm : amend.DateEntryObject;
+                #region Проверка дат
+
+                if (itemViewModel.dateBeginWork == null)
+                {
+                    itemViewModel.dateBeginWork = DateTime.Today;
+                }
+                if (itemViewModel.dateEndWork == null)
+                {
+                    itemViewModel.dateEndWork = DateTime.Today;
+                }
+                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
+                {
+                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
+                }
+
+                #endregion
+                #region Лист. Факт значений
+                Func<FormC3a, bool> where = w => w.ContractId == contract.Id;
+                Func<FormC3a, FormC3a> select = s => new FormC3a
+                {
+                    TotalCost = s.TotalCost
+                };
+                itemViewModel.factWorkByC3A = _formService.Find(where, select).Sum(x => x.TotalCost);
+                #endregion
+                itemViewModel.remainingWork = itemViewModel.contractPrice - itemViewModel.factWorkByC3A;
+                #region Плановые значения Объема работ
+                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
+                for (var i = listAmend.Count() - 1; i >= 0; i--)
+                {
+                    var item = listAmend[i];
+                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
+                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                        break;
+                    }
+                }
+                if (listScope.Count() == 0)
+                {
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
+                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                    }
+                }
+                #endregion
+                if (listScope.Count() > 0)
+                {
+                    itemViewModel.currentYearScopeWork = listScope.Sum(x => x.CostNds);
+                }
+                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();
+                #region Заполнение месяцев
+                var listPayments = _payment.Find(x => x.ContractId == contract.Id).ToList();
+                for (var date = itemViewModel.dateBeginWork;
+                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     date = date.Value.AddMonths(1))
+                {
+                    var item = new ItemPaymentDeviationReport();
+                    item.period = date;
+                    var itemPayment = listPayments.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
+                    if (itemPayment != null)
+                    {
+                        if (itemPayment.PaySum != null)
+                            item.payment = itemPayment.PaySum;
+                        else item.payment = 0;
+                        if (itemPayment.PaySumForRupBes != null)
+                            item.paymentRupBes = itemPayment.PaySumForRupBes;
+                        else item.paymentRupBes = 0;
+                    }
+                    itemViewModel.listPayments.Add(item);
+                }
+
+                #endregion
+                #region Нахождение клиента и генподрядчика
+                var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (clientId != null && clientId != 0)
+                {
+                    itemViewModel.client = _organization.GetById(clientId).Abbr;
+                }
+                var genId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (genId != null && genId != 0)
+                {
+                    itemViewModel.genContractor = _organization.GetNameByContractId(genId);
+                }
+                #endregion
+                viewModel.Add((itemViewModel));
+            }
+            return View(viewModel);
         }
 
         public IActionResult DetailsPayableCash(int contractId)
         {
-            var list = _contractService.Find(c => c.Id == contractId ||
-            c.AgreementContractId == contractId || c.MultipleContractId == contractId || c.SubContractId == contractId);
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+               w.AgreementContractId == contractId ||
+               w.MultipleContractId == contractId ||
+               w.SubContractId == contractId;
+
+            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice,
+                IsAgreementContract = s.IsAgreementContract,
+                IsSubContract = s.IsSubContract,
+                IsOneOfMultiple = s.IsOneOfMultiple
+            };
+            var list = _contractService.Find(where, select);
+
+            var viewModel = new List<GetPayableCashPaymentsViewModel>();
+            foreach (var contract in list)
+            {
+                var itemViewModel = new GetPayableCashPaymentsViewModel();
+                itemViewModel.number = contract.Number;
+                itemViewModel.nameObject = contract.NameObject;
+                itemViewModel.currency = contract.Сurrency;
+                itemViewModel.dateContract = contract.Date;
+                #region Доп. соглашения
+                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
+                var amend = listAmend.LastOrDefault();
+                #endregion
+                itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
+                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
+                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
+                itemViewModel.dateEnter = amend == null ? contract.EnteringTerm : amend.DateEntryObject;
+                #region Проверка дат
+
+                if (itemViewModel.dateBeginWork == null)
+                {
+                    itemViewModel.dateBeginWork = DateTime.Today;
+                }
+                if (itemViewModel.dateEndWork == null)
+                {
+                    itemViewModel.dateEndWork = DateTime.Today;
+                }
+                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
+                {
+                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
+                }
+
+                #endregion
+                #region Лист. Факт значений
+                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id;
+                Func<FormC3a, FormC3a> selectF = s => new FormC3a
+                {
+                    TotalCost = s.TotalCost
+                };
+                itemViewModel.factWorkByC3A = _formService.Find(whereF, selectF).Sum(x => x.TotalCost);
+                #endregion
+                itemViewModel.remainingWork = itemViewModel.contractPrice - itemViewModel.factWorkByC3A;
+                #region Плановые значения Объема работ
+                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
+                for (var i = listAmend.Count() - 1; i >= 0; i--)
+                {
+                    var item = listAmend[i];
+                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
+                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                        break;
+                    }
+                }
+                if (listScope.Count() == 0)
+                {
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
+                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            CostNds = s.CostNds
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                    }
+                }
+                #endregion
+                if (listScope.Count() > 0)
+                {
+                    itemViewModel.currentYearScopeWork = listScope.Sum(x => x.CostNds);
+                }
+                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();
+                #region Заполнение месяцев
+                var listPayments = _payment.Find(x => x.ContractId == contract.Id).ToList();
+                for (var date = itemViewModel.dateBeginWork;
+                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     date = date.Value.AddMonths(1))
+                {
+                    var item = new ItemPaymentDeviationReport();
+                    item.period = date;
+                    var itemPayment = listPayments.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
+                    if (itemPayment != null)
+                    {
+                        if (itemPayment.PaySum != null)
+                            item.payment = itemPayment.PaySum;
+                        else item.payment = 0;
+                        if (itemPayment.PaySumForRupBes != null)
+                            item.paymentRupBes = itemPayment.PaySumForRupBes;
+                        else item.paymentRupBes = 0;
+                    }
+                    itemViewModel.listPayments.Add(item);
+                }
+
+                #endregion
+                #region Нахождение клиента и генподрядчика
+                var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
+                .Select(x => x.OrganizationId).FirstOrDefault();
+                if (clientId != null && clientId != 0)
+                {
+                    itemViewModel.client = _organization.GetById(clientId).Abbr;
+                }
+
+                var genId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (genId != null && genId != 0)
+                {
+                    itemViewModel.genContractor = _organization.GetNameByContractId(genId);
+                }
+
+                var subId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor != true &&
+                x.IsClient != true && contract.IsSubContract == true)
+                    .Select(x => x.OrganizationId).FirstOrDefault();
+                if (subId != null && subId != 0)
+                {
+                    itemViewModel.subContractor = _organization.GetNameByContractId(subId);
+                }
+
+                if (contract.IsSubContract == true)
+                {
+                    itemViewModel.typeContract = "Sub";
+                }
+                else if (contract.IsAgreementContract == true)
+                {
+                    itemViewModel.typeContract = "Agr";
+                }
+                else if (contract.IsOneOfMultiple == true)
+                {
+                    itemViewModel.typeContract = "Obj";
+                }
+                else
+                {
+                    itemViewModel.typeContract = "Main";
+                }
+                #endregion
+                viewModel.Add((itemViewModel));
+            }
+            return View(viewModel);
         }
     }
 }

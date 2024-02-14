@@ -419,7 +419,7 @@ namespace MvcLayer.Controllers
                     //если нет авансов, запонять факт невозможно, перенаправляем обратно на договор
                     if (prepayment is null || prepayment?.Count() < 1)
                     {
-                        TempData["Message"] = "Заполните Авансы(План)";
+                        TempData["Message"] = "Заполните планируемый аванс";
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }

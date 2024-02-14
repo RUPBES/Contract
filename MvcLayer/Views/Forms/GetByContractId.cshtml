@@ -597,15 +597,14 @@
                 type: 'POST',
                 url: '@Url.Action("Message", "Home")',
                 dataType: 'html',
-                data: { message: mes },
+                data: { message: mes, header: "Подтверждение", textButton: "Хорошо" },
                 success: function (result) {
                     $('#dialogContent').html(result);
                     $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('show');
 
                     let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
-                    elementDeleteButton[0].addEventListener('click', () => {
-                        console.log('object:', { id: val })
+                    elementDeleteButton[0].addEventListener('click', () => {                        
                         $.ajax({
                             type: 'POST',
                             url: '@Url.Action("Delete", "Forms")',
@@ -615,17 +614,14 @@
                                 $('#dialogContent').html(result);
                                 $('#modDialog').modal({ backdrop: false });
                                 $('#modDialog').modal('show');
-
-                                console.log(result, 'ok result delete')
                                 let buttonElement = document.querySelectorAll('#dialogContent')
                             },
                             error: function (result) {
-                                console.log(result, 'Ошибка удаления');
                                 $.ajax({
                                     type: 'POST',
                                     url: '@Url.Action("Message", "Home")',
                                     dataType: 'html',
-                                    data: { message: "Во время удаления произошла ошибка" },
+                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
                                     success: function (result) {
                                         $('#dialogContent').html(result);
                                     }
@@ -634,8 +630,7 @@
                         });
                     })
                 },
-                error: function (result) {
-                    console.log(result, 'error 2');
+                error: function (result) {                    
                     alert("Ошибка отображения");
                 }
             })

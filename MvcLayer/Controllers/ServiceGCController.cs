@@ -106,7 +106,8 @@ namespace MvcLayer.Controllers
 
                     if (_serviceCost.Find(x => x.IsFact != true && x.ServiceGCId == сhangeServiceId).FirstOrDefault() is null)
                     {
-                        return RedirectToAction("Details", "Contracts", new { id = contractId, message = "Не заполнены суммы планируемых генуслуг" });
+                        TempData["Message"] = "Не заполнены суммы планируемых генуслуг";
+                        return RedirectToAction("Details", "Contracts");
                     }
 
                     DateTime startDate = period.Value.Item1;

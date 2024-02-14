@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MvcLayer.Models.ContractViewModel>
+﻿@using BusinessLayer.Helpers;
+@model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
@@ -9,15 +10,19 @@
     DateTime endPeriod = new DateTime(1000, 1, 1);
     foreach (var item in Model)
     {
-        foreach (var item2 in item.Payments)
+        if (item.dateBeginWork != null)
         {
-            if (startPeriod > item2.Period)
+            if (startPeriod > item.dateBeginWork)
             {
-                startPeriod = (DateTime)item2.Period;
+                startPeriod = (DateTime)item.dateBeginWork;
             }
-            if (endPeriod < item2.Period)
+        }
+
+        if (item.dateEndWork != null)
+        {
+            if (endPeriod < item.dateEndWork)
             {
-                endPeriod = (DateTime)item2.Period;
+                endPeriod = (DateTime)item.dateEndWork;
             }
         }
     }
@@ -78,7 +83,7 @@
         width: 20px;
         height: 20px;
     }
-    
+
     .second-td-elem {
         z-index: 5 !important;
         box-shadow: inset 0 0 0 9999px #bdbac3 !important;
@@ -93,7 +98,7 @@
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     <a asp-action="GetPayableCash" class="close-btn"></a>
-                </div>                
+                </div>
                 <div style="display:flex">
                     <div class="square Agreement"></div>
                     <label> - Соглашения с филиалом </label>
@@ -143,16 +148,16 @@
                                 <th rowspan="2">
                                     Фактическое выполнение по справке С-3а, в т.ч.
                                 </th>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th colspan="2">
-                                        @iterator.ToString("MMMM-yyyy")
+                                        @iterator.ToString("MMMM yyyy")
                                     </th>
                                 }
                             </tr>
 
                             <tr>
-                                @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th>
                                         к оплате
@@ -164,410 +169,282 @@
                             </tr>
                         </thead>
                         <tbody style="max-height:70vh;">
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == false && m.IsOneOfMultiple == false && m.IsSubContract == false))
+                            @foreach (var item in Model.Where(m => m.typeContract == "Main"))
                             {
-                                var contract = @Contract.GetById((int)item?.Id);
-                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
-                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
-                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
-                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
-                                var todayYearScope = 0M;
-                                var todayScope = 0M;
-                                var deviationTotal = 0M;
-                                var allScope = 0M;
-                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
-                                {
-                                    if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            todayYearScope += (decimal)ob.CostNds;
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-
-                                }
-                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
-                                {
-                                    todayScope += (decimal)item2.TotalCost;
-
-                                }
-                                var balanceScope = allScope - todayScope;
                                 <tr>
                                     <td>
-                                        @contract?.Number <br>
-                                        @contract?.Date?.ToShortDateString()
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td>
-                                        @client?.Organization.Name
+                                        @item.client
                                     </td>
                                     <td>
-                                        @genContractor?.Organization.Name
+                                        @item.genContractor
                                     </td>
                                     <td>
-                                        @subContractor?.Organization.Name
+                                        @item.subContractor
                                     </td>
                                     <td>
-                                        @contract?.DateBeginWork?.ToShortDateString() - @contract?.DateEndWork?.ToShortDateString()
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.EnteringTerm?.ToShortDateString()
+                                        @item?.dateEnter?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.Сurrency
+                                        @item?.currency
                                     </td>
                                     <td class="text-end">
-                                        @contract?.ContractPrice?.ToString("N2")
+                                        @item.contractPrice?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @balanceScope.ToString("N2")
+                                        @item.remainingWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayYearScope.ToString("N2")
+                                        @item.currentYearScopeWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayScope.ToString("N2")
+                                        @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator,endPeriod); 
+                                    iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySum).FirstOrDefault();
-                                                if (resultPlan != null)
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
                                                 {
-                                                    <span>@resultPlan?.ToString("N2")</span>
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySumForRupBes).FirstOrDefault();
-                                                if (resultFact != null)
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
                                                 {
-                                                    <span>@resultFact?.ToString("N2")</span>
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
                                 </tr>
                             }
 
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == true && m.IsOneOfMultiple == false && m.IsSubContract == false))
-                            {
-                                var contract = @Contract.GetById((int)item?.Id);
-                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
-                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
-                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
-                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
-                                var todayYearScope = 0M;
-                                var todayScope = 0M;
-                                var deviationTotal = 0M;
-                                var allScope = 0M;
-                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
-                                {
-                                    if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            todayYearScope += (decimal)ob.CostNds;
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-
-                                }
-                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
-                                {
-                                    todayScope += (decimal)item2.TotalCost;
-
-                                }
-                                var balanceScope = allScope - todayScope;
+                            @foreach (var item in Model.Where(m => m.typeContract == "Agr"))
+                            {                               
                                 <tr class="Agreement">
                                     <td>
-                                        @contract?.Number <br>
-                                        @contract?.Date?.ToShortDateString()
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td>
-                                        @client?.Organization.Name
+                                        @item.client
                                     </td>
                                     <td>
-                                        @genContractor?.Organization.Name
+                                        @item.genContractor
                                     </td>
                                     <td>
-                                        @subContractor?.Organization.Name
+                                        @item.subContractor
                                     </td>
                                     <td>
-                                        @contract?.DateBeginWork?.ToShortDateString() - @contract?.DateEndWork?.ToShortDateString()
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.EnteringTerm?.ToShortDateString()
+                                        @item?.dateEnter?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.Сurrency
+                                        @item?.currency
                                     </td>
                                     <td class="text-end">
-                                        @contract?.ContractPrice?.ToString("N2")
+                                        @item.contractPrice?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @balanceScope.ToString("N2")
+                                        @item.remainingWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayYearScope.ToString("N2")
+                                        @item.currentYearScopeWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayScope.ToString("N2")
+                                        @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySum).FirstOrDefault();
-                                                if (resultPlan != null)
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
                                                 {
-                                                    <span>@resultPlan?.ToString("N2")</span>
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySumForRupBes).FirstOrDefault();
-                                                if (resultFact != null)
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
                                                 {
-                                                    <span>@resultFact?.ToString("N2")</span>
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
                                 </tr>
                             }
 
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == false && m.IsOneOfMultiple == false && m.IsSubContract == true))
-                            {
-                                var contract = @Contract.GetById((int)item?.Id);
-                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
-                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
-                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
-                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
-                                var todayYearScope = 0M;
-                                var todayScope = 0M;
-                                var deviationTotal = 0M;
-                                var allScope = 0M;
-                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
-                                {
-                                    if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            todayYearScope += (decimal)ob.CostNds;
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-
-                                }
-                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
-                                {
-                                    todayScope += (decimal)item2.TotalCost;
-
-                                }
-                                var balanceScope = allScope - todayScope;
+                            @foreach (var item in Model.Where(m => m.typeContract == "Sub"))
+                            {                               
                                 <tr class="SubContract">
                                     <td>
-                                        @contract?.Number <br>
-                                        @contract?.Date?.ToShortDateString()
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td>
-                                        @client?.Organization.Name
+                                        @item.client
                                     </td>
                                     <td>
-                                        @genContractor?.Organization.Name
+                                        @item.genContractor
                                     </td>
                                     <td>
-                                        @subContractor?.Organization.Name
+                                        @item.subContractor
                                     </td>
                                     <td>
-                                        @contract?.DateBeginWork?.ToShortDateString() - @contract?.DateEndWork?.ToShortDateString()
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.EnteringTerm?.ToShortDateString()
+                                        @item?.dateEnter?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.Сurrency
+                                        @item?.currency
                                     </td>
                                     <td class="text-end">
-                                        @contract?.ContractPrice?.ToString("N2")
+                                        @item.contractPrice?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @balanceScope.ToString("N2")
+                                        @item.remainingWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayYearScope.ToString("N2")
+                                        @item.currentYearScopeWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayScope.ToString("N2")
+                                        @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySum).FirstOrDefault();
-                                                if (resultPlan != null)
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
                                                 {
-                                                    <span>@resultPlan?.ToString("N2")</span>
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySumForRupBes).FirstOrDefault();
-                                                if (resultFact != null)
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
                                                 {
-                                                    <span>@resultFact?.ToString("N2")</span>
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
                                 </tr>
                             }
 
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == false && m.IsOneOfMultiple == true && m.IsSubContract == false))
-                            {
-                                var contract = @Contract.GetById((int)item?.Id);
-                                var client = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsClient == true);
-                                var genContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor == true);
-                                var subContractor = contract.ContractOrganizations.FirstOrDefault(x => x.ContractId == item.Id && x.IsGenContractor != true && x.IsClient != true && x.Contract.IsSubContract == true);
-                                var listScopeWork = SWCosts.GetValueScopeWorkByPeriod(item.Id, startPeriod, endPeriod);
-                                var todayYearScope = 0M;
-                                var todayScope = 0M;
-                                var deviationTotal = 0M;
-                                var allScope = 0M;
-                                for (var itYear = startPeriod; itYear <= endPeriod; itYear = itYear.AddMonths(1))
-                                {
-                                    if (itYear >= new DateTime(DateTime.Today.Year, 1, 1) && itYear < new DateTime(DateTime.Today.Year + 1, 1, 1))
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            todayYearScope += (decimal)ob.CostNds;
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var ob = listScopeWork?.Where(x => x.Period == itYear).FirstOrDefault();
-                                        if (ob != null)
-                                        {
-                                            allScope += (decimal)ob.CostNds;
-                                        }
-                                    }
-
-                                }
-                                foreach (var item2 in Form.Find(f => f.ContractId == item.Id && f.IsOwnForces == false).ToList())
-                                {
-                                    todayScope += (decimal)item2.TotalCost;
-
-                                }
-                                var balanceScope = allScope - todayScope;
+                            @foreach (var item in Model.Where(m => m.typeContract == "Obj"))
+                            {                                
                                 <tr class="Multiple">
                                     <td>
-                                        @contract?.Number <br>
-                                        @contract?.Date?.ToShortDateString()
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td>
-                                        @client?.Organization.Name
+                                        @item.client
                                     </td>
                                     <td>
-                                        @genContractor?.Organization.Name
+                                        @item.genContractor
                                     </td>
                                     <td>
-                                        @subContractor?.Organization.Name
+                                        @item.subContractor
                                     </td>
                                     <td>
-                                        @contract?.DateBeginWork?.ToShortDateString() - @contract?.DateEndWork?.ToShortDateString()
+                                        @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.EnteringTerm?.ToShortDateString()
+                                        @item?.dateEnter?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract?.Сurrency
+                                        @item?.currency
                                     </td>
                                     <td class="text-end">
-                                        @contract?.ContractPrice?.ToString("N2")
+                                        @item.contractPrice?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @balanceScope.ToString("N2")
+                                        @item.remainingWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayYearScope.ToString("N2")
+                                        @item.currentYearScopeWork?.ToString("N2")
                                     </td>
                                     <td class="text-end">
-                                        @todayScope.ToString("N2")
+                                        @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; iterator <= endPeriod; iterator = iterator.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySum).FirstOrDefault();
-                                                if (resultPlan != null)
+                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        if (itemPayment != null)
+                                        {
+                                            <td class="text-end">
+                                                @if (itemPayment.payment != null)
                                                 {
-                                                    <span>@resultPlan?.ToString("N2")</span>
+                                                    <span>@itemPayment.payment?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = item.Payments.Where(p => p.Period.Value.Year == iterator.Year && p.Period.Value.Month == iterator.Month).Select(p => p.PaySumForRupBes).FirstOrDefault();
-                                                if (resultFact != null)
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemPayment.paymentRupBes != null)
                                                 {
-                                                    <span>@resultFact?.ToString("N2")</span>
+                                                    <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
                                                 }
-                                            }
-                                        </td>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
                                 </tr>
                             }

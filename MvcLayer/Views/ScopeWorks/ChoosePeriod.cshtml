@@ -12,7 +12,7 @@
     else backId = (int)ViewData["returnContractId"];
     bool hasScope = false;
     // ищем есть ли изменения, выбираем последние. если изменения есть то ID последнего помечаем что изменяем
-    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId && x.IsOwnForces == Model.IsOwnForces)?.LastOrDefault();
+    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
     if (scopes is not null)
     {
         hasScope = true;
@@ -70,7 +70,7 @@
     .d-inline-block {
         text-align: center;
         font-weight: 600;
-        color:black;
+        color: black;
     }
 
     .label-block {
@@ -83,12 +83,11 @@
     .btn-block {
         display: flex;
         justify-content: space-between;
-    } 
+    }
 
     .label_period {
         font-weight: 600;
     }
-
 
 </style>
 
@@ -117,7 +116,6 @@
                 {
                     <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
                         <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-                        <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                         <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
 
 
@@ -146,16 +144,9 @@
                                     }
                                 </select>
                             </div>
-                            @if (Model?.IsOwnForces == true)
-                            {
-                                <input asp-for="PeriodStart" type="datetime" hidden value="@Model.PeriodStart" />
-                                <input asp-for="PeriodEnd" type="datetime" hidden value="@Model.PeriodEnd" />
-                            }
-                            @if (Model?.IsOwnForces == false)
-                            {
-                                <div id="amendPartial">
-                                </div>
-                            }
+
+                            <div id="amendPartial">
+                            </div>
 
                             <button id="butSubmit" class="btn btn-primary btn-sm mt-2" disabled type="submit">Выбрать</button>
                         </div>
@@ -198,7 +189,6 @@
                         <h4>Выбор периода объема работ</h4>
                     }
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-                    <input asp-for="IsOwnForces" value="@Model?.IsOwnForces" hidden />
                     <div class="form-group col-6 mb-3">
                         <label for="amendCheck1">Начало периода</label>
                         @if (contract.DateBeginWork != null)

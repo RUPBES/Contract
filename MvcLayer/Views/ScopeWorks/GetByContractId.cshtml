@@ -188,13 +188,12 @@
                             let buttonElement = document.querySelectorAll('#dialogContent')
                             $('#dialogContent').html(result);
                         },
-                        error: function (result) {
-                            console.log(result, 'Ошибка удаления');
+                        error: function (result) {                            
                             $.ajax({
                                 type: 'POST',
                                 url: '@Url.Action("Message","Home")',
                                 dataType: 'html',
-                                data: { message: "Во время удаления произошла ошибка" },
+                                data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
                                 success: function (result) {
                                     $('#dialogContent').html(result);
                                 }
@@ -203,8 +202,7 @@
                     });
                 })
             },
-            error: function (result) {
-                console.log(result, 'error 2');
+            error: function (result) {                
                 alert("Ошибка отображения");
             }
         })

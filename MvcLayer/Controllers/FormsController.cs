@@ -113,7 +113,6 @@ namespace MvcLayer.Controllers
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
-                    IsOwnForces = isOwnForces,
                     PeriodStart = period.Value.Item1,
                     PeriodEnd = period.Value.Item2,
                 };       
@@ -148,7 +147,7 @@ namespace MvcLayer.Controllers
                     ViewData["Target"] = "true";
                 }
             }
-            return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
+            return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId});
         }
 
         [HttpPost]
@@ -272,11 +271,11 @@ namespace MvcLayer.Controllers
                     if (prepFact != null) _prepFact.Delete(prepFact.Id);
                 }
                 ViewData["reload"] = "Yes";
-                return PartialView("_Message","Запись успешно удалена.");
+                return PartialView("_Message",new ModalViewVodel("Запись успешно удалена.","Результат удаления","Хорошо"));
             }
             catch
             {
-                return PartialView("_Message", "Произошла ошибка.");
+                return PartialView("_Message", new ModalViewVodel("Произошла ошибка при удалении.", "Ошибка", "Плохо"));
             }
         }
 
