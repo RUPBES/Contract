@@ -4,9 +4,9 @@
 
 <link href="~/kendoui/upload_style.css" rel="stylesheet" />
 @{
-    ViewData["Title"] =  $"Файлы договора";
+    ViewData["Title"] = $"Файлы договора";
     var isAdmin = true;
-    string controller = ViewBag.redirectController is not null || ViewBag.redirectController == "Files"? ViewBag.redirectController : "Contracts";
+    string controller = ViewBag.redirectController is not null || ViewBag.redirectController == "Files" ? ViewBag.redirectController : "Contracts";
     string action = ViewBag.redirectAction is not null ? ViewBag.redirectAction : "Index";
     var routeValue = !action.Equals("Index", StringComparison.OrdinalIgnoreCase) && ViewBag.entityId is not null ? ViewBag.entityId : null;
     if (ViewBag.returnContractId != 0)
@@ -14,10 +14,32 @@
 }
 
 <style>
-    .file_list_item{
+    .file_list_item {
         display: flex;
         align-items: center;
     }
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -38,20 +60,20 @@
                             var classType = Converter.GetFileClass(typeFileValue);
 
                             <div class="file_list_item">
-                            <span class="file-icon @classType"></span>
-                            <h4 class='file-heading file-name-heading'>
-                                Название: <a href="~/Files/GetFile?id=@item.Id" target="_blank">@item.FileName</a>
-                            </h4>
+                                <span class="file-icon @classType"></span>
+                                <h4 class='file-heading file-name-heading'>
+                                    Название: <a href="~/Files/GetFile?id=@item.Id" target="_blank">@item.FileName</a>
+                                </h4>
 
-                            <strong style="display:flex; align-items:center">
-                                @if (isAdmin)
-                                {
-                                    <div class="icon delete">
+                                <strong style="display:flex; align-items:center">
+                                    @if (isAdmin)
+                                    {
+                                        <div class="icon delete">
                                             @Html.ActionLink("", "Delete", "Files", new {id = item.Id, redirectAction = "GetByContractId", redirectController="Files",fileCategory= FolderEnum.Contracts, contractId =@ViewBag.entityId,  pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
-                                    </div>
-                                }
-                            </strong>
-</div>
+                                        </div>
+                                    }
+                                </strong>
+                            </div>
                         }
                     </div>
                 </div>

@@ -1273,11 +1273,11 @@
                         <tr id="material" @*Материалы - План*@>
                             @if (Model.IsSubContract != true && Model.IsAgreementContract != true)
                             {
-                                <th class="first-col" rowspan="2"><span>Материалы заказчика (справочно)</span></th>
+                                <th class="first-col" rowspan="4"><span>Материалы заказчика (справочно)</span></th>
                             }
                             else
                             {
-                                <th class="first-col" rowspan="4"><span>Материалы заказчика (справочно)</span></th>
+                                <th class="first-col" rowspan="2"><span>Материалы заказчика (справочно)</span></th>
                             }
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col"><span>@string.Format("{0:n}",allScope.MaterialCost)</span></td>
@@ -2779,6 +2779,11 @@
 </div>
 
 <script>
+    window.addEventListener('resize', function (event) {
+        addPositionToTable();
+    }, true);
+
+    window.onload = addPositionToTable();
     function funcChangeToCategories() {
         let elementTable = document.getElementById("ConstructionInstallationWorksByTypes")
         elementTable.classList.remove('show')
@@ -2840,7 +2845,7 @@
         }
     }
 
-    $(function () {
+    function addPositionToTable() {
         var all = $(".first-col");
         for (var i = 0; i < all.length; i++) {
             all[i].style.left = "-10px";
@@ -2851,7 +2856,7 @@
         toLeft(".third-col", ".fourth-col");
         toLeft(".fourth-col", ".fifth-col");
         toLeft(".fifth-col", ".sixth-col");
-    });
+    }
 
 
 </script>

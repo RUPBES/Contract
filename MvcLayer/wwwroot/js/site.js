@@ -62,3 +62,9 @@ $(document).ready(function () {
 function setColor(element, color) {
     element.style.backgroundColor = color;
 }
+
+$('[type="date"]').attr('inputmode', 'none');
+$('[type="date"]').on('keydown', (e) => {
+    e.preventDefault();
+    return false;
+});

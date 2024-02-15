@@ -41,6 +41,11 @@ namespace DatabaseLayer.Repositories
             return _context.FormC3as.Where(predicate).ToList();
         }
 
+        public IEnumerable<FormC3a> Find(Func<FormC3a, bool> where, Func<FormC3a, FormC3a> select)
+        {
+            return _context.FormC3as.Where(where).Select(select).ToList();
+        }        
+
         public IEnumerable<FormC3a> GetAll()
         {
             return _context.FormC3as.ToList();

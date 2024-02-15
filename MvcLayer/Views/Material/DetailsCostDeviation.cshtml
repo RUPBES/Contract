@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MvcLayer.Models.ContractViewModel>
+﻿@using BusinessLayer.Helpers;
+@model IEnumerable<MvcLayer.Models.Reports.GetCostDeviationMaterialViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.IMaterialService Material
 
@@ -9,18 +10,19 @@
     DateTime endPeriod = new DateTime(1000, 1, 1);
     foreach (var item in Model)
     {
-        foreach (var item2 in item.MaterialGcs)
+        if (item.dateBeginWork != null)
         {
-            foreach (var item3 in item2.MaterialCosts)
+            if (startPeriod > item.dateBeginWork)
             {
-                if (startPeriod > item3.Period)
-                {
-                    startPeriod = (DateTime)item3.Period;
-                }
-                if (endPeriod < item3.Period)
-                {
-                    endPeriod = (DateTime)item3.Period;
-                }
+                startPeriod = (DateTime)item.dateBeginWork;
+            }
+        }
+
+        if (item.dateEndWork != null)
+        {
+            if (endPeriod < item.dateEndWork)
+            {
+                endPeriod = (DateTime)item.dateEndWork;
             }
         }
     }
@@ -88,6 +90,29 @@
         width: 20px;
         height: 20px;
     }
+
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -126,15 +151,15 @@
                                 </th>
                             </tr>
                             <tr>
-                                @for (var item = startPeriod; item <= endPeriod; item = item.AddMonths(1))
+                                @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
                                 {
                                     <th colspan="3">
-                                        @item.ToString("MMMM-yyyy")
+                                        @item.ToString("MMMM yyyy")
                                     </th>
                                 }
                             </tr>
                             <tr>
-                                @for (var item = startPeriod; item <= endPeriod; item = item.AddMonths(1))
+                                @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
                                 {
                                     <th>
                                         План
@@ -149,272 +174,236 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == false && m.IsOneOfMultiple == false && m.IsSubContract == false))
+                            @foreach (var item in Model.Where(m => m.typeContract == "Main"))
                             {
-                                var contract = item;
-                                var list = item.MaterialGcs.LastOrDefault();
-                                var cost = list != null ? list.MaterialCosts : null;
                                 var deviationTotal = 0M;
                                 <tr>
                                     <td>
-                                        @contract.Number<br>
-                                        @if (contract.Date != null)
-                                        {
-                                            <span>от<br></span>
-                                            <span>@contract.Date.Value.ToString("dd-MMMM-yyyy")</span>
-                                        }
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td class="text-end">
-                                        @{
-                                            var sum = 0M;
-                                            for (var itemTime = startPeriod; itemTime <= endPeriod; itemTime = itemTime.AddMonths(1))
-                                            {
-                                                var ob = item.MaterialGcs.LastOrDefault();
-                                                if (ob != null)
-                                                {
-                                                    var o = ob.MaterialCosts.Where(m => m.Price != null && m.Period.Value.Month == itemTime.Month
-                                                    && m.Period.Value.Year == itemTime.Year).Select(m => m.Price).FirstOrDefault();
-                                                    if (o != null)
-                                                        sum = sum + (decimal)o;
-                                                }
-                                            }
-                                            <span>@sum.ToString("N2")</span>
-                                        }
+                                        @item?.materialCost?.ToString("N2")
                                     </td>
 
-                                    @for (var item2 = startPeriod; item2 <= endPeriod; item2 = item2.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = cost != null && cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultPlan?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = cost != null && cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultFact?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var deviation = resultPlan - resultFact;
-                                                deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                            }
-                                            @deviation?.ToString("N2")
-                                        </td>
+                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                                        .FirstOrDefault();
+                                        if (itemMaterial != null)
+                                        {
+                                            decimal? plan = 0, fact = 0;
+                                            <td class="text-end">
+                                                @if (itemMaterial.plan != null)
+                                                {
+                                                    plan = itemMaterial.plan;
+                                                }
+                                                @plan?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemMaterial.fact != null)
+                                                {
+                                                    fact = itemMaterial.fact;
+                                                }
+                                                @fact?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var deviation = plan - fact;
+                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                                }
+                                                @deviation?.ToString("N2")
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
-
                                     <td class="text-end">
                                         @deviationTotal.ToString("N2")
                                     </td>
                                 </tr>
                             }
 
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == true && m.IsOneOfMultiple == false && m.IsSubContract == false))
+                            @foreach (var item in Model.Where(m => m.typeContract == "Agr"))
                             {
-                                var contract = item;
-                                var list = item.MaterialGcs.LastOrDefault();
-                                var cost = list != null ? list.MaterialCosts : null;
                                 var deviationTotal = 0M;
                                 <tr class="Agreement">
                                     <td>
-                                        @contract.Number <br>                                        
-                                        @if (contract.Date != null)
-                                        {
-                                            <span>от<br></span>
-                                            <span>@contract.Date.Value.ToString("dd-MMMM-yyyy")</span>
-                                        }
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td class="text-end">
-                                        @{
-                                            var sum = 0M;
-                                            for (var itemTime = startPeriod; itemTime <= endPeriod; itemTime = itemTime.AddMonths(1))
-                                            {
-                                                var ob = item.MaterialGcs.LastOrDefault();
-                                                if (ob != null)
-                                                {
-                                                    var o = ob.MaterialCosts.Where(m => m.Price != null && m.Period.Value.Month == itemTime.Month
-                                                    && m.Period.Value.Year == itemTime.Year).Select(m => m.Price).FirstOrDefault();
-                                                    if (o != null)
-                                                        sum = sum + (decimal)o;
-                                                }
-                                            }
-                                            <span>@sum.ToString("N2")</span>
-                                        }
+                                        @item?.materialCost?.ToString("N2")
                                     </td>
 
-                                    @for (var item2 = startPeriod; item2 <= endPeriod; item2 = item2.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = cost != null && cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultPlan?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = cost != null && cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultFact?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var deviation = resultPlan - resultFact;
-                                                deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                            }
-                                            @deviation?.ToString("N2")
-                                        </td>
+                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                                        .FirstOrDefault();
+                                        if (itemMaterial != null)
+                                        {
+                                            decimal? plan = 0, fact = 0;
+                                            <td class="text-end">
+                                                @if (itemMaterial.plan != null)
+                                                {
+                                                    plan = itemMaterial.plan;
+                                                }
+                                                @plan?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemMaterial.fact != null)
+                                                {
+                                                    fact = itemMaterial.fact;
+                                                }
+                                                @fact?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var deviation = plan - fact;
+                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                                }
+                                                @deviation?.ToString("N2")
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
-
                                     <td class="text-end">
                                         @deviationTotal.ToString("N2")
                                     </td>
                                 </tr>
                             }
 
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == false && m.IsOneOfMultiple == false && m.IsSubContract == true))
+                            @foreach (var item in Model.Where(m => m.typeContract == "Sub"))
                             {
-                                var contract = item;
-                                var list = item.MaterialGcs.LastOrDefault();
-                                var cost = list != null ? list.MaterialCosts : null;
                                 var deviationTotal = 0M;
                                 <tr class="SubContract">
                                     <td>
-                                        @contract.Number <br>
-                                        @if (contract.Date != null)
-                                        {
-                                            <span>от<br></span>
-                                            <span>@contract.Date.Value.ToString("dd-MMMM-yyyy")</span>
-                                        }
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td class="text-end">
-                                        @{
-                                            var sum = 0M;
-                                            for (var itemTime = startPeriod; itemTime <= endPeriod; itemTime = itemTime.AddMonths(1))
-                                            {
-                                                var ob = item.MaterialGcs.LastOrDefault();
-                                                if (ob != null)
-                                                {
-                                                    var o = ob.MaterialCosts.Where(m => m.Price != null && m.Period.Value.Month == itemTime.Month
-                                                    && m.Period.Value.Year == itemTime.Year).Select(m => m.Price).FirstOrDefault();
-                                                    if (o != null)
-                                                        sum = sum + (decimal)o;
-                                                }
-                                            }
-                                            <span>@sum.ToString("N2")</span>
-                                        }
+                                        @item?.materialCost?.ToString("N2")
                                     </td>
 
-                                    @for (var item2 = startPeriod; item2 <= endPeriod; item2 = item2.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = cost != null && cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultPlan?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = cost != null && cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultFact?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var deviation = resultPlan - resultFact;
-                                                deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                            }
-                                            @deviation?.ToString("N2")
-                                        </td>
+                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                                        .FirstOrDefault();
+                                        if (itemMaterial != null)
+                                        {
+                                            decimal? plan = 0, fact = 0;
+                                            <td class="text-end">
+                                                @if (itemMaterial.plan != null)
+                                                {
+                                                    plan = itemMaterial.plan;
+                                                }
+                                                @plan?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemMaterial.fact != null)
+                                                {
+                                                    fact = itemMaterial.fact;
+                                                }
+                                                @fact?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var deviation = plan - fact;
+                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                                }
+                                                @deviation?.ToString("N2")
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
-
                                     <td class="text-end">
                                         @deviationTotal.ToString("N2")
                                     </td>
                                 </tr>
                             }
 
-                            @foreach (var item in Model.Where(m =>
-                            m.IsAgreementContract == false && m.IsOneOfMultiple == true && m.IsSubContract == false))
-                            {
-                                var contract = item;
-                                var list = item.MaterialGcs.LastOrDefault();
-                                var cost = list != null ? list.MaterialCosts : null;
+                            @foreach (var item in Model.Where(m => m.typeContract == "Obj"))
+                            {                                
                                 var deviationTotal = 0M;
                                 <tr class="Multiple">
                                     <td>
-                                        @contract.Number <br>
-                                        @if (contract.Date != null)
-                                        {
-                                            <span>от<br></span>
-                                            <span>@contract.Date.Value.ToString("dd-MMMM-yyyy")</span>
-                                        }
+                                        @item?.number <br>
+                                        от<br>
+                                        @item?.dateContract?.ToShortDateString()
                                     </td>
                                     <td>
-                                        @contract.NameObject
+                                        @item?.nameObject
                                     </td>
                                     <td class="text-end">
-                                        @{
-                                            var sum = 0M;
-                                            for (var itemTime = startPeriod; itemTime <= endPeriod; itemTime = itemTime.AddMonths(1))
-                                            {
-                                                var ob = item.MaterialGcs.LastOrDefault();
-                                                if (ob != null)
-                                                {
-                                                    var o = ob.MaterialCosts.Where(m => m.Price != null && m.Period.Value.Month == itemTime.Month
-                                                    && m.Period.Value.Year == itemTime.Year).Select(m => m.Price).FirstOrDefault();
-                                                    if (o != null)
-                                                        sum = sum + (decimal)o;
-                                                }
-                                            }
-                                            <span>@sum.ToString("N2")</span>
-                                        }
+                                        @item?.materialCost?.ToString("N2")
                                     </td>
 
-                                    @for (var item2 = startPeriod; item2 <= endPeriod; item2 = item2.AddMonths(1))
+                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                   iterator = iterator.AddMonths(1))
                                     {
-                                        <td class="text-end">
-                                            @{
-                                                var resultPlan = cost != null && cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact != true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultPlan?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var resultFact = cost != null && cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2) != null ?
-                                                cost.FirstOrDefault(x => x.IsFact == true && x.Period?.Date == item2).Price : null;
-                                            }
-                                            @resultFact?.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            @{
-                                                var deviation = resultPlan - resultFact;
-                                                deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                            }
-                                            @deviation?.ToString("N2")
-                                        </td>
+                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                                        .FirstOrDefault();
+                                        if (itemMaterial != null)
+                                        {
+                                            decimal? plan = 0, fact = 0;
+                                            <td class="text-end">
+                                                @if (itemMaterial.plan != null)
+                                                {
+                                                    plan = itemMaterial.plan;
+                                                }
+                                                @plan?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @if (itemMaterial.fact != null)
+                                                {
+                                                    fact = itemMaterial.fact;
+                                                }
+                                                @fact?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var deviation = plan - fact;
+                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                                }
+                                                @deviation?.ToString("N2")
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        }
                                     }
-
                                     <td class="text-end">
                                         @deviationTotal.ToString("N2")
                                     </td>

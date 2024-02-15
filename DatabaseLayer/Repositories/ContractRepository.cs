@@ -47,6 +47,12 @@ namespace DatabaseLayer.Repositories
                 Include(c => c.MaterialGcs).ThenInclude(c => c.MaterialCosts).Where(predicate).ToList();
         }
 
+        public IEnumerable<Contract> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
+        {
+            return _context.Contracts
+                .Where(where).Select(select).ToList();
+        }
+
         public IEnumerable<Contract> GetAll()
         {
             return _context.Contracts

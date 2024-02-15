@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MVC_layer.Models;
+using MvcLayer.Models;
 using System.Diagnostics;
 
 namespace MVC_layer.Controllers
@@ -31,16 +32,16 @@ namespace MVC_layer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-        
-        public IActionResult Message(string message)
-        {
-            return PartialView("_Message", message);
+
+        public IActionResult Message(string message, string header, string textButton)
+        {            
+            return PartialView("_Message", new ModalViewVodel(message, header, textButton));
         }
 
-        public IActionResult MessageWithReload(string message)
+        public IActionResult MessageWithReload(string message, string header, string textButton)
         {
             ViewData["reload"] = "Yes";
-            return PartialView("_Message", message);
+            return PartialView("_Message", new ModalViewVodel(message, header, textButton));
         }
 
     }

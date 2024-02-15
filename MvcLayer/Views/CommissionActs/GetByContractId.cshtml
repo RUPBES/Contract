@@ -16,7 +16,29 @@
     var contract = Contract.GetById((int)ViewData["contractId"]);
     var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
 }
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
 
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
@@ -33,7 +55,7 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <table class="table">
+                <table class="table table-main">
                     <thead>
                         <tr>
                             <th>
@@ -54,7 +76,7 @@
                                     @Html.DisplayFor(modelItem => item.Number)
                                 </td>
                                 <td>
-                                    @Html.DisplayFor(modelItem => item.Date)
+                                    @item.Date.Value.ToString("dd MMMM yyyy")
                                 </td>
                                
                                 <td>

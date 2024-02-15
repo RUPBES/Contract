@@ -62,7 +62,44 @@
     #tab-c3a button { 
         color: mediumblue;
     }
-  
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+
+    .svg-circleplus {
+        height: 25px;
+        stroke: white;
+        transition: all 0.5s;
+    }
+
+    .svg-circleplus:hover {
+            stroke: #9a9a9a;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+    }
+
+
 </style>
 
 <div class="dm-overlay">
@@ -82,7 +119,7 @@
                 </div>
                 <hr class="modal-line">
                 <div class="modal-overflow-90">
-                    <table id="tab-c3a" class="table table-striped table-bordered">
+                    <table id="tab-c3a" class="table table-striped table-bordered table-main">
                         <thead class="">
                             @if (ViewBag.IsEngin == null)
                             {
@@ -98,7 +135,13 @@
                                     </th>
                                     <th >
                                         @Html.DisplayNameFor(model => model.TotalCost)
-                                        <button class="totalW">*</button>
+                                        <button id="btn_svg" class="totalW btn">
+                                            <svg class="svg-circleplus" viewBox="0 0 100 100">
+                                                <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
+                                                <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
+                                                <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
+                                            </svg>
+                                        </button>
                                     </th>
                                     @* <th colspan="3">в т.ч.</th> *@
                                     <th  class="col-tog">
@@ -116,7 +159,13 @@
                                     @* <th colspan="2">Авансы удержанные</th> *@
                                     <th >
                                         Удержания
-                                        <button class="totalA">*</button>
+                                        <button id="btn_svg" class="totalA btn">
+                                            <svg class="svg-circleplus" viewBox="0 0 100 100">
+                                                <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
+                                                <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
+                                                <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
+                                            </svg>
+                                        </button>
                                     </th>
                                     <th  class="col-tog-av">
                                         Зачет целевого аванса
@@ -540,6 +589,9 @@
 </div>
 @section Scripts {
     <script type="text/javascript">
+
+
+
         function toggeleColumnTable() {
             let numberColspan;
             const devideTable = document.querySelector(".devide-table");
@@ -597,15 +649,14 @@
                 type: 'POST',
                 url: '@Url.Action("Message", "Home")',
                 dataType: 'html',
-                data: { message: mes },
+                data: { message: mes, header: "Подтверждение", textButton: "Хорошо" },
                 success: function (result) {
                     $('#dialogContent').html(result);
                     $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('show');
 
                     let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
-                    elementDeleteButton[0].addEventListener('click', () => {
-                        console.log('object:', { id: val })
+                    elementDeleteButton[0].addEventListener('click', () => {                        
                         $.ajax({
                             type: 'POST',
                             url: '@Url.Action("Delete", "Forms")',
@@ -615,17 +666,14 @@
                                 $('#dialogContent').html(result);
                                 $('#modDialog').modal({ backdrop: false });
                                 $('#modDialog').modal('show');
-
-                                console.log(result, 'ok result delete')
                                 let buttonElement = document.querySelectorAll('#dialogContent')
                             },
                             error: function (result) {
-                                console.log(result, 'Ошибка удаления');
                                 $.ajax({
                                     type: 'POST',
                                     url: '@Url.Action("Message", "Home")',
                                     dataType: 'html',
-                                    data: { message: "Во время удаления произошла ошибка" },
+                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
                                     success: function (result) {
                                         $('#dialogContent').html(result);
                                     }
@@ -634,11 +682,16 @@
                         });
                     })
                 },
-                error: function (result) {
-                    console.log(result, 'error 2');
+                error: function (result) {                    
                     alert("Ошибка отображения");
                 }
             })
         }
+
+
+        $("#btn_svg").click(function () { 
+            $('#btn_svg').html('<?xml version="1.0" ?><svg height="24px" version="1.1" viewBox="0 0 24 24" width="24px" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" xmlns:xlink="http://www.w3.org/1999/xlink"><title/><desc/><defs/><g fill="none" fill-rule="evenodd" id="miu" stroke="white" stroke-width="1"><g id="Artboard-1" transform="translate(-575.000000, -155.000000)"><g id="slice" transform="translate(215.000000, 119.000000)"/><path d="M587.5,178 C593.851275,178 599,172.851275 599,166.5 C599,160.148725 593.851275,155 587.5,155 C581.148725,155 576,160.148725 576,166.5 C576,172.851275 581.148725,178 587.5,178 Z M587.5,177 C593.29899,177 598,172.29899 598,166.5 C598,160.70101 593.29899,156 587.5,156 C581.70101,156 577,160.70101 577,166.5 C577,172.29899 581.70101,177 587.5,177 Z M583.257359,171.449747 L582.550253,170.742641 L586.792893,166.5 L582.550253,162.257359 L583.257359,161.550253 L587.5,165.792893 L591.742641,161.550253 L592.449747,162.257359 L588.207107,166.5 L592.449747,170.742641 L591.742641,171.449747 L587.5,167.207107 L583.257359,171.449747 Z" fill="#000000" id="circle-close-delete-remove-outline-stroke"/></g></g></svg>')
+                                        })
+        
     </script>
 }

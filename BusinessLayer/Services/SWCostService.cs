@@ -6,7 +6,9 @@ using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Reflection;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -106,6 +108,11 @@ namespace BusinessLayer.Services
         public IEnumerable<SWCostDTO> Find(Func<SWCost, bool> predicate)
         {
             return _mapper.Map<IEnumerable<SWCostDTO>>(_database.SWCosts.Find(predicate));
+        }
+
+        public IEnumerable<SWCostDTO> Find(Func<SWCost, bool> where, Func<SWCost, SWCost> select)
+        {
+            return _mapper.Map<IEnumerable<SWCostDTO>>(_database.SWCosts.Find(where, select));
         }
 
         public IEnumerable<SWCostDTO> GetAll()

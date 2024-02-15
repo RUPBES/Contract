@@ -162,6 +162,11 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(predicate));
         }
 
+        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select)
+        {
+            return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(where, select));
+        }
+
         public void AddFile(int amendId, int fileId)
         {
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;

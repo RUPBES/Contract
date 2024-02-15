@@ -13,6 +13,29 @@
     .dropdown-menu{
         z-index: 1;
     }
+
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
@@ -301,13 +324,12 @@
                                 let buttonElement = document.querySelectorAll('#dialogContent')
                                 $('#dialogContent').html(result);
                             },
-                            error: function (result) {
-                                console.log(result, 'Ошибка удаления');
+                            error: function (result) {                                
                                 $.ajax({
                                     type: 'POST',
                                     url: '@Url.Action("Message","Home")',
                                     dataType: 'html',
-                                    data: { message: "Во время удаления произошла ошибка" },
+                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
                                     success: function (result) {
                                         $('#dialogContent').html(result);
                                     }
@@ -316,8 +338,7 @@
                         });
                     })
                 },
-                error: function (result) {
-                    console.log(result, 'error 2');
+                error: function (result) {                    
                     alert("Ошибка отображения");
                 }
             })

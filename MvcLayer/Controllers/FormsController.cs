@@ -45,7 +45,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetPeriod(int id, int returnContractId = 0)
         {
-            var period = _scopeWork.GetFullPeriodRangeScopeWork(id);
+            var period = _scopeWork.GetPeriodRangeScopeWork(id);
             ViewData["returnContractId"] = returnContractId;
             ViewData["id"] = id;
             if (period is null)
@@ -102,7 +102,7 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 // по объему работ, берем начало и окончание периода
-                var period = _scopeWork.GetFullPeriodRangeScopeWork(contractId);
+                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
 
                 if (period is null)
                 {
@@ -113,7 +113,6 @@ namespace MvcLayer.Controllers
                 var periodChoose = new PeriodChooseViewModel
                 {
                     ContractId = contractId,
-                    IsOwnForces = isOwnForces,
                     PeriodStart = period.Value.Item1,
                     PeriodEnd = period.Value.Item2,
                 };       
@@ -148,7 +147,7 @@ namespace MvcLayer.Controllers
                     ViewData["Target"] = "true";
                 }
             }
-            return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId, IsOwnForces = model.IsOwnForces });
+            return View("AddForm", new FormViewModel { Period = model.ChoosePeriod, ContractId = model.ContractId});
         }
 
         [HttpPost]
@@ -272,11 +271,11 @@ namespace MvcLayer.Controllers
                     if (prepFact != null) _prepFact.Delete(prepFact.Id);
                 }
                 ViewData["reload"] = "Yes";
-                return PartialView("_Message","Запись успешно удалена.");
+                return PartialView("_Message",new ModalViewVodel("Запись успешно удалена.","Результат удаления","Хорошо"));
             }
             catch
             {
-                return PartialView("_Message", "Произошла ошибка.");
+                return PartialView("_Message", new ModalViewVodel("Произошла ошибка при удалении.", "Ошибка", "Плохо"));
             }
         }
 

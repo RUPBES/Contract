@@ -17,9 +17,6 @@ namespace MvcLayer.Models
         [DisplayName("Изменено?")]
         public bool? IsChange { get; set; }
 
-        [DisplayName("Собственными силами?")]
-        public bool IsOwnForces { get; set; }
-
         [DisplayName("ID измененного объема работ")]
         public int? ChangeScopeWorkId { get; set; }
         [DisplayName("ID измененного аванса")]

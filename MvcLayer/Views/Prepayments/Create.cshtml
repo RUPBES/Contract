@@ -29,8 +29,9 @@
     .input-group {
         width:auto;
     }
+
     .dm-modal {
-        background-color:lightblue;
+        background-color: lightsteelblue;
         max-width: 1200px;
     }
     .input_result {
@@ -56,6 +57,24 @@
     #txt1.focused {
         border-color: red;
     }
+
+    .close-btn {
+        color: red;
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+             color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
 </style>
 
 
@@ -77,7 +96,7 @@
                 <hr class="modal-line" />
                 <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                     <div class="cont-table">
-                        <table class="table table-bordered table-striped">
+                        <table class="table table-bordered table-striped table-main">
 
                             @if (!isFact)
                             {
@@ -85,10 +104,10 @@
                                     <th>Период</th>
                                     @foreach (var item in Model.PrepaymentPlans)
                                     {
-                                        <td>
+                                        <th>
                                             @item.Period?.ToString("MMM yyyy")
                                             <input asp-for="@Model.PrepaymentPlans[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                        </td>
+                                        </th>
                                         index++;
                                     }
                                     @{

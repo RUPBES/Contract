@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SqlServer.Server;
 using MvcLayer.Models;
+using MvcLayer.Models.Reports;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -97,7 +98,7 @@ namespace MvcLayer.Controllers
                 if (amend.Count > 0)
                 {
                     answer.minStartPeriod = amend.LastOrDefault().DateBeginWork;
-                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
+                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;                   
                 }
                 else
                 {
@@ -418,7 +419,7 @@ namespace MvcLayer.Controllers
                     //если нет авансов, запонять факт невозможно, перенаправляем обратно на договор
                     if (prepayment is null || prepayment?.Count() < 1)
                     {
-                        TempData["Message"] = "Заполните Авансы(План)";
+                        TempData["Message"] = "Заполните планируемый аванс";
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }

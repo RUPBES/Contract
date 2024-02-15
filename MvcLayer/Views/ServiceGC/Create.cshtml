@@ -27,6 +27,40 @@
     td {
         min-width: 250px;
     }
+
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+        .form-label {
+            font-weight: bold;
+            margin-right: 1%;
+        }
+
+    #formFileMultiple {
+        width: 20%;
+        }
+        .mb-2 {
+        display: flex;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -46,24 +80,22 @@
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row">
+                    <div class="mb-2">
+                        <label for="formFileMultiple" class="form-label">Проценты:</label>
+                        <input asp-for="ServicePercent" id="formFileMultiple" class="form-control" type="number" step="0.01" min="0" max="100" />
+                    </div>
                     <div class="cont-table">
-                        <table class="table table-bordered table-striped">
-                            <tr>
-                                <th>Процент генуслуг</th>
-                                <td>
-                                    @Model.ServicePercent
-                                    <input asp-for="ServicePercent" class="form-control" type="number" step="0.01" min="0" max="100"/>
-                                </td>
-                            </tr>
+                        <table class="table table-bordered table-striped table-main">
+      
                             <tr>
 
                                 <th>Период</th>
                                 @foreach (var item in d.ServiceCosts)
                                 {
-                                    <td>
+                                    <th>
                                         @item.Period?.ToString("MMM yyyy")
                                         <input asp-for="ServiceCosts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                    </td>
+                                    </th>
                                     index++;
                                 }
                                 @{
@@ -92,7 +124,7 @@
                         </table>
                     </div>
                     <div class="form-group">
-                        <input type="submit" value="Create" class="btn btn-primary" />
+                        <input type="submit" value="Создать" class="btn btn-primary" />
                     </div>
                 </form>
 

@@ -112,14 +112,12 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public async Task<IActionResult> Details(int? id, string? message = null)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _contractService.GetAll() == null)
             {
                 return NotFound();
-            }
-
-            ViewBag.Message = message;
+            }           
 
             var contract = _contractService.GetById((int)id);
             if (contract == null)
@@ -259,7 +257,7 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "ContrAdminPolicy")]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ContractViewModel contract, string? message = null)
+        public IActionResult Create(ContractViewModel contract)
         {
             var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
 
@@ -272,7 +270,6 @@ namespace MvcLayer.Controllers
             // проверка, существует ли договор с таким номером,если да - то обратно на заполнение данных
             if (_contractService.ExistContractByNumber(contract.Number) || contract.Number is null)
             {
-                ViewBag.Message = message;
                 TempData["Message"] = "Уже создан договор с таким номерам";
                 if (contract.IsSubContract == true)
                 {

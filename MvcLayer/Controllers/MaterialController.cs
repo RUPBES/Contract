@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using BusinessLayer.Services;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using MvcLayer.Models.Reports;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
@@ -20,9 +24,13 @@ namespace MvcLayer.Controllers
         private readonly IMaterialCostService _materialCostService;
         private readonly IScopeWorkService _scopeWork;
         private readonly IMapper _mapper;
+        private readonly IAmendmentService _amendmentService;
+        private readonly IFormService _formService;
+        private readonly ISWCostService _swCostService;
 
         public MaterialController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IMaterialService materialService, IScopeWorkService scopeWork, IMaterialCostService materialCostService)
+            IMaterialService materialService, IScopeWorkService scopeWork, IMaterialCostService materialCostService, 
+            IAmendmentService amendmentService, IFormService formService, ISWCostService swCostService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -30,6 +38,9 @@ namespace MvcLayer.Controllers
             _materialService = materialService;
             _scopeWork = scopeWork;
             _materialCostService = materialCostService;
+            _amendmentService = amendmentService;
+            _formService = formService;
+            _swCostService = swCostService;
         }
 
         public IActionResult Index()
@@ -108,14 +119,14 @@ namespace MvcLayer.Controllers
                     //если нет материалов, заполнять факт невозможно, перенаправляем обратно на договор
                     if (materialMain is null || materialMain?.Count() < 1)
                     {
-                        TempData["Message"] = "Заполните объем работ";
+                        TempData["Message"] = "Не заполнены стоимость материалов по плану";
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
 
                     if (_materialCostService.Find(x => x.IsFact != true && x.MaterialId == сhangeMaterialId).FirstOrDefault() is null)
                     {
-                        return RedirectToAction("Details", "Contracts", new { id = contractId, message = "Не заполнены стоимость материалов по плану" });
+                        return RedirectToAction("Details", "Contracts", new { id = contractId});
                     }
 
 
@@ -291,14 +302,245 @@ namespace MvcLayer.Controllers
 
             ViewData["PageNum"] = pageNum ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+            var viewModel = new List<GetCostDeviationMaterialViewModel>();
+            foreach (var contract in list)
+            {
+                var itemViewModel = new GetCostDeviationMaterialViewModel();
+                itemViewModel.number = contract.Number;
+                itemViewModel.nameObject = contract.NameObject;       
+                itemViewModel.dateContract = contract.Date;
+                itemViewModel.Id = contract.Id;
+                #region Доп. соглашения
+                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
+                var amend = listAmend.LastOrDefault();
+                #endregion
+                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
+                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
+                #region Проверка дат
+
+                if (itemViewModel.dateBeginWork == null)
+                {
+                    itemViewModel.dateBeginWork = DateTime.Today;
+                }
+                if (itemViewModel.dateEndWork == null)
+                {
+                    itemViewModel.dateEndWork = DateTime.Today;
+                }
+                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
+                {
+                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
+                }
+
+                #endregion
+                #region Лист. Факт значений
+                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id;
+                Func<FormC3a, FormC3a> selectF = s => new FormC3a
+                {
+                    Period = s.Period,
+                    MaterialCost = s.MaterialCost
+                };
+                var listFact = _formService.Find(whereF, selectF);
+                #endregion
+
+                #region Плановые значения Объема работ
+                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
+                for (var i = listAmend.Count() - 1; i >= 0; i--)
+                {
+                    var item = listAmend[i];
+                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            MaterialCost = s.MaterialCost
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                        break;
+                    }
+                }
+                if (listScope.Count() == 0)
+                {
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            MaterialCost = s.MaterialCost
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                    }
+                }
+                #endregion
+                itemViewModel.listMaterials = new List<ItemMaterialDeviationReport>();
+                itemViewModel.materialCost = listScope.Sum(s => s.MaterialCost);
+                #region Заполнение месяцев
+
+                for (var date = itemViewModel.dateBeginWork;
+                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     date = date.Value.AddMonths(1))
+                {
+                    var item = new ItemMaterialDeviationReport();
+                    item.period = date;                  
+                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (plan != null)
+                    {
+                        item.plan = plan.MaterialCost;
+                    }
+                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (fact != null)
+                    {                      
+                        item.fact = fact.MaterialCost;                        
+                    }
+                    itemViewModel.listMaterials.Add(item);
+                }
+                #endregion               
+                viewModel.Add((itemViewModel));
+            }
+            return View(viewModel);
         }
 
         public IActionResult DetailsCostDeviation(int contractId)
         {
-            var list = _contractService.Find(c => c.Id == contractId ||
-            c.AgreementContractId == contractId || c.MultipleContractId == contractId || c.SubContractId == contractId);
-            return View(_mapper.Map<IEnumerable<ContractViewModel>>(list));
+            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+                w.AgreementContractId == contractId ||
+                w.MultipleContractId == contractId ||
+                w.SubContractId == contractId;
+
+            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,                
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                IsAgreementContract = s.IsAgreementContract,
+                IsSubContract = s.IsSubContract,
+                IsOneOfMultiple = s.IsOneOfMultiple
+            };
+            var list = _contractService.Find(where, select);
+            var viewModel = new List<GetCostDeviationMaterialViewModel>();
+            foreach (var contract in list)
+            {
+                var itemViewModel = new GetCostDeviationMaterialViewModel();
+                itemViewModel.number = contract.Number;
+                itemViewModel.nameObject = contract.NameObject;                
+                itemViewModel.dateContract = contract.Date;
+                #region Доп. соглашения
+                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
+                var amend = listAmend.LastOrDefault();
+                #endregion                
+                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
+                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;                
+                #region Проверка дат
+
+                if (itemViewModel.dateBeginWork == null)
+                {
+                    itemViewModel.dateBeginWork = DateTime.Today;
+                }
+                if (itemViewModel.dateEndWork == null)
+                {
+                    itemViewModel.dateEndWork = DateTime.Today;
+                }
+                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
+                {
+                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
+                }
+
+                #endregion
+                #region Лист. Факт значений
+                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id;
+                Func<FormC3a, FormC3a> selectF = s => new FormC3a
+                {
+                    Period = s.Period,
+                    MaterialCost = s.MaterialCost
+                };
+                var listFact = _formService.Find(whereF, selectF);
+                #endregion
+                #region Плановые значения Объема работ
+                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
+                for (var i = listAmend.Count() - 1; i >= 0; i--)
+                {
+                    var item = listAmend[i];
+                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            MaterialCost = s.MaterialCost
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                        break;
+                    }
+                }
+                if (listScope.Count() == 0)
+                {
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    if (scope != null)
+                    {
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, SWCost> selectSw = s => new SWCost
+                        {
+                            Period = s.Period,
+                            MaterialCost = s.MaterialCost
+                        };
+                        listScope = _swCostService.Find(whereSw, selectSw);
+                    }
+                }
+                #endregion             
+                itemViewModel.listMaterials = new List<ItemMaterialDeviationReport>();
+                itemViewModel.materialCost = listScope.Sum(s => s.MaterialCost);
+                #region Заполнение месяцев
+
+                for (var date = itemViewModel.dateBeginWork;
+                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     date = date.Value.AddMonths(1))
+                {
+                    var item = new ItemMaterialDeviationReport();
+                    item.period = date;
+                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (plan != null)
+                    {
+                        item.plan = plan.MaterialCost;
+                    }
+                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                        .FirstOrDefault();
+                    if (fact != null)
+                    {
+                        item.fact = fact.MaterialCost;
+                    }
+                    itemViewModel.listMaterials.Add(item);
+                }
+                #endregion               
+                #region Нахождение типа контракта                
+                if (contract.IsSubContract == true)
+                {
+                    itemViewModel.typeContract = "Sub";
+                }
+                else if (contract.IsAgreementContract == true)
+                {
+                    itemViewModel.typeContract = "Agr";
+                }
+                else if (contract.IsOneOfMultiple == true)
+                {
+                    itemViewModel.typeContract = "Obj";
+                }
+                else
+                {
+                    itemViewModel.typeContract = "Main";
+                }
+                #endregion
+                viewModel.Add((itemViewModel));
+            }
+            return View(viewModel);
         }
 
     }

@@ -7,7 +7,29 @@
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
 }
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
 
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
@@ -52,7 +74,7 @@
                             <span asp-validation-for="Reason" class="text-danger"></span>
                         </div>
                     }
-                    <div class="form-group">
+                    <div class="form-group btn_position">
                         <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
                     </div>
                 </form>
