@@ -9,10 +9,8 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using MvcLayer.Mapper;
-//using OpenIddict.Client;
 using Quartz;
 using System.Security.Claims;
-//using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace MvcLayer
 {

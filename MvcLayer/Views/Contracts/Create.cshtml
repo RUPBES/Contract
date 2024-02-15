@@ -400,13 +400,15 @@
         if (TempData["Message"] != null)
         {
             var mes = (string)TempData["Message"];
-                                    <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+            <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
         }
     }
 </div>
 
 @section Scripts {
     <script type="text/javascript">
+
+
         window.onload = function () {
             $("#messageInput").trigger('click');
         }
@@ -426,8 +428,13 @@
                 }
             })
         }
-        $(document).ready(function () {
 
+        $(document).ready(function () {
+            $('[type="date"]').attr('inputmode', 'none');
+            $('[type="date"]').on('keydown', (e) => {
+                e.preventDefault();
+                return false;
+            });
             ////    проверка вводимых дат ////
             //dateContract(a) - Дата контракта
             //beginWork(b) - Дата начало работы
@@ -561,7 +568,7 @@
                 let dayStr = day < 10 ? "0" + String(day) : String(day);
                 let monthStr = month < 10 ? "0" + String(month) : String(month);
                 return newDateOfyear + '-' + monthStr + '-' + dayStr;
-            }          
+            }
             ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
 
             let ch1 = document.querySelector("#check0");
@@ -624,7 +631,7 @@
             $("#searchButton").click(function (e) {
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("ExistContractByNumber","Contracts")',
+                    url: '@Url.Action("ExistContractByNumber", "Contracts")',
                     dataType: 'json',
                     data: { contractNumber: $("#NumDC").val() },
                     success: function (resultChecking) {
@@ -647,7 +654,7 @@
                 e.preventDefault();
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("AddOrganization","Contracts")',
+                    url: '@Url.Action("AddOrganization", "Contracts")',
                     dataType: 'html',
                     data: $("#MainForm").serialize(),
                     success: (function (result) {
@@ -665,7 +672,7 @@
                 e.preventDefault();
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("AddEmployee","Contracts")',
+                    url: '@Url.Action("AddEmployee", "Contracts")',
                     dataType: 'html',
                     data: $("#MainForm").serialize(),
                     success: (function (result) {
@@ -681,7 +688,7 @@
                 e.preventDefault();
                 $.ajax({
                     type: 'POST',
-                    url: '@Url.Action("AddTypeWork","Contracts")',
+                    url: '@Url.Action("AddTypeWork", "Contracts")',
                     dataType: 'html',
                     data: $("#MainForm").serialize(),
                     success: (function (result) {

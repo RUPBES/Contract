@@ -566,7 +566,21 @@ namespace BusinessLayer.Services
                 }
             }
         }
-
+       
+        public ScopeWork GetScopeByAmendment(int amendmentId)
+        {
+            if (amendmentId != 0)
+            {
+                var scopeId = _database.ScopeWorkAmendments.Find(a => a.AmendmentId == amendmentId).Select(a => a.ScopeWorkId).FirstOrDefault();
+                if (scopeId != null && scopeId != 0)
+                {
+                    return _database.ScopeWorks.GetById(scopeId);
+                }
+                return null;
+            }
+            else return null;
+        } 
+        
         #region AdditionsMethods
         private void RemoveCosts(int multipleContractId, int subScpId, bool isOwnForces)
         {
@@ -610,19 +624,6 @@ namespace BusinessLayer.Services
 
             return scpMain;
         }
-
-        public ScopeWork GetScopeByAmendment(int amendmentId)
-        {
-            if (amendmentId != 0)
-            {
-                var scopeId = _database.ScopeWorkAmendments.Find(a => a.AmendmentId == amendmentId).Select(a => a.ScopeWorkId).FirstOrDefault();
-                if (scopeId != null && scopeId != 0)
-                {
-                    return _database.ScopeWorks.GetById(scopeId);
-                }
-                return null;
-            }
-            else return null;
-        }
+        #endregion
     }
 }
