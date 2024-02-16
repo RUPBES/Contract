@@ -18,8 +18,16 @@
 }
 
 @section Table {
+    <style>
+        .dropdown-menu {
+            max-height: 220px !important;
+            overflow-y: scroll !important;
+        }
 
-    <div class="full-width-details">
+        .table-main th {
+            top: 50px !important;
+        }
+    </style>
         <table class="table table-main table-main-full table-bordered table-hover table-condensed" id="contractTable">
             <thead>
                 <tr class="tr-head-main-table">
@@ -870,19 +878,7 @@
                 }
             </tbody>
         </table>
-    </div>
-    @if (!isEngineering)
-    {
-        <div class="mt-1 k-ml-1">
-            <a class="btn btn-success" asp-action="Index">Вернуться</a>
-        </div>
-    }
-    @if (isEngineering)
-    {
-        <div class="mt-1 k-ml-1">
-            <a class="btn btn-success" asp-action="Engineerings">Вернуться</a>
-        </div>
-    }
+
     @{
         if (TempData["Message"] != null)
         {
