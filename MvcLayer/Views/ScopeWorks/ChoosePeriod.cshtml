@@ -219,26 +219,18 @@
                             <input name=PeriodStart type="datetime" value="@contractTwo.DateBeginWork" hidden />
                             <input type="text" value="@contractTwo.DateBeginWork.Value.ToString("MMMM yyyy") " readonly />
                         }
-                        else
-                        {
-                            <input name=PeriodStart type="date" class="form-control" />
-                        }
                     </div>
                     <div class="form-group col-6 mb-3">
                         <label for="amendCheck2">Окончание периода</label>
-                        @if (contract.DateBeginWork != null)
+                        @if (contract.DateEndWork != null)
                         {
                             <input name=PeriodEnd type="datetime" value="@contract.DateEndWork" hidden />
                             <input type="text" value="@contract.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
                         }
-                        else if (contractTwo.DateBeginWork != null)
+                        else if (contractTwo.DateEndWork != null)
                         {
                             <input name=PeriodEnd type="datetime" value="@contractTwo.DateEndWork" hidden />
                             <input type="text" value="@contractTwo.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
-                        }
-                        else
-                        {
-                            <input name=PeriodEnd type="date" class="form-control" />
                         }
                     </div>
                     <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>

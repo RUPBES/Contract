@@ -13,6 +13,7 @@ namespace MvcLayer.Models
         public string Number { get; set; }
 
         [DisplayName("Дата")]
+        [Required(ErrorMessage = "Заполните дату соглашения")]
         public DateTime? Date { get; set; }
 
         [DisplayName("Причина")]
@@ -23,12 +24,15 @@ namespace MvcLayer.Models
         public decimal? ContractPrice { get; set; }
 
         [DisplayName("Срок выполнения работ (начало)")]
+        [Required(ErrorMessage = "Заполните дату начала работ")]
         public DateTime? DateBeginWork { get; set; }
 
         [DisplayName("Срок выполнения работ (окончание)")]
+        [Required(ErrorMessage = "Заполните дату окончания работ")]
         public DateTime? DateEndWork { get; set; }
 
         [DisplayName("Срок ввода объекта в эксплуатацию")]
+        [Required(ErrorMessage = "Заполните дату ввода объекта в эксплуатацию")]
         public DateTime? DateEntryObject { get; set; }
 
         [DisplayName("Существенные изменения пунктов договора")]

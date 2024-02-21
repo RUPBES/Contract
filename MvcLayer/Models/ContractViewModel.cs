@@ -55,6 +55,7 @@ namespace MvcLayer.Models
         [DisplayName("Окончание работ")]
         public DateTime? DateEndWork { get; set; }
 
+        //TODO: Currency - первая буква русская, начинается с базы данных
         /// <summary>
         /// Валюта
         /// </summary>

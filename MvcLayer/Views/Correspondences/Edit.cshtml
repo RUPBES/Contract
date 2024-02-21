@@ -52,9 +52,9 @@
                         <input type="hidden" asp-for="Id" />
                         <input asp-for="ContractId" value="@Model?.ContractId" hidden>
 
-                        <div class="form-group  col-6">
+                        <div class="form-group col-6">
                             <label asp-for="Date" class="control-label"></label>
-                            <input asp-for="Date" type="date" class="form-control" />
+                            <input asp-for="Date" value="@Model.Date?.ToString("yyyy-MM-dd")" type="text" required class="form-control" id="Date" />
                             <span asp-validation-for="Date" class="text-danger"></span>
                         </div>
                         <div class="form-group col-6">
@@ -97,5 +97,18 @@
                 $(this).attr("value", "true")
             }
         });
+        $("#Date").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });
+        let dateVal = document.querySelector("#Date").value;
+        
+        $("#Date").datepicker('setDate', new Date(dateVal));
     </script>
 }
