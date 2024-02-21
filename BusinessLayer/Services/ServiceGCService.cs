@@ -193,5 +193,18 @@ namespace BusinessLayer.Services
                            userName: user);
             }
         }
+
+        public IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId)
+        {
+            var list = _database.Amendments.Find(a => a.ContractId == contractId).ToList();
+            List<Amendment> answer = new List<Amendment>();
+            foreach (var item in list)
+            {
+                var ob = _database.ServiceAmendments.Find(s => s.AmendmentId == item.Id).FirstOrDefault();
+                if (ob == null)
+                    answer.Add(item);
+            }
+            return _mapper.Map<IEnumerable<AmendmentDTO>>(answer);
+        }
     }
 }

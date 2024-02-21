@@ -117,7 +117,7 @@ namespace MvcLayer.Controllers
             {
                 List<PaymentViewModel> payment = new List<PaymentViewModel>();
 
-                while (paymentViewModel.PeriodStart <= paymentViewModel.PeriodEnd)
+                while (Checker.LessOrEquallyFirstDateByMonth(paymentViewModel.PeriodStart, paymentViewModel.PeriodEnd))
                 {
                     payment.Add(new PaymentViewModel
                     {
