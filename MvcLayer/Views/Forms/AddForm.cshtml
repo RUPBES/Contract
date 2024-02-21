@@ -20,7 +20,7 @@
         background-color: lightsteelblue;
     }
 
-    .btn_block{
+    .btn_block {
         text-align: right;
     }
 
@@ -66,16 +66,16 @@
                     <input asp-for="Period" type="datetime" value="@Model.Period" hidden />
 
                     <div class="col">
-                        <fieldset class="border rounded-1 p-3">                            
+                        <fieldset class="border rounded-1 p-3">
                             <div class="form-group">
                                 <label asp-for="Period" class="control-label"></label>
                                 <input type="text" value="@Model.Period?.ToString("MMMM yyyy")" class="form-control" disabled />
                             </div>
                             <div class="form-group">
                                 <label asp-for="DateSigning" class="control-label"></label>
-                                <input asp-for="DateSigning" type="datetime" min="@filter.ToString("yyyy-MM-dd")" class="form-control datepickers" />
+                                <input asp-for="DateSigning" type="text" class="form-control" id="DateSigning" />
                                 <span asp-validation-for="DateSigning" class="text-danger"></span>
-                            </div>                            
+                            </div>
                             @if (ViewBag.IsEngin == null)
                             {
                                 <div class="form-group">
@@ -86,7 +86,7 @@
                                     }
                                     else
                                     {
-                                    <input name="SmrCost"  type="text" class="form-control cost" />
+                                        <input name="SmrCost" type="text" class="form-control cost" />
                                     }
                                     <span asp-validation-for="SmrCost" class="text-danger"></span>
                                 </div>
@@ -99,7 +99,7 @@
                                     else
                                     {
                                         <input name="PnrCost" type="text" class="form-control cost" />
-                                    }                                    
+                                    }
                                     <span asp-validation-for="PnrCost" class="text-danger"></span>
                                 </div>
                                 <div class="form-group">
@@ -110,7 +110,7 @@
                                     }
                                     else
                                     {
-                                    <input name="AdditionalCost" type="text" class="form-control cost" />
+                                        <input name="AdditionalCost" type="text" class="form-control cost" />
                                     }
                                     <span asp-validation-for="AdditionalCost" class="text-danger"></span>
                                 </div>
@@ -123,7 +123,7 @@
                                     else
                                     {
                                         <input name="EquipmentCost" type="text" class="form-control cost" />
-                                    }                                    
+                                    }
                                     <span asp-validation-for="EquipmentCost" class="text-danger"></span>
                                 </div>
                                 <div class="form-group">
@@ -143,7 +143,7 @@
                                     else
                                     {
                                         <input name="SmrCost" type="text" class="form-control cost" />
-                                    }                                    
+                                    }
                                     <span asp-validation-for="SmrCost" class="text-danger"></span>
                                 </div>
                             }
@@ -162,7 +162,7 @@
                                     else
                                     {
                                         <input name="OffsetCurrentPrepayment" type="text" class="form-control cost" />
-                                    }                                    
+                                    }
                                     <span asp-validation-for="OffsetCurrentPrepayment" class="text-danger"></span>
                                 </div>
                             }
@@ -177,7 +177,7 @@
                                     else
                                     {
                                         <input name="OffsetTargetPrepayment" type="text" class="form-control cost" />
-                                    }                                    
+                                    }
                                     <span asp-validation-for="OffsetTargetPrepayment" class="text-danger"></span>
                                 </div>
                             }
@@ -190,7 +190,7 @@
                                 else
                                 {
                                     <input name="OtherExpensesCost" type="text" class="form-control cost" />
-                                }                                
+                                }
                                 <span asp-validation-for="OtherExpensesCost" class="text-danger"></span>
                             </div>
                             <div class="form-group">
@@ -202,7 +202,7 @@
                                 else
                                 {
                                     <input name="MaterialCost" type="text" class="form-control cost" />
-                                }                                
+                                }
                                 <span asp-validation-for="MaterialCost" class="text-danger"></span>
                             </div>
                             <div class="form-group">
@@ -214,7 +214,7 @@
                                 else
                                 {
                                     <input name="GenServiceCost" type="text" class="form-control cost" />
-                                }                                
+                                }
                                 <span asp-validation-for="GenServiceCost" class="text-danger"></span>
                             </div>
                         </fieldset>
@@ -227,20 +227,32 @@
         </div>
     </div>
 </div>
-
+<input id="min" value="@filter.ToString("d MM yyyy")" hidden />
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script>
-            $(function ($) {
-                var allCost = $(".cost")
-                for (let el of allCost) {
-                    digits_float(el)
-                }
-                $('body').on('input', '.cost', function (e) {
-                    digits_float(this);
-                });
-            });
-        </script>
     }
+    <script>
+        $(function ($) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
+            });
+        });
+        let minDate = $('#min').val();        
+        $("#DateSigning").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            startDate: minDate,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });
+    </script>
 }

@@ -57,11 +57,11 @@
 
                     <input asp-for="MaterialCosts[0].IsFact" value="true" hidden />
                     <input asp-for="MaterialCosts[0].MaterialId" value="@Model?.Id" hidden />
-                    <input asp-for="MaterialCosts[0].Period" value="@Model?.Period" type="datetime" hidden />
+                    <input asp-for="MaterialCosts[0].Period" value="@Model?.Period" type="date" hidden />
 
                     <div class="form-group col-12">
                         <label class="control-label">Период</label>
-                        <input asp-for="MaterialCosts[0].Period" value="@Model?.Period?.ToString("MMM yyyy")" type="text" class="form-control" disabled />
+                        <input asp-for="MaterialCosts[0].Period" value="@Model?.Period?.ToString("MMMM yyyy")" type="text" class="form-control" disabled />
                     </div>
                     <div class="form-group col-12">
                         <label for="MaterialCosts[0].Price" class="control-label">Фактическая стоимость</label>
@@ -79,6 +79,7 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
         <script>
             $(function ($) {
                 var allCost = $(".cost")
@@ -89,6 +90,5 @@
                     digits_float(this);
                 });
             });
-        </script>
-    }
+        </script> 
 }

@@ -11,6 +11,7 @@
     .dm-modal {
         background-color: lightsteelblue;
     }
+
     td, tr {
         min-width: 105px;
     }
@@ -75,9 +76,9 @@
     {
         var number = Contract.GetById((int)contractId).Number;
         ViewData["Title"] = $"Ведомость использования авансов № {number}";
-    } 
+    }
 
-    var countCol = 2 + ((Model.endPeriod.Value.Year-Model.startPeriod.Value.Year)*12+(Model.endPeriod.Value.Month-Model.startPeriod.Value.Month+1)) * 2;
+    var countCol = 2 + ((Model.endPeriod.Value.Year - Model.startPeriod.Value.Year) * 12 + (Model.endPeriod.Value.Month - Model.startPeriod.Value.Month + 1)) * 2;
     var countRow = Model.listSmrWithPrepaymentByAmendment.Count();
 }
 
@@ -100,10 +101,12 @@
                 <form asp-action="GetByContractIdWithAmendments" class="form_period">
                     <label class="input-group-text" for="start">Начало:</label>
 
-                    <input id="start" class="form-control period_input" asp-for="startPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <input id="DateBeginWork" class="form-control period_input" asp-for="startPeriod"
+                           value="@Model.startPeriod?.ToString("MMMM yyyy")" type="text" required />
                     <label class="input-group-text" for="end">Конец:</label>
 
-                    <input id="end" class="form-control period_input" asp-for="endPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <input id="DateEndWork" class="form-control period_input" asp-for="endPeriod"
+                           value="@Model.endPeriod?.ToString("MMMM yyyy")" type="text" required />
                     <input name="contractId" value="@ViewBag.contractId" hidden />
                     <input asp-for="Client" hidden />
                     <input asp-for="NameObject" hidden />
@@ -116,21 +119,21 @@
                     <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
                     <button class="btn btn-warning" type="submit"> выбрать период</button>
                 </form>
-                
+
                 <form id="Amendment" asp-action="GetByContractId">
-                    <input id="anotherStart" asp-for="startPeriod" type="date" hidden />
-                    <input id="anotherEnd" asp-for="endPeriod" type="date" hidden />
-                    <input name="contractId" value="@ViewBag.contractId" hidden />                    
+                    <input id="anotherStart" asp-for="startPeriod" type="text" hidden />
+                    <input id="anotherEnd" asp-for="endPeriod" type="text" hidden />
+                    <input name="contractId" value="@ViewBag.contractId" hidden />
                     <input asp-for="Client" hidden />
-                    <input asp-for="NameObject" hidden />                    
+                    <input asp-for="NameObject" hidden />
                     <input asp-for="minStartPeriod" hidden />
                     <input asp-for="maxEndPeriod" hidden />
                     <input asp-for="TheoryCurrent" hidden />
-                    <input asp-for="TheoryTarget" hidden />                    
+                    <input asp-for="TheoryTarget" hidden />
                     <input asp-for="TargetRepaid" hidden />
                     <input asp-for="TargetReceived" hidden />
-                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden /> 
-                </form>           
+                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+                </form>
                 <div style="max-height:auto; max-width:80vw; overflow:scroll">
                     <table class="table table-bordered table-main table-main-short">
                         <thead>
@@ -174,7 +177,7 @@
                                     <span>Аванс</span>
                                 </th>
                                 @for (var item = Model.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)item, (DateTime)Model.endPeriod);
-                                item = item.Value.AddMonths(1))                                
+                                item = item.Value.AddMonths(1))
                                 {
                                     <th colspan="2">
                                         <span>@item?.ToString("MMMM yyyy")</span>
@@ -241,7 +244,7 @@
                                 {
                                     <td class="td-pointer" rowspan="2" onclick="ShowAmendment()">
                                         <div>
-                                            <span >ДC @Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment</span>
+                                            <span>ДC @Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment</span>
                                         </div>
                                     </td>
                                 }
@@ -256,7 +259,7 @@
                                         }
                                     </td>
                                 }
-                                
+
                                 @if (Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment != "Факт")
                                 {
                                     <td rowspan="2">
@@ -272,7 +275,7 @@
                                             Факт
                                         </span>
                                     </td>
-                                }                                
+                                }
                                 <td>
                                     <span>
                                         Целевой
@@ -385,7 +388,7 @@
                                         }
                                     </tr>
                                 }
-                            }                            
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -393,32 +396,93 @@
         </div>
     </div>
 </div>
-<script>
-    let dateStart = document.querySelector("#start");
-    let dateEnd = document.querySelector("#end");
-    dateStart.addEventListener('change', (e) => {
-        let valStart = dateStart.value;
-        let valEnd = dateEnd.value;
-        if (!valEnd || valStart > valEnd) {
-            $("#end").val(valStart);
-        }
-    });
-    dateEnd.addEventListener('change', (e) => {
-        let valStart = dateStart.value;
-        let valEnd = dateEnd.value;
+<input id="Min" value="@Model.minStartPeriod?.ToString("MM-yyyy")" hidden />
+<input id="Max" value="@Model.maxEndPeriod?.ToString("MM-yyyy")" hidden />
+@section Scripts{
+    <script>
+        let minDate = $('#Min').val();
+        let endDate = $('#Max').val();
+        let beginWork = document.querySelector("#DateBeginWork");
+        let endWork = document.querySelector("#DateEndWork");
+        let beginWorkVal = beginWork.value;
+        let endWorkVal = endWork.value;
+        $("#DateBeginWork").datepicker({
+            format: "MM yyyy",
+            startDate: minDate,
+            endDate: endDate,
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeBeginWork()
+        });
+        $("#DateEndWork").datepicker({
+            format: "MM yyyy",
+            startDate: minDate,
+            endDate: endDate,
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeEndWork()
+        });
 
-        if (!valStart || valEnd < valStart) {
-            $("#start").val(valEnd);
+        function changeBeginWork() {
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            if (dateBeg != null) {
+                if (dateBeg && (!dateEnd || dateBeg > dateEnd)) { $("#DateEndWork").datepicker('update', dateBeg); }
+            }
         }
-    });
+        function changeEndWork() {
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            if (dateEnd != null) {
+                if (dateEnd && (!dateBeg || dateEnd < dateBeg)) { $("#DateBeginWork").datepicker('update', dateEnd); }
+            }
+        }
+        beginWork.addEventListener('change', (e) => {
+            changeBeginWork()
+        });
+        endWork.addEventListener('change', (e) => {
+            changeEndWork()
+        });
 
-    function ShowAmendment() {
-        let dateStart = document.querySelector("#start");
-        let dateEnd = document.querySelector("#end");
-        let valStart = dateStart.value;
-        let valEnd = dateEnd.value;
-        $("#anotherStart").val(valStart);
-        $("#anotherEnd").val(valEnd);
-        $("#Amendment").submit();
-    }
-</script>
+        $("#anotherStart").datepicker({
+            format: "MM yyyy",
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#anotherEnd").datepicker({
+            format: "MM yyyy",
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+
+        function ShowAmendment() {
+            let valStart = $("#DateBeginWork").datepicker('getDate');
+            let valEnd = $("#DateEndWork").datepicker('getDate');
+            $("#anotherStart").datepicker('setDate', valStart);
+            $("#anotherEnd").datepicker('setDate', valEnd);
+            $("#Amendment").submit();
+        }
+    </script>
+}

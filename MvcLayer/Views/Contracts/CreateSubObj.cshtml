@@ -17,7 +17,7 @@
         currency = contract.Сurrency is null ? "BYN" : contract?.Сurrency;
     }
 }
-    
+
 <style>
     div#CurDC_chosen {
         max-width: 85%;
@@ -43,7 +43,7 @@
                     @if (backId != 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }                   
+                    }
                     else
                     {
                         <a asp-action="Index" class="close-btn"></a>
@@ -51,8 +51,8 @@
                 </div>
                 <hr class="modal-line" />
                 <form class="row align-content-start" method="post" enctype="multipart/form-data">
-                    <input asp-for="Id" value="null" hidden />                    
-                    <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>                    
+                    <input asp-for="Id" value="null" hidden />
+                    <input asp-for="MultipleContractId" value="@ViewBag.MultipleContractId" hidden>
                     <div class="row">
                         <div class="form-group col-9">
                             <label asp-for="ContractPrice" for="CDC"></label>
@@ -64,18 +64,24 @@
                         <div class="col-3">
                             <label asp-for="Сurrency"></label>
                             <input asp-for="Сurrency" type="text" value="@currency" readonly class="form-control">
-                        </div>                       
-                        <div class="form-group mt-1">
-                            <label asp-for="DateBeginWork">Начало работ</label>
-                            <input asp-for="DateBeginWork" value="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" type="date" class="form-control" id="DateBeginWork" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.DateEndWork?.ToString("yyyy-MM-dd")">
                         </div>
                         <div class="form-group mt-1">
-                            <label asp-for="DateEndWork">Окончание работ</label>
-                            <input asp-for="DateEndWork" value="@contract.DateEndWork?.ToString("yyyy-MM-dd")" type="date" class="form-control" id="DateEndWork" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.DateEndWork?.ToString("yyyy-MM-dd")">
+                            <label class="control-label" asp-for="DateBeginWork"></label>
+                            <input asp-for="DateBeginWork" value="@contract.DateBeginWork?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="DateBeginWork">
+                            <label class="form-label" id="labelBeginWork" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
+                            <label class="form-label" id="labelBeginWorkMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
                         </div>
                         <div class="form-group mt-1">
-                            <label asp-for="EnteringTerm" class="control-label"></label>
-                            <input asp-for="EnteringTerm" required type="date" value="@contract.EnteringTerm?.ToString("yyyy-MM-dd")" class="form-control" id="EnteringTerm" min="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" max="@contract.EnteringTerm?.ToString("yyyy-MM-dd")">
+                            <label class="control-label" asp-for="DateEndWork"></label>
+                            <input asp-for="DateEndWork" value="@contract.DateEndWork?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="DateEndWork">
+                            <label class="form-label" id="labelEndWork" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
+                            <label class="form-label" id="labelEndWorkMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
+                        </div>
+                        <div class="form-group mt-1">
+                            <label class="control-label" asp-for="EnteringTerm"></label>
+                            <input asp-for="EnteringTerm" value="@contract.EnteringTerm?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="EnteringTerm">
+                            <label class="form-label" id="labelEnteringTerm" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
+                            <label class="form-label" id="labelEnteringTermMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
                         </div>
                         <div class="col-12 mt-2">
                             <label class="control-label">Наименование объекта</label>
@@ -102,55 +108,141 @@
         });
         //////////////////////////////////////////
         ////    проверка вводимых дат ////
-        //dateContract(a) - Дата контракта
         //beginWork(b) - Дата начало работы
         //endWork(c) - Дата окончания работы
         //enteringTm(d) - Дата ввода объекта
-        //contractTm(e) - Дата дествия договора
-        //a <= b < c <= d < e
+        // b < c <= d
         //////********/
+        let minDate = $('#DateBeginWork').val();
+        let endDate = $('#DateEndWork').val();
+        let maxDate = $('#EnteringTerm').val();
         let beginWork = document.querySelector("#DateBeginWork");
         let endWork = document.querySelector("#DateEndWork");
         let enteringTm = document.querySelector("#EnteringTerm");
+        $("#DateBeginWork").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            startDate: minDate,
+            endDate: maxDate,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeBeginWork()
+        });
+        $("#DateEndWork").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            startDate: minDate,
+            endDate: maxDate,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeEndWork()
+        });
+        $("#EnteringTerm").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            startDate: minDate,
+            endDate: maxDate,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeEnteringTm()
+        });
+
+        $("#DateBeginWork").datepicker('setDate', minDate);
+        $("#DateEndWork").datepicker('setDate', endDate);
+        $("#EnteringTerm").datepicker('setDate', maxDate);
+
+        function changeBeginWork() { 
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            let dateEnter = $("#EnteringTerm").datepicker('getDate');
+
+            if (dateBeg != null) {
+                let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
+                if (dateBeg && (!dateEnd || dateBeg >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
+                if (dateBeg && (!dateEnter || dateBeg >= dateEnter)) { $("#EnteringTerm").datepicker('update', datePlusOne); }
+            }
+            showHideMin()
+        }
+        function changeEndWork() {
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            let dateEnter = $("#EnteringTerm").datepicker('getDate');
+
+            if (dateEnter != null) {
+                let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
+
+                if (dateEnd && (!dateBeg || dateEnd <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
+                if (dateEnd && (!dateEnter || dateEnd > dateEnter)) { $("#EnteringTerm").datepicker('update', dateEnd); }
+            }
+            showHideMin()
+        }
+        function changeEnteringTm() {
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            let dateEnter = $("#EnteringTerm").datepicker('getDate');
+
+            if (dateEnter != null) {
+                let dateDecOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), -1);
+
+                if (dateEnter && (!dateBeg || dateEnter <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
+                if (dateEnter && (!dateEnd || dateEnter < dateEnd)) { $("#DateEndWork").datepicker('update', dateEnter); }
+            }
+            showHideMin()
+        }
+        function showHideMin() {
+            if (!beginWork.value || beginWork.value === null || beginWork.value === '') {
+                $('#labelBeginWork').show();
+                $('#labelBeginWorkMax').show();
+            }
+            else {
+                $('#labelBeginWork').hide();
+                $('#labelBeginWorkMax').hide();
+            }
+
+            if (!endWork.value || endWork.value === null || endWork.value === '') {
+                $('#labelEndWork').show();
+                $('#labelEndWorkMax').show();
+            }
+            else {
+                $('#labelEndWork').hide();
+                $('#labelEndWorkMax').hide();
+            }
+
+            if (!enteringTm.value || enteringTm.value === null || enteringTm.value === '') {
+                $('#labelEnteringTerm').show();
+                $('#labelEnteringTermMax').show();
+            }
+            else {
+                $('#labelEnteringTerm').hide();
+                $('#labelEnteringTermMax').hide();
+            }
+        }
 
         beginWork.addEventListener('change', (e) => {
-            let dateBeg = beginWork.value;
-            let dateEnd = endWork.value;
-            let dateEnter = enteringTm.value;
-
-            let datePlusOne = addDays(new Date(dateBeg), 1);            
-            if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
-            if (!dateEnter || dateBeg >= dateEnter) { $("#EnteringTerm").val(datePlusOne); }
-
-            endWork.setAttribute('min', datePlusOne);
-            enteringTm.setAttribute('min', datePlusOne);
+            changeBeginWork();
         });
         endWork.addEventListener('change', (e) => {
-            let dateBeg = beginWork.value;
-            let dateEnd = endWork.value;
-            let dateEnter = enteringTm.value;
-
-            let dateDecOne = addDays(new Date(dateEnd), -1);            
-            if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
-            if (!dateEnter || dateEnd > dateEnter) { $("#EnteringTerm").val(dateEnd); }
-
-            enteringTm.setAttribute('min', dateEnd);
+            changeEndWork();
         });
         enteringTm.addEventListener('change', (e) => {
-            let dateBeg = beginWork.value;
-            let dateEnd = endWork.value;
-            let dateEnter = enteringTm.value;
-
-            let dateDecOne = addDays(new Date(dateEnter), -1);
-            if (!dateBeg || dateTerm <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
-            if (!dateEnd || dateTerm < dateEnd) { $("#DateEndWork").val(dateEnter); }
+            changeEnteringTm();
         });
         function addDays(date, countDays) {
-            let newDateOfyear = date.getFullYear() + "";; // год
-
+            let newDateOfyear = date.getFullYear() + ""; // год
             let day = date.getDate() + countDays; // текущий день
             let month = date.getMonth() + 1; //текущий месяц
-
 
             let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
             if (day > maxDateToday) {
@@ -179,7 +271,7 @@
 
             let dayStr = day < 10 ? "0" + String(day) : String(day);
             let monthStr = month < 10 ? "0" + String(month) : String(month);
-            return newDateOfyear + '-' + monthStr + '-' + dayStr;
+            return dayStr + '-' + monthStr + '-' + newDateOfyear;
         }
     </script>
 }

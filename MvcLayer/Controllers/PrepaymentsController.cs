@@ -98,7 +98,7 @@ namespace MvcLayer.Controllers
                 if (amend.Count > 0)
                 {
                     answer.minStartPeriod = amend.LastOrDefault().DateBeginWork;
-                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;                   
+                    answer.maxEndPeriod = amend.LastOrDefault().DateEndWork;
                 }
                 else
                 {
@@ -397,113 +397,27 @@ namespace MvcLayer.Controllers
                 var сhangePrepaymentId = сhangePrepayment?.LastOrDefault()?.Id is null ?
                                            prepayment?.LastOrDefault()?.Id : сhangePrepayment?.LastOrDefault()?.Id;
 
-                if (!isFact)
+                //если нет авансов, перенаправляем для заполнения данных
+                if (prepayment is null || prepayment?.Count() < 1)
                 {
-                    //если нет авансов, перенаправляем для заполнения данных
-                    if (prepayment is null || prepayment?.Count() < 1)
-                    {
-                        periodChoose.IsChange = false;
-                        TempData["contractId"] = contractId;
-                        TempData["returnContractId"] = returnContractId;
-                        return RedirectToAction("CreatePeriods", periodChoose);
-                    }
-
-                    //если есть изменения - отправляем на VIEW для выбора Изменений по договору
-                    periodChoose.IsChange = true;
-                    periodChoose.ChangePrepaymentId = сhangePrepaymentId;
-
-                    return View(periodChoose);
+                    periodChoose.IsChange = false;
+                    TempData["contractId"] = contractId;
+                    TempData["returnContractId"] = returnContractId;
+                    return RedirectToAction("CreatePeriods", periodChoose);
                 }
-                else
-                {
-                    //если нет авансов, запонять факт невозможно, перенаправляем обратно на договор
-                    if (prepayment is null || prepayment?.Count() < 1)
-                    {
-                        TempData["Message"] = "Заполните планируемый аванс";
-                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                    }
 
-                    DateTime startDate = period.Value.Item1;
-                    var prepaymentId = prepayment?.FirstOrDefault()?.Id;
-                    //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
-                    while (startDate <= period?.Item2)
-                    {
-                        //проверяем если по данной дате уже заполненные факт.авансы
-                        if (_prepaymentFact.Find(x => x.Period.Value.Date == startDate.Date && x.PrepaymentId == prepaymentId).FirstOrDefault() is null)
-                        {
-                            periodChoose.ListDates.Add(startDate);
-                        }
+                //если есть изменения - отправляем на VIEW для выбора Изменений по договору
+                periodChoose.IsChange = true;
+                periodChoose.ChangePrepaymentId = сhangePrepaymentId;
 
-                        startDate = startDate.AddMonths(1);
-                    }
-
-                    TempData["prepaymentId"] = prepaymentId;
-                    return View("ChooseDate", periodChoose);
-                }
+                return View(periodChoose);
             }
             else
             {
                 return RedirectToAction("Index", "Contracts");
             }
         }
-
-        [Authorize(Policy = "ContrAdminPolicy")]
-        public ActionResult CreatePrepaymentFact(PeriodChooseViewModel model, int returnContractId = 0)
-        {
-            var contract = _contractService.GetById((int)model.ContractId);
-            if (contract.IsOneOfMultiple)
-            {
-                var contratcGen = _contractService.GetById((int)contract.MultipleContractId);
-                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("Без авансов"))
-                {
-                    TempData["Message"] = "У контракта условие - без авансов";
-                    var urlReturn = returnContractId == 0 ? model.ContractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                }
-                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("текущего аванса"))
-                {
-                    ViewData["Current"] = "true";
-                }
-                if (contratcGen.PaymentСonditionsAvans != null && contratcGen.PaymentСonditionsAvans.Contains("целевого аванса"))
-                {
-                    ViewData["Target"] = "true";
-                }
-            }
-            else
-            {
-                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
-                {
-                    TempData["Message"] = "У контракта условие - без авансов";
-                    var urlReturn = returnContractId == 0 ? model.ContractId : returnContractId;
-                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                }
-                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("текущего аванса"))
-                {
-                    ViewData["Current"] = "true";
-                }
-                if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("целевого аванса"))
-                {
-                    ViewData["Target"] = "true";
-                }
-            }
-            ViewData["returnContractId"] = returnContractId;
-            ViewData["contractId"] = model.ContractId;
-            int id = TempData["prepaymentId"] is int preId ? preId : 0;
-            return View("AddPrepaymentFact", new PrepaymentViewModel
-            {
-                Id = id,
-                Period = model.ChoosePeriod,
-                ContractId = model.ContractId,
-                PrepaymentFacts = new List<PrepaymentFactDTO>{
-                new PrepaymentFactDTO{
-
-                    PrepaymentId = id
-                }
-                }
-            });
-        }
-
+        
         public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel, int? contractId = 0, int? returnContractId = 0)
         {
             if (TempData["contractId"] != null)
@@ -649,23 +563,6 @@ namespace MvcLayer.Controllers
 
             _prepayment.Delete((int)id);
             return RedirectToAction(nameof(Index));
-        }
-
-        [Authorize(Policy = "ContrEditPolicy")]
-        public async Task<IActionResult> EditFact(int id, int contractId, int returnContractId = 0)
-        {
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-            var item = _prepaymentFact.GetById(id);
-            return View(item);
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
-        public async Task<IActionResult> EditFact(PrepaymentFactDTO factDTO, int contractId, int returnContractId = 0)
-        {
-            _prepaymentFact.Update(factDTO);
-            return RedirectToAction("GetByContractId", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
         }
     }
 }

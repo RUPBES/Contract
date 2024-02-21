@@ -58,12 +58,12 @@
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateChange" class="control-label"></label>
-                        <input asp-for="DateChange" type="datetime" class="form-control datepickersNull" />
+                        <input asp-for="DateChange" value="@Model.DateChange?.ToString("yyyy-MM-dd")" type="text" class="form-control" id="DateChange" required />
                         <span asp-validation-for="DateChange" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateOutput" class="control-label"></label>
-                        <input asp-for="DateOutput" type="datetime" class="form-control datepickersNull" />
+                        <input asp-for="DateOutput" value="@Model.DateOutput?.ToString("yyyy-MM-dd")" type="text" class="form-control" id="DateOutput" required />
                         <span asp-validation-for="DateOutput" class="text-danger"></span>
                     </div>
                     @if (ViewBag.Edit != null)
@@ -83,3 +83,34 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $("#DateChange").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });
+        $("#DateOutput").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });
+        let beginWork = document.querySelector("#DateChange");
+        let endWork = document.querySelector("#DateOutput");
+        $("#DateChange").datepicker('setDate', new Date(beginWork.value));
+        $("#DateOutput").datepicker('setDate', new Date(endWork.value));
+    </script>
+}
