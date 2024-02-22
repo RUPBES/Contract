@@ -2,9 +2,16 @@
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 @inject BusinessLayer.Interfaces.ContractInterfaces.IServiceGCService ServiceGC
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
     ViewData["Title"] = "Выбрать период или изменение к договору";
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+    var listAmendment = ServiceGC.GetFreeAmendment((int)Model?.ContractId);
+    var contract = Contract.GetById((int)Model.ContractId);
 }
 
 <style>
@@ -38,10 +45,31 @@
         background-color: lightsteelblue;
     }
 
+    .d-inline-block {
+        text-align: center;
+        font-weight: 600;
+        color: black;
+    }
+
+    .label-block {
+        height: 70px;
+        text-align: center;
+        font-weight: 600;
+        color: black;
+    }
+
+    .btn-block {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .label_period {
+        font-weight: 600;
+    }
+
     .close-btn {
         color: red
     }
-
 
         .close-btn::after {
             border: 2px solid #F00 !important;
@@ -61,45 +89,63 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="width: 850px; height:440px">
+            <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (@Model?.ContractId != null && @Model?.ContractId > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@Model?.ContractId == null || @Model?.ContractId == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
-                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-                    <input asp-for="ChangeServiceId" value="@Model?.ChangeServiceId" hidden />
-                    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
-                    <input asp-for="IsFact" value="@Model?.IsFact" hidden />
-                    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
-                    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
+                @if (listAmendment.Count() > 0)
+                {
+                    <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                        <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
+                        <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                        <input asp-for="ChangeServiceId" value="@Model?.ChangeServiceId" hidden />
+                        <input asp-for="IsChange" value="@Model?.IsChange" hidden />
+                        <input asp-for="IsFact" value="@Model?.IsFact" hidden />
+                        <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
+                        <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
 
-                    <div class="form-group col-12">
-                        <div class="title-warning"><span>Услуги для данного договора заполнены</span></div>
-                        <label for="amendCheck">Внести изменения в услуги по доп.соглашению?</label>
-                        <input type="checkbox" id="amendCheck" name="IsChange" value="false" />
-                    </div>
-                    <div id="chooseAmendment" class="row" hidden>
-                        <div class="form-group">
-                            <label class="control-label">Выбрать доп.соглашение</label>
-                            <select name="AmendmentId" id="AmendId" class="form-control select">
-                                <option disabled selected>Выберите</option>
-                                @foreach (AmendmentDTO org in Amendment.Find(x => x.ContractId == Model?.ContractId && x.ContractId != null))
-                                {
-                                    <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                                }
-                            </select>
+                        <div class="form-group col-12">
+                            <div class="title-warning"><span>Услуги генподрядчика для данного договора заполнены</span></div>
                         </div>
+                        <div id="chooseAmendment" class="row">
+                            <div class="form-group">
+                                <label class="control-label label_period">Выбрать доп.соглашение</label>
+                                <select name="AmendmentId" id="AmendId" class="form-control select">
+                                    <option disabled selected>Выберите</option>
+
+                                    @foreach (AmendmentDTO org in listAmendment)
+                                    {
+                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="d-inline-block alert alert-success">
+                        <label class="control-label">Услуги генподрядчика для данного договора заполнены</label>
                     </div>
-                </form>
+                    <div class="label-block alert alert-danger">
+                        <label class="control-label">Отсутствуют незаполненные доп. соглашения</label>
+                    </div>
+                    <div class="btn-block">
+                        <a class="btn btn-success" asp-controller="Amendments" asp-action="Create" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">+ доп. соглашение</a>
+                        <a class="btn btn-warning" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
+                           asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -112,27 +158,6 @@
     <script type="text/javascript">
         $("#AmendId").on("change", function () {
             $("#target").trigger("submit");
-        });
-
-
-        $("#amendCheck").on("change", function () {
-
-            let isChange = $(this).prop('checked');
-            let besInput = document.querySelector("#chooseAmendment");
-
-            if (besInput.hidden != true) {
-                besInput.hidden = true;
-            }
-            else {
-                besInput.hidden = null;
-            }
-
-            if (isChange === false) {
-                $(this).attr("value", "false")
-            }
-            else {
-                $(this).attr("value", "true")
-            }
         });
 
         $(document).ready(function () {

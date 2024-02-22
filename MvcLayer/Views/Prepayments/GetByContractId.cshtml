@@ -12,6 +12,7 @@
     .dm-modal {
         background-color: lightsteelblue;
     }
+
     td, tr {
         min-width: 105px;
     }
@@ -21,8 +22,9 @@
         display: flex;
         margin-bottom: 1%;
     }
+
     .period_input {
-        width: 15.5%; 
+        width: 15.5%;
         margin-right: 1%;
     }
 
@@ -41,7 +43,7 @@
         transition-duration: 0.5s;
     }
 
-    .td-pointer:hover {
+        .td-pointer:hover {
             background-color: #1bcbef !important;
             border-color: #1bcbef !important;
         }
@@ -100,10 +102,12 @@
                 <form asp-action="GetByContractId" class="form_period">
                     <label class="input-group-text" for="start">Начало:</label>
 
-                    <input id="start" class="form-control period_input" asp-for="startPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <input id="DateBeginWork" class="form-control period_input" asp-for="startPeriod" 
+                           value="@Model.startPeriod?.ToString("MMMM yyyy")" type="text" required/>
                     <label class="input-group-text" for="end">Конец:</label>
 
-                    <input id="end" class="form-control period_input" asp-for="endPeriod" min="@Model.minStartPeriod?.ToString("yyyy-MM-dd")" max="@Model.maxEndPeriod?.ToString("yyyy-MM-dd")" type="date" />
+                    <input id="DateEndWork" class="form-control period_input" asp-for="endPeriod"
+                           value="@Model.endPeriod?.ToString("MMMM yyyy")" type="text" required />
                     <input name="contractId" value="@ViewBag.contractId" hidden />
                     <input asp-for="NameAmendment" hidden />
                     <input asp-for="Client" hidden />
@@ -118,8 +122,8 @@
                     <button class="btn btn-warning" type="submit"> выбрать период</button>
                 </form>
                 <form id="Amendment" asp-action="GetByContractIdWithAmendments">
-                    <input id="anotherStart" asp-for="startPeriod" type="date" hidden/>
-                    <input id="anotherEnd" asp-for="endPeriod" type="date" hidden/>
+                    <input id="anotherStart" asp-for="startPeriod" type="text" hidden />
+                    <input id="anotherEnd" asp-for="endPeriod" type="text" hidden />
                     <input name="contractId" value="@ViewBag.contractId" hidden />
                     <input asp-for="NameAmendment" hidden />
                     <input asp-for="Client" hidden />
@@ -335,34 +339,93 @@
         </div>
     </div>
 </div>
-<script>
-    let dateStart = document.querySelector("#start");
-    let dateEnd = document.querySelector("#end");
-    dateStart.addEventListener('change', (e) => {
-        let valStart = dateStart.value;
-        let valEnd = dateEnd.value;
-        if (!valEnd || valStart > valEnd) 
-        {            
-            $("#end").val(valStart);                     
-        }
-    });
-    dateEnd.addEventListener('change', (e) => {
-        let valStart = dateStart.value;
-        let valEnd = dateEnd.value;
+<input id="Min" value="@Model.minStartPeriod?.ToString("MM-yyyy")" hidden />
+<input id="Max" value="@Model.maxEndPeriod?.ToString("MM-yyyy")" hidden />
 
-        if (!valStart || valEnd < valStart) 
-        { 
-            $("#start").val(valEnd);
-        }
-    });
+@section Scripts{
+    <script>
+        let minDate = $('#Min').val();
+        let endDate = $('#Max').val();
+        let beginWork = document.querySelector("#DateBeginWork");
+        let endWork = document.querySelector("#DateEndWork");
+        let beginWorkVal = beginWork.value;
+        let endWorkVal = endWork.value;
+        $("#DateBeginWork").datepicker({
+            format: "MM yyyy",
+            startDate: minDate,
+            endDate: endDate,
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeBeginWork()
+        });
+        $("#DateEndWork").datepicker({
+            format: "MM yyyy",
+            startDate: minDate,
+            endDate: endDate,
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        }).on('changeDate', function () {
+            changeEndWork()
+        });
 
-    function ShowAmendment() {
-        let dateStart = document.querySelector("#start");
-        let dateEnd = document.querySelector("#end");
-        let valStart = dateStart.value;
-        let valEnd = dateEnd.value;
-        $("#anotherStart").val(valStart);
-        $("#anotherEnd").val(valEnd);
-        $("#Amendment").submit();
-    }
-</script>
+        function changeBeginWork() {
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            if (dateBeg != null) {
+                if (dateBeg && (!dateEnd || dateBeg > dateEnd)) { $("#DateEndWork").datepicker('update', dateBeg); }
+            }
+        }
+        function changeEndWork() {
+            let dateBeg = $("#DateBeginWork").datepicker('getDate');
+            let dateEnd = $("#DateEndWork").datepicker('getDate');
+            if (dateEnd != null) {
+                if (dateEnd && (!dateBeg || dateEnd < dateBeg)) { $("#DateBeginWork").datepicker('update', dateEnd); }
+            }
+        }
+        beginWork.addEventListener('change', (e) => {
+            changeBeginWork()
+        });
+        endWork.addEventListener('change', (e) => {
+            changeEndWork()
+        });
+
+        $("#anotherStart").datepicker({
+            format: "MM yyyy",
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#anotherEnd").datepicker({
+            format: "MM yyyy",
+            language: "ru",
+            minViewMode: 1,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        function ShowAmendment() {            
+            let valStart = $("#DateBeginWork").datepicker('getDate');
+            let valEnd = $("#DateEndWork").datepicker('getDate');
+            $("#anotherStart").datepicker('setDate', valStart);
+            $("#anotherEnd").datepicker('setDate', valEnd);
+            $("#Amendment").submit();
+        }
+    </script>
+}

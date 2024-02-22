@@ -25,44 +25,91 @@
         .square {
             width: 20px;
             height: 20px;
+            margin-left: 1%;
+            margin-right: 1%;
+            border: solid black;
         }
 
         .overdue {
             background-color: #ffcfdb !important;
         }
+
+        .form_agreement {
+            display: flex !important;
+            padding: 30px !important;
+        }
+
+        
+
+        h1 {
+            
+            text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
+            color: #004d8e;
+            transition: all 1s;
+            font-family: 'Ampersand', Montserrat, sans-serif;
+            font-size: 5.5vh;
+        }
+
+        #searchString {
+            margin-right: 0.8% !important;
+        }
+
+        .btn_agreement {
+            width: 150px;
+        } 
+
+
+        .contracts-list {
+            justify-content: space-between;
+        }
+        .color_label {
+            display: flex;
+            font-weight: bold;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+        }
+
+        .label_postion {
+            margin-top: 0.4%;
+        }
     </style>
     <div>
-        <h1 style="text-align: center;">Список договоров</h1>
         <div class="contracts-list">
-            <p>
+            <h1 class="list_agreement">Список договоров</h1>
+
                 @if (ViewBag.IsEngineering)
                 {
-                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">Новый договор на оказание инжиниринговых услуг</button>
                     @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                     {
-                        <form style="search-form" method="get">
-                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <input type="submit" value="Найти" />
+                    <form method="get">
+                        <div class="search-form form_agreement">
+                            <span class="input-group-text">Название объекта/номер договора:</span> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-primary" type="submit"> Найти</button>
+                                <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">Новый договор</button>
+                            </div>
+                        </div>
+
                         </form>
                     }
                 }
                 @if (!ViewBag.IsEngineering)
                 {
-                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
                     @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                     {
-                        <form style="search-form" method="get">
-                            <label style="search-form__text">Название объекта/номер договора:</label> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <input type="submit" value="Найти" />
+                    <form method="get">
+                        <div class="search-form form_agreement">
+                        <span class="input-group-text">Название объекта/номер договора:</span> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                            <div class="btn-group" role="group">
+                                <button class="btn btn-primary" type="submit"> Найти</button>
+                                <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
+                            </div>
+                        </div>
                         </form>
                     }
                 }
-            </p>
+
         </div>
-        <div style="display:flex">
-            <div class="square overdue k-ml-2"></div>
-            <label> - Просроченные</label>
-        </div>
+
         <div class="full-width">
             <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
                 <thead>
@@ -437,6 +484,10 @@
         </div>
     </div>
     <nav aria-label="Page navigation example" style="margin-top:10px;">
+        <div class="color_label">
+            <div class="p-3 mb-2 bg-secondary text-white square overdue"></div>
+            <label class="label_postion"> - Просроченные</label>
+        </div>
         <ul class="pagination justify-content-center">
             <li class="page-item previous_btn">
                 @{

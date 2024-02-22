@@ -80,7 +80,7 @@
                                 <label asp-for="Date" class="control-label" for="DateDC"></label>
                                 <div class="input-group">
                                     <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                                    <input asp-for="Date" type="date" class="form-control" required id="DateDC">
+                                    <input asp-for="Date" type="text" class="form-control" required id="DateDC">
                                 </div>
                             </div>
                             <div class="form-group mt-3">
@@ -254,11 +254,13 @@
                         </div>
                         <fieldset class="border rounded-3 p-3">
                             <legend class="float-none w-auto px-3">Сроки</legend>
-                            <label asp-for="DateBeginWork">Начало услуг</label>
-                            <input asp-for="DateBeginWork" type="date" class="form-control">
+                            <label class="control-label" asp-for="DateBeginWork"></label>
+                            <input asp-for="DateBeginWork" type="text" class="form-control" required id="DateBeginWork">
+                            <label class="form-label" id="labelBeginWork" style="display:none"></label>
 
-                            <label asp-for="DateEndWork">Окончание услуг</label>
-                            <input asp-for="DateEndWork" type="date" class="form-control">
+                            <label class="control-label" asp-for="DateEndWork"></label>
+                            <input asp-for="DateEndWork" type="text" class="form-control" required id="DateEndWork">
+                            <label class="form-label" id="labelEndWork" style="display:none"></label>
                         </fieldset>
                         <fieldset class="border rounded-3 p-3">
                             <legend class="float-none w-auto px-3">Процедура выбора</legend>
@@ -343,7 +345,7 @@
     if (TempData["Message"] != null)
     {
         var mes = (string)TempData["Message"];
-        <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+    <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
     }
 }
 @section Scripts {
@@ -367,46 +369,123 @@
             //////********/
             let dateContract = document.querySelector("#DateDC");
             let beginWork = document.querySelector("#DateBeginWork");
-            let endWork = document.querySelector("#DateEndWork");
+            let endWork = document.querySelector("#DateEndWork");            
+            $("#DateDC").datepicker({
+                format: "d MM yyyy",
+                language: "ru",
+                calendarWeeks: true,
+                autoclose: true,
+                keyboardNavigation: false,
+                assumeNearbyYear: true,
+                toggleActive: true
+            }).on('changeDate', function () {
+                changeDateContract()
+            });
+            $("#DateBeginWork").datepicker({
+                format: "d MM yyyy",
+                language: "ru",
+                calendarWeeks: true,
+                autoclose: true,
+                keyboardNavigation: false,
+                assumeNearbyYear: true,
+                toggleActive: true
+            }).on('changeDate', function () {
+                changeBeginWork()
+            });
+            $("#DateEndWork").datepicker({
+                format: "d MM yyyy",
+                language: "ru",
+                calendarWeeks: true,
+                autoclose: true,
+                keyboardNavigation: false,
+                assumeNearbyYear: true,
+                toggleActive: true
+            }).on('changeDate', function () {
+                changeEndWork()
+            });          
 
-            dateContract.addEventListener('change', (e) => {
-                let date = dateContract.value;
-                let dateBeg = beginWork.value;
-                let dateEnd = endWork.value;
+            function changeDateContract() {
+                let date = $("#DateDC").datepicker('getDate');
+                let dateBeg = $("#DateBeginWork").datepicker('getDate');
+                let dateEnd = $("#DateEndWork").datepicker('getDate');
 
-                let datePlusOne = addDays(new Date(date), 1);
+                if (date != null) {
+                    let datePlusOne = addDays(new Date(date.toDateString('d-MM-yyyy')), 1);
+                    let datePlusTwo = addDays(new Date(date.toDateString('d-MM-yyyy')), 2);
 
-                if (!dateBeg || date > dateBeg) { $("#DateBeginWork").val(date); }
-                if (!dateEnd || date >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
+                    if (date && (!dateBeg || date > dateBeg)) { $("#DateBeginWork").datepicker('update', date); }
+                    if (date && (!dateEnd || date >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
 
-                beginWork.setAttribute('min', date);
-                endWork.setAttribute('min', datePlusOne);
+                    if (date) $("#DateBeginWork").datepicker('setStartDate', date);
+                    if (date) $("#DateEndWork").datepicker('setStartDate', datePlusOne);
+                }
+                showHideMin()
+            }
+            function changeBeginWork() {              
+                let date = $("#DateDC").datepicker('getDate');
+                let dateBeg = $("#DateBeginWork").datepicker('getDate');
+                let dateEnd = $("#DateEndWork").datepicker('getDate');
+
+                if (dateBeg != null) {
+                    let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
+
+                    if (dateBeg && (!date || dateBeg < date)) { $("#DateDC").datepicker('update', dateBeg); }
+                    if (dateBeg && (!dateEnd || dateBeg >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
+
+                    if (dateBeg) $("#DateEndWork").datepicker('setStartDate', datePlusOne);
+                }
+                showHideMin()
+            }
+            function changeEndWork() {                
+                let date = $("#DateDC").datepicker('getDate');
+                let dateBeg = $("#DateBeginWork").datepicker('getDate');
+                let dateEnd = $("#DateEndWork").datepicker('getDate');
+
+                if (dateEnd != null) {
+                    let datePlusOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), 1);
+                    let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
+
+                    if (dateEnd && (!date || dateEnd <= date)) { $("#DateDC").datepicker('update', dateDecOne); }
+                    if (dateEnd && (!dateBeg || dateEnd <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
+                }
+                showHideMin()
+            }
+            function showHideMin() {
+                let min = $("#DateBeginWork").datepicker('getStartDate');
+                if (min != null && min != -Infinity)
+                    var minBeginWork = min.toLocaleDateString();
+                if ((!beginWork.value || beginWork.value === null || beginWork.value === '') && minBeginWork) {
+                    $('#labelBeginWork').html(`Минимальная дата: ${minBeginWork}`);
+                    $('#labelBeginWork').show();
+                }
+                else {
+                    $('#labelBeginWork').hide();
+                }
+
+                min = $("#DateEndWork").datepicker('getStartDate');
+                if (min != null && min != -Infinity)
+                    var minEndWork = min.toLocaleDateString();
+                if ((!endWork.value || endWork.value === null || endWork.value === '') && minEndWork) {
+                    $('#labelEndWork').html(`Минимальная дата: ${minEndWork}`);
+                    $('#labelEndWork').show();
+                }
+                else {
+                    $('#labelEndWork').hide();
+                }                
+            }
+
+            dateContract.addEventListener("change", (e) => {
+                changeDateContract();
             });
             beginWork.addEventListener('change', (e) => {
-                let date = dateContract.value;
-                let dateBeg = beginWork.value;
-                let dateEnd = endWork.value;
-
-                let datePlusOne = addDays(new Date(dateBeg), 1);
-
-                if (!date || dateBeg < date) { $("#DateDC").val(dateBeg); }
-                if (!dateEnd || dateBeg >= dateEnd) { $("#DateEndWork").val(datePlusOne); }
-
-                endWork.setAttribute('min', datePlusTwo);
+                changeBeginWork();
             });
             endWork.addEventListener('change', (e) => {
-                let date = dateContract.value;
-                let dateBeg = beginWork.value;
-                let dateEnd = endWork.value;
-
-                let dateDecOne = addDays(new Date(dateEnd), -1);
-                if (!date || dateEnd <= date) { $("#DateDC").val(dateDecOne); }
-                if (!dateBeg || dateEnd <= dateBeg) { $("#DateBeginWork").val(dateDecOne); }
+                changeEndWork();
             });
-
+          
             function addDays(date, countDays) {
-                let newDateOfyear = date.getFullYear() + "";; // год
-
+                let newDateOfyear = date.getFullYear() + ""; // год
                 let day = date.getDate() + countDays; // текущий день
                 let month = date.getMonth() + 1; //текущий месяц
 
@@ -437,7 +516,7 @@
 
                 let dayStr = day < 10 ? "0" + String(day) : String(day);
                 let monthStr = month < 10 ? "0" + String(month) : String(month);
-                return newDateOfyear + '-' + monthStr + '-' + dayStr;
+                return dayStr + '-' + monthStr + '-' + newDateOfyear;
             }
             ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
 

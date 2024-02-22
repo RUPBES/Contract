@@ -6,12 +6,12 @@
 @{
     ViewData["Title"] = "Услуги генподрядчика";
     int index = 0;
-    var d = new ServiceGCViewModel();
+    var d = Model;   
 
-    if (TempData["serviceGC"] is string s)
-    {
-        d = JsonConvert.DeserializeObject<ServiceGCViewModel>(s);
-    }
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
 
     bool isFact = d?.ServiceCosts?.FirstOrDefault()?.IsFact == true ? true : false;
 
@@ -69,17 +69,18 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] согласно договора @contract?.Number</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    @if (backId == null || backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
                 <form asp-action="Create" class="row">
+                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
                     <div class="mb-2">
                         <label for="formFileMultiple" class="form-label">Проценты:</label>
                         <input asp-for="ServicePercent" id="formFileMultiple" class="form-control" type="number" step="0.01" min="0" max="100" />

@@ -159,7 +159,7 @@ namespace MvcLayer.Controllers
         public ActionResult CreateMaterialFact(PeriodChooseViewModel model)
         {
             int id = TempData["materialId"] is int preId ? preId : 0;
-            return View("AddMaterialFact", new MaterialViewModel
+            return View(new MaterialViewModel
             {
                 Id = id,
                 Period = model.ChoosePeriod,
@@ -227,11 +227,8 @@ namespace MvcLayer.Controllers
             }
 
             if (contractId > 0)
-            {
-                //PrepaymentViewModel prepayment = new PrepaymentViewModel { ContractId = contractId};
-
+            {   
                 return View(new MaterialViewModel { ContractId = contractId });
-
             }
             return View();
         }

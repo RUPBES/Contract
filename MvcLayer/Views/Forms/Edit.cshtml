@@ -12,8 +12,8 @@
         margin-bottom: 0px;
     }
 
-    .form-group{
-        text-align:right;
+    .form-group {
+        text-align: right;
     }
 
     .dm-modal {
@@ -68,7 +68,7 @@
                             </div>
                             <div class="form-group">
                                 <label asp-for="DateSigning" class="control-label"></label>
-                                <input asp-for="DateSigning" type="datetime" min="@filter.ToString("yyyy-MM-dd")" class="form-control datepickers" />
+                                <input asp-for="DateSigning" value="@Model.DateSigning?.ToString("d MM yyyy")" type="text" class="form-control" id="DateSigning"/>
                                 <span asp-validation-for="DateSigning" class="text-danger"></span>
                             </div>
                             @if (ViewBag.IsEngin == null)
@@ -102,11 +102,6 @@
                                     <span asp-validation-for="SmrCost" class="text-danger"></span>
                                 </div>
                             }
-                            @*<div class="form-group">
-                            <label asp-for="FilesEntity" class="control-label">Файл</label>
-                            <input asp-for="FilesEntity" data-val-required="Загрузите файл справки" type="file" class="form-control" />
-                            <span asp-validation-for="FilesEntity" class="text-danger"></span>
-                            </div>*@
                         </fieldset>
                     </div>
                     <div class="col">
@@ -152,19 +147,34 @@
         </div>
     </div>
 </div>
+<input id="min" value="@filter.ToString("d MM yyyy")" hidden />
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        <script>
-            $(function ($) {
-                var allCost = $(".cost")
-                for (let el of allCost) {
-                    digits_float(el)
-                }
-                $('body').on('input', '.cost', function (e) {
-                    digits_float(this);
-                });
-            });
-        </script>
     }
+    <script>
+        $(function ($) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
+            $('body').on('input', '.cost', function (e) {
+                digits_float(this);
+            });
+        });
+        let minDate = $('#min').val();
+        let dateVal = $('#DateSigning').val();
+        $("#DateSigning").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            startDate: minDate,
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });        
+        $("#DateSigning").datepicker("setDate", dateVal);
+    </script>
 }

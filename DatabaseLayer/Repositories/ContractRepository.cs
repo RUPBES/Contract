@@ -113,6 +113,7 @@ namespace DatabaseLayer.Repositories
                     contract.NameObject = entity.NameObject;
                     contract.PaymentСonditionsAvans = entity.PaymentСonditionsAvans;
                     contract.PaymentСonditionsRaschet = entity.PaymentСonditionsRaschet;
+                    contract.PaymentСonditionsPrice = entity.PaymentСonditionsPrice;
 
                     contract.FundingSource = entity.FundingSource;
                     contract.IsSubContract = entity.IsSubContract;

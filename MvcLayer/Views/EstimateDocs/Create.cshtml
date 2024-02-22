@@ -63,13 +63,13 @@
                         {
                             <div class="form-group">
                                 <label asp-for="DateChange" class="control-label"></label>
-                                <input asp-for="DateChange" type="datetime" class="form-control datepickers" />
+                                <input asp-for="DateChange" type="text" class="form-control" id="DateChange" required />
                                 <span asp-validation-for="DateChange" class="text-danger"></span>
                             </div>
                         }
                         <div class="form-group">
                             <label asp-for="DateOutput" class="control-label"></label>
-                            <input asp-for="DateOutput" type="datetime" class="form-control datepickers" />
+                            <input asp-for="DateOutput" type="text" class="form-control" id="DateOutput" required />
                             <span asp-validation-for="DateOutput" class="text-danger"></span>
                         </div>
                     </div>
@@ -116,6 +116,27 @@
             else {
                 $(this).attr("value", "true")
             }
+        });
+
+        $("#DateChange").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });
+        $("#DateOutput").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
         });
     </script>
 }

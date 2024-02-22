@@ -61,22 +61,22 @@
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateAct" class="control-label"></label>
-                        <input asp-for="DateAct" class="form-control datepickers" type="datetime" />
+                        <input asp-for="DateAct" class="form-control" type="text" required id="DateAct" />
                         <span asp-validation-for="DateAct" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateSuspendedFrom" class="control-label"></label>
-                        <input asp-for="DateSuspendedFrom" class="form-control datepickers" type="datetime" />
+                        <input asp-for="DateSuspendedFrom" class="form-control" type="text" id="DateSuspendedFrom" />
                         <span asp-validation-for="DateSuspendedFrom" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateSuspendedUntil" class="control-label"></label>
-                        <input asp-for="DateSuspendedUntil" class="form-control datepickers" type="datetime" />
+                        <input asp-for="DateSuspendedUntil" class="form-control" type="text" id="DateSuspendedUntil" />
                         <span asp-validation-for="DateSuspendedUntil" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
                         <label asp-for="DateRenewal" class="control-label"></label>
-                        <input asp-for="DateRenewal" class="form-control datepickers" type="datetime" />
+                        <input asp-for="DateRenewal" class="form-control" type="text" id="DateRenewal" />
                         <span asp-validation-for="DateRenewal" class="text-danger"></span>
                     </div>
                     <div class="form-group col-6">
@@ -110,6 +110,132 @@
                 $(this).attr("value", "true")
             }
         });
+        $("#DateAct").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        });
+        $("#DateSuspendedFrom").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        }).on('changeDate', function () {
+            changeDateBeg()
+        });
+        $("#DateSuspendedUntil").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        }).on('changeDate', function () {
+            changeDateEnd()
+        });
+        $("#DateRenewal").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true,
+            todayHighlight: true
+        }).on('changeDate', function () {
+            changeDateRenew()
+        });
+
+        function changeDateBeg() {
+            let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
+            let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
+            let dateRenew = $("#DateRenewal").datepicker('getDate');
+
+            if (dateBeg != null) {
+                let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
+                let datePlusTwo = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 2);
+                if (dateEnd != null && dateBeg >= dateEnd) { $("#DateSuspendedUntil").datepicker('update', datePlusOne); }
+                if (dateRenew != null && dateBeg >= dateRenew) { $("#DateRenewal").datepicker('update', datePlusTwo); }
+            }
+        }
+        function changeDateEnd() {
+            let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
+            let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
+            let dateRenew = $("#DateRenewal").datepicker('getDate');
+
+            if (dateEnd != null) {
+                let datePlusOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), 1);
+                let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
+                if (dateBeg != null && dateBeg >= dateEnd) { $("#DateSuspendedFrom").datepicker('update', dateDecOne); }
+                if (dateRenew != null && dateEnd >= dateRenew) { $("#DateRenewal").datepicker('update', datePlusOne); }
+            }
+        }
+        function changeDateRenew() {
+            let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
+            let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
+            let dateRenew = $("#DateRenewal").datepicker('getDate');
+
+            if (dateRenew != null) {
+                let dateDecTwo = addDays(new Date(dateRenew.toDateString('d-MM-yyyy')), -2);
+                let dateDecOne = addDays(new Date(dateRenew.toDateString('d-MM-yyyy')), -1);
+                if (dateBeg != null && dateBeg >= dateRenew) { $("#DateSuspendedFrom").datepicker('update', dateDecTwo); }
+                if (dateEnd != null && dateEnd >= dateRenew) { $("#DateSuspendedUntil").datepicker('update', dateDecOne); }
+            }
+        }
+
+        document.querySelector("#DateSuspendedFrom").addEventListener("change", (e) => {
+            changeDateBeg();
+        });
+        document.querySelector("#DateSuspendedUntil").addEventListener('change', (e) => {
+            changeDateEnd();
+        });
+        document.querySelector("#DateRenewal").addEventListener('change', (e) => {
+            changeDateRenew();
+        });
+        function addDays(date, countDays) {
+            let newDateOfyear = date.getFullYear() + ""; // год
+            let day = date.getDate() + countDays; // текущий день
+            let month = date.getMonth() + 1; //текущий месяц   
+            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
+            if (day > maxDateToday) {
+                month = month + 1;
+                if (month > 12) {
+                    newDateOfyear = newDateOfyear + 1;
+                    month = 1;
+                    day = (day - 31);
+                }
+                else {
+                    day = (day - maxDateToday);
+                }
+            }
+            if (day < 1) {
+                month = month - 1;
+                if (month < 1) {
+                    newDateOfyear = newDateOfyear - 1;
+                    month = 12;
+                    day = 31 + day;
+                }
+                else {
+                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
+                    day = maxDate + day;
+                }
+            }
+
+            let dayStr = day < 10 ? "0" + String(day) : String(day);
+            let monthStr = month < 10 ? "0" + String(month) : String(month);
+            return dayStr + '-' + monthStr + '-' + newDateOfyear;
+        }
     </script>
 }
 

@@ -1,12 +1,12 @@
-﻿let datepicker = function (classElem) {
-    kendo.culture("by-BY");
+﻿//let datepicker = function (classElem) {
+//    kendo.culture("by-BY");
 
-    $(classElem).kendoDatePicker({
-        value: new Date(),
-        format: "dd.MM.yyyy",
-        dateInput: true
-    });
-};
+//    $(classElem).kendoDatePicker({
+//        value: new Date(),
+//        format: "dd.MM.yyyy",
+//        dateInput: true
+//    });
+//};
 let dateTimepicker = function (classElem) {
 
     kendo.culture("by-BY");
