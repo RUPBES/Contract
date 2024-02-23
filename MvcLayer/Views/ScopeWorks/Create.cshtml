@@ -26,9 +26,13 @@
     }
     else
     {
-        prevSWCost = null;        
+        prevSWCost = null;
     }
 
+    decimal? sumSmr = 0;
+    decimal? sumPnr = 0;
+    decimal? sumEquip = 0;
+    decimal? sumOther = 0;
 }
 
 <style>
@@ -40,16 +44,30 @@
     td {
         min-width: 250px;
     }
+
     .dm-modal {
         width: 1400px;
         background-color: lightsteelblue;
     }
 
-    .form-group{
+    .form-group {
         text-align: right;
     }
+    .input-group {
+        width: auto !important;
+    }
+    .input_result {
+        width: 150px;
+    }
 
+    .input_block--result {
+        display: flex
+    }
 
+    .result_block {
+        display: flex;
+        justify-content: space-between;
+    }
 
     .close-btn {
         color: red
@@ -101,7 +119,7 @@
                                 @{
                                     index = 0;
                                 }
-                            </tr>    
+                            </tr>
                             @if (ViewBag.IsEngin == null)
                             {
                                 <tr>
@@ -113,16 +131,17 @@
                                             var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
                                             if (obj != null)
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="@obj" /></td>
+                                                sumSmr += obj;
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="@obj" /></td>
                                             }
                                             else
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
                                             }
                                         }
                                         else
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value=""/></td>
+                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
                                         }
                                         index++;
                                     }
@@ -139,16 +158,17 @@
                                             var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.PnrCost).FirstOrDefault();
                                             if (obj != null)
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="@obj" /></td>
+                                                sumPnr += obj;
+                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost PnrCost" value="@obj" /></td>
                                             }
                                             else
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="" /></td>
+                                                <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost PnrCost" value="" /></td>
                                             }
                                         }
                                         else
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost" value="" /></td>
+                                            <td class="text-end"><input name="SWCosts[@index].PnrCost" type="text" class="form-control cost PnrCost" value="" /></td>
                                         }
                                         index++;
                                     }
@@ -165,16 +185,17 @@
                                             var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.EquipmentCost).FirstOrDefault();
                                             if (obj != null)
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="@obj" /></td>
+                                                sumEquip += obj;
+                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost EquipmentCost" value="@obj" /></td>
                                             }
                                             else
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="" /></td>
+                                                <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost EquipmentCost" value="" /></td>
                                             }
                                         }
                                         else
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost" value="" /></td>
+                                            <td class="text-end"><input name="SWCosts[@index].EquipmentCost" type="text" class="form-control cost EquipmentCost" value="" /></td>
                                         }
                                         index++;
                                     }
@@ -191,16 +212,17 @@
                                             var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.OtherExpensesCost).FirstOrDefault();
                                             if (obj != null)
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="@obj" /></td>
+                                                sumOther += obj;
+                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost OtherExpensesCost" value="@obj" /></td>
                                             }
                                             else
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="" /></td>
+                                                <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost OtherExpensesCost" value="" /></td>
                                             }
                                         }
                                         else
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost" value="" /></td>
+                                            <td class="text-end"><input name="SWCosts[@index].OtherExpensesCost" type="text" class="form-control cost OtherExpensesCost" value="" /></td>
                                         }
                                         index++;
                                     }
@@ -272,16 +294,16 @@
                                             var obj = prevSWCost.SWCosts.Where(s => s.Period == item.Period).Select(s => s.SmrCost).FirstOrDefault();
                                             if (obj != null)
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="@obj" /></td>
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="@obj" /></td>
                                             }
                                             else
                                             {
-                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                                <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
                                             }
                                         }
                                         else
                                         {
-                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost" value="" /></td>
+                                            <td class="text-end"><input name="SWCosts[@index].SmrCost" type="text" class="form-control costs_contract cost SmrCost" value="" /></td>
                                         }
                                         index++;
                                     }
@@ -303,8 +325,32 @@
                             <input asp-for="ChangeScopeWorkId" hidden />
                         </table>
                     </div>
-                    <div class="form-group btn_block">
-                        <input type="submit" value="Создать" class="btn btn-primary mt-1" />
+                    <div class="form-group mt-3 result_block">
+                        @{
+                            var contractPrice = (decimal)ViewData["contractPrice"];
+                            var sum = sumSmr + sumPnr + sumEquip + sumOther;
+                            var result = contractPrice - sum;
+                            <div class="input_block--result">
+                                <div class="input-group">
+                                    <span class="input-group-text">Контрактная цена:</span>
+
+                                    <input class="input_result" id="sumTarget" value="@contractPrice.ToString("N2")" readonly />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">Введенная плановая сумма:</span>
+                                    <input class="input_result" id="sumTargetWork" value="@sum?.ToString("N2")" readonly />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">Разница </span>
+                                    <input class=" input_result" id="result" value="@result?.ToString("N2")" readonly />
+                                </div>
+
+                            </div>
+                        }
+                        <span id="text_error" class="text_error"></span>
+
+                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
+
                     </div>
                 </form>
             </div>
@@ -315,8 +361,8 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-       
-    } 
+
+    }
     <script>
         $(function ($) {
             var allCost = $(".cost")
@@ -327,5 +373,69 @@
                 digits_float(this);
             });
         });
+        check();
+        $('body').on('input', '.SmrCost', function (e) {
+            check();
+        });
+        $('body').on('input', '.PnrCost', function (e) {
+            check();
+        });
+        $('body').on('input', '.EquipmentCost', function (e) {
+            check();
+        });
+        $('body').on('input', '.OtherExpensesCost', function (e) {
+            check();
+        });
+
+        function check() {
+            let btn = document.getElementById("createButton");
+
+            let SmrCost = $(".SmrCost");
+            let PnrCost = $(".PnrCost");
+            let EquipmentCost = $(".EquipmentCost");
+            let OtherExpensesCost = $(".OtherExpensesCost");
+            let sum = 0;
+            let result = 0;
+            for (let item of SmrCost) {
+                const regExp = /,/g;
+                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                sum += +num;
+            }
+            for (let item of PnrCost) {
+                const regExp = /,/g;
+                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                sum += +num;
+            }
+            for (let item of EquipmentCost) {
+                const regExp = /,/g;
+                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                sum += +num;
+            }
+            for (let item of OtherExpensesCost) {
+                const regExp = /,/g;
+                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                sum += +num;
+            }
+            const regExp = /,/g;
+            let o = document.querySelector("#sumTarget").value.replace(regExp, '.');
+            o = o.replace(/\s+/g, '');
+            let contractPrice = +o;
+
+            result = contractPrice - sum;
+            if (result === 0) {
+                $("#result").focus(function () { $(this).addClass("focused") });
+                btn.removeAttribute('disabled')
+                $('#text_error').text('')
+
+
+
+            } else {
+                btn.setAttribute('disabled', true)
+                $('#text_error').text('Сумма не сходится!')
+
+            }
+            $("#sumTargetWork").val(sum);
+            $("#result").val(result.toFixed(2));
+        }
     </script>
 }
