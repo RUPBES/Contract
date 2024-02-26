@@ -15,22 +15,44 @@
     .navbar_shadow {
         box-shadow: rgba(0, 0, 0, 0.25) 0px 25px 50px -12px;
     }
+
+    .agreement_icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .agr_hover {
+        transition-property: font-size;
+        transition-duration: 0.5s;
+        font-weight: bold;
+    }
+
+    .agr_hover:hover {
+        font-size: 2vh;
+    }
+    .agreement_item {
+        margin-top: 0.4%;
+    }
 </style>
 
 
 
 <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 navbar_shadow">
     <div class="container-fluid">
-        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Учет договоров</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+
         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
             <ul class="navbar-nav flex-grow-1">
+                <li class="nav-item agreement_item">
+                    <a class="navbar-brand agr_hover" asp-area="" asp-controller="Home" asp-action="Index"><img class="agreement_icon" src="~/icons/agreement_icon.png" />Учет договоров</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                </li>
                 <li class="nav-item">                
                     <div class="dropdown">
-                        <button type="button" class="btn btn-prizrac dropdown-toggle dropbtn">
+                        <button type="button" class="btn btn-prizrac dropdown-toggle dropbtn agr_hover">
+                            <img class="agreement_icon" src="~/icons/agenda_icon.png" />
                             Справочники
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
@@ -42,14 +64,21 @@
                     </div> 
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Contracts" asp-action="Index">Договоры</a>
+                    <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="Index">
+                        <img class="agreement_icon" src="~/icons/contract_icon.png" />
+                        Договоры
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" asp-action="Engineerings" asp-controller="Contracts">Инжиниринговые услуги</a>
+                    <a class="nav-link text-dark agr_hover" asp-action="Engineerings" asp-controller="Contracts">
+                        <img class="agreement_icon" src="~/icons/engineering_icon.png" />
+                        Инжиниринговые услуги
+                    </a>
                 </li>
                  <li class="nav-item">
                     <div class="dropdown">
-                        <button type="button" class="btn btn-prizrac dropdown-toggle dropbtn">
+                        <button type="button" class="btn btn-prizrac dropdown-toggle dropbtn agr_hover">
+                            <img class="agreement_icon" src="~/icons/analytics_icon.png" />
                             Анализ/Мониторинг
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
