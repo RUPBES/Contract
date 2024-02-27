@@ -33,6 +33,25 @@
     .agreement_item {
         margin-top: 0.4%;
     }
+
+    .log_btn {
+        font-weight: bold !important;
+        width: 100px !important;
+        font-size: 1.5vh !important;
+        border-radius: 10px !important;
+    }
+
+    .img_icon-login {
+        width: 20px;
+        height: 20px;
+        margin-right: 4px;
+    }
+
+    .img_icon-logout {
+        width: 20px;
+        height: 20px;
+        margin-left: 3px;
+    }
 </style>
 
 
@@ -112,14 +131,14 @@
                 {
                    
                     <li class="nav-item">
-                        <a class="nav-link  text-white btn btn-sm btn-primary" asp-controller="Account" asp-action="Login">Войти</a>
+                        <a class="nav-link  text-white btn btn-sm btn-primary log_btn" asp-controller="Account" asp-action="Login"><img src="~/icons/log-icon.png" class="img_icon-login" />Войти</a>
                     </li>
                 }
                 else
                 {
                     <li class="user_name"><img class="img_user" src="~/icons/icons-user.png"/>@User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x=>x.Type == "given_name")?.Value</li>
                     <li class="nav-item">
-                        <a class="nav-link  text-white btn btn-sm btn-danger" asp-controller="Account" asp-action="Logout">Выйти</a>
+                        <a class="nav-link  text-white btn btn-sm btn-danger log_btn" asp-controller="Account" asp-action="Logout">Выйти <img src="~/icons/logout-icon.png" class="img_icon-logout" /></a>
                     </li>
                 }
             </ul>
