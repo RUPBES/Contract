@@ -103,7 +103,7 @@ namespace MvcLayer.Models
         [DisplayName("Соглашением с филиалом?")]
         public bool? IsAgreementContract { get; set; }
 
-        public List<string> PaymentCA { get; set; } = new List<string>();
+        public List<string> PaymentCA { get; set; } = new List<string>();           
 
         /// <summary>
         /// условия оплаты (авансы)

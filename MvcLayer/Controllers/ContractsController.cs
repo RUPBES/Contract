@@ -6,6 +6,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
+using MvcLayer.Models.Reports;
 
 namespace MvcLayer.Controllers
 {
@@ -20,6 +21,7 @@ namespace MvcLayer.Controllers
         private readonly IOrganizationService _organization;
         private readonly IEmployeeService _employee;
         private readonly ISWCostService _swCostService;
+        private readonly IPrepaymentService _prepaymentService;
 
         private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
@@ -27,7 +29,7 @@ namespace MvcLayer.Controllers
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
             IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService,
-            ISWCostService sWCostService)
+            ISWCostService sWCostService, IPrepaymentService prepaymentService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -39,6 +41,7 @@ namespace MvcLayer.Controllers
             _vContractEnginService = vContractEnginService;
             _scopeWorkService = scopeWorkService;
             _swCostService = sWCostService;
+            _prepaymentService = prepaymentService;
         }
 
         // GET: Contracts        
@@ -292,6 +295,7 @@ namespace MvcLayer.Controllers
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
                 if (contract.PaymentCA.Count == 0) { contract.PaymentCA.Add("Без авансов"); }
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+                
                 if (contract.IsEngineering == true)
                     TempData["IsEngin"] = true;
                 contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
@@ -356,7 +360,7 @@ namespace MvcLayer.Controllers
 
                 if (contract.ContractPrice is null) contract.ContractPrice = 0;
                 if (contract.IsEngineering == true && contract.PaymentСonditionsPrice is null) contract.PaymentСonditionsPrice = 0;
-                _contractService.Create(_mapper.Map<ContractDTO>(contract));
+                var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));                
                 if (ViewData["returnContractId"] != null)
                 {
                     return RedirectToAction(nameof(Details), new { id = ViewBag.returnContractId });
@@ -791,6 +795,7 @@ namespace MvcLayer.Controllers
         public ActionResult ShowScopeWorks(int id)
         {
             var doc = _contractService.GetById(id);
+            var viewModel = new ScopeWorkContractViewModel();
             return PartialView("_ScopeWork", _mapper.Map<ContractViewModel>(doc));
         }
 
