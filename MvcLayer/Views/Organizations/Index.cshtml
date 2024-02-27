@@ -36,6 +36,9 @@
             transform: scale(1);
             font-weight: bold;
         }
+        .input-group_flex {
+        justify-content: right;
+        }
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
@@ -46,15 +49,16 @@
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Home" asp-action="" class="close-btn"></a>
                     </div>
-                    <div class="input-group m-2">
+                    <div class="input-group m-2 input-group_flex">
                         <div class="nav_panel_btns">
                             <div class="link_add_emp"></div>
                             <div class="btn_panel_search">
-                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Organizations")'">Добавить организацию</button>
                                 <form asp-controller="Organizations" asp-action="Index" style="search-form" method="get">
                                     <input type="text" name="searchString" placeholder="Поиск по названию" value="@ViewData["CurrentFilter"]" id="er" />
                                     <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
                                 </form>
+                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Organizations")'">Добавить организацию</button>
+
                             </div>
                         </div>
                     </div>

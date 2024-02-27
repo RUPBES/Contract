@@ -56,7 +56,7 @@
 
             .wrapper-table table tr:first-child th:first-child {
                 position: sticky;
-                z-index: 20;
+                z-index: 1000;
                 left: -1px;
                 top: 0;
             }
@@ -118,6 +118,10 @@
             font-size: 3vh;
             margin-left: 1%;
         }
+
+        .search_btn {
+            width: 2vh !important;
+        }
     </style>
     <div class="header__form">
 
@@ -129,7 +133,7 @@
                 <div class="header__form-search">
 
                     <span class="input-group-text">Название объекта/номер договора:</span> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                    <input class="btn btn-primary" type="submit" value="Найти" />
+                    <button class="btn btn-primary" type="submit"><img src="~/icons/search_icon_w.png" title="Поиск" alt="Поиск" class="search_btn" /> </button>
                 </div>
             </form>
         }
@@ -137,7 +141,7 @@
 
     <hr class="modal-line" />
     <div class="wrapper-table">
-        <table class="table table-bordered table-main table-main-short">
+        <table class="table table-bordered table-main table-main-short table-hover">
             <thead class="text-center text-white align-top" style="position:sticky">
                 <tr>
                     <th rowspan="2">

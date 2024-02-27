@@ -45,7 +45,46 @@
         color: white;
         font-weight: 600;
     }
+    .modal-content {
+        background-color: lightsteelblue !important;
+    }
 
+    .close-btn {
+        color: red;
+        display: block;
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+        .btn_container {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            margin-bottom: 1%;
+        }
+        .img_btn {
+            width: 24px;
+            height: 24px;
+            margin-right: 2px;
+            transition-property: transform;
+            transition-duration: 1s;
+            transition-timing-function: ease-in-out;
+        }
+
+    .btn-primary:hover > .img_btn {
+            transform: rotate(180deg);
+        }
 </style>
 
 @{
@@ -160,7 +199,12 @@
 <div id="ConstructionInstallationWorksByTypes" class="d-none">
     <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
-            <button id="ChangeToCategories" onclick="funcChangeToCategories()">Сменить вид</button>
+            <div class="btn_container">
+            <button class="btn btn-primary" id="ChangeToCategories" onclick="funcChangeToCategories()"><img src="~/icons/circular_icon.png" class="img_btn" />Сменить вид</button>
+            <a id="buttonTableType" onclick="funcCloseByTableType()" class="close-btn"> </a>
+            </div>
+            <hr class="modal-line" />
+
             <div class="full-width" style="width: 100%">
                 <table class="PartialTable table table-striped table-hover">
                     <thead class="Partialtable-sticky-top">
@@ -1428,7 +1472,6 @@
                     </tbody>
                 </table>
             </div>
-            <button id="buttonTableType" onclick="funcCloseByTableType()" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
 </div>
@@ -1437,9 +1480,13 @@
     <div class="modal-content" style="width : 99vw">
         <div class="modal-body">
             @if (Model.IsEngineering != true)
-            {
-                <button id="ChangeToType" onclick="funcChangeToType()">Сменить вид</button>
+            {   <div class="btn_container">
+                <button class="btn btn-primary" id="ChangeToType" onclick="funcChangeToType()"><img src="~/icons/circular_icon.png" class="img_btn" />Сменить вид</button>
+                <a id="buttonTableCategories" onclick="funcCloseByTableCategories()" class="close-btn"> </a>
+                </div>
             }
+            <hr class="modal-line" />
+
             <div class="full-width" style="width: 100%">
                 <table class="PartialTable table table-striped table-hover">
                     <thead class="Partialtable-sticky-top">
@@ -2773,7 +2820,6 @@
                     </tbody>
                 </table>
             </div>
-            <button id="buttonTableCategories" onclick="funcCloseByTableCategories()" class="modal__container-button">Закрыть таблицу</button>
         </div>
     </div>
 </div>
