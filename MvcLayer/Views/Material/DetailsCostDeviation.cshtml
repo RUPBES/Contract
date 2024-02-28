@@ -27,407 +27,382 @@
         }
     }
 }
+@section Table {
 
-<style>
-    table {
-        text-align: center;
-    }
-
-    .wrapper-table {
-        width: 65vw;
-        height: 75vh;
-        overflow: scroll;
-    }
-
-        .wrapper-table tbody, td, tfoot, th, thead, tr {
-            border-color: #373b3e;
-            border-style: solid;
-            border-width: 0;
+    <style>
+        table {
+            text-align: center;
         }
 
-        .wrapper-table table td:first-child {
-            position: sticky;
-            z-index: 10;
-            left: -1px;
-            background-color: #adadad;
+        .wrapper-table {
+            width: 100%;
+            overflow: auto;
         }
 
-        .wrapper-table table tr:first-child th:first-child {
-            position: sticky;
-            z-index: 1000;
-            left: -1px;
-            top: 0;
+            .wrapper-table tbody, td, tfoot, th, thead, tr {
+                border-color: #373b3e;
+                border-style: solid;
+                border-width: 0;
+            }
+
+            .wrapper-table table td:first-child {
+                position: sticky;
+                z-index: 10;
+                left: -1px;
+                background-color: #adadad;
+            }
+
+            .wrapper-table table tr:first-child th:first-child {
+                position: sticky;
+                z-index: 1000;
+                left: -1px;
+                top: 0;
+            }
+
+            .wrapper-table thead {
+                position: sticky;
+                z-index: 20;
+                left: 0;
+                top: 0;
+                opacity: 1;
+                border-color: #373b3e;
+            }
+
+        .second-td-elem {
+            /* z-index: 5 !important; */
+            box-shadow: inset 0 0 0 9999px #bdbac3 !important;
+            background-color: grey !important;
         }
 
-        .wrapper-table thead {
-            position: sticky;
-            z-index: 20;
-            left: 0;
-            top: 0;
-            opacity: 1;
-            border-color: #373b3e;
+        .Agreement {
+            background-color: #ccf3ff !important;
         }
 
-    .second-td-elem {
-        /* z-index: 5 !important; */
-        box-shadow: inset 0 0 0 9999px #bdbac3 !important;
-        background-color: grey !important;
-    }
-
-    .Agreement {
-        background-color: #ccf3ff !important;
-    }
-
-    .SubContract {
-        background-color: #d8f3d8 !important;
-    }
-
-    .Multiple {
-        background-color: lightsalmon !important;
-    }
-
-    .square {
-        width: 30px;
-        height: 30px;
-        border: solid;
-        margin-right: 0.7%;
-    }
-
-    .square_container{
-        display: flex;
-        font-weight: bold;
-        margin-top: 1%;
-        margin-bottom: 1%;
-        padding: 0.5%;
-        box-shadow: rgba(0, 0, 0, 0.15) 0px 15px 25px, rgba(0, 0, 0, 0.05) 0px 5px 10px;
-    }
-    .label_square{
-        margin-right: 2%;
-    }
-
-    .dm-modal {
-        background-color: lightsteelblue;
-    }
-
-    .close-btn {
-        color: red
-    }
-
-        .close-btn::after {
-            border: 2px solid #F00 !important;
+        .SubContract {
+            background-color: #d8f3d8 !important;
         }
 
-        .close-btn:hover::after {
-            border-color: red !important;
-            color: red !important;
-            -webkit-transform: scale(1);
-            -moz-transform: scale(1);
-            -ms-transform: scale(1);
-            transform: scale(1);
+        .Multiple {
+            background-color: lightsalmon !important;
+        }
+
+        .square {
+            width: 30px;
+            height: 30px;
+            border: solid;
+            margin-left: 1%;
+            margin-right: 0.5%;
+        }
+
+        .square_container {
+            display: flex;
             font-weight: bold;
+            margin-top: 1%;
+            margin-bottom: 1%;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+            padding: 1%;
         }
-</style>
 
-<div class="dm-overlay">
-    <div class="dm-table">
-        <div class="dm-cell">
-            <div class="dm-modal">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Material" asp-action="GetCostDeviation" class="close-btn"></a>
-                </div>
-    
-                <hr class="modal-line" />
-                <div class="wrapper-table">
-                    <table class="table table-bordered table-main table-main-short">
-                        <thead class="table-dark text-center text-white align-top" style="position:sticky">
-                            <tr>
-                                <th rowspan="3">
-                                    Номер и дата договора
-                                </th>
-                                <th rowspan="3">
-                                    Наименование объекта
-                                </th>
-                                <th rowspan="3">
-                                    Сметная стоимость материалов по договору
-                                </th>
-                                <th colspan="@(((endPeriod.Year - startPeriod.Year) * 12 + ((endPeriod.Month - startPeriod.Month) + 1))*3)">в том числе</th>
-                                <th rowspan="3">
-                                    Отклонение всего
-                                </th>
-                            </tr>
-                            <tr>
-                                @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
-                                {
-                                    <th colspan="3">
-                                        @item.ToString("MMMM yyyy")
-                                    </th>
-                                }
-                            </tr>
-                            <tr>
-                                @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
-                                {
-                                    <th>
-                                        План
-                                    </th>
-                                    <th>
-                                        Факт
-                                    </th>
-                                    <th>
-                                        Отклонение
-                                    </th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.Where(m => m.typeContract == "Main"))
+        h3 {
+            text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
+            color: #004d8e;
+            transition: all 1s;
+            font-family: 'Ampersand', Montserrat, sans-serif;
+            font-size: 3vh;
+            margin-left: 1%;
+        }
+    </style>
+
+
+    <h3>@ViewData["Title"]</h3>
+
+    <hr class="modal-line" />
+    <div class="wrapper-table">
+        <table class="table table-bordered table-main table-main-short">
+            <thead class="table-dark text-center text-white align-top" style="position:sticky">
+                <tr>
+                    <th rowspan="3">
+                        Номер и дата договора
+                    </th>
+                    <th rowspan="3">
+                        Наименование объекта
+                    </th>
+                    <th rowspan="3">
+                        Сметная стоимость материалов по договору
+                    </th>
+                    <th colspan="@(((endPeriod.Year - startPeriod.Year) * 12 + ((endPeriod.Month - startPeriod.Month) + 1))*3)">в том числе</th>
+                    <th rowspan="3">
+                        Отклонение всего
+                    </th>
+                </tr>
+                <tr>
+                    @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
+                    {
+                        <th colspan="3">
+                            @item.ToString("MMMM yyyy")
+                        </th>
+                    }
+                </tr>
+                <tr>
+                    @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
+                    {
+                        <th>
+                            План
+                        </th>
+                        <th>
+                            Факт
+                        </th>
+                        <th>
+                            Отклонение
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Where(m => m.typeContract == "Main"))
+                {
+                    var deviationTotal = 0M;
+                    <tr>
+                        <td>
+                            @item?.number <br>
+                            от<br>
+                            @item?.dateContract?.ToShortDateString()
+                        </td>
+                        <td>
+                            @item?.nameObject
+                        </td>
+                        <td class="text-end">
+                            @item?.materialCost?.ToString("N2")
+                        </td>
+
+                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                       iterator = iterator.AddMonths(1))
+                        {
+                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            .FirstOrDefault();
+                            if (itemMaterial != null)
                             {
-                                var deviationTotal = 0M;
-                                <tr>
-                                    <td>
-                                        @item?.number <br>
-                                        от<br>
-                                        @item?.dateContract?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item?.nameObject
-                                    </td>
-                                    <td class="text-end">
-                                        @item?.materialCost?.ToString("N2")
-                                    </td>
-
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
-                                   iterator = iterator.AddMonths(1))
+                                decimal? plan = 0, fact = 0;
+                                <td class="text-end">
+                                    @if (itemMaterial.plan != null)
                                     {
-                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
-                                        .FirstOrDefault();
-                                        if (itemMaterial != null)
-                                        {
-                                            decimal? plan = 0, fact = 0;
-                                            <td class="text-end">
-                                                @if (itemMaterial.plan != null)
-                                                {
-                                                    plan = itemMaterial.plan;
-                                                }
-                                                @plan?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @if (itemMaterial.fact != null)
-                                                {
-                                                    fact = itemMaterial.fact;
-                                                }
-                                                @fact?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @{
-                                                    var deviation = plan - fact;
-                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                                }
-                                                @deviation?.ToString("N2")
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                        }
+                                        plan = itemMaterial.plan;
                                     }
-                                    <td class="text-end">
-                                        @deviationTotal.ToString("N2")
-                                    </td>
-                                </tr>
+                                    @plan?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @if (itemMaterial.fact != null)
+                                    {
+                                        fact = itemMaterial.fact;
+                                    }
+                                    @fact?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @{
+                                        var deviation = plan - fact;
+                                        deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                    }
+                                    @deviation?.ToString("N2")
+                                </td>
                             }
-
-                            @foreach (var item in Model.Where(m => m.typeContract == "Agr"))
+                            else
                             {
-                                var deviationTotal = 0M;
-                                <tr class="Agreement">
-                                    <td>
-                                        @item?.number <br>
-                                        от<br>
-                                        @item?.dateContract?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item?.nameObject
-                                    </td>
-                                    <td class="text-end">
-                                        @item?.materialCost?.ToString("N2")
-                                    </td>
-
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
-                                   iterator = iterator.AddMonths(1))
-                                    {
-                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
-                                        .FirstOrDefault();
-                                        if (itemMaterial != null)
-                                        {
-                                            decimal? plan = 0, fact = 0;
-                                            <td class="text-end">
-                                                @if (itemMaterial.plan != null)
-                                                {
-                                                    plan = itemMaterial.plan;
-                                                }
-                                                @plan?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @if (itemMaterial.fact != null)
-                                                {
-                                                    fact = itemMaterial.fact;
-                                                }
-                                                @fact?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @{
-                                                    var deviation = plan - fact;
-                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                                }
-                                                @deviation?.ToString("N2")
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                        }
-                                    }
-                                    <td class="text-end">
-                                        @deviationTotal.ToString("N2")
-                                    </td>
-                                </tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                             }
+                        }
+                        <td class="text-end">
+                            @deviationTotal.ToString("N2")
+                        </td>
+                    </tr>
+                }
 
-                            @foreach (var item in Model.Where(m => m.typeContract == "Sub"))
+                @foreach (var item in Model.Where(m => m.typeContract == "Agr"))
+                {
+                    var deviationTotal = 0M;
+                    <tr class="Agreement">
+                        <td>
+                            @item?.number <br>
+                            от<br>
+                            @item?.dateContract?.ToShortDateString()
+                        </td>
+                        <td>
+                            @item?.nameObject
+                        </td>
+                        <td class="text-end">
+                            @item?.materialCost?.ToString("N2")
+                        </td>
+
+                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                       iterator = iterator.AddMonths(1))
+                        {
+                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            .FirstOrDefault();
+                            if (itemMaterial != null)
                             {
-                                var deviationTotal = 0M;
-                                <tr class="SubContract">
-                                    <td>
-                                        @item?.number <br>
-                                        от<br>
-                                        @item?.dateContract?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item?.nameObject
-                                    </td>
-                                    <td class="text-end">
-                                        @item?.materialCost?.ToString("N2")
-                                    </td>
-
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
-                                   iterator = iterator.AddMonths(1))
+                                decimal? plan = 0, fact = 0;
+                                <td class="text-end">
+                                    @if (itemMaterial.plan != null)
                                     {
-                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
-                                        .FirstOrDefault();
-                                        if (itemMaterial != null)
-                                        {
-                                            decimal? plan = 0, fact = 0;
-                                            <td class="text-end">
-                                                @if (itemMaterial.plan != null)
-                                                {
-                                                    plan = itemMaterial.plan;
-                                                }
-                                                @plan?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @if (itemMaterial.fact != null)
-                                                {
-                                                    fact = itemMaterial.fact;
-                                                }
-                                                @fact?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @{
-                                                    var deviation = plan - fact;
-                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                                }
-                                                @deviation?.ToString("N2")
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                        }
+                                        plan = itemMaterial.plan;
                                     }
-                                    <td class="text-end">
-                                        @deviationTotal.ToString("N2")
-                                    </td>
-                                </tr>
-                            }
-
-                            @foreach (var item in Model.Where(m => m.typeContract == "Obj"))
-                            {                                
-                                var deviationTotal = 0M;
-                                <tr class="Multiple">
-                                    <td>
-                                        @item?.number <br>
-                                        от<br>
-                                        @item?.dateContract?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item?.nameObject
-                                    </td>
-                                    <td class="text-end">
-                                        @item?.materialCost?.ToString("N2")
-                                    </td>
-
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
-                                   iterator = iterator.AddMonths(1))
+                                    @plan?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @if (itemMaterial.fact != null)
                                     {
-                                        var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
-                                        .FirstOrDefault();
-                                        if (itemMaterial != null)
-                                        {
-                                            decimal? plan = 0, fact = 0;
-                                            <td class="text-end">
-                                                @if (itemMaterial.plan != null)
-                                                {
-                                                    plan = itemMaterial.plan;
-                                                }
-                                                @plan?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @if (itemMaterial.fact != null)
-                                                {
-                                                    fact = itemMaterial.fact;
-                                                }
-                                                @fact?.ToString("N2")
-                                            </td>
-                                            <td class="text-end">
-                                                @{
-                                                    var deviation = plan - fact;
-                                                    deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                                }
-                                                @deviation?.ToString("N2")
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                        }
+                                        fact = itemMaterial.fact;
                                     }
-                                    <td class="text-end">
-                                        @deviationTotal.ToString("N2")
-                                    </td>
-                                </tr>
+                                    @fact?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @{
+                                        var deviation = plan - fact;
+                                        deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                    }
+                                    @deviation?.ToString("N2")
+                                </td>
                             }
-                        </tbody>
-                    </table>
+                            else
+                            {
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            }
+                        }
+                        <td class="text-end">
+                            @deviationTotal.ToString("N2")
+                        </td>
+                    </tr>
+                }
 
-                </div>
-                <div class="square_container">
-                    <div class="square Agreement"></div>
-                    <label class="label_square"> - Соглашения с филиалом </label>
-                    <div class="square SubContract"></div>
-                    <label class="label_square"> - Договор Субподряда </label>
-                    <div class="square Multiple"></div>
-                    <label class="label_square"> - Подобъект</label>
-                </div>
-            </div>
-        </div>
+                @foreach (var item in Model.Where(m => m.typeContract == "Sub"))
+                {
+                    var deviationTotal = 0M;
+                    <tr class="SubContract">
+                        <td>
+                            @item?.number <br>
+                            от<br>
+                            @item?.dateContract?.ToShortDateString()
+                        </td>
+                        <td>
+                            @item?.nameObject
+                        </td>
+                        <td class="text-end">
+                            @item?.materialCost?.ToString("N2")
+                        </td>
+
+                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                       iterator = iterator.AddMonths(1))
+                        {
+                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            .FirstOrDefault();
+                            if (itemMaterial != null)
+                            {
+                                decimal? plan = 0, fact = 0;
+                                <td class="text-end">
+                                    @if (itemMaterial.plan != null)
+                                    {
+                                        plan = itemMaterial.plan;
+                                    }
+                                    @plan?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @if (itemMaterial.fact != null)
+                                    {
+                                        fact = itemMaterial.fact;
+                                    }
+                                    @fact?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @{
+                                        var deviation = plan - fact;
+                                        deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                    }
+                                    @deviation?.ToString("N2")
+                                </td>
+                            }
+                            else
+                            {
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            }
+                        }
+                        <td class="text-end">
+                            @deviationTotal.ToString("N2")
+                        </td>
+                    </tr>
+                }
+
+                @foreach (var item in Model.Where(m => m.typeContract == "Obj"))
+                {
+                    var deviationTotal = 0M;
+                    <tr class="Multiple">
+                        <td>
+                            @item?.number <br>
+                            от<br>
+                            @item?.dateContract?.ToShortDateString()
+                        </td>
+                        <td>
+                            @item?.nameObject
+                        </td>
+                        <td class="text-end">
+                            @item?.materialCost?.ToString("N2")
+                        </td>
+
+                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                       iterator = iterator.AddMonths(1))
+                        {
+                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            .FirstOrDefault();
+                            if (itemMaterial != null)
+                            {
+                                decimal? plan = 0, fact = 0;
+                                <td class="text-end">
+                                    @if (itemMaterial.plan != null)
+                                    {
+                                        plan = itemMaterial.plan;
+                                    }
+                                    @plan?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @if (itemMaterial.fact != null)
+                                    {
+                                        fact = itemMaterial.fact;
+                                    }
+                                    @fact?.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    @{
+                                        var deviation = plan - fact;
+                                        deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                                    }
+                                    @deviation?.ToString("N2")
+                                </td>
+                            }
+                            else
+                            {
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            }
+                        }
+                        <td class="text-end">
+                            @deviationTotal.ToString("N2")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
-</div>
+    <div class="square_container">
+        <div class="square Agreement"></div>
+        <label class="label_square"> - Соглашения с филиалом </label>
+        <div class="square SubContract"></div>
+        <label class="label_square"> - Договор Субподряда </label>
+        <div class="square Multiple"></div>
+        <label class="label_square"> - Подобъект</label>
+    </div>
+}

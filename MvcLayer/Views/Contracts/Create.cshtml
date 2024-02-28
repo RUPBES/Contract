@@ -42,6 +42,14 @@
     label {
         font-size: 1.1em;
     }
+
+    .prepayment_container {
+        display: flex;
+    }
+
+    .input-prepayment-container {
+        width: 100% !important;
+    }
 </style>
 
 <div class="dm-overlay">
@@ -227,7 +235,7 @@
                             <label asp-for="ContractPrice" for="CDC"></label>
                             <div class="input-group">
                                 <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                                <input name="ContractPrice" type="text" class="form-control" id="CDC">
+                                <input name="ContractPrice" type="text" class="form-control cost" id="CDC">
                             </div>
                         </div>
                         <div class="col-12">
@@ -246,19 +254,21 @@
                                 string idCh = "check" + @numberCheckbox;
                                 <div>
                                     <div class="input-group mb-2">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" style="display: block;">
-                                                @if (valueArray is not null)
-                                                {
-                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
-                                                }
-                                                @if (valueArray is null)
-                                                {
-                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
-                                                }
+                                        <div class="input-group-prepend input-prepayment-container">
+                                            <div class="prepayment_container">
+                                                <div class="input-group-text" style="display: block;">
+                                                    @if (valueArray is not null)
+                                                    {
+                                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                                    }
+                                                    @if (valueArray is null)
+                                                    {
+                                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                                    }
+                                                </div>
+                                                <input type="text" class="form-control" value="@value" disabled>
                                             </div>
                                         </div>
-                                        <input type="text" class="form-control" value="@value" disabled>
                                     </div>
                                 </div>
                                 numberCheckbox++;
@@ -412,17 +422,13 @@
                     if (TempData["Message"] != null)
                     {
                         var mes = (string)TempData["Message"];
-                                                <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+                        <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
                     }
                 }
             </div>
         </div>
     </div>
 </div>
-
-
-
-
 
 @section Scripts {
     <script type="text/javascript">
@@ -540,7 +546,7 @@
                 }
                 showHideMin()
             }
-            function changeBeginWork() {               
+            function changeBeginWork() {
                 let date = $("#DateDC").datepicker('getDate');
                 let dateBeg = $("#DateBeginWork").datepicker('getDate');
                 let dateEnd = $("#DateEndWork").datepicker('getDate');
@@ -561,7 +567,7 @@
                 }
                 showHideMin()
             }
-            function changeEndWork() { 
+            function changeEndWork() {
                 let date = $("#DateDC").datepicker('getDate');
                 let dateBeg = $("#DateBeginWork").datepicker('getDate');
                 let dateEnd = $("#DateEndWork").datepicker('getDate');
@@ -618,7 +624,7 @@
                 }
                 showHideMin()
             }
-            function showHideMin() {                
+            function showHideMin() {
                 let min = $("#DateBeginWork").datepicker('getStartDate');
                 if (min != null && min != -Infinity)
                     var minBeginWork = min.toLocaleDateString();
@@ -734,7 +740,6 @@
                 if (e.currentTarget.checked) {
                     ch1.setAttribute("disabled", true);
                 }
-
                 if (!e.currentTarget.checked && !ch3.checked) {
                     ch1.removeAttribute("disabled");
                 }
@@ -744,7 +749,6 @@
                 if (e.currentTarget.checked) {
                     ch1.setAttribute("disabled", true);
                 }
-
                 if (!e.currentTarget.checked && !ch2.checked) {
                     ch1.removeAttribute("disabled");
                 }
@@ -780,7 +784,7 @@
                     data: { contractNumber: $("#NumDC").val() },
                     success: function (resultChecking) {
                         if (resultChecking === true) {
-                            alert(`Договор с данным номером существует!`)                            
+                            alert(`Договор с данным номером существует!`)
                         }
                         else {
                             alert(`Договор с данным номером не существует!`)
@@ -845,10 +849,13 @@
         });
 
         $(function ($) {
-            $('body').on('input', '#CDC', function (e) {
+            var allCost = $(".cost")
+            for (let el of allCost) {
+                digits_float(el)
+            }
+            $('body').on('input', '.cost', function (e) {
                 digits_float(this);
             });
-            digits_float('#CDC');
         });
     </script>
 }
