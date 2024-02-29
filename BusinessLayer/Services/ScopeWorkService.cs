@@ -271,9 +271,9 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<AmendmentDTO>>(answer);
         }
 
-        public ScopeWork GetLastScope(int contractId)
+        public ScopeWork GetLastScope(int contractId, bool isOwnForces = false)
         {
-            var list = _database.ScopeWorks.Find(a => a.ContractId == contractId).ToList();
+            var list = _database.ScopeWorks.Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces).ToList();
             List<(ScopeWork, DateTime)> listSort = new List<(ScopeWork, DateTime)>();
             foreach (var item in list)
             {
