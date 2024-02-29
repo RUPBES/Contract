@@ -304,17 +304,64 @@ namespace MvcLayer.Controllers
                 }
                 else
                 {
-                    var ob = new ListSmrPrepByAmendment();
-                    ob.NameAmendment = item.Number;
+                    var planlist = new ListSmrPrepByAmendment();                    
                     var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
-                    for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                    if (answer.listSmrWithPrepaymentByAmendment.Count == 0)
                     {
-                        var emptyOb = new ElementOfListSmrPrepByAmend();
-                        emptyOb.Period = i;
-                        listSmrWithAvans.Add(emptyOb);
+                        var scopeL = _scopeWork.Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
+
+                        if (scopeL != null)
+                        {
+                            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                            {
+                                var ob = new ElementOfListSmrPrepByAmend();
+                                var swCost = _SWCost.Find(x => x.ScopeWorkId == scopeL.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
+                                    Select(x => x.SmrCost).FirstOrDefault();
+                                if (swCost != null)
+                                {
+                                    ob.Smr = swCost;
+                                }
+                                else
+                                {
+                                    ob.Smr = 0;
+                                }
+
+                                var prepL = _prepayment.Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
+                                if (prepL != null)
+                                {
+                                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepL.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                                    if (prepPlan != null)
+                                    {
+                                        ob.Target = prepPlan.TargetValue;
+                                        ob.Current = prepPlan.CurrentValue;
+                                    }
+                                    else
+                                    {
+                                        ob.Target = 0;
+                                        ob.Current = 0;
+                                    }
+                                }
+                                ob.Period = i;
+                                listSmrWithAvans.Add(ob);
+                            }
+                        }
+                        else
+                        {
+                            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                            {
+                                var emptyOb = new ElementOfListSmrPrepByAmend();
+                                emptyOb.Period = i;
+                                listSmrWithAvans.Add(emptyOb);
+                            }
+                            planlist.listSmrWithAvans = listSmrWithAvans;
+                        }
                     }
-                    ob.listSmrWithAvans = listSmrWithAvans;
-                    answer.listSmrWithPrepaymentByAmendment.Add(ob);
+                    else
+                    {
+                        planlist.listSmrWithAvans = answer.listSmrWithPrepaymentByAmendment.LastOrDefault().listSmrWithAvans;                        
+                    }
+                    planlist.NameAmendment = item.Number;
+                    answer.listSmrWithPrepaymentByAmendment.Add(planlist);
                 }
             }
             var factElement = new ListSmrPrepByAmendment();
