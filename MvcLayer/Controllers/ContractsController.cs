@@ -142,7 +142,7 @@ namespace MvcLayer.Controllers
             }
             ViewData["returnContractId"] = returnContractId;
             ViewBag.MultipleContractId = id;
-
+            
             return View();
         }
 
@@ -612,7 +612,7 @@ namespace MvcLayer.Controllers
 
                     //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
 
-                    ///проверить на нулевые значения у главного договора
+                    //проверить на нулевые значения у главного договора
                     if (contract.IsOneOfMultiple)
                     {
                         var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);

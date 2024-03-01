@@ -597,6 +597,7 @@ public partial class ContractsContext : DbContext
                 .HasComment("стоимость ген.услуг");
 
             entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
+            entity.Property(e => e.IsFinal).HasDefaultValueSql("0");
 
             entity.Property(e => e.MaterialCost)
                 .HasColumnType("money")

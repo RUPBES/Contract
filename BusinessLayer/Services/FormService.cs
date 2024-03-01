@@ -206,7 +206,7 @@ namespace BusinessLayer.Services
             var list = _database.Forms.Find(a => a.ContractId == contractId).ToList();
             DateTime start, end;
             var amend = _database.Amendments.Find(a => a.ContractId == contractId).OrderBy(a => a.Date).LastOrDefault();
-            
+
             if (amend == null)
             {
                 var contract = _database?.Contracts?.GetById(contractId);
@@ -222,9 +222,9 @@ namespace BusinessLayer.Services
                 start = (DateTime)amend?.DateBeginWork;
                 end = (DateTime)amend?.DateEndWork;
             }
-            
+
             List<DateTime> answer = new List<DateTime>();
-            
+
             for (var i = start; Checker.LessOrEquallyFirstDateByMonth(i, end); i = i.AddMonths(1))
             {
                 var ob = list.Where(l => Checker.EquallyDateByMonth((DateTime)l.Period, i)).FirstOrDefault();
@@ -266,5 +266,44 @@ namespace BusinessLayer.Services
             }
             return formList;
         }
+
+        public void UpdateOwnForceMnForm(FormDTO newForm, bool isOnePartOfMultiContr = false, FormDTO? updateForm = null)
+        {
+            if (newForm is not null)
+            {
+                newForm.IsOwnForces = true;
+                int opertr = isOnePartOfMultiContr ? 1 : -1;
+
+                if (updateForm is not null)
+                {
+                    updateForm = SubstractCosts(updateForm, newForm, opertr);
+                    _database.Forms.Update(_mapper.Map<FormC3a>(updateForm));
+                }
+                else
+                {
+                    var form = SubstractCosts(new FormDTO(), newForm, opertr);
+                    _database.Forms.Create(_mapper.Map<FormC3a>(form));
+                }
+
+                _database.Save();
+            }
+        }
+
+        private FormDTO SubstractCosts(FormDTO oldForm, FormDTO newForm, int opr)
+        {
+            oldForm.PnrCost = oldForm.PnrCost?? 0 + opr * (newForm?.PnrCost ?? 0);
+            oldForm.SmrCost = oldForm.SmrCost??0 + opr * (newForm?.SmrCost ?? 0);
+            oldForm.EquipmentCost = oldForm.EquipmentCost??0 + opr * (newForm?.EquipmentCost ?? 0);
+            oldForm.OtherExpensesCost = oldForm.OtherExpensesCost??0 + opr * (newForm?.OtherExpensesCost ?? 0);
+            oldForm.AdditionalCost = oldForm.AdditionalCost??0 + opr * (newForm?.AdditionalCost ?? 0);
+            oldForm.GenServiceCost = oldForm.GenServiceCost??0 + opr * (newForm?.GenServiceCost ?? 0);
+            oldForm.MaterialCost = oldForm.MaterialCost??0 + opr * (newForm?.MaterialCost ?? 0);
+
+            oldForm.OffsetCurrentPrepayment = oldForm.OffsetCurrentPrepayment??0 + opr * (newForm?.OffsetCurrentPrepayment ?? 0);
+            oldForm.OffsetTargetPrepayment = oldForm.OffsetTargetPrepayment??0 + opr * (newForm?.OffsetTargetPrepayment ?? 0);
+
+            return oldForm;
+        }
+
     }
 }

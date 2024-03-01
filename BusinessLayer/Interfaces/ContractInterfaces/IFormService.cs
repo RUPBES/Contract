@@ -10,6 +10,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         void AddFile(int formId, int fileId);
         IEnumerable<DateTime> GetFreeForms(int contractId);
         List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period);
+        void UpdateOwnForceMnForm(FormDTO newForm, bool isOnePartOfMultiContr = false, FormDTO? updateForm = null);
         //FormDTO? GetValueScopeWorkByPeriod(int contractId, DateTime? period, Boolean IsOwn = false);
     }
 }
