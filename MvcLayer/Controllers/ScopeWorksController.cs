@@ -148,6 +148,14 @@ namespace MvcLayer.Controllers
                     scope.SWCosts.AddRange(costs);
                     if (contract.IsEngineering == true)
                         ViewData["IsEngin"] = true;
+                    if (amendment != null)
+                    {
+                        ViewData["contractPrice"] = amendment.ContractPrice;
+                    }
+                    else
+                    {
+                        ViewData["contractPrice"] = contract.ContractPrice;
+                    }
                     return View("Create", scope);
                 }
             }
@@ -195,6 +203,16 @@ namespace MvcLayer.Controllers
                     ViewData["IsEngin"] = true;
                 ViewData["returnContractId"] = returnContractId;
                 ViewData["contractId"] = contractId;
+                var amendment = _amendmentService.Find(x => x.ContractId == contractId).OrderBy(o => o.Date).LastOrDefault();
+                var contract = _contractService.GetById(contractId);
+                if (amendment != null)
+                {
+                    ViewData["contractPrice"] = amendment.ContractPrice;
+                }
+                else
+                {
+                    ViewData["contractPrice"] = contract.ContractPrice;
+                }
                 if (scope is not null)
                 {
                     return View("Create", scope);

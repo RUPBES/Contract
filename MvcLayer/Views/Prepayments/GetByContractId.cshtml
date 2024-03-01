@@ -102,8 +102,8 @@
                 <form asp-action="GetByContractId" class="form_period">
                     <label class="input-group-text" for="start">Начало:</label>
 
-                    <input id="DateBeginWork" class="form-control period_input" asp-for="startPeriod" 
-                           value="@Model.startPeriod?.ToString("MMMM yyyy")" type="text" required/>
+                    <input id="DateBeginWork" class="form-control period_input" asp-for="startPeriod"
+                           value="@Model.startPeriod?.ToString("MMMM yyyy")" type="text" required />
                     <label class="input-group-text" for="end">Конец:</label>
 
                     <input id="DateEndWork" class="form-control period_input" asp-for="endPeriod"
@@ -176,7 +176,14 @@
                                     <span></span>
                                 </th>
                                 <th rowspan="2">
-                                    <span>Согласно ДС @Model.NameAmendment</span>
+                                    @if (ViewData["Amend"] != null)
+                                    {
+                                        <span>Согласно контракту</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Согласно ДС @Model.NameAmendment</span>
+                                    }                                    
                                 </th>
                                 @foreach (var item in Model.listSmrWithAvans)
                                 {
@@ -187,7 +194,7 @@
                             </tr>
                             <tr>
                                 <th>
-                                    <span>Получено</span>
+                                    <span>Целевого</span>
                                 </th>
                                 <th>
                                     <span>Текущего</span>
@@ -240,11 +247,22 @@
                                         @((Model.TargetRepaid - Model.TargetReceived)?.ToString("N2"))
                                     </span>
                                 </td>
-                                <td class="td-pointer" onclick="ShowAmendment()" rowspan="2">
-                                    <div>
-                                        <span class="btn-text">ДС @Model.NameAmendment</span>
-                                    </div>
-                                </td>
+                                @if (ViewData["Amend"] != null)
+                                {
+                                    <td rowspan="2">
+                                        <div>
+                                            <span class="btn-text">По контракту</span>
+                                        </div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="td-pointer" onclick="ShowAmendment()" rowspan="2">
+                                        <div>                                            
+                                            <span class="btn-text">ДС @Model.NameAmendment</span>
+                                        </div>
+                                    </td>
+                                }
                                 <td rowspan="2">
                                     <span>
                                         План
@@ -291,6 +309,7 @@
                                         <span>
                                             <a href="~/Files/GetFile?id=@item.Id" target="_blank">@item.FileName</a>
                                         </span>
+                                        <br>
                                     }
                                 </td>
                                 <td rowspan="2">
@@ -420,7 +439,7 @@
             assumeNearbyYear: true,
             toggleActive: true
         });
-        function ShowAmendment() {            
+        function ShowAmendment() {
             let valStart = $("#DateBeginWork").datepicker('getDate');
             let valEnd = $("#DateEndWork").datepicker('getDate');
             $("#anotherStart").datepicker('setDate', valStart);

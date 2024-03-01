@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Models;
+using DatabaseLayer.Models;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -50,7 +51,7 @@ namespace MvcLayer.Models.Reports
         public ScopeWorkForReport? factScopeWork { get; set; }
     }
 
-    public class ScopeWorkForReport
+    public class ScopeWorkForReport             
     {
         public DateTime? Period { get; set; }
         public decimal? SmrCost { get; set; }
@@ -59,6 +60,27 @@ namespace MvcLayer.Models.Reports
         public decimal? OtherExpensesCost { get; set; }
         public decimal? AdditionalCost { get; set; }
         public decimal? MaterialCost { get; set; }
+
+        public ScopeWorkForReport(DateTime? period, decimal? smrCost, decimal? pnrCost, decimal? equipmentCost, decimal? otherExpensesCost, decimal? additionalCost, decimal? materialCost)
+        {
+            Period = period;
+            SmrCost = smrCost;
+            PnrCost = pnrCost;
+            EquipmentCost = equipmentCost;
+            OtherExpensesCost = otherExpensesCost;
+            AdditionalCost = additionalCost;
+            MaterialCost = materialCost;
+        }
+
+        public ScopeWorkForReport()
+        {            
+            SmrCost = 0;
+            PnrCost = 0;
+            EquipmentCost = 0;
+            OtherExpensesCost = 0;
+            AdditionalCost = 0;
+            MaterialCost = 0;
+        }
     }
 
 }

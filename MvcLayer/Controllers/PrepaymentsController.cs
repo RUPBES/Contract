@@ -117,19 +117,19 @@ namespace MvcLayer.Controllers
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
                 formId = _form.Find(x => x.ContractId == contractId &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
                 formId = _form.Find(x => x.ContractId == contractId &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).Select(x => x.Id).ToList();
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).Select(x => x.Id).ToList();
                 answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
             }
             else if (answer.startPeriod == null && answer.endPeriod != null)
             {
                 formId = _form.Find(x => x.ContractId == contractId &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
             }
             else
@@ -146,10 +146,16 @@ namespace MvcLayer.Controllers
                 answer.listFiles.AddRange(obj);
             }
             answer.listSmrWithAvans = new List<SmrWithPrepayment>();
+            var scope = _scopeWork.GetLastScope(contractId);
+            var prep = _prepayment.GetLastPrepayment(contractId);
+            if (prep != null)
+            {
+                answer.TheoryCurrent = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.CurrentValue);
+                answer.TheoryTarget = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.TargetValue);
+            }            
             for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
             {
-                var ob = new SmrWithPrepayment();
-                var scope = _scopeWork.GetLastScope(contractId);
+                var ob = new SmrWithPrepayment();                
                 if (scope != null)
                 {
                     var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
@@ -175,8 +181,7 @@ namespace MvcLayer.Controllers
                     ob.SmrFact = 0;
                     ob.TargetFact = 0;
                     ob.CurrentFact = 0;
-                }
-                var prep = _prepayment.GetLastPrepayment(contractId);
+                }                
                 if (prep != null)
                 {
                     var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
@@ -194,6 +199,8 @@ namespace MvcLayer.Controllers
                 ob.Period = i;
                 answer.listSmrWithAvans.Add(ob);
             }
+            if (_amendment.Find(x => x.ContractId == contractId).FirstOrDefault() == null)
+                ViewData["Amend"] = true;
             return View(answer);
         }
 
@@ -297,17 +304,64 @@ namespace MvcLayer.Controllers
                 }
                 else
                 {
-                    var ob = new ListSmrPrepByAmendment();
-                    ob.NameAmendment = item.Number;
+                    var planlist = new ListSmrPrepByAmendment();                    
                     var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
-                    for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                    if (answer.listSmrWithPrepaymentByAmendment.Count == 0)
                     {
-                        var emptyOb = new ElementOfListSmrPrepByAmend();
-                        emptyOb.Period = i;
-                        listSmrWithAvans.Add(emptyOb);
+                        var scopeL = _scopeWork.Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
+
+                        if (scopeL != null)
+                        {
+                            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                            {
+                                var ob = new ElementOfListSmrPrepByAmend();
+                                var swCost = _SWCost.Find(x => x.ScopeWorkId == scopeL.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
+                                    Select(x => x.SmrCost).FirstOrDefault();
+                                if (swCost != null)
+                                {
+                                    ob.Smr = swCost;
+                                }
+                                else
+                                {
+                                    ob.Smr = 0;
+                                }
+
+                                var prepL = _prepayment.Find(x => x.ContractId == contractId && x.IsChange != true).FirstOrDefault();
+                                if (prepL != null)
+                                {
+                                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepL.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                                    if (prepPlan != null)
+                                    {
+                                        ob.Target = prepPlan.TargetValue;
+                                        ob.Current = prepPlan.CurrentValue;
+                                    }
+                                    else
+                                    {
+                                        ob.Target = 0;
+                                        ob.Current = 0;
+                                    }
+                                }
+                                ob.Period = i;
+                                listSmrWithAvans.Add(ob);
+                            }
+                        }
+                        else
+                        {
+                            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                            {
+                                var emptyOb = new ElementOfListSmrPrepByAmend();
+                                emptyOb.Period = i;
+                                listSmrWithAvans.Add(emptyOb);
+                            }
+                            planlist.listSmrWithAvans = listSmrWithAvans;
+                        }
                     }
-                    ob.listSmrWithAvans = listSmrWithAvans;
-                    answer.listSmrWithPrepaymentByAmendment.Add(ob);
+                    else
+                    {
+                        planlist.listSmrWithAvans = answer.listSmrWithPrepaymentByAmendment.LastOrDefault().listSmrWithAvans;                        
+                    }
+                    planlist.NameAmendment = item.Number;
+                    answer.listSmrWithPrepaymentByAmendment.Add(planlist);
                 }
             }
             var factElement = new ListSmrPrepByAmendment();
