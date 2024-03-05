@@ -116,7 +116,7 @@
                                         <tr>
                                             @if (ViewBag.IsEngin == null)
                                             {
-                                                <td colspan="12">
+                                                <td colspan="12" сlass="minus">
                                                     <span style="font-weight:bold">@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
                                                 </td>
                                             }
@@ -137,7 +137,7 @@
                                         </td>
                                         @if (ViewBag.IsEngin == null)
                                         {
-                                            <td class="text-end">
+                                            <td class="text-end minus">
                                                 @item.CostNoNds?.ToString("N2")
                                             </td>
                                             <td class="text-end">
@@ -233,8 +233,10 @@
 
     }
     let arrayTd = document.getElementsByTagName("td")
+    
     for (let value of arrayTd) {
-        if(value.textContent.includes('-')) {
+        console.log(value.className.includes('minus'))
+        if (value.className.includes('minus')) {
             value.setAttribute('style', 'color:red')
         }
     }
