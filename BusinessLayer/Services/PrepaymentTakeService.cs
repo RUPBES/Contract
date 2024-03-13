@@ -15,22 +15,22 @@ using System.Threading.Tasks;
 
 namespace BusinessLayer.Services
 {
-    internal class PrepaymentPlanService : IPrepaymentPlanService
+    internal class PrepaymentTakeService : IPrepaymentTakeService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly ILoggerContract _logger;
         private readonly IHttpContextAccessor _http;
 
-        public PrepaymentPlanService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public PrepaymentTakeService(IMapper mapper, IContractUoW database, ILoggerContract logger, IHttpContextAccessor http)
         {
-            _database = database;
             _mapper = mapper;
+            _database = database;
             _logger = logger;
             _http = http;
         }
 
-        public int? Create(PrepaymentPlanDTO item)
+        public int? Create(PrepaymentTakeDTO item)
         {
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
@@ -38,28 +38,28 @@ namespace BusinessLayer.Services
 
             if (item is not null)
             {
-                if (_database.PrepaymentPlans.GetById(item.Id) is null)
+                if (_database.PrepaymentTakes.GetById(item.Id) is null)
                 {
-                    var prepPlan = _mapper.Map<PrepaymentPlan>(item);
+                    var prepTake = _mapper.Map<PrepaymentTake>(item);
 
-                    _database.PrepaymentPlans.Create(prepPlan);
+                    _database.PrepaymentTakes.Create(prepTake);
                     _database.Save();
 
                     _logger.WriteLog(
                             logLevel: LogLevel.Information,
-                            message: $"create prepayment, ID={prepPlan.Id}",
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            message: $"create prepayment, ID={prepTake.Id}",
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
 
-                    return prepPlan.Id;
+                    return prepTake.Id;
                 }
             }
 
             _logger.WriteLog(
                             logLevel: LogLevel.Warning,
                             message: $"not create prepayment, object is null",
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
 
@@ -74,19 +74,19 @@ namespace BusinessLayer.Services
 
             if (id > 0)
             {
-                var service = _database.PrepaymentPlans.GetById(id);
+                var service = _database.PrepaymentTakes.GetById(id);
 
                 if (service is not null)
                 {
                     try
                     {
-                        _database.PrepaymentPlans.Delete(id);
+                        _database.PrepaymentTakes.Delete(id);
                         _database.Save();
 
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"delete prepayment plan, ID={id}",
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
                     }
@@ -95,7 +95,7 @@ namespace BusinessLayer.Services
                         _logger.WriteLog(
                             logLevel: LogLevel.Error,
                             message: e.Message,
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
                     }
@@ -106,24 +106,24 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(
                             logLevel: LogLevel.Warning,
                             message: $"not delete prepayment plan, ID is not more than zero",
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
             }
         }
 
-        public IEnumerable<PrepaymentPlanDTO> GetAll()
+        public IEnumerable<PrepaymentTakeDTO> GetAll()
         {
-            return _mapper.Map<IEnumerable<PrepaymentPlanDTO>>(_database.PrepaymentPlans.GetAll());
+            return _mapper.Map<IEnumerable<PrepaymentTakeDTO>>(_database.PrepaymentTakes.GetAll());
         }
 
-        public PrepaymentPlanDTO GetById(int id, int? secondId = null)
+        public PrepaymentTakeDTO GetById(int id, int? secondId = null)
         {
-            var act = _database.PrepaymentPlans.GetById(id);
+            var act = _database.PrepaymentTakes.GetById(id);
 
             if (act is not null)
             {
-                return _mapper.Map<PrepaymentPlanDTO>(act);
+                return _mapper.Map<PrepaymentTakeDTO>(act);
             }
             else
             {
@@ -131,7 +131,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public void Update(PrepaymentPlanDTO item)
+        public void Update(PrepaymentTakeDTO item)
         {
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
@@ -139,13 +139,13 @@ namespace BusinessLayer.Services
 
             if (item is not null)
             {
-                _database.PrepaymentPlans.Update(_mapper.Map<PrepaymentPlan>(item));
+                _database.PrepaymentTakes.Update(_mapper.Map<PrepaymentTake>(item));
                 _database.Save();
 
                 _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"update prepayment plan, ID={item.Id}",
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
             }
@@ -154,39 +154,15 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(
                             logLevel: LogLevel.Warning,
                             message: $"not update prepayment plan, object is null",
-                            nameSpace: typeof(PrepaymentPlanService).Name,
+                            nameSpace: typeof(PrepaymentTakeService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);
             }
         }
 
-        public IEnumerable<PrepaymentPlanDTO> Find(Func<PrepaymentPlan, bool> predicate)
+        public IEnumerable<PrepaymentTakeDTO> Find(Func<PrepaymentTake, bool> predicate)
         {
-            return _mapper.Map<IEnumerable<PrepaymentPlanDTO>>(_database.PrepaymentPlans.Find(predicate));
-        }
-
-        public PrepaymentDTO GetLastPrepayment(int contractId)
-        {
-            Prepayment answer = _database.Prepayments.Find(x => x.ContractId == contractId && x.IsChange == false).FirstOrDefault();
-            var amendPeriod = new DateTime(1900, 1, 1);
-            var listPrepayment = _database.Prepayments.Find(x => x.ContractId == contractId).ToList();
-            foreach (var item in listPrepayment)
-            {
-                var amendId = _database.PrepaymentAmendments.Find(x => x.PrepaymentId == item.Id).Select(x => x.AmendmentId).FirstOrDefault();
-                if (amendId != 0)
-                {
-                    var amend = _database.Amendments.Find(x => x.Id == amendId).FirstOrDefault();
-                    if (amend != null)
-                    {
-                        if (amendPeriod < amend.Date)
-                        {
-                            answer = item;
-                            amendPeriod = (DateTime)amend.Date;
-                        }
-                    }
-                }
-            }            
-            return _mapper.Map<PrepaymentDTO>(answer);
+            return _mapper.Map<IEnumerable<PrepaymentTakeDTO>>(_database.PrepaymentTakes.Find(predicate));
         }
     }
 }

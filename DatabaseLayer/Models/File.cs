@@ -27,5 +27,6 @@ namespace DatabaseLayer.Models
         public virtual ICollection<EstimateDocFile> EstimateDocFiles { get; set; }
         public virtual ICollection<ContractFile> ContractFiles { get; set; }
         public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
+        public virtual ICollection<PrepaymentTake> PrepaymentTakesFiles { get; set; }
     }
 }

@@ -842,6 +842,18 @@ namespace MvcLayer.Controllers
                 }
 
             }
+            else
+            {
+                TempData["Message"] = "Заполните объем работ";
+                var urlReturn = doc.Id;
+                if (doc.AgreementContractId != null)
+                    urlReturn = (int)doc.AgreementContractId;
+                else if (doc.SubContractId != null)
+                    urlReturn = (int)doc.SubContractId;
+                else if (doc.MultipleContractId != null)
+                    urlReturn = (int)doc.MultipleContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            }
             if (lastScopeOwn != null)
             {
                 lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();

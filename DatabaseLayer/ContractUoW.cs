@@ -28,6 +28,7 @@ namespace DatabaseLayer
 
         private PrepaymentPlanRepository prepaymentPlanRepository;
         private PrepaymentFactRepository prepaymentFactRepository;
+        private PrepaymentTakeRepository prepaymentTakeRepository;
         private PrepaymentRepository prepaymentRepository;
         private PaymentRepository paymentRepository;
         private FormC3Repository formC3Repository;
@@ -172,6 +173,17 @@ namespace DatabaseLayer
                     prepaymentFactRepository = new PrepaymentFactRepository(_context);
                 }
                 return prepaymentFactRepository;
+            }
+        }
+        public IRepository<PrepaymentTake> PrepaymentTakes
+        {
+            get
+            {
+                if (prepaymentTakeRepository is null)
+                {
+                    prepaymentTakeRepository = new PrepaymentTakeRepository(_context);
+                }
+                return prepaymentTakeRepository;
             }
         }
         public IRepository<FormFile> FormFiles

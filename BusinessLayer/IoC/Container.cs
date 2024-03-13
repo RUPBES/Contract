@@ -43,6 +43,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IPrepaymentService, PrepaymentService>();
             services.AddScoped<IPrepaymentFactService, PrepaymentFactService>();
             services.AddScoped<IPrepaymentPlanService, PrepaymentPlanService>();
+            services.AddScoped<IPrepaymentTakeService, PrepaymentTakeService>();
 
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IScopeWorkService, ScopeWorkService>();

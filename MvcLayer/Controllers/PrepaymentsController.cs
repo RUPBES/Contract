@@ -1,9 +1,9 @@
-﻿
-using AutoMapper;
+﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using Castle.Components.DictionaryAdapter.Xml;
 using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,6 +28,7 @@ namespace MvcLayer.Controllers
         private readonly IFileService _file;
         private readonly IPrepaymentFactService _prepaymentFact;
         private readonly IPrepaymentPlanService _prepaymentPlan;
+        private readonly IPrepaymentTakeService _prepaymentTake;
         private readonly IScopeWorkService _scopeWork;
         private readonly ISWCostService _SWCost;
         private readonly IAmendmentService _amendment;
@@ -36,7 +37,7 @@ namespace MvcLayer.Controllers
         public PrepaymentsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IPrepaymentService prepayment, IScopeWorkService scopeWork, IPrepaymentFactService prepaymentFact,
             IPrepaymentPlanService prepaymentPlan, IAmendmentService amendment, IContractOrganizationService contractOrganizationService,
-            IFormService form, IFileService file, ISWCostService SWCost)
+            IFormService form, IFileService file, ISWCostService SWCost, IPrepaymentTakeService prepaymentTake)
         {
             _contractService = contractService;
             _amendment = amendment;
@@ -50,6 +51,7 @@ namespace MvcLayer.Controllers
             _form = form;
             _file = file;
             _SWCost = SWCost;
+            _prepaymentTake = prepaymentTake;
         }
 
         public IActionResult Index()
@@ -60,7 +62,7 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
         {
             var prepCheck = _prepayment.FindByContractId(contractId);
-            if (prepCheck.Count() == 0)
+            if (!prepCheck.Any())
             {
                 TempData["Message"] = "Не заполнены авансы!";
                 var urlReturn = returnContractId == 0 ? contractId : returnContractId;
@@ -152,10 +154,10 @@ namespace MvcLayer.Controllers
             {
                 answer.TheoryCurrent = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.CurrentValue);
                 answer.TheoryTarget = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.TargetValue);
-            }            
+            }
             for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
             {
-                var ob = new SmrWithPrepayment();                
+                var ob = new SmrWithPrepayment();
                 if (scope != null)
                 {
                     var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
@@ -181,7 +183,7 @@ namespace MvcLayer.Controllers
                     ob.SmrFact = 0;
                     ob.TargetFact = 0;
                     ob.CurrentFact = 0;
-                }                
+                }
                 if (prep != null)
                 {
                     var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
@@ -202,6 +204,263 @@ namespace MvcLayer.Controllers
             if (_amendment.Find(x => x.ContractId == contractId).FirstOrDefault() == null)
                 ViewData["Amend"] = true;
             return View(answer);
+        }
+
+        public IActionResult GetPrepaymentsTakes(int contractId, int returnContractId = 0)
+        {
+            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans == null && returnContractId != 0)
+                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans != null)
+            {
+                if (avans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "Условие контракта - без авансов";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+
+                }
+                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            }
+            var prep = _prepayment.GetLastPrepayment(contractId);
+            if (prep == null)
+            {
+                TempData["Message"] = "Не заполнены авансы!";
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+
+            }
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+
+            var answer = new PrepaymentTakeViewModel();
+            answer.NameObject = _contractService.Find(x => x.Id == contractId).Select(x => x.NameObject).FirstOrDefault();
+            if (answer.NameObject == null)
+            {
+                answer.NameObject = "";
+            }
+
+            var orgId = _contractOrganizationService.GetById(contractId);
+            answer.Client = _organization.GetNameByContractId(contractId);
+            answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
+            var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
+            #region Период времени
+            DateTime? start, end;
+            if (amend.Count > 0)
+            {
+                start = amend.LastOrDefault().DateBeginWork;
+                end = amend.LastOrDefault().DateEndWork;
+            }
+            else
+            {
+                var contract = _contractService.GetById(contractId);
+                start = contract.DateBeginWork;
+                end = contract.DateEndWork;
+            }
+            if (start == null && end != null)
+            {
+                start = end;
+            }
+            if (end == null && start != null)
+            {
+                end = start;
+            }
+            if (start == null)
+                start = DateTime.Today;
+            if (end == null)
+                end = DateTime.Today;
+            #endregion            
+
+            for (var date = start; Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)end); date = date.Value.AddMonths(1))
+            {
+                var obj = new ItemPrepaymentTakeViewModel();
+                obj.Period = date;
+                if (prep != null)
+                {                    
+                    var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
+                    && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
+                    var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
+                    && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
+                    if (ob != null)
+                    {
+                        if (ob.CurrentValue != null)                         
+                        obj.CurrentPlan = ob.CurrentValue;
+                        else obj.CurrentPlan = 0;
+                        if (ob.TargetValue != null)
+                            obj.TargetPlan = ob.TargetValue;
+                        else obj.TargetPlan = 0;
+                    }
+                    else
+                    {
+                        obj.CurrentPlan = 0;
+                        obj.TargetPlan = 0;
+                    }
+                    if (facts.Count > 0)
+                    {
+                        foreach (var item in facts)
+                        {
+                            if (item.IsRefund == true)
+                            {
+                                if (item.IsTarget == true)
+                                    obj.TargetFact -= item.Total;
+                                else
+                                {
+                                    obj.CurrentFact -= item.Total;
+                                }
+                            }
+                            else
+                            {
+                                if (item.IsTarget == true)
+                                    obj.TargetFact += item.Total;
+                                else
+                                {
+                                    obj.CurrentFact += item.Total;
+                                }
+                            }
+                            obj.Files.AddRange(_file.GetFilesOfEntity((int)item.FileId, FolderEnum.PrepaymentTake));
+                        }
+                    }
+                    if (returnContractId == 0)
+                    {
+                        var contr = _contractService.Find(x => x.MultipleContractId == contractId).Select(x => x.Id).ToList();
+                        if (contr.Count > 0)
+                        {
+                            foreach (var contract in contr)
+                            {
+                                prep = _prepayment.GetLastPrepayment(contract);
+                                facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
+                                        && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();                                
+                                if (facts.Count > 0)
+                                {
+                                    foreach (var item in facts)
+                                    {
+                                        if (item.IsRefund == true)
+                                        {
+                                            if (item.IsTarget == true)
+                                                obj.TargetFact -= item.Total;
+                                            else
+                                            {
+                                                obj.CurrentFact -= item.Total;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (item.IsTarget == true)
+                                                obj.TargetFact += item.Total;
+                                            else
+                                            {
+                                                obj.CurrentFact += item.Total;
+                                            }
+                                        }
+                                        obj.Files.AddRange(_file.GetFilesOfEntity((int)item.FileId, FolderEnum.PrepaymentTake));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                answer.List.Add(obj);
+            }
+
+            if (amend.Count > 0)
+                ViewData["Amend"] = true;
+            return View(answer);
+        }
+
+        public IActionResult CreatePrepaymentTake(int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            var answer = new List<DateTime>();
+            var prep = _prepayment.Find(x => x.ContractId == contractId && x.IsChange == false).Select(x => x.Id).FirstOrDefault();
+            if (prep != 0)
+            {
+                var prepForPlan = _prepaymentPlan.GetLastPrepayment(contractId);
+                if (prepForPlan != null)
+                {
+                    var listPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepForPlan.Id).ToList();
+                    foreach (var plan in listPlan)
+                    {
+                        var ob = _prepaymentTake.Find(x => x.PrepaymentId == prep
+                        && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)plan.Period)).FirstOrDefault();
+                        if (ob == null)
+                        {
+                            answer.Add((DateTime)plan.Period);
+                        }
+                    }
+                }
+                else
+                {
+                    TempData["Message"] = "Не заполнены планируемые авансы";                    
+                    return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
+                }
+            }
+            else
+            {
+                TempData["Message"] = "Не заполнены планируемые авансы";                
+                return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
+            }
+            if (!answer.Any())
+            {
+                TempData["Message"] = "Все фактические авансы заполнены";                
+                return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
+            }
+            ViewData["PrepaymentId"] = prep;
+            return View(answer);
+        }
+
+        public IActionResult ShowCreatePrepTakeView(DateTime DateTransfer, int PrepaymentId, int contractId, int returnContractId = 0)
+        {            
+            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans == null && returnContractId != 0)
+                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans != null)
+            {
+                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            }
+            var listModel = new List<PrepaymentsTakeAddViewModel>();
+            for (var i = 0; i < 20; i++)
+            {
+                var model = new PrepaymentsTakeAddViewModel();
+                model.Period = DateTransfer;
+                model.PrepaymentId = PrepaymentId;
+                listModel.Add(model);
+            }
+            ViewData["contractIdModal"] = contractId;
+            ViewData["returnContractIdModal"] = returnContractId;
+            return PartialView("_CreatePrepaymentTake", listModel);
+        }
+
+        [HttpPost]
+        public IActionResult CreatePrepaymentTake(PrepaymentsTakeAddViewModel[] model, int contractId, int returnContractId = 0)
+        {
+            foreach (var item in model)
+            {
+                if (item.FileEntity != null && item.Total != null && item.DateTransfer != null)
+                {
+                    if (item.Period == null)
+                        item.Period = model[0].Period;
+                    if (item.PrepaymentId == null)
+                        item.PrepaymentId = model[0].PrepaymentId;
+                    var obj = _mapper.Map<PrepaymentTakeDTO>(item); 
+                    obj.FileId = _file.Create(item.FileEntity, FolderEnum.Other, 0);
+                    _prepaymentTake.Create(obj);
+                }
+            }
+            return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId, returnContractId });
+        }
+        
+        public IActionResult AddRowPrepaymentTake(int type, int contractId, int returnContractId, int index, int number)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["index"] = index;
+            ViewData["number"] = number;
+            ViewData["type"] = type;            
+            return PartialView("_AddRowPrepaymentsTake");
+            
         }
 
         public IActionResult GetByContractIdWithAmendments(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
@@ -304,7 +563,7 @@ namespace MvcLayer.Controllers
                 }
                 else
                 {
-                    var planlist = new ListSmrPrepByAmendment();                    
+                    var planlist = new ListSmrPrepByAmendment();
                     var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
                     if (answer.listSmrWithPrepaymentByAmendment.Count == 0)
                     {
@@ -358,7 +617,7 @@ namespace MvcLayer.Controllers
                     }
                     else
                     {
-                        planlist.listSmrWithAvans = answer.listSmrWithPrepaymentByAmendment.LastOrDefault().listSmrWithAvans;                        
+                        planlist.listSmrWithAvans = answer.listSmrWithPrepaymentByAmendment.LastOrDefault().listSmrWithAvans;
                     }
                     planlist.NameAmendment = item.Number;
                     answer.listSmrWithPrepaymentByAmendment.Add(planlist);
@@ -471,7 +730,7 @@ namespace MvcLayer.Controllers
                 return RedirectToAction("Index", "Contracts");
             }
         }
-        
+
         public IActionResult CreatePeriods(PeriodChooseViewModel prepaymentViewModel, int? contractId = 0, int? returnContractId = 0)
         {
             if (TempData["contractId"] != null)
@@ -484,7 +743,7 @@ namespace MvcLayer.Controllers
             }
             if (prepaymentViewModel is not null)
             {
-                PrepaymentViewModel prepayment = new PrepaymentViewModel();
+                PrepaymentViewModel prepayment = new();
 
                 if (prepaymentViewModel.AmendmentId > 0)
                 {
@@ -492,7 +751,7 @@ namespace MvcLayer.Controllers
                 }
 
 
-                List<PrepaymentPlanDTO> plan = new List<PrepaymentPlanDTO>();
+                List<PrepaymentPlanDTO> plan = new();
 
                 while (prepaymentViewModel.PeriodStart <= prepaymentViewModel.PeriodEnd)
                 {
