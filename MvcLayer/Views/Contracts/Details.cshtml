@@ -130,9 +130,9 @@
                         <div class="table_span-action">
 
                             <div class="dropdown" title="Просмотр информации">
-                                <span class="icon view_list_pages dropdown-toggle">
+                            <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                 </span>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <div class="dropdown-menu">
                                     @if (isEngineering)
                                     {
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isEngineering="true">Oбъем услуг</a>
@@ -164,9 +164,9 @@
                                 </div>
                             </div>
                             <div class="dropdown" title="Добавление информации">
-                                <span class="icon view_to_add_pages dropdown-toggle">
+                            <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                 </span>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <div class="dropdown-menu">
                                     @if (!isEngineering)
                                     {
                                         <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
@@ -360,13 +360,13 @@
                 {
                     var dropdownid1 = "Dropdown" + contractBranch.Id;
                     var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                    <tr style="background-color: #ccf3ff">
+                <tr style="background-color: lightsalmon">
                         <td>
                             <div class="table_span-action">
                                 <div class="dropdown" title="Просмотр информации">
-                                    <span class="icon view_list_pages dropdown-toggle">
+                                <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                     </span>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <div class="dropdown-menu">
                                         @if (isEngineering)
                                         {
                                             <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="true">Oбъем услуг</a>
@@ -399,9 +399,9 @@
                                     </div>
                                 </div>
                                 <div class="dropdown" title="Добавление информации">
-                                    <span class="icon view_to_add_pages dropdown-toggle">
+                                <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                     </span>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <div class="dropdown-menu">
                                         @if (!isEngineering)
                                         {
                                             <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@contractBranch?.Id" asp-route-nameObject="@contractBranch?.NameObject">+ Договор субподряда</a>
@@ -511,7 +511,7 @@
                         <td>
                             <div class="table_span-action">
                                 <div class="dropdown" title="Просмотр информации">
-                                    <span class="icon view_list_pages dropdown-toggle">
+                                <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                     </span>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Oбъем работ</a>
@@ -530,9 +530,9 @@
                                     </div>
                                 </div>
                                 <div class="dropdown" title="Добавление информации">
-                                    <span class="icon view_to_add_pages dropdown-toggle">
+                                <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                     </span>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <div class="dropdown-menu">
                                         <h6 class="dropdown-header">План</h6>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">+ Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">+ Авансы</a>
@@ -693,9 +693,9 @@
                         <td>
                             <div class="table_span-action">
                                 <div class="dropdown" title="Просмотр информации">
-                                    <span class="icon view_list_pages dropdown-toggle">
+                                <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                     </span>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <div class="dropdown-menu">
                                         @if (Model.IsEngineering)
                                         {
                                             titleSub = "Oбъем услуг";
@@ -721,9 +721,9 @@
                                     </div>
                                 </div>
                                 <div class="dropdown" title="Добавление информации">
-                                    <span class="icon view_to_add_pages dropdown-toggle">
+                                <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                     </span>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <div class="dropdown-menu">
                                         <h6 class="dropdown-header">План</h6>
                                         @if (Model.IsEngineering)
                                         {
@@ -890,6 +890,7 @@
             <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
         }
     }
+
     <script>
         window.onload = function () {
             $("#messageInput").trigger('click');

@@ -120,18 +120,53 @@
             font-size: 3vh;
             margin-left: 1%;
         }
+
+        .form_agreement {
+            display: flex !important;
+            padding: 0 30px !important;
+            margin-top: 0.5%;
+            margin-bottom: 0.5%;
+        }
+
+        .search_btn {
+            width: 2vh !important;
+            position: absolute;
+            padding: 0;
+            margin: 0 10px;
+            background-color: inherit;
+            border: none;
+            right: 30px;
+            top: 7px;
+        }
+
+        input {
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            border-radius: 20px;
+            padding: 0px 30px 0px 10px;
+            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+            margin-top: 3%;
+        }
+
+        form {
+            position: relative;
+        }
+
     </style>
     <div class="header__form">
         <h3>@ViewData["Title"]</h3>
 
     @using (Html.BeginForm("GetCostDeviation", "Material", FormMethod.Get))
     {
-        <form method="get">
-            <div class="header__form-search">
-            <span class="input-group-text">Название объекта/номер договора:</span> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                    <button class="btn btn-primary" type="submit"> <img src="~/icons/search_icon_w.png" title="Поиск организации" alt="Поиск организации" class="search_btn" /> </button>
+        <div class="form_agreement">
+
+            <form method="get">
+                @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+            </form>
             </div>
-        </form>
     }
     </div>
     <hr class="modal-line" />

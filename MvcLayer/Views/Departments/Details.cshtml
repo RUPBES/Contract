@@ -44,6 +44,17 @@
         width: 20px;
         margin-right: 5px;
     }
+    table {
+        margin-bottom: 0 !important;
+    }
+
+    .btn_container{
+        margin-top: 1rem;
+    }
+
+    .table-main tr:nth-child(2n) {
+        background-color: #ecf2f9 !important;
+    }
 
 </style>
 <div class="dm-overlay">
@@ -55,7 +66,8 @@
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
                     </div>
-                    <table class="table table-main table-hover">
+                    <div class="modal-overflow-70">
+                    <table class="table table-main table-bordered table-hover">
                         <tbody>
                             <tr>
                                 <th class="col-sm-2">
@@ -75,7 +87,8 @@
                             </tr>
                         </tbody>
                     </table>
-                    <div class="justify-content-between d-flex">
+                    </div>
+                    <div class="justify-content-between d-flex btn_container">
                         <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("Edit", "Departments", new {id = Model.Id} )'"><img src="~/icons/circular_icon.png" class="img_btn" /> Изменить</button>
 
                         <button id="button-close" type="button" class="btn btn-danger" onclick="confirmI()"><img class="img_delete" src="~/icons/delete_icon.png" />Удалить</button>

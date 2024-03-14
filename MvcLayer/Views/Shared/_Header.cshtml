@@ -1,8 +1,8 @@
-﻿<style>
+﻿
+<style>
     .user_name {
         line-height: 35px;
-        margin-right: 2px;
-        padding: 0 10px;
+        margin-right: 7px;
         border-radius: 5px;
         font-weight: bold;
         font-family: Georgia, serif;
@@ -25,10 +25,11 @@
         transition-property: font-size;
         transition-duration: 0.5s;
         font-weight: bold;
+        color: black !important;
     }
 
     .agr_hover:hover {
-        font-size: 2vh;
+        font-size: 20px;
     }
     .agreement_item {
         margin-top: 0.2%;
@@ -37,7 +38,7 @@
     .log_btn {
         font-weight: bold !important;
         width: 100px !important;
-        font-size: 1.5vh !important;
+        font-size: 14px !important;
         border-radius: 10px !important;
     }
 
@@ -52,42 +53,49 @@
         height: 20px;
         margin-left: 3px;
     }
+    .log_flex{
+        display: flex;
+        flex-direction: row;
+    }
+
     .header_navbar {
-        width: 100%;
+        width: 100vh;
     }
 
     .link_a {
         color: black !important;
     }
+    .nav-item {
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+    }
+
 </style>
 
 
 
-<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 navbar_shadow">
+<nav class="navbar navbar-expand-xl navbar-toggler-xl  navbar-light bg-white border-bottom box-shadow mb-3 navbar_shadow">
     <div class="container-fluid">
-
-        <div class="navbar-collapse header_navbar collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
+        <button style="margin-bottom: 1%;" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse header_navbar collapse" id="navbarScroll">
+            <ul class="navbar-nav flex-grow-1 navbar-nav-scroll">
                 <li class="nav-item agreement_item">
                     <a class="navbar-brand agr_hover link_a" asp-area="" asp-controller="Home" asp-action="Index"><img class="agreement_icon" src="~/icons/agreement_icon.png" />Учет договоров</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="navbar-collapse" aria-controls="navbarSupportedContent"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
                 </li>
-                <li class="nav-item">                
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-prizrac dropdown-toggle dropbtn agr_hover">
+                <li class="nav-item dropdown">
+
+                    <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <img class="agreement_icon" src="~/icons/agenda_icon.png" />
                             Справочники
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a>
+                        </a>
+                        <ul class="dropdown-menu drop_margin">
+                            <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a></li>
                             @* <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Files" asp-action="TUT">dsf</a> *@
-                          
-                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a>                            
-                        </div>
-                    </div> 
+                            <li><hr class="dropdown-divider"></li>
+
+                            <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a></li>
+                        </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="Index">
@@ -101,19 +109,21 @@
                         Инжиниринговые услуги
                     </a>
                 </li>
-                 <li class="nav-item">
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-prizrac dropdown-toggle dropbtn agr_hover">
+                <li class="nav-item dropdown">
+                    <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <img class="agreement_icon" src="~/icons/analytics_icon.png" />
                             Анализ/Мониторинг
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a>
-                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="ScopeWorks" asp-action="GetCostDeviation">Мониторинг выполнения графика производства работ</a>
-                            <a class="nav-link text-dark dropdown-item" asp-area="" asp-controller="Payments" asp-action="GetPayableCash">Денежные средства по договорам, подлежащие к оплате</a>
+                        </a>
+                        <ul class="dropdown-menu">
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a></li>
+                        <li><hr class="dropdown-divider"></li>
 
-                        </div>
-                    </div>                    
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="ScopeWorks" asp-action="GetCostDeviation">Мониторинг выполнения графика производства работ</a></li>
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Payments" asp-action="GetPayableCash">Денежные средства по договорам, подлежащие к оплате</a></li>
+
+                    </ul>                    
                 </li>                
             </ul>
            @*  <ul class="navbar-nav flex-grow-1">
@@ -133,24 +143,24 @@
                     </li>
                 }
             </ul> *@
-            <ul class="navbar-nav">
-                @if ((User.Identity == null) || (!(User.Identity.IsAuthenticated)))
-                {
-                   
-                    <li class="nav-item">
-                        <a class="nav-link  text-white btn btn-sm btn-primary log_btn" asp-controller="Account" asp-action="Login"><img src="~/icons/log-icon.png" class="img_icon-login" />Войти</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="user_name"><img class="img_user" src="~/icons/icons-user.png"/>@User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x=>x.Type == "given_name")?.Value</li>
-                    <li class="nav-item">
-                        <a class="nav-link  text-white btn btn-sm btn-danger log_btn" asp-controller="Account" asp-action="Logout">Выйти <img src="~/icons/logout-icon.png" class="img_icon-logout" /></a>
-                    </li>
-                }
-            </ul>
+            
         </div>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-        </div>
+        <ul class="navbar-nav log_flex">
+            @if ((User.Identity == null) || (!(User.Identity.IsAuthenticated)))
+            {
+
+                <li class="nav-item" style="box-shadow: none !important">
+                    <a class="nav-link  text-white btn btn-sm btn-primary log_btn" asp-controller="Account" asp-action="Login"><img src="~/icons/log-icon.png" class="img_icon-login" />Войти</a>
+                </li>
+            }
+            else
+            {
+                <li class="user_name"><img class="img_user" src="~/icons/icons-user.png" />@User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x=>x.Type == "given_name")?.Value</li>
+                <li class="nav-item" style="box-shadow: none !important">
+                    <a class="nav-link  text-white btn btn-sm btn-danger log_btn" asp-controller="Account" asp-action="Logout">Выйти <img src="~/icons/logout-icon.png" class="img_icon-logout" /></a>
+                </li>
+            }
+        </ul>
+   
     </div>
 </nav>

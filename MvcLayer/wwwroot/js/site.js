@@ -68,3 +68,12 @@ $('[type="date"]').on('keydown', (e) => {
     e.preventDefault();
     return false;
 });
+
+let arrayTextEnd = document.getElementsByClassName('text-end');
+
+for (let value of arrayTextEnd) {    
+    let val = Number(value.textContent.replace(/\s/g, '').replace(/,/g, '.'));        
+    if (val != NaN && val < 0) {
+        value.setAttribute('style', 'color:red');
+    }      
+}

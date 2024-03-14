@@ -14,7 +14,7 @@
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
-    
+
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
@@ -48,6 +48,7 @@
         scroll-behavior: smooth;
         transition: all 0.5s;
     }
+
     .show-col {
         display: table-cell;
         scroll-behavior: smooth;
@@ -59,9 +60,9 @@
         overflow-wrap: break-word;
     }
 
-    #tab-c3a button { 
-        color: mediumblue;
-    }
+        #tab-c3a button {
+            color: mediumblue;
+        }
 
     .dm-modal {
         background-color: lightsteelblue;
@@ -91,15 +92,12 @@
         transition: all 0.5s;
     }
 
-
-
-
 </style>
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" >
+            <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (backId != null && backId > 0)
@@ -112,166 +110,209 @@
                     }
                 </div>
                 <hr class="modal-line">
-                <div class="modal-overflow-90">
-                    <table id="tab-c3a" class="table table-striped table-bordered table-main">
-                        <thead class="">
-                            @if (ViewBag.IsEngin == null)
-                            {
-                                <tr>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.Period)
-                                    </th>
-                                    <th >
-                                        @Html.DisplayNameFor(model => model.DateSigning)
-                                    </th>
-                                    <th >
-                                        Дата оплаты по договору
-                                    </th>
-                                    <th >
-                                        @Html.DisplayNameFor(model => model.TotalCost)
-                                        <button id="btn_svg" class="totalW btn">
-                                            <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100">
-                                                <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
-                                                <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
-                                                <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
-                                            </svg>
-                                        </button>
-                                    </th>
-                                    @* <th colspan="3">в т.ч.</th> *@
-                                    <th  class="col-tog">
-                                        @Html.DisplayNameFor(model => model.SmrCost)
-                                    </th>
-                                    <th  class="col-tog">
-                                        @Html.DisplayNameFor(model => model.PnrCost)
-                                    </th>
-                                    <th  class="col-tog">
-                                        @Html.DisplayNameFor(model => model.AdditionalCost)
-                                    </th>
-                                    <th >
-                                        @Html.DisplayNameFor(model => model.EquipmentCost)
-                                    </th>
-                                    @* <th colspan="2">Авансы удержанные</th> *@
-                                    <th >
-                                        Удержания
-                                        <button id="btn_svg_A" class="totalA btn">
-                                            <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100">
-                                                <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
-                                                <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
-                                                <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
-                                            </svg>
-                                        </button>
-                                    </th>
-                                    <th  class="col-tog-av">
-                                        Зачет целевого аванса
-                                    </th>
-                                    <th  class="col-tog-av">
-                                        Зачет текущего аванса
-                                    </th>
-                                    <th class="col-tog-av">
-                                        Материалы
-                                    </th>
-                                    <th class="col-tog-av">
-                                        Другие
-                                    </th>
-                                    <th class="col-tog-av">
-                                        Генуслуги
-                                    </th>
-                                    <th >
-                                        <div>
-                                            К оплате
-                                        </div>
-                                    </th>
-                                    <th >
-                                        <div>
-                                            Файлы справок
-                                        </div>
-                                    </th>
-                                    <th class="act-btns"></th>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.Period)
-                                    </th>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.DateSigning)
-                                    </th>
-                                    <th>
-                                        Дата оплаты по договору
-                                    </th>
-                                    <th>
-                                        Объем работ
-                                    </th>
-                                    <th>Файлы справок</th>
-                                    <th></th>
-                                </tr>
-                            }
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr style="font-weight:600;">
-                                    @if (ViewBag.IsEngin == null)
-                                    {
-                                        <td>
-                                            @item.Period?.ToString("MMMM yyyy")
-                                        </td>
-                                        <td>
-                                            @item.DateSigning?.ToShortDateString()
-                                        </td>
-                                        <td>
-                                            @{
-                                                var datePaid = item.DateSigning?.AddDays(days);
-                                            }
-                                            @datePaid?.ToShortDateString()
-                                        </td>
-                                        <td class="">
-                                            @item.TotalCost?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @item.SmrCost?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @item.PnrCost?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @item.AdditionalCost?.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            @item.EquipmentCost?.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            @{
-                                                var sumUder = (item.OffsetTargetPrepayment ?? 0) + (item.OffsetCurrentPrepayment ?? 0) +
-                                                (item.MaterialCost ?? 0) + (item.OtherExpensesCost ?? 0) + (item.GenServiceCost ?? 0);
-                                            }
-                                            @sumUder.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @item.OffsetTargetPrepayment?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @item.OffsetCurrentPrepayment?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">                                           
-                                            @item.MaterialCost?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">                                           
-                                            @item.OtherExpensesCost?.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @item.GenServiceCost?.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            <div @* style="width:100px !important;" *@>
-                                                @item.TotalCostToBePaid?.ToString("N2")
+                @if (Model.Any())
+                {
+                    <div class="modal-overflow-90">
+                        <table id="tab-c3a" class="table table-striped table-bordered table-main">
+                            <thead class="">
+                                @if (ViewBag.IsEngin == null)
+                                {
+                                    <tr>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.Period)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.DateSigning)
+                                        </th>
+                                        <th>
+                                            Дата оплаты по договору
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.TotalCost)
+                                            <button id="btn_svg" class="totalW btn">
+                                                <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100">
+                                                    <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
+                                                    <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
+                                                    <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
+                                                </svg>
+                                            </button>
+                                        </th>
+                                        @* <th colspan="3">в т.ч.</th> *@
+                                        <th class="col-tog">
+                                            @Html.DisplayNameFor(model => model.SmrCost)
+                                        </th>
+                                        <th class="col-tog">
+                                            @Html.DisplayNameFor(model => model.PnrCost)
+                                        </th>
+                                        <th class="col-tog">
+                                            @Html.DisplayNameFor(model => model.AdditionalCost)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.EquipmentCost)
+                                        </th>
+                                        @* <th colspan="2">Авансы удержанные</th> *@
+                                        <th>
+                                            Удержания
+                                            <button id="btn_svg_A" class="totalA btn">
+                                                <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100">
+                                                    <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
+                                                    <line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line>
+                                                    <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
+                                                </svg>
+                                            </button>
+                                        </th>
+                                        <th class="col-tog-av">
+                                            Зачет целевого аванса
+                                        </th>
+                                        <th class="col-tog-av">
+                                            Зачет текущего аванса
+                                        </th>
+                                        <th class="col-tog-av">
+                                            Материалы
+                                        </th>
+                                        <th class="col-tog-av">
+                                            Другие
+                                        </th>
+                                        <th class="col-tog-av">
+                                            Генуслуги
+                                        </th>
+                                        <th>
+                                            <div>
+                                                К оплате
                                             </div>
+                                        </th>
+                                        <th>
+                                            <div>
+                                                Файлы справок
+                                            </div>
+                                        </th>
+                                        <th class="act-btns"></th>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.Period)
+                                        </th>
+                                        <th>
+                                            @Html.DisplayNameFor(model => model.DateSigning)
+                                        </th>
+                                        <th>
+                                            Дата оплаты по договору
+                                        </th>
+                                        <th>
+                                            Объем работ
+                                        </th>
+                                        <th>Файлы справок</th>
+                                        <th></th>
+                                    </tr>
+                                }
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr style="font-weight:600;">
+                                        @if (ViewBag.IsEngin == null)
+                                        {
+                                            <td>
+                                                @item.Period?.ToString("MMMM yyyy")
+                                            </td>
+                                            <td>
+                                                @item.DateSigning?.ToShortDateString()
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var datePaid = item.DateSigning?.AddDays(days);
+                                                }
+                                                @datePaid?.ToShortDateString()
+                                            </td>
+                                            <td class="text-end">
+                                                @item.TotalCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @item.SmrCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @item.PnrCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @item.AdditionalCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.EquipmentCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var sumUder = (item.OffsetTargetPrepayment ?? 0) + (item.OffsetCurrentPrepayment ?? 0) +
+                                                    (item.MaterialCost ?? 0) + (item.OtherExpensesCost ?? 0) + (item.GenServiceCost ?? 0);
+                                                }
+                                                @sumUder.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @item.OffsetTargetPrepayment?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @item.OffsetCurrentPrepayment?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @item.MaterialCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @item.OtherExpensesCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @item.GenServiceCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                <div @* style="width:100px !important;" *@>
+                                                    @item.TotalCostToBePaid?.ToString("N2")
+                                                </div>
 
-                                        </td>
-                                        <td class="">
-                                            <div @* style=" word-wrap:anywhere;" *@>
+                                            </td>
+                                            <td class="">
+                                                <div @* style=" word-wrap:anywhere;" *@>
+                                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
+                                                    {
+                                                        <div>
+                                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                            @if (isAdmin)
+                                                            {
+                                                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+
+                                            </td>
+                                            <td class="act-btns">
+                                                <span class="icon file-add" title="Добавить файл к форме">
+                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                </span>
+                                                <span class="icon edit" title="Редактировать форму">
+                                                    <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                </span>
+                                                <span class="icon delete" title="Удалить форму">
+                                                    <a onclick="confirmI(@item.Id)"></a>
+                                                </span>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>
+                                                @item.Period?.ToString("MMMM yyyy")
+                                            </td>
+                                            <td>
+                                                @item.DateSigning?.ToShortDateString()
+                                            </td>
+                                            <td></td>
+                                            <td class="text-end">
+                                                @item.TotalCost?.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @item.TotalCostToBePaid?.ToString("N2")
+                                            </td>
+                                            <td>
                                                 @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
                                                 {
                                                     <div>
@@ -282,301 +323,278 @@
                                                         }
                                                     </div>
                                                 }
-                                            </div>
-
-                                        </td>
-                                        <td class="act-btns">
-                                            <span class="icon file-add" title="Добавить файл к форме">
-                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                            <span class="icon edit" title="Редактировать форму">
-                                                <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                            <span class="icon delete" title="Удалить форму">
-                                                <a onclick="confirmI(@item.Id)"></a>
-                                            </span>
-                                        </td>
-                                    }
-                                    else
+                                            </td>
+                                            <td>
+                                                <span class="icon file-add" title="Добавить файл к форме">
+                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                </span>
+                                                <span class="icon edit" title="Редактировать форму">
+                                                    <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                </span>
+                                                <span class="icon delete" title="Удалить форму">
+                                                    <a onclick="confirmI(@item.Id)"></a>
+                                                </span>
+                                            </td>
+                                        }
+                                    </tr>
+                                    var formNested = Form.GetNestedFormsByPeriodAndContrId((int)item.ContractId, (DateTime)item.Period);
+                                    if (formNested is not null && formNested.Count > 0)
                                     {
-                                        <td>
-                                            @item.Period?.ToString("MMMM yyyy")
-                                        </td>
-                                        <td>
-                                            @item.DateSigning?.ToShortDateString()
-                                        </td>
-                                        <td></td>
-                                        <td class="">
-                                            @item.TotalCost?.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            @item.TotalCostToBePaid
-                                        </td>
-                                        <td>
-                                            @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
-                                            {
+                                        @*список форм с-3а входящих в договор субподрядных организаций и филиалов*@
+                                        <tr style="background-color:#92b0b1; color:white;font-weight:600; font-size:0.95rem"><td class="devide-table" colspan="9">в т.ч. Субподряд</td></tr>
+                                        @foreach (var sub in formNested)
+                                        {
+                                            smrSum += sub?.SmrCost ?? 0;
+                                            pnrSum += sub?.PnrCost ?? 0;
+                                            addSum += sub?.AdditionalCost ?? 0;
+                                            eqpSum += sub?.EquipmentCost ?? 0;
+                                            offsetTPrepSum += sub?.OffsetTargetPrepayment ?? 0;
+                                            offsetCPrepSum += sub?.OffsetCurrentPrepayment ?? 0;
+                                            mtrlSum = sub?.MaterialCost ?? 0;
+                                            genSerSum = sub?.GenServiceCost ?? 0;
+                                            otherSum = sub?.OtherExpensesCost ?? 0;
+
+                                            <tr style="background-color:#92b0b1; color:white; font-weight:600; font-size:0.95rem">
+                                                <td>
+                                                    @Organization.GetNameByContractId((int)sub.ContractId)
+                                                </td>
+                                                <td>
+                                                    @sub?.DateSigning?.ToShortDateString()
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        var datePaid = sub?.DateSigning?.AddDays(days);
+                                                    }
+                                                    @datePaid?.ToShortDateString()
+                                                </td>
+                                                <td class="text-end">
+                                                    @sub?.TotalCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog">
+                                                    @sub?.SmrCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog">
+                                                    @sub?.PnrCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog">
+                                                    @sub?.AdditionalCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end">
+                                                    @sub?.EquipmentCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end">
+                                                    @{
+                                                        var sumUder2 = (sub?.OffsetTargetPrepayment ?? 0) + (sub?.OffsetCurrentPrepayment ?? 0) +
+                                                        (sub?.MaterialCost ?? 0) + (sub?.OtherExpensesCost ?? 0) + (sub?.GenServiceCost ?? 0);
+                                                    }
+                                                    @sumUder2.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog-av">
+                                                    @sub?.OffsetTargetPrepayment?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog-av">
+                                                    @sub?.OffsetCurrentPrepayment?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog-av">
+                                                    @sub?.MaterialCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog-av">
+
+                                                    @sub?.OtherExpensesCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end col-tog-av">
+                                                    @sub?.GenServiceCost?.ToString("N2")
+                                                </td>
+                                                <td class="text-end">
+                                                    <div style="width:100px !important;">
+                                                        @sub?.TotalCostToBePaid?.ToString("N2")
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div @* style=" word-wrap:anywhere;" *@>
+                                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity((int)sub?.Id, FolderEnum.Form3C))
+                                                        {
+                                                            <div>
+                                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                                @if (!isAdmin)
+                                                                {
+                                                                    @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td class="act-btns"></td>
+                                            </tr>
+                                        }
+                                        @*строка "Всего субподряд" -- сумма объема по субподрядным организаций и филиалов*@
+                                        <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
+                                            <td colspan="2">Всего субподряд</td>
+                                            @* <td></td> *@
+                                            <td></td>
+                                            <td class="text-end">
+                                                @{
+                                                    var totSubSum = smrSum + pnrSum + addSum;
+                                                }
+                                                @totSubSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @smrSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @pnrSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @addSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @eqpSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var sumUder3 = offsetTPrepSum + offsetCPrepSum +
+                                                    mtrlSum + otherSum + genSerSum;
+                                                }
+                                                @sumUder3.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @offsetTPrepSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @offsetCPrepSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @mtrlSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @otherSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @genSerSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
                                                 <div>
-                                                    <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                    @if (isAdmin)
-                                                    {
-                                                        @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                                    @{
+                                                        var totalSubCostToBePaid1 = smrSum + pnrSum + addSum +
+                                                        eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum + genSerSum;
                                                     }
-                                                </div>
-                                            }
-                                        </td>
-                                        <td>
-                                            <span class="icon file-add" title="Добавить файл к форме">
-                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                            <span class="icon edit" title="Редактировать форму">
-                                                <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                            <span class="icon delete" title="Удалить форму">
-                                                <a onclick="confirmI(@item.Id)"></a>
-                                            </span>
-                                        </td>
-                                    }
-                                </tr>
-                                var formNested = Form.GetNestedFormsByPeriodAndContrId((int)item.ContractId, (DateTime)item.Period);
-                                if (formNested is not null && formNested.Count > 0)
-                                {
-                                    @*список форм с-3а входящих в договор субподрядных организаций и филиалов*@
-                                    <tr style="background-color:#92b0b1; color:white;font-weight:600; font-size:0.95rem"><td class="devide-table" colspan="9">в т.ч. Субподряд</td></tr>
-                                    @foreach (var sub in formNested)
-                                    {
-                                        smrSum += sub?.SmrCost ?? 0;
-                                        pnrSum += sub?.PnrCost ?? 0;
-                                        addSum += sub?.AdditionalCost ?? 0;
-                                        eqpSum += sub?.EquipmentCost ?? 0;
-                                        offsetTPrepSum += sub?.OffsetTargetPrepayment ?? 0;
-                                        offsetCPrepSum += sub?.OffsetCurrentPrepayment ?? 0;
-                                        mtrlSum = sub?.MaterialCost ?? 0;
-                                        genSerSum = sub?.GenServiceCost ?? 0;
-                                        otherSum = sub?.OtherExpensesCost ?? 0;
-
-                                        <tr style="background-color:#92b0b1; color:white; font-weight:600; font-size:0.95rem">
-                                            <td>
-                                                @Organization.GetNameByContractId((int)sub.ContractId)
-                                            </td>
-                                            <td>
-                                                @sub?.DateSigning?.ToShortDateString()
-                                            </td>
-                                            <td>
-                                                @{
-                                                    var datePaid = sub?.DateSigning?.AddDays(days);
-                                                }
-                                                @datePaid?.ToShortDateString()
-                                            </td>
-                                            <td class="">
-                                                @sub?.TotalCost?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog">
-                                                @sub?.SmrCost?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog">
-                                                @sub?.PnrCost?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog">
-                                                @sub?.AdditionalCost?.ToString("N2")
-                                            </td>
-                                            <td class="">
-                                                @sub?.EquipmentCost?.ToString("N2")
-                                            </td>
-                                            <td class="">
-                                                @{
-                                                    var sumUder2 = (sub?.OffsetTargetPrepayment ?? 0) + (sub?.OffsetCurrentPrepayment ?? 0) +
-                                                    (sub?.MaterialCost ?? 0) + (sub?.OtherExpensesCost ?? 0) + (sub?.GenServiceCost ?? 0);
-                                                }
-                                                @sumUder2.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog-av">
-                                                @sub?.OffsetTargetPrepayment?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog-av">
-                                                @sub?.OffsetCurrentPrepayment?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog-av">                                               
-                                                @sub?.MaterialCost?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog-av">
-                                               
-                                                @sub?.OtherExpensesCost?.ToString("N2")
-                                            </td>
-                                            <td class=" col-tog-av">
-                                                @sub?.GenServiceCost?.ToString("N2")
-                                            </td>
-                                            <td class="">
-                                                <div style="width:100px !important;">
-                                                    @sub?.TotalCostToBePaid?.ToString("N2")
+                                                    @totalSubCostToBePaid1.ToString("N2")
                                                 </div>
                                             </td>
-                                            <td>
-                                                <div @* style=" word-wrap:anywhere;" *@>
-                                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity((int)sub?.Id, FolderEnum.Form3C))
-                                                    {
-                                                        <div>
-                                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                            @if (!isAdmin)
-                                                            {
-                                                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
-                                                            }
-                                                        </div>
+                                            <td></td>
+                                            <td class="act-btns"></td>
+                                        </tr>
+                                        @*строка "собственные силы" -- сумма объема по субподрядным организаций и филиалов*@
+                                        <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
+                                            <td colspan="2">собственные силы</td>                                            
+                                            <td></td>
+                                            <td class="text-end">
+                                                @{
+                                                    var totOwnSubSum = (item?.TotalCost ?? 0) - totSubSum;
+                                                }
+                                                @totOwnSubSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @{
+                                                    var totOwnSmrSum = (item?.SmrCost ?? 0) - smrSum;
+                                                }
+                                                @totOwnSmrSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @{
+                                                    var totOwnPnrSum = (item?.PnrCost ?? 0) - pnrSum;
+                                                }
+                                                @totOwnPnrSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">
+                                                @{
+                                                    var totOwnAddSum = (item?.AdditionalCost ?? 0) - addSum;
+                                                }
+                                                @totOwnAddSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end">
+                                                @{
+                                                    var totOwnEqSum = (item?.EquipmentCost ?? 0) - eqpSum;
+                                                }
+                                                @totOwnEqSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end ">
+                                                @{
+                                                    var sumUder4 = ((item?.OffsetTargetPrepayment ?? 0) - offsetTPrepSum) +
+                                                    ((item?.OffsetCurrentPrepayment ?? 0) - offsetCPrepSum) +
+                                                    ((item?.MaterialCost ?? 0 + item?.OtherExpensesCost ?? 0) - (mtrlSum + otherSum)) +
+                                                    (item?.GenServiceCost ?? 0) - genSerSum;
+                                                }
+                                                @sumUder4.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @{
+                                                    var totOwnOTPSum = (item?.OffsetTargetPrepayment ?? 0) - offsetTPrepSum;
+                                                }
+                                                @totOwnOTPSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @{
+                                                    var totOwnOCPSum = (item?.OffsetCurrentPrepayment ?? 0) - offsetCPrepSum;
+                                                }
+                                                @totOwnOCPSum.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @{
+                                                    var otherOwnSubSum1 = (item?.MaterialCost ?? 0) - mtrlSum;
+                                                }
+                                                @otherOwnSubSum1.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @{
+                                                    var otherOwnSubSum2 = (item?.OtherExpensesCost ?? 0) - otherSum;
+                                                }
+                                                @otherOwnSubSum2.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog-av">
+                                                @{
+                                                    var otherOwnGenSerSubSum = (item?.GenServiceCost ?? 0) - genSerSum;
+                                                }
+                                                @otherOwnGenSerSubSum.ToString("N2")
+                                            </td>
+                                            <td class="">
+                                                <div class="text-end">
+                                                    @{
+                                                        var totalOwnSubCostToBePaid = (item.TotalCostToBePaid ?? 0) - (smrSum + pnrSum + addSum +
+                                                        eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum);
                                                     }
+                                                    @totalOwnSubCostToBePaid.ToString("N2")
                                                 </div>
                                             </td>
+                                            <td></td>
                                             <td class="act-btns"></td>
                                         </tr>
                                     }
-                                    @*строка "Всего субподряд" -- сумма объема по субподрядным организаций и филиалов*@
-                                    <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
-                                        <td colspan="2">Всего субподряд</td>
-                                        @* <td></td> *@
-                                        <td></td>
-                                        <td class="">
-                                            @{
-                                                var totSubSum = smrSum + pnrSum + addSum;
-                                            }
-                                            @totSubSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @smrSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @pnrSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @addSum.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            @eqpSum.ToString("N2")
-                                        </td>
-                                        <td class=" ">
-                                            @{
-                                                var sumUder3 = offsetTPrepSum + offsetCPrepSum +
-                                                mtrlSum + otherSum + genSerSum;
-                                            }
-                                            @sumUder3.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @offsetTPrepSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @offsetCPrepSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                           
-                                            @mtrlSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                           
-                                            @otherSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @genSerSum.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            <div @* style="width:100px !important;" *@>
-                                                @{
-                                                    var totalSubCostToBePaid1 = smrSum + pnrSum + addSum +
-                                                    eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum + genSerSum;
-                                                }
-                                                @totalSubCostToBePaid1.ToString("N2")
-                                            </div>
-                                        </td>
-                                        <td></td>
-                                        <td class="act-btns"></td>
-                                    </tr>
-                                    @*строка "собственные силы" -- сумма объема по субподрядным организаций и филиалов*@
-                                    <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
-                                        <td colspan="2">собственные силы</td>
-                                        @* <td></td> *@
-                                        <td></td>
-                                        <td class="">
-                                            @{
-                                                var totOwnSubSum = (item?.TotalCost ?? 0) - totSubSum;
-                                            }
-                                            @totOwnSubSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @{
-                                                var totOwnSmrSum = (item?.SmrCost ?? 0) - smrSum;
-                                            }
-                                            @totOwnSmrSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @{
-                                                var totOwnPnrSum = (item?.PnrCost ?? 0) - pnrSum;
-                                            }
-                                            @totOwnPnrSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog">
-                                            @{
-                                                var totOwnAddSum = (item?.AdditionalCost ?? 0) - addSum;
-                                            }
-                                            @totOwnAddSum.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            @{
-                                                var totOwnEqSum = (item?.EquipmentCost ?? 0) - eqpSum;
-                                            }
-                                            @totOwnEqSum.ToString("N2")
-                                        </td>
-                                        <td class=" ">
-                                            @{
-                                                var sumUder4 = ((item?.OffsetTargetPrepayment ?? 0) - offsetTPrepSum) +
-                                                ((item?.OffsetCurrentPrepayment ?? 0) - offsetCPrepSum) +
-                                                ((item?.MaterialCost ?? 0 + item?.OtherExpensesCost ?? 0) - (mtrlSum + otherSum))+
-                                                (item?.GenServiceCost ?? 0) - genSerSum;
-                                            }
-                                            @sumUder4.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @{
-                                                var totOwnOTPSum = (item?.OffsetTargetPrepayment ?? 0) - offsetTPrepSum;
-                                            }
-                                            @totOwnOTPSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @{
-                                                var totOwnOCPSum = (item?.OffsetCurrentPrepayment ?? 0) - offsetCPrepSum;
-                                            }
-                                            @totOwnOCPSum.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @{
-                                                var otherOwnSubSum1 = (item?.MaterialCost ?? 0) - mtrlSum;
-                                            }
-                                            @otherOwnSubSum1.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @{
-                                                var otherOwnSubSum2 = (item?.OtherExpensesCost ?? 0) - otherSum;
-                                            }
-                                            @otherOwnSubSum2.ToString("N2")
-                                        </td>
-                                        <td class=" col-tog-av">
-                                            @{
-                                                var otherOwnGenSerSubSum = (item?.GenServiceCost ?? 0) - genSerSum;
-                                            }
-                                            @otherOwnGenSerSubSum.ToString("N2")
-                                        </td>
-                                        <td class="">
-                                            <div @* style="width:100px !important;" *@>
-                                                @{
-                                                    var totalOwnSubCostToBePaid = (item.TotalCostToBePaid ?? 0) - (smrSum + pnrSum + addSum +
-                                                    eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum);
-                                                }
-                                                @totalOwnSubCostToBePaid.ToString("N2")
-                                            </div>
-                                        </td>
-                                        <td></td>
-                                        <td class="act-btns"></td>
-                                    </tr>
                                 }
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                        </symbol>
+                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
+                        </symbol>
+                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </symbol>
+                    </svg>
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
+                        <div>
+                            Отсутствуют данные
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -593,13 +611,13 @@
             const btn2 = document.querySelector(".totalA");
             const cols = document.querySelectorAll(".col-tog");
             const cols2 = document.querySelectorAll(".col-tog-av");
-            
+
             btn1.addEventListener('click', () => {
                 cols.forEach((e) => {
                     e.classList.toggle('show-col');
                 });
                 numberColspan = devideTable.getAttribute('colspan');
-               if (numberColspan === '9') {
+                if (numberColspan === '9') {
                     numberColspan = 12;
                 }
                 else if (numberColspan === '12') {
@@ -619,7 +637,7 @@
                     e.classList.toggle('show-col');
                 });
                 numberColspan = devideTable.getAttribute('colspan');
-                
+
                 if (numberColspan === '9') {
                     numberColspan = 14;
                 }
@@ -638,7 +656,7 @@
         toggeleColumnTable();
 
         function confirmI(val) {
-            let mes = "Вы точно хотите удалить данную запись?";            
+            let mes = "Вы точно хотите удалить данную запись?";
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("Message", "Home")',
@@ -650,7 +668,7 @@
                     $('#modDialog').modal('show');
 
                     let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
-                    elementDeleteButton[0].addEventListener('click', () => {                        
+                    elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
                             type: 'POST',
                             url: '@Url.Action("Delete", "Forms")',
@@ -676,7 +694,7 @@
                         });
                     })
                 },
-                error: function (result) {                    
+                error: function (result) {
                     alert("Ошибка отображения");
                 }
             })
@@ -687,9 +705,10 @@
             if (btn_el.children[0].id === 'svg_plus') {
                 $('#btn_svg').html('<?xml version="1.0" ?><svg id="close_svg" height="24px" version="1.1" viewBox="0 0 24 24" width="24px" xmlns="http://www.w3.org/2000/svg" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" xmlns:xlink="http://www.w3.org/1999/xlink"><title/><desc/><defs/><g fill="none" fill-rule="evenodd" id="miu" stroke="white" stroke-width="1"><g id="Artboard-1" transform="translate(-575.000000, -155.000000)"><g id="slice" transform="translate(215.000000, 119.000000)"/><path d="M587.5,178 C593.851275,178 599,172.851275 599,166.5 C599,160.148725 593.851275,155 587.5,155 C581.148725,155 576,160.148725 576,166.5 C576,172.851275 581.148725,178 587.5,178 Z M587.5,177 C593.29899,177 598,172.29899 598,166.5 C598,160.70101 593.29899,156 587.5,156 C581.70101,156 577,160.70101 577,166.5 C577,172.29899 581.70101,177 587.5,177 Z M583.257359,171.449747 L582.550253,170.742641 L586.792893,166.5 L582.550253,162.257359 L583.257359,161.550253 L587.5,165.792893 L591.742641,161.550253 L592.449747,162.257359 L588.207107,166.5 L592.449747,170.742641 L591.742641,171.449747 L587.5,167.207107 L583.257359,171.449747 Z" fill="#000000" id="circle-close-delete-remove-outline-stroke"/></g></g></svg>')
             } else {
-                $('#btn_svg').html(' <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100"> <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle><line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line><line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line></svg>')}
+                $('#btn_svg').html(' <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100"> <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle><line x1="32.5" y1="50" x2="67.5" y2="50" stroke-width="5"></line><line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line></svg>')
+            }
 
-               })
+        })
 
         let btn_el_A = $("#btn_svg_A")[0]
         $("#btn_svg_A").click(function () {
@@ -700,6 +719,6 @@
             }
 
         })
-        
+
     </script>
 }
