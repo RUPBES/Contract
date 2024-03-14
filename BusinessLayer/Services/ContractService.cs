@@ -404,7 +404,7 @@ namespace BusinessLayer.Services
                 w.IsOneOfMultiple == false &&
                 w.IsSubContract == false &&
                 (w.Author == org || w.Owner == org) &&
-                (w.NameObject.Contains(request) || w.Number.Contains(filter));
+                (w.NameObject.Contains(request) || w.Number.Contains(request));
             }
             else
             {

@@ -108,7 +108,7 @@
             justify-content: space-between;
         }
 
-        .header__form-search{
+        .header__form-search {
             display: flex;
         }
 
@@ -158,16 +158,16 @@
     <div class="header__form">
         <h3>@ViewData["Title"]</h3>
 
-    @using (Html.BeginForm("GetCostDeviation", "Material", FormMethod.Get))
-    {
-        <div class="form_agreement">
+        @using (Html.BeginForm("GetCostDeviation", "Material", FormMethod.Get))
+        {
+            <div class="form_agreement">
 
-            <form method="get">
-                @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-            </form>
+                <form method="get">
+                    @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                    <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+                </form>
             </div>
-    }
+        }
     </div>
     <hr class="modal-line" />
     <div class="wrapper-table">
@@ -183,32 +183,9 @@
                     <th rowspan="3">
                         Сметная стоимость материалов по договору
                     </th>
-                    <th colspan="@(((endPeriod.Year - startPeriod.Year) * 12 + ((endPeriod.Month - startPeriod.Month) + 1))*3)">в том числе</th>
                     <th rowspan="3">
                         Отклонение всего
                     </th>
-                </tr>
-                <tr>
-                    @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
-                    {
-                        <th colspan="3">
-                            @item.ToString("MMMM yyyy")
-                        </th>
-                    }
-                </tr>
-                <tr>
-                    @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
-                    {
-                        <th>
-                            План
-                        </th>
-                        <th>
-                            Факт
-                        </th>
-                        <th>
-                            Отклонение
-                        </th>
-                    }
                 </tr>
             </thead>
             <tbody>
@@ -238,34 +215,17 @@
                             if (itemMaterial != null)
                             {
                                 decimal? plan = 0, fact = 0;
-                                <td class="text-end">
-                                    @if (itemMaterial.plan != null)
-                                    {
-                                        plan = itemMaterial.plan;
-                                    }
-                                    @plan?.ToString("N2")
-                                </td>
-                                <td class="text-end">
-                                    @if (itemMaterial.fact != null)
-                                    {
-                                        fact = itemMaterial.fact;
-                                    }
-                                    @fact?.ToString("N2")
-                                </td>
-                                <td class="text-end">
-                                    @{
-                                        var deviation = plan - fact;
-                                        deviationTotal += deviation is not null ? (decimal)deviation : 0M;
-                                    }
-                                    @deviation?.ToString("N2")
-                                </td>
-                            }
-                            else
-                            {
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            }
+                                if (itemMaterial.plan != null)
+                                {
+                                    plan = itemMaterial.plan;
+                                }
+                                if (itemMaterial.fact != null)
+                                {
+                                    fact = itemMaterial.fact;
+                                }
+                                var deviation = plan - fact;
+                                deviationTotal += deviation is not null ? (decimal)deviation : 0M;
+                            }                            
                         }
                         <td class="text-end">
                             @deviationTotal.ToString("N2")

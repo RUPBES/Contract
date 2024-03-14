@@ -157,8 +157,6 @@
         }
     </style>
     <div class="header__form">
-
-
         <h3>@ViewData["Title"]</h3>
         @using (Html.BeginForm("GetPayableCash", "Payments", FormMethod.Get))
         {
@@ -208,27 +206,9 @@
                         Объем на текущий год
                     </th>
                     <th rowspan="2">
-                        Фактическое выполнение по справке С-3а, в т.ч.
-                    </th>
-                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
-                    {
-                        <th colspan="2">
-                            @iterator.ToString("MMMM-yyyy")
-                        </th>
-                    }
-                </tr>
-
-                <tr>
-                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
-                    {
-                        <th>
-                            к оплате
-                        </th>
-                        <th>
-                            из них на счет РУП "БЭС"-УКХ"
-                        </th>
-                    }
-                </tr>
+                        Фактическое выполнение по справке С-3а
+                    </th>                   
+                </tr>              
             </thead>
             <tbody style="height:70vh;">
                 @foreach (var item in Model)
@@ -270,33 +250,7 @@
                         </td>
                         <td class="text-end">
                             @item.factWorkByC3A?.ToString("N2")
-                        </td>
-
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
-                       iterator = iterator.AddMonths(1))
-                        {
-                            var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
-                            if (itemPayment != null)
-                            {
-                                <td class="text-end">
-                                    @if (itemPayment.payment != null)
-                                    {
-                                        <span>@itemPayment.payment?.ToString("N2")</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    @if (itemPayment.paymentRupBes != null)
-                                    {
-                                        <span>@itemPayment.paymentRupBes?.ToString("N2")</span>
-                                    }
-                                </td>
-                            }
-                            else
-                            {
-                                <td></td>
-                                <td></td>
-                            }
-                        }
+                        </td>                        
                     </tr>
                 }
             </tbody>
