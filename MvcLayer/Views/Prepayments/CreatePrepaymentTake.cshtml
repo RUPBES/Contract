@@ -1,0 +1,64 @@
+﻿@model List<DateTime>;
+@{
+    ViewData["Title"] = "Добавление факта";
+    var contractId = ViewBag.contractId;   
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (ViewBag.contractId != null )
+                    {
+                        <a asp-controller="Prepayments" asp-action="GetPrepaymentsTakes"
+                           asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="close-btn"></a>
+                    }
+                    @if (ViewBag.contractId == null)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <div id="ContentCreate">
+                    <form id="GetViewPrepayment" method="post" asp-controller="Prepayments" asp-action="ShowCreatePrepTakeView">
+                        <input name="PrepaymentId" value="@ViewBag.PrepaymentId" hidden readonly />
+                        <input name="contractId" value="@ViewBag.contractId" hidden readonly />
+                        <input name="returnContractId" value="@ViewBag.returnContractId" hidden readonly />
+                        <select id="selectMonth" name="DateTransfer" class="form-control select">
+                            <option disabled selected>Выберите месяц</option>
+                            @foreach (var item in Model)
+                            {
+                                <option value="@item">@item.ToString("MMMM yyyy")</option>
+                            }
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+        $('form').submit(function () {
+            if ($(this).valid()) {
+                $.ajax({
+                    url: this.action,
+                    type: this.method,
+                    data: $(this).serialize(),
+                    success: function (result) {                        
+                        $('#ContentCreate').html(result);
+                    }
+                });
+            }            
+            return false;
+        });
+        $("#selectMonth").on("change", function () {
+            $('#GetViewPrepayment').trigger("submit");
+        });            
+    </script>
+}

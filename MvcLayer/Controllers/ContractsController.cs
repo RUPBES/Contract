@@ -842,6 +842,18 @@ namespace MvcLayer.Controllers
                 }
 
             }
+            else
+            {
+                TempData["Message"] = "Заполните объем работ";
+                var urlReturn = doc.Id;
+                if (doc.AgreementContractId != null)
+                    urlReturn = (int)doc.AgreementContractId;
+                else if (doc.SubContractId != null)
+                    urlReturn = (int)doc.SubContractId;
+                else if (doc.MultipleContractId != null)
+                    urlReturn = (int)doc.MultipleContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            }
             if (lastScopeOwn != null)
             {
                 lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
@@ -882,7 +894,7 @@ namespace MvcLayer.Controllers
                 }
 
             }
-            var facts = _formService.Find(x => x.ContractId == id).OrderBy(x => x.Period).ToList();
+            var facts = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false).OrderBy(x => x.Period).ToList();
             foreach (var item in facts)
             {
                 var ob = new ItemScopeWorkContract();

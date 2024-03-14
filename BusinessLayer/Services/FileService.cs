@@ -87,7 +87,7 @@ namespace BusinessLayer.Services
                             userName: user);
 
                     id = fileNew.Id;
-                    
+
                     AttachFileToEntity(fileNew.Id, entityId, folder);
                 }
             }
@@ -229,7 +229,7 @@ namespace BusinessLayer.Services
         public IEnumerable<FileDTO> GetFilesOfEntity(int entityId, FolderEnum folder)
         {
             List<File> result = new List<File>();
-            
+
             switch (folder)
             {
                 case FolderEnum.Acts:
@@ -268,7 +268,7 @@ namespace BusinessLayer.Services
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.EstimateDocumentations:
-                    
+
                     var filesEstimate = _database.EstimateDocFiles.Find(x => x.EstimateDocId == entityId);
                     foreach (var file in filesEstimate)
                     {
@@ -292,6 +292,10 @@ namespace BusinessLayer.Services
                     {
                         result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
                     }
+                    return _mapper.Map<IEnumerable<FileDTO>>(result);
+
+                case FolderEnum.PrepaymentTake:
+                    result.AddRange(_database.Files.Find(x => x.Id == entityId));
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
             }
 
@@ -393,7 +397,7 @@ namespace BusinessLayer.Services
                         break;
 
                     case FolderEnum.Other:
-                        break;                   
+                        break;
                 }
             }
             else
