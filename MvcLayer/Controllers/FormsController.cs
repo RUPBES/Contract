@@ -88,11 +88,12 @@ namespace MvcLayer.Controllers
                 return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x =>
                 x.ContractId == id &&
                 x.Period?.Year == chosePeriod?.Year &&
-                x.Period?.Month == chosePeriod?.Month)));
+                x.Period?.Month == chosePeriod?.Month && 
+                x.IsOwnForces != true)));
             }
             else
             {
-                return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id)));
+                return View(_mapper.Map<IEnumerable<FormViewModel>>(_formService.Find(x => x.ContractId == id && x.IsOwnForces != true)));
             }
 
         }
@@ -161,8 +162,6 @@ namespace MvcLayer.Controllers
             {
                 int mainContrId;
 
-
-
                 formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;
                 formViewModel.SmrCost = formViewModel.SmrCost ?? 0;
                 formViewModel.PnrCost = formViewModel.PnrCost ?? 0;
@@ -173,27 +172,36 @@ namespace MvcLayer.Controllers
                 formViewModel.OffsetCurrentPrepayment = formViewModel.OffsetCurrentPrepayment ?? 0;
                 formViewModel.OffsetTargetPrepayment = formViewModel.OffsetTargetPrepayment ?? 0;
 
-                //int formId = (int)_formService.Create(_mapper.Map<FormDTO>(formViewModel));
-                //int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
-                //_formService.AddFile(formId, fileId);
+                int formId = (int)_formService.Create(_mapper.Map<FormDTO>(formViewModel));
+                int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
+                _formService.AddFile(formId, fileId);
 
                 bool isNotGenContract = _contractService.IsNotGenContract(formViewModel.ContractId, out mainContrId);
                 var contract = formViewModel.ContractId.HasValue ? _contractService.GetById((int)formViewModel.ContractId) : null;
-                bool isOneMultipleContract = contract?.IsOneOfMultiple?? false;
+                bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
 
                 if (isNotGenContract && !isOneMultipleContract)
                 {
-                    UpdateOwnForcesForm(formViewModel, false);
-                   
+                    UpdateOwnForcesForm(formViewModel,mainContrId, false);
+
                 }
                 else if (isOneMultipleContract)
                 {
-                    UpdateOwnForcesForm(formViewModel, true, mainContrId);
+                    UpdateOwnForcesForm(formViewModel, mainContrId, true);
                 }
                 else if (!isNotGenContract)
                 {
-                    formViewModel.IsOwnForces = true;
-                    _formService.Create(_mapper.Map<FormDTO>(formViewModel));
+                    ///////////////////////////
+                    var formOwnForce = _formService.Find(x => x.IsOwnForces == true && x.ContractId == formViewModel.ContractId).LastOrDefault();
+                    if (formOwnForce is not null)
+                    {
+                        UpdateOwnForcesForm(formViewModel, (int)formViewModel.ContractId, true);
+                    }
+                    else
+                    {
+                        formViewModel.IsOwnForces = true;
+                        _formService.Create(_mapper.Map<FormDTO>(formViewModel));
+                    }                    
                 }
 
                 if (formViewModel.OffsetCurrentPrepayment > 0 || formViewModel.OffsetTargetPrepayment > 0)
@@ -261,18 +269,65 @@ namespace MvcLayer.Controllers
             {
                 try
                 {
+                    int mainContrId;
+                    var form = _formService.GetById(formViewModel.Id);
+
+                    bool isNotGenContract = _contractService.IsNotGenContract(form.ContractId, out mainContrId);
+                    var contract = form.ContractId.HasValue ? _contractService.GetById((int)form.ContractId) : null;
+                    bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
+
+                    if (isNotGenContract && !isOneMultipleContract)
+                    {
+                        _formService.SubstractOwnForceAndMnForm(_mapper.Map<FormDTO>(formViewModel), mainContrId, -1);
+                    }
+                    else if (isOneMultipleContract)
+                    {
+                        _formService.SubstractOwnForceAndMnForm(_mapper.Map<FormDTO>(formViewModel), mainContrId, 1);
+                    }                    
+
                     _formService.Update(_mapper.Map<FormDTO>(formViewModel));
-                    var prepID = _prepFact.GetLastPrepayment((int)formViewModel.ContractId).Id;
-                    var prepayment = _prepFact.Find(x => x.PrepaymentId == prepID &&
-                    Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)formViewModel.Period)).FirstOrDefault();
-                    prepayment.CurrentValue = formViewModel.OffsetCurrentPrepayment;
-                    prepayment.TargetValue = formViewModel.OffsetTargetPrepayment;
-                    _prepFact.Update(_mapper.Map<PrepaymentFactDTO>(prepayment));
+
+                    if (formViewModel.OffsetCurrentPrepayment > 0 || formViewModel.OffsetTargetPrepayment > 0)
+                    {                        
+                        var prepayment = _prepFact.GetLastPrepayment((int)formViewModel?.ContractId);
+                        if (prepayment is null)
+                        {
+                            var prepaymentFact = new PrepaymentFactDTO();
+                            prepaymentFact.CurrentValue = formViewModel.OffsetCurrentPrepayment;
+                            prepaymentFact.TargetValue = formViewModel.OffsetTargetPrepayment;
+                            prepaymentFact.Period = formViewModel.Period;
+                            var prepmnt = new PrepaymentDTO();
+                            prepmnt.ContractId = formViewModel.ContractId;
+                            prepmnt.PrepaymentFacts.Add(prepaymentFact);
+                            _prep.Create(prepmnt);
+                        }
+                        else
+                        {                            
+                            var prepaymentFact = _prepFact.Find(x => x.PrepaymentId == prepayment.Id &&
+                            Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)formViewModel.Period)).FirstOrDefault();
+                            if (prepaymentFact is null)
+                            {
+                                var prepaymentFact2 = new PrepaymentFactDTO();
+                                prepaymentFact2.CurrentValue = formViewModel.OffsetCurrentPrepayment;
+                                prepaymentFact2.TargetValue = formViewModel.OffsetTargetPrepayment;
+                                prepaymentFact2.Period = formViewModel.Period;
+                                prepaymentFact2.PrepaymentId = prepayment.Id;
+                                _prepFact.Create(prepaymentFact2);
+                            }
+                            else
+                            {
+                                prepaymentFact.CurrentValue = formViewModel.OffsetCurrentPrepayment;
+                                prepaymentFact.TargetValue = formViewModel.OffsetTargetPrepayment;
+                                _prepFact.Update(_mapper.Map<PrepaymentFactDTO>(prepaymentFact));
+                            }                                                       
+                        }
+                    }
+
                     return RedirectToAction("GetByContractId", "Forms", new { id = formViewModel.ContractId, returnContractId = returnContractId });
                 }
                 catch
                 {
-                    return View();
+                    return RedirectToAction("Index", "Contracts");
                 }
             }
             return RedirectToAction(nameof(Index));
@@ -288,14 +343,45 @@ namespace MvcLayer.Controllers
                 {
                     _fileService.Delete(item.Id);
                 }
+
+                int mainContrId;
                 var form = _formService.GetById(id);
+
+                bool isNotGenContract = _contractService.IsNotGenContract(form.ContractId, out mainContrId);
+                var contract = form.ContractId.HasValue ? _contractService.GetById((int)form.ContractId) : null;
+                bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
+
+                if (isNotGenContract && !isOneMultipleContract)
+                {
+                    _formService.RemoveFromOwnForceMnForm(_mapper.Map<FormDTO>(form), mainContrId, 1);
+                }
+                else if (isOneMultipleContract)
+                {
+                    _formService.RemoveFromOwnForceMnForm(_mapper.Map<FormDTO>(form), mainContrId, -1);
+                }
+                else if (!isNotGenContract)
+                {
+                    var formOwn = _formService.Find(x => x.ContractId == form.ContractId && x.IsOwnForces == true 
+                    && x.Period?.Year == form.Period?.Year
+                    && x.Period?.Month == form.Period?.Month)
+                        .LastOrDefault();
+
+                    if (formOwn is not null)
+                    {
+                        _formService.Delete((int)(formOwn?.Id));
+                    }
+                }
+
+
                 _formService.Delete(id);
                 var prep = _prepFact.GetLastPrepayment((int)form.ContractId);
+
                 if (prep != null)
                 {
                     var prepFact = _prepFact.Find(x => x.PrepaymentId == prep.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)form.Period)).FirstOrDefault();
                     if (prepFact != null) _prepFact.Delete(prepFact.Id);
                 }
+                //TODO: не перерисовывает страницу после удаления записи
                 ViewData["reload"] = "Yes";
                 return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
             }
@@ -416,51 +502,19 @@ namespace MvcLayer.Controllers
         }
 
 
-        public void UpdateOwnForcesForm(FormViewModel form, bool isPartMultiple, int mnContrId = 0)
+        public void UpdateOwnForcesForm(FormViewModel form, int mnContrId, bool isPartMultiple)
         {
             if (mnContrId > 0)
             {
-                
-            
-            var formOwnForce = _formService.Find(x => x.ContractId == mnContrId
-                                             && x.Period?.Year == form.Period?.Year 
-                                             && x.Period?.Month == form.Period?.Month
-                                             && x.IsOwnForces == true)
-                                            .FirstOrDefault();
-
-            var formForce = _formService.Find(x => x.ContractId == mnContrId
-                                             && x.Period?.Year == form.Period?.Year
-                                             && x.Period?.Month == form.Period?.Month
-                                             && x.IsOwnForces != true)
-                                            .FirstOrDefault();
-
-            if (formOwnForce != null && formForce != null)
-            {
-                //update method
-                _formService.UpdateOwnForceMnForm(_mapper.Map<FormDTO>(form), isPartMultiple, _mapper.Map<FormDTO>(formOwnForce));
-            }
-            else if (formOwnForce == null && formForce != null)
-            {
-                form.IsOwnForces = true;
-                _formService.Create(_mapper.Map<FormDTO>(form));
-            }
-            else 
-            {
-                //add method
-
                 if (isPartMultiple)
                 {
-                    form.IsOwnForces = true;
-                    form.ContractId = mnContrId;
-                    _formService.Create(_mapper.Map<FormDTO>(form));
+                    _formService.UpdateOwnForceMnForm(_mapper.Map<FormDTO>(form), mnContrId, 1, isPartMultiple);
                 }
                 else
                 {
-                    _formService.UpdateOwnForceMnForm(_mapper.Map<FormDTO>(form), isPartMultiple);
+                    _formService.UpdateOwnForceMnForm(_mapper.Map<FormDTO>(form), mnContrId, -1);
                 }
             }
-            }
         }
-        
     }
 }
