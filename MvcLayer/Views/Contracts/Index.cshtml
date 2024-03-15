@@ -31,15 +31,26 @@
         }
 
         .overdue {
-            background-color: #ffcfdb !important;
+            background-color: #ff00008f !important;
         }
 
         .form_agreement {
             display: flex !important;
-            padding: 30px !important;
+            padding: 0 30px !important;
+            margin-top: 0.5%;
+            margin-bottom: 0.5%;
         }
 
-        
+        .search_btn {
+            width: 2vh !important;
+            position: absolute;
+            padding: 0;
+            margin: 0 10px;
+            background-color: inherit;
+            border: none;
+            right: 210px;
+            top: 8px;
+        }
 
         h1 {
             
@@ -50,12 +61,11 @@
             font-size: 5.5vh;
         }
 
-        #searchString {
-            margin-right: 0.8% !important;
-        }
-
         .btn_agreement {
-            width: 150px;
+            width: 180px;
+            border-radius: 20px;
+            margin-left: 1%;
+            font-weight: bold;
         } 
 
 
@@ -71,6 +81,33 @@
         .label_postion {
             margin-top: 0.4%;
         }
+
+        .wrapper-table {
+            width: 100%;
+        }
+
+        .table-main tr:nth-child(even) {
+            background-color: #ecf2f9;
+        }
+        .img_newAgr {
+            width: 24px;
+            height: 24px;
+            margin-right: 3px;
+        }
+    input {
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            border-radius: 20px;
+            padding: 0px 30px 0px 10px;
+            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+    }
+
+    form {
+        position: relative;
+    }
+
     </style>
     <div>
         <div class="contracts-list">
@@ -80,31 +117,28 @@
                 {
                     @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                     {
+                                            <div class="form_agreement">
+
                     <form method="get">
-                        <div class="search-form form_agreement">
-                            <span class="input-group-text">Название объекта/номер договора:</span> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-primary" type="submit"> Найти</button>
-                                <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">Новый договор</button>
-                            </div>
+                          @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                        <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+                    </form>
+                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
                         </div>
 
-                        </form>
-                    }
+                }
                 }
                 @if (!ViewBag.IsEngineering)
                 {
                     @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                     {
+                    <div class="form_agreement">
                     <form method="get">
-                        <div class="search-form form_agreement">
-                        <span class="input-group-text">Название объекта/номер договора:</span> @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-primary" type="submit"> Найти</button>
-                                <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'">Новый договор</button>
-                            </div>
-                        </div>
-                        </form>
+                        @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                        <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+                    </form>
+                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
+                    </div>
                     }
                 }
 

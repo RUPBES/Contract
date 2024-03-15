@@ -274,29 +274,7 @@ namespace MvcLayer.Controllers
                 {
                     itemViewModel.currentYearScopeWork = listScope.Sum(x => x.CostNds);
                 }
-                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();
-                #region Заполнение месяцев
-                var listPayments = _payment.Find(x => x.ContractId == contract.Id).ToList();
-                for (var date = itemViewModel.dateBeginWork;
-                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
-                     date = date.Value.AddMonths(1))
-                {
-                    var item = new ItemPaymentDeviationReport();
-                    item.period = date;
-                    var itemPayment = listPayments.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
-                    if (itemPayment != null)
-                    {
-                        if (itemPayment.PaySum != null)
-                            item.payment = itemPayment.PaySum;
-                        else item.payment = 0;
-                        if (itemPayment.PaySumForRupBes != null)
-                            item.paymentRupBes = itemPayment.PaySumForRupBes;
-                        else item.paymentRupBes = 0;
-                    }
-                    itemViewModel.listPayments.Add(item);
-                }
-
-                #endregion
+                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();                
                 #region Нахождение клиента и генподрядчика
                 var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
                     .Select(x => x.OrganizationId).FirstOrDefault();

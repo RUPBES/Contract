@@ -6,5 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IPrepaymentPlanService : IService<PrepaymentPlanDTO, PrepaymentPlan>
     {
+        PrepaymentDTO GetLastPrepayment(int contractId);
     }
 }

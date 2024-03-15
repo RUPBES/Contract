@@ -1,14 +1,28 @@
 ﻿@using MvcLayer.Models;
 @model ModalViewVodel
 
+<style>
+    .info_modal-text {
+        font-weight: bold;
+    }
+    .img_primary {
+        margin-right: 5px;
+        height: 24px;
+        width: 24px;
+    } 
+</style>
+
 <div class="modal-content">
     <div class="modal-header">
-        <h4>@Model.header</h4>
-        <button class="close" data-dismiss="modal" onclick="closeModal(document.getElementById('messageInput').value)" area-hidden="true">X</button>
+        <h3>@Model.header</h3>
+        <button class="btn-close" data-bs-dismiss="modal" onclick="closeModal(document.getElementById('messageInput').value)" area-hidden="true"></button>
     </div>
     <div class="modal-body">
-        <span>@Model.message</span>
-        <button id="modal-button-delete" onclick="closeModal(document.getElementById('messageInput').value)" type="button" class="btn btn-danger k-mr-2">@Model.textButton</button>
+        <span class="info_modal-text">@Model.message</span>
+    </div>
+    <div class="modal-footer">
+        <button id="modal-button-delete" onclick="closeModal(document.getElementById('messageInput').value)" type="button" class="btn btn-primary"><img class="img_primary" src="~/icons/check_icon.png" />@Model.textButton</button>
+
     </div>
 </div>
 <input id="messageInput" value="@ViewData["reload"]" hidden />

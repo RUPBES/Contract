@@ -34,6 +34,16 @@
             transform: scale(1);
             font-weight: bold;
         }
+
+    .input-group_flex {
+        justify-content: right;
+    }
+
+    .img_newAgr {
+        width: 24px;
+        height: 24px;
+        margin-right: 3px;
+    }
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
@@ -44,20 +54,21 @@
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Home" asp-action="" class="close-btn"></a>
                     </div>
-                    <div class="input-group m-2">
+                    <div class="input-group m-2 input-group_flex">
                         <div class="nav_panel_btns">
                             <div class="link_add_emp"></div>
                             <div class="btn_panel_search">
-                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Employees")'">Добавить сотрудника</button>
                                 <form asp-controller="Employees" asp-action="Index" style="search-form" method="get">                                    
                                     <input type="text" name="searchString" placeholder="Поиск по ФИО" value="@ViewData["CurrentFilter"]" id="er" />
                                     <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
                                 </form>
+                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Employees")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить сотрудника</button>
+
                             </div>
                         </div>
                     </div>                    
                     <div style="max-height:650px; overflow-y:scroll">
-                        <table class="table table-bordered table-main table-main-short" id="org_table">
+                        <table class="table table-bordered table-main table-main-short table-hover" id="org_table">
                             <thead>
                                 <tr>
                                     <th>

@@ -25,6 +25,37 @@
             transform: scale(1);
             font-weight: bold;
         }
+
+    .img_btn {
+        width: 24px;
+        height: 24px;
+        margin-right: 2px;
+        transition-property: transform;
+        transition-duration: 1s;
+        transition-timing-function: ease-in-out;
+    }
+
+    .btn-primary:hover > .img_btn {
+        transform: rotate(180deg);
+    }
+
+    .img_delete {
+        height: 20px;
+        width: 20px;
+        margin-right: 5px;
+    }
+    table {
+        margin-bottom: 0 !important;
+    }
+
+    .btn_container{
+        margin-top: 1rem;
+    }
+
+    .table-main tr:nth-child(2n) {
+        background-color: #ecf2f9 !important;
+    }
+
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
@@ -35,30 +66,32 @@
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
                     </div>
-                    <table class="table">
+                    <div class="modal-overflow-70">
+                    <table class="table table-main table-bordered table-hover">
                         <tbody>
                             <tr>
-                                <td class="col-sm-2">
+                                <th class="col-sm-2">
                                     @Html.DisplayNameFor(model => model.Name)
-                                </td>
+                                </th>
                                 <td class="col-sm-10">
                                     @Html.DisplayFor(model => model.Name)
                                 </td>
                             </tr>
                             <tr>
-                                <td class="col-sm-2">
+                                <th class="col-sm-2">
                                     @Html.DisplayNameFor(model => model.Organization)
-                                </td>
+                                </th>
                                 <td class="col-sm-10">
                                     @Html.DisplayFor(model => model.Organization.Name)
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                    <div class="justify-content-between d-flex">
-                        <button type="button" class="btn btn-success k-mr-2" onclick="location.href='@Url.Action("Edit", "Departments", new {id = Model.Id} )'">Изменить</button>
+                    </div>
+                    <div class="justify-content-between d-flex btn_container">
+                        <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("Edit", "Departments", new {id = Model.Id} )'"><img src="~/icons/circular_icon.png" class="img_btn" /> Изменить</button>
 
-                        <button id="button-close" type="button" class="btn btn-danger k-mr-2" onclick="confirmI()">Удалить</button>
+                        <button id="button-close" type="button" class="btn btn-danger" onclick="confirmI()"><img class="img_delete" src="~/icons/delete_icon.png" />Удалить</button>
                     </div>
                 </div>
             </div>

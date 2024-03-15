@@ -1,0 +1,70 @@
+﻿@{
+    var index = ViewBag.index as int?;
+    var number = ViewBag.number as int?;
+    var num = number + 1;
+    var type = ViewBag.type as int?;
+}
+<div class="row">
+    <input name="[@index].IsTarget" value="true" hidden />
+    <input name="[@index].IsRefund" value="false" hidden />
+    <div class="col input_container ">
+        <input class="form-control" name="[@index].Number" value="@number" readonly />
+    </div>
+    <div class="col input_container ">
+        <input class="form-control text-end cost" type="text" name="[@index].Total" />
+    </div>
+    <div class="col input_container ">
+        <input class="form-control" name="[@index].FileEntity" data-val-required="Загрузите файл справки" type="file" />
+    </div>
+    <div class="col input_container ">
+        <input class="form-control date" name="[@index].DateTransfer" />
+    </div>
+</div>
+@if (type == 1)
+{
+    <div class="row mt-1" id="divButtonAddTargetGet">
+        <div class="col-1">
+            <button type="button" id="buttonAddTargetGet" value="@num" onclick="AddRow(document.getElementById('buttonAddTargetGet').value,1)" class="btn btn-circle btn-success">+</button>
+        </div>
+    </div>
+}
+@if (type == 2)
+{
+    <div class="row mt-1" id="divButtonAddTargetRefund">
+        <div class="col-1">
+            <button type="button" id="buttonAddTargetRefund" value="@num" onclick="AddRow(document.getElementById('buttonAddTargetRefund').value,2)" class="btn btn-circle btn-success">+</button>
+        </div>
+    </div>
+}
+@if (type == 3)
+{
+    <div class="row mt-1" id="divButtonAddCurrentGet">
+        <div class="col-1">
+            <button type="button" id="buttonAddCurrentGet" value="@num" onclick="AddRow(document.getElementById('buttonAddCurrentGet').value,3)" class="btn btn-circle btn-success">+</button>
+        </div>
+    </div>
+}
+@if (type == 4)
+{
+    <div class="row mt-1" id="divButtonAddCurrentRefund">
+        <div class="col-1">
+            <button type="button" id="buttonAddCurrentReturn" value="2" onclick="AddRow(document.getElementById('buttonAddCurrentReturn').value,4)" class="btn btn-circle btn-success">+</button>
+        </div>
+    </div>
+}
+<script>
+    $(function ($) {
+        var allDate = $(".date")
+        for (let el of allDate) {
+            $(el).datepicker({
+                format: "d MM yyyy",
+                language: "ru",
+                calendarWeeks: true,
+                autoclose: true,
+                keyboardNavigation: false,
+                assumeNearbyYear: true,
+                toggleActive: true
+            });
+        }
+    });
+</script>

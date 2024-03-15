@@ -36,6 +36,15 @@
             transform: scale(1);
             font-weight: bold;
         }
+        .input-group_flex {
+        justify-content: right;
+        }
+
+    .img_newAgr {
+        width: 24px;
+        height: 24px;
+        margin-right: 3px;
+    }
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
@@ -46,21 +55,22 @@
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Home" asp-action="" class="close-btn"></a>
                     </div>
-                    <div class="input-group m-2">
+                    <div class="input-group m-2 input-group_flex">
                         <div class="nav_panel_btns">
                             <div class="link_add_emp"></div>
                             <div class="btn_panel_search">
-                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Organizations")'">Добавить организацию</button>
                                 <form asp-controller="Organizations" asp-action="Index" style="search-form" method="get">
                                     <input type="text" name="searchString" placeholder="Поиск по названию" value="@ViewData["CurrentFilter"]" id="er" />
                                     <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
                                 </form>
+                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Organizations")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить организацию</button>
+
                             </div>
                         </div>
                     </div>
                     <hr class="modal-line" />
                     <div style="max-height:700px; overflow-y:scroll">
-                        <table class="table table-bordered table-main table-main-short" id="org_table">
+                        <table class="table table-bordered table-main table-main-short table-hover" id="org_table">
                             <thead>
                                 <tr>
                                     <th>
@@ -127,9 +137,9 @@
 
                                         <td>
                                             <div class="dropdown column_75">
-                                                <span class="icon link_to_page dropdown-toggle">
+                                                <span class="icon link_to_page dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                                 </span>
-                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <div class="dropdown-menu">
                                                     <a class="icon view_to_add_pages " asp-controller="Departments"
                                                        asp-action="Create" asp-route-idOrg="@item.Id"></a>
                                                     <div class="dropdown-divider"></div>

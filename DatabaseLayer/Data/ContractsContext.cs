@@ -57,7 +57,7 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<Prepayment> Prepayments { get; set; }
     public virtual DbSet<PrepaymentFact> PrepaymentFacts { get; set; }
-
+    public virtual DbSet<PrepaymentTake> PrepaymentTakes { get; set; }
     public virtual DbSet<PrepaymentPlan> PrepaymentPlans { get; set; }
 
     public virtual DbSet<ScopeWork> ScopeWorks { get; set; }
@@ -851,6 +851,25 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Prepayment).WithMany(p => p.PrepaymentPlans)
                 .HasForeignKey(d => d.PrepaymentId)
                 .HasConstraintName("FK_PrepaymentPlan_Prepayment_Id");
+        });
+
+        modelBuilder.Entity<PrepaymentTake>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_PrepaymentTake_Id");
+
+            entity.ToTable("PrepaymentTake", tb => tb.HasComment("Авансовые платежи получены"));
+
+            entity.Property(e => e.Total).HasColumnType("money");
+            entity.Property(e => e.DateTransfer).HasColumnType("datetime");
+            entity.Property(e => e.IsTarget).HasDefaultValueSql("0");
+            entity.Property(e => e.IsRefund).HasDefaultValueSql("0");
+
+            entity.HasOne(d => d.Prepayment).WithMany(p => p.PrepaymentTakes)
+                .HasForeignKey(d => d.PrepaymentId)
+                .HasConstraintName("FK_PrepaymentTake_Prepayment_Id");
+            entity.HasOne(d => d.File).WithMany(p => p.PrepaymentTakesFiles)
+                .HasForeignKey(d => d.FileId)
+                .HasConstraintName("FK_PrepaymentTake_File_Id");
         });
 
         modelBuilder.Entity<PrepaymentAmendment>(entity =>

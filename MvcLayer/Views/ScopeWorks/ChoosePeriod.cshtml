@@ -110,6 +110,12 @@
             transform: scale(1);
             font-weight: bold;
         }
+
+        .img_newAgr {
+        width: 24px;
+        height: 24px;
+        margin-right: 3px;
+        }
 </style>
 
 <div class="dm-overlay">
@@ -188,9 +194,9 @@
                     </div>
                     <div class="btn-block">
                         <a class="btn btn-success" asp-controller="Amendments" asp-action="Create" asp-route-contractId="@contract.Id"
-                           asp-route-returnContractId="@ViewBag.returnContractId">+ доп. соглашение</a>
+                           asp-route-returnContractId="@ViewBag.returnContractId"><img class="img_newAgr" src="~/icons/plus_icon.png" /> доп. соглашение</a>
                         <a class="btn btn-warning" asp-controller="ScopeWorks" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
-                           asp-route-returnContractId="@ViewBag.returnContractId">Просмотр заполненных данных</a>
+                           asp-route-returnContractId="@ViewBag.returnContractId"><img class="img_newAgr" src="~/icons/search-file_icon.png" />Просмотр заполненных данных</a>
                     </div>
                 }
             }
@@ -233,7 +239,7 @@
                             <input type="text" value="@contractTwo.DateEndWork.Value.ToString("MMMM yyyy")" readonly />
                         }
                     </div>
-                    <button class="btn btn-primary  btn-sm" type="submit">Выбрать</button>
+                    <button class="btn btn-primary btn-sm" type="submit">Выбрать</button>
                 </form>
             }
 

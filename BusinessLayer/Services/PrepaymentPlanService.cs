@@ -164,5 +164,29 @@ namespace BusinessLayer.Services
         {
             return _mapper.Map<IEnumerable<PrepaymentPlanDTO>>(_database.PrepaymentPlans.Find(predicate));
         }
+
+        public PrepaymentDTO GetLastPrepayment(int contractId)
+        {
+            Prepayment answer = _database.Prepayments.Find(x => x.ContractId == contractId && x.IsChange == false).FirstOrDefault();
+            var amendPeriod = new DateTime(1900, 1, 1);
+            var listPrepayment = _database.Prepayments.Find(x => x.ContractId == contractId).ToList();
+            foreach (var item in listPrepayment)
+            {
+                var amendId = _database.PrepaymentAmendments.Find(x => x.PrepaymentId == item.Id).Select(x => x.AmendmentId).FirstOrDefault();
+                if (amendId != 0)
+                {
+                    var amend = _database.Amendments.Find(x => x.Id == amendId).FirstOrDefault();
+                    if (amend != null)
+                    {
+                        if (amendPeriod < amend.Date)
+                        {
+                            answer = item;
+                            amendPeriod = (DateTime)amend.Date;
+                        }
+                    }
+                }
+            }            
+            return _mapper.Map<PrepaymentDTO>(answer);
+        }
     }
 }

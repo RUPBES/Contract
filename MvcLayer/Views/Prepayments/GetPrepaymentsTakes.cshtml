@@ -1,0 +1,368 @@
+﻿@model PrepaymentTakeViewModel
+@using MvcLayer.Models;
+@{
+    ViewData["Title"] = "Полученные авансы";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+    var countMonts = 0;
+    var countYear = 0;
+    var countBody = 1;
+    var countBodyMin = 0;
+    if (ViewData["Current"] != null)
+    {
+        countBody += 2;
+        countBodyMin++;
+    }
+    if (ViewData["Target"] != null)
+    {
+        countBody += 2;
+        countBodyMin++;
+    }
+    var TempYear = DateTime.Now.Year;
+    if (Model.List.Count > 0)
+    {
+        var start = Model.List.FirstOrDefault();
+        TempYear = start.Period.Value.Year;
+        var end = Model.List.LastOrDefault();
+        countMonts = (end.Period.Value.Year - start.Period.Value.Year) * 12 + (end.Period.Value.Month - start.Period.Value.Month) + 4;
+    }
+
+}
+<style>
+
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    td, tr {
+        min-width: 105px;
+    }
+
+
+    .form_period {
+        display: flex;
+        margin-bottom: 1%;
+    }
+
+    .period_input {
+        width: 15.5%;
+        margin-right: 1%;
+    }
+
+    .input-group-text {
+        font-weight: 600;
+    }
+
+
+    .td-pointer {
+        cursor: pointer;
+        background-color: #73d5e9 !important;
+        border-color: #73d5e9 !important;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px !important;
+        border-radius: 5px !important;
+        transition-property: background-color;
+        transition-duration: 0.5s;
+    }
+
+        .td-pointer:hover {
+            background-color: #1bcbef !important;
+            border-color: #1bcbef !important;
+        }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <div style="max-height:auto; max-width:80vw; overflow:scroll">
+                    <table class="table table-bordered table-main table-main-short">
+                        <thead>
+                            <tr>
+                                <th rowspan="3">
+                                    <span>
+                                        Объект
+                                    </span>
+                                </th>
+                                <th rowspan="3">
+                                    <span>
+                                        Заказчик
+                                    </span>
+                                </th>
+                                <th colspan="@countMonts">
+                                    <span>
+                                        Ведомость полученных авансов
+                                    </span>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th rowspan="2">
+                                    <span>
+                                        Основание
+                                    </span>
+                                </th>
+                                <th rowspan="2">
+                                    <span>
+                                        Аванс
+                                    </span>
+                                </th>
+                                @foreach (var item in Model.List)
+                                {
+                                    countYear++;
+                                    if (item == Model.List.Last())
+                                    {
+                                        countYear++;
+                                        <th colspan="@countYear">
+                                            <span>
+                                                @TempYear
+                                            </span>
+                                        </th>
+                                    }
+                                    else if (TempYear != item.Period.Value.Year)
+                                    {
+                                        <th colspan="@countYear">
+                                            <span>
+                                                @TempYear
+                                            </span>
+                                        </th>
+                                        TempYear = 1;
+                                        countYear = item.Period.Value.Year;
+                                    }
+                                }
+                            </tr>
+                            <tr>
+                                @foreach (var item in Model.List)
+                                {
+                                    <th>
+                                        <span>
+                                            @item.Period.Value.ToString("MMMM")
+                                        </span>
+                                    </th>
+                                }
+
+                                <th>
+                                    <span>
+                                        всего
+                                    </span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="@countBody">
+                                    <span>@Model.NameObject</span>
+                                </td>
+                                <td rowspan="@countBody">
+                                    <span>@Model.Client</span>
+                                </td>
+                                <td rowspan="@countBodyMin">
+                                    <span>Согласно графику платежей в редакции ДС @Model.NameAmendment</span>
+                                </td>
+                                @if (ViewData["Current"] != null)
+                                {
+                                    <td>
+                                        <span>текущие</span>
+                                    </td>
+                                    var total = 0M;
+                                    foreach (var item in Model.List)
+                                    {
+                                        <td>
+                                            <span>@item.CurrentPlan?.ToString("N2")</span>
+                                        </td>
+                                        if (item.CurrentPlan.HasValue)
+                                            total += (decimal)item.CurrentPlan;
+                                    }
+                                    <td>
+                                        <span>@total.ToString("N2")</span>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <span>целевые</span>
+                                    </td>
+                                    var total = 0M;
+                                    foreach (var item in Model.List)
+                                    {
+                                        <td>
+                                            <span>@item.TargetPlan?.ToString("N2")</span>
+                                        </td>
+                                        if (item.TargetPlan.HasValue)
+                                            total += (decimal)item.TargetPlan;
+                                    }
+                                    <td>
+                                        <span>@total.ToString("N2")</span>
+                                    </td>
+                                }
+                            </tr>
+                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                            {
+                                <tr>
+                                    @{
+                                        <td>
+                                            <span>целевые</span>
+                                        </td>
+                                        var total = 0M;
+                                        foreach (var item in Model.List)
+                                        {
+                                            <td>
+                                                <span>@item.TargetPlan?.ToString("N2")</span>
+                                            </td>
+                                            if (item.TargetPlan.HasValue)
+                                                total += (decimal)item.TargetPlan;
+                                        }
+                                        <td>
+                                            <span>@total.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            <tr>
+                                <td rowspan="@countBodyMin">
+                                    <a href="~/Prepayments/CreatePrepaymentTake?contractId=@ViewBag.contractId&returnContractId=@ViewBag.returnContractId" style="width:100%;">
+                                        <span>Получено фактически</span>
+                                    </a>
+                                </td>
+                                @if (ViewData["Current"] != null)
+                                {
+                                    <td>
+                                        <span>текущие</span>
+                                    </td>
+                                    var total = 0M;
+                                    foreach (var item in Model.List)
+                                    {
+                                        <td>
+                                            <span>@item.CurrentFact?.ToString("N2")</span>
+                                        </td>
+                                        if (item.CurrentFact.HasValue)
+                                            total += (decimal)item.CurrentFact;
+                                    }
+                                    <td>
+                                        <span>@total.ToString("N2")</span>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <span>целевые</span>
+                                    </td>
+                                    var total = 0M;
+                                    foreach (var item in Model.List)
+                                    {
+                                        <td>
+                                            <span>@item.TargetFact?.ToString("N2")</span>
+                                        </td>
+                                        if (item.TargetFact.HasValue)
+                                            total += (decimal)item.TargetFact;
+                                    }
+                                    <td>
+                                        <span>@total.ToString("N2")</span>
+                                    </td>
+                                }
+                            </tr>
+                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                            {
+                                <tr>
+                                    @{
+                                        <td>
+                                            <span>целевые</span>
+                                        </td>
+                                        var total = 0M;
+                                        foreach (var item in Model.List)
+                                        {
+                                            <td>
+                                                <span>@item.TargetFact?.ToString("N2")</span>
+                                            </td>
+                                            if (item.TargetFact.HasValue)
+                                                total += (decimal)item.TargetFact;
+                                        }
+                                        <td>
+                                            <span>@total.ToString("N2")</span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            <tr>
+                                <td colspan="2">
+                                    <span>Документ</span>
+                                </td>
+                                @foreach (var item in Model.List)
+                                {
+                                    <td>
+                                        @foreach (var file in item.Files)
+                                        {
+                                            <a href="~/Files/GetFile?id=@file.Id" target="_blank">@file.FileName</a>
+                                            <br />
+                                        }
+                                    </td>
+                                }
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@{
+    if (TempData["Message"] != null)
+    {
+        var mes = (string)TempData["Message"];
+        <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
+    }
+}
+@section Scripts{
+<script>
+    window.onload = function () {
+        $("#messageInput").trigger('click');
+    }
+    function MessageError(val) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Message", "Home")',
+            dataType: 'html',
+            data: { message: val, header: "Информирование", textButton: "Хорошо" },
+            success: function (result) {
+                $('#dialogContent').html(result);
+                $('#modDialog').modal({ backdrop: false });
+                $('#modDialog').modal('toggle');
+            },
+            error: function (result) {
+                alert('Ошибка при вызове сообщения.');
+            }
+        })
+    }
+    </script>
+}

@@ -27,16 +27,17 @@
 
     .dm-modal {
         background-color: lightsteelblue;
+        max-width: 1200px;
     }
 
 
     .close-btn {
-        color: red
+        color: red;
     }
 
 
     .close-btn {
-        color: red
+        color: red;
     }
 
         .close-btn::after {
@@ -52,6 +53,14 @@
             transform: scale(1);
             font-weight: bold;
         }
+        .btn_block {
+            text-align: right;
+            margin-top: 1%;
+        }
+
+    .table-main tr:nth-child(2n) {
+        background-color: #ecf2f9 !important;
+    }
 </style>
 <div class="dm-overlay">
     <div class="dm-table">
@@ -71,7 +80,7 @@
                 <hr class="modal-line" />
                 <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                     <div class="cont-table">
-                        <table class="table table-bordered table-striped table-main">
+                        <table class="table table-bordered table-main table-hover">
                             <tr>
                                 <th>Период</th>
                                 @foreach (var item in Model)

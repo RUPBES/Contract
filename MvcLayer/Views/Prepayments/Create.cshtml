@@ -18,7 +18,7 @@
 }
 <style>
     .cont-table {
-        overflow-x: scroll;
+        overflow-x: auto;
     }
 
     th,
@@ -75,6 +75,10 @@
             transform: scale(1);
             font-weight: bold;
         }
+
+    .table-main tr:nth-child(2n) {
+        background-color: #ecf2f9 !important;
+    }
 </style>
 
 
@@ -96,7 +100,7 @@
                 <hr class="modal-line" />
                 <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                     <div class="cont-table">
-                        <table class="table table-bordered table-striped table-main">
+                        <table class="table table-bordered table-main table-hover">
 
                             @if (!isFact)
                             {
@@ -342,18 +346,14 @@
                 $("#result").focus(function () { $(this).addClass("focused") });
                 btn.removeAttribute('disabled')
                 $('#text_error').text('')
-
-
             } else {
                 btn.setAttribute('disabled', true)
                 $('#text_error').text('Сумма не сходится!')
-
             }
 
             $("#sumTarget").val(sumTarget);
             $("#sumTargetWork").val(sumTargetWork);
             $("#result").val(result.toFixed(2));
         }
-
     </script>
 }

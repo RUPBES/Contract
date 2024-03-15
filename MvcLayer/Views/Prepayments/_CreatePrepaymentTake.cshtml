@@ -1,0 +1,336 @@
+﻿@using MvcLayer.Models;
+@model List<PrepaymentsTakeAddViewModel>
+
+<style>
+    form {
+        width: 100%;
+        padding: 1%;
+        overflow: auto;
+        max-width: 1400px;
+    }
+
+    .title {
+        flex-direction: row !important;
+    }
+
+    /* .fieldset {
+                            box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
+                        } */
+
+    .input_container {
+        margin-top: 0.2%;
+    }
+
+    .input_container-name {
+        background-color: #9ac2f5;
+    }
+
+    .span_container {
+        font-weight: bold;
+        font-size: 16px;
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+        background-color: #9ac2f5;
+        margin: 0.5%;
+        word-break: break-word;
+        text-align: center;
+        padding: 1px;
+    }
+
+    legend {
+        font-size: 1.1rem !important;
+        font-weight: bold;
+        color: black;
+        border-radius: 0.25rem;
+        background-color: gainsboro;
+    }
+
+    fieldset {
+        border-radius: 0.25rem !important;
+        margin: 1px !important;
+        padding: 1px;
+        border: 3px solid;
+        border-color: gainsboro;
+        margin-bottom: 4px !important;
+        padding-bottom: 2px !important;
+    }
+
+    .btn-circle {
+        border-radius: 50%;
+    }
+</style>
+@{
+    var index = 0;
+}
+
+<form id="form" asp-action="CreatePrepaymentTake" asp-controller="Prepayments" enctype="multipart/form-data">
+    <input name="contractId" value="@ViewBag.contractIdModal" hidden readonly />
+    <input name="returnContractId" value="@ViewBag.returnContractIdModal" hidden readonly />
+    <div class="row">
+        <div class="col span_container">
+            <span class="label label-default">№</span>
+        </div>
+        <div class="col span_container">
+            <label class="label label-default">Сумма, руб</label>
+        </div>
+        <div class="col span_container">
+            <label class="label label-default">Файл</label>
+        </div>
+        <div class="col span_container">
+            <label class="label label-default">Дата перевода денежных средств</label>
+        </div>
+    </div>
+    @if (ViewData["Target"] != null)
+    {
+        <fieldset class="row title fieldset rounded-2">
+            <legend class="float-none w-auto">Целевой(получение)</legend>
+            <div class="row">
+                <input asp-for="@Model[index].Period" hidden />
+                <input asp-for="@Model[index].PrepaymentId" hidden />
+                <input asp-for="@Model[index].IsTarget" value="true" hidden />
+                <input asp-for="@Model[index].IsRefund" value="false" hidden />
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].Number" value="1" readonly />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control text-end cost" type="text" name="[@index].Total" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control" asp-for="@Model[index].FileEntity" data-val-required="Загрузите файл справки" type="file" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control date" name="[@index].DateTransfer" />
+                </div>
+                @{
+                    index++;
+                }
+            </div>
+            <div class="row mt-1" id="divButtonAddTargetGet">
+                <div class="col-1">
+                    <button type="button" id="buttonAddTargetGet" value="2" onclick="AddRow(document.getElementById('buttonAddTargetGet').value,1)" class="btn btn-circle btn-success">+</button>
+                </div>
+            </div>
+            <div class="row" id="TargetGetTotal">
+                <div class="input_container" style="width:20%;">
+                    <input class="form-control" value="ИТОГО" readonly />
+                </div>
+                <div class="col input_container" style="max-width:20%;">
+                    <input id="TargetGet" class="form-control text-end" value="0" readonly />
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="row title fieldset ">
+            <legend class="float-none w-auto">Целевой(возврат)</legend>
+            <div class="row">
+                <input asp-for="@Model[index].Period" hidden />
+                <input asp-for="@Model[index].PrepaymentId" hidden />
+                <input asp-for="@Model[index].IsTarget" value="true" hidden />
+                <input asp-for="@Model[index].IsRefund" value="true" hidden />
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].Number" value="1" readonly />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control text-end cost" type="text" name="[@index].Total" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].FileEntity" data-val-required="Загрузите файл справки" type="file" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control date" name="[@index].DateTransfer" />
+                </div>
+                @{
+                    index++;
+                }
+            </div>
+            <div class="row mt-1" id="divButtonAddTargetRefund">
+                <div class="col-1">
+                    <button type="button" id="buttonAddTargetRefund" value="2" onclick="AddRow(document.getElementById('buttonAddTargetRefund').value,2)" class="btn btn-circle btn-success">+</button>
+                </div>
+            </div>
+            <div class="row" id="TargetRefundTotal">
+                <div class="input_container" style="width:20%;">
+                    <input class="form-control" value="ИТОГО" readonly />
+                </div>
+                <div class="col input_container" style="max-width:20%;">
+                    <input id="TargetReturn" class="form-control text-end" value="0" readonly />
+                </div>
+            </div>
+        </fieldset>
+    }
+
+    @if (ViewData["Current"] != null)
+    {
+        <fieldset class="row title fieldset">
+            <legend class="float-none w-auto">Текущий(Получение)</legend>
+            <div class="row">
+                <input asp-for="@Model[index].Period" hidden />
+                <input asp-for="@Model[index].PrepaymentId" hidden />
+                <input asp-for="@Model[index].IsTarget" value="false" hidden />
+                <input asp-for="@Model[index].IsRefund" value="false" hidden />
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].Number" value="1" readonly />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control text-end cost" type="text" name="[@index].Total" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].FileEntity" data-val-required="Загрузите файл справки" type="file" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control date" name="[@index].DateTransfer" />
+                </div>
+                @{
+                    index++;
+                }
+            </div>
+            <div class="row mt-1" id="divButtonAddCurrentGet">
+                <div class="col-1">
+                    <button type="button" id="buttonAddCurrentGet" value="2" onclick="AddRow(document.getElementById('buttonAddCurrentGet').value,3)" class="btn btn-circle btn-success">+</button>
+                </div>
+            </div>
+            <div class="row" id="CurrentGetTotal">
+                <div class="input_container" style="width:20%;">
+                    <input class="form-control" value="ИТОГО" readonly />
+                </div>
+                <div class="col input_container" style="max-width:20%;">
+                    <input id="CurrentGet" class="form-control text-end" value="0" readonly />
+                </div>
+            </div>
+        </fieldset>
+        <fieldset class="row title fieldset ">
+            <legend class="float-none w-auto">Текущий(возврат)</legend>
+            <div class="row">
+                <input asp-for="@Model[index].Period" hidden />
+                <input asp-for="@Model[index].PrepaymentId" hidden />
+                <input asp-for="@Model[index].IsTarget" value="false" hidden />
+                <input asp-for="@Model[index].IsRefund" value="true" hidden />
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].Number" value="1" readonly />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control text-end cost" type="text" name="[@index].Total" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control" name="[@index].FileEntity" data-val-required="Загрузите файл справки" type="file" />
+                </div>
+                <div class="col input_container ">
+                    <input class="form-control date" name="[@index].DateTransfer" />
+                </div>
+                @{
+                    index++;
+                }
+            </div>
+            <div class="row mt-1" id="divButtonAddCurrentReturn">
+                <div class="col-1">
+                    <button type="button" id="buttonAddCurrentReturn" value="2" onclick="AddRow(document.getElementById('buttonAddCurrentReturn').value,4)" class="btn btn-circle btn-success">+</button>
+                </div>
+            </div>
+            <div class="row" id="CurrentRefundTotal">
+                <div class="input_container" style="width:20%;">
+                    <input class="form-control" value="ИТОГО" readonly />
+                </div>
+                <div class="col input_container" style="max-width:20%;">
+                    <input id="CurrentReturn" class="form-control text-end" value="0" readonly />
+                </div>
+            </div>
+        </fieldset>
+    }
+    <div class="text-end mt-2">
+        <button type="submit" class="btn btn-primary">Добавить</button>
+    </div>
+</form>
+<input id="contractId" value="@ViewBag.contractIdModal" hidden />
+<input id="returnContractId" value="@ViewBag.returnContractIdModal" hidden />
+<input id="index" value="@index" hidden />
+<script>
+    $(function ($) {
+        var allCost = $(".cost")
+        for (let el of allCost) {
+            digits_float(el)
+        }
+
+        var allDate = $(".date")
+        for (let el of allDate) {
+            $(el).datepicker({
+                format: "d MM yyyy",
+                language: "ru",
+                calendarWeeks: true,
+                autoclose: true,
+                keyboardNavigation: false,
+                assumeNearbyYear: true,
+                toggleActive: true
+            });
+        }
+
+        $("#form").keydown(function (event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+                return false;
+            }
+        });
+
+        $('body').on('input', '.cost', function (e) {
+            digits_float(this);  
+            let fieldset = this.closest('fieldset');
+            let items = fieldset.querySelectorAll('.cost');
+            let sum = 0;
+            for (let item of items) {
+                const regExp = /,/g;
+                let num = item.value.replace(/ /g, '').replace(regExp, '.')
+                sum += +num;
+            }            
+            let one = fieldset.querySelector('#TargetGet');
+            let two = fieldset.querySelector('#TargetReturn');
+            let three = fieldset.querySelector('#CurrentGet');
+            let four = fieldset.querySelector('#CurrentReturn'); 
+            if (one != null) { 
+                one.value = sum;
+            }            
+            if (two != null) { 
+                two.value = sum;
+            }
+            if (three != null) {
+                three.value = sum;
+            }
+            if (four != null) { 
+                four.value = sum;
+            }
+        });
+    });
+
+    function AddRow(val, type) {
+        let contract = $("#contractId").val();
+        let returnContract = $("#returnContractId").val();
+        let index = $("#index").val();    
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("AddRowPrepaymentTake", "Prepayments")',
+            dataType: 'html',
+            data: { type: type, contractId: contract, returnContract: returnContract, index: index, number: val },
+            success: function (result) { 
+                var ind = +index;
+                console.log(ind);
+                $("#index").val(ind + 1);
+                if (type === 1) { 
+                    $("#divButtonAddTargetGet").remove();
+                    $("#TargetGetTotal").before(result);
+                }
+                else if (type === 2) {
+                    $("#divButtonAddTargetRefund").remove();
+                    $("#TargetRefundTotal").before(result);
+                }
+                else if (type === 3) {
+                    $("#divButtonAddCurrentGet").remove();
+                    $("#CurrentGetTotal").before(result);
+                }
+                else { 
+                    $("#divButtonAddCurrentRefund").remove();
+                    $("#CurrentRefundTotal").before(result);
+                }
+            },
+            error: function (result) {
+                console.log(result, 'Ошибка при вызове сообщения');
+            }
+        })
+    };
+</script>

@@ -41,6 +41,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<Prepayment> Prepayments { get; }
         IRepository<PrepaymentFact> PrepaymentFacts { get; }
         IRepository<PrepaymentPlan> PrepaymentPlans { get; }
+        IRepository<PrepaymentTake> PrepaymentTakes { get; }
         IRepository<PrepaymentAmendment> PrepaymentAmendments { get; }
        
         IRepository<SelectionProcedure> SelectionProcedures { get; }

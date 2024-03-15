@@ -32,6 +32,8 @@ namespace DatabaseLayer.Models
 
         public virtual ICollection<PrepaymentPlan> PrepaymentPlans { get; set; } = new List<PrepaymentPlan>();
 
+        public virtual ICollection<PrepaymentTake> PrepaymentTakes { get; set; } = new List<PrepaymentTake>();
+
         public virtual ICollection<PrepaymentAmendment> PrepaymentAmendments { get; set; }
     }
 }
