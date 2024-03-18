@@ -608,7 +608,7 @@ namespace MvcLayer.Controllers
                         //вычитаем стоимости работ подобъекта из глав.договора
                         _scopeWorkService.RemoveCostsOfMainContract(mainContractId, contract.Id);
                         _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true);
-                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, false);
+                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true, !true);
                     }
                     else
                     {
@@ -642,7 +642,7 @@ namespace MvcLayer.Controllers
                                 return BadRequest();
                             }
                         }
-                    }
+                    }                   
                 }
                 else
                 {

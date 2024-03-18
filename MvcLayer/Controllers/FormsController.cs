@@ -358,6 +358,7 @@ namespace MvcLayer.Controllers
                 else if (isOneMultipleContract)
                 {
                     _formService.RemoveFromOwnForceMnForm(_mapper.Map<FormDTO>(form), mainContrId, -1);
+                    _formService.RemoveFromOwnForceMnForm(_mapper.Map<FormDTO>(form), mainContrId, -1, !true);
                 }
                 else if (!isNotGenContract)
                 {

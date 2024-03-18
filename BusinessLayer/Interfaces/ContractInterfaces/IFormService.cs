@@ -12,8 +12,8 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         IEnumerable<DateTime> GetFreeForms(int contractId);
         List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period);
         void UpdateOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr, bool? isMulty = null); //(FormDTO newForm, bool isOnePartOfMultiContr = false, FormDTO? updateForm = null);
-        void RemoveFromOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr);
-        void RemoveAllOwnCostsFormFromMnForm(int mnContrId, int contractId, bool isMultiple);
+        void RemoveFromOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr, bool? isOwn = true);
+        void RemoveAllOwnCostsFormFromMnForm(int mnContrId, int contractId, bool isMultiple, bool? isOwn = true);
         void SubstractOwnForceAndMnForm(FormDTO newForm, int mnContrId, int opertr);
 
         //FormDTO? GetValueScopeWorkByPeriod(int contractId, DateTime? period, Boolean IsOwn = false);

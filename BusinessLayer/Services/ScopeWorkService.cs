@@ -387,29 +387,31 @@ namespace BusinessLayer.Services
                 }
                 else
                 {
+                    var scWork = new ScopeWork()
+                    {
+                        ContractId = mainOwnContrId,
+                        IsOwnForces = true
+                    };
+                    _database.ScopeWorks.Create(scWork);
+                    _database.Save();
+
                     foreach (var item in cost)
                     {
-                        _database.ScopeWorks.Create(new ScopeWork
-                        {
-                            ContractId = mainOwnContrId,
-                            IsOwnForces = true,
-                            SWCosts = new List<SWCost>
-                            {
-                                new SWCost
+                        _database.SWCosts.Create(
+                                new SWCost()
                                 {
                                     Period = item.Period,
-                                    PnrCost = -1 * item.PnrCost??0,
-                                    SmrCost = -1 * item.SmrCost??0,
-                                    EquipmentCost = -1 * item.EquipmentCost??0,
-                                    OtherExpensesCost = -1 * item.OtherExpensesCost??0,
-                                    AdditionalCost = -1 * item.AdditionalCost??0,
-                                    GenServiceCost = -1 * item.GenServiceCost??0,
-                                    MaterialCost = -1* item.MaterialCost?? 0,
+                                    PnrCost = -1 * item.PnrCost ?? 0,
+                                    SmrCost = -1 * item.SmrCost ?? 0,
+                                    EquipmentCost = -1 * item.EquipmentCost ?? 0,
+                                    OtherExpensesCost = -1 * item.OtherExpensesCost ?? 0,
+                                    AdditionalCost = -1 * item.AdditionalCost ?? 0,
+                                    GenServiceCost = -1 * item.GenServiceCost ?? 0,
+                                    MaterialCost = -1 * item.MaterialCost ?? 0,
                                     IsOwnForces = true,
-                                    ScopeWorkId = mainOwnScpId,
-                                }
-                            }
-                        });
+                                    ScopeWorkId = scWork.Id
+
+                                });
                     }
                 }
                 _database.Save();

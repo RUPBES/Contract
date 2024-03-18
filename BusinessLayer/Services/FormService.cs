@@ -283,9 +283,9 @@ namespace BusinessLayer.Services
             return formList;
         }
 
-        public void RemoveAllOwnCostsFormFromMnForm(int mnContrId, int contractId, bool isMultiple)
+        public void RemoveAllOwnCostsFormFromMnForm(int mnContrId, int contractId, bool isMultiple, bool? isOwn = true)
         {
-            var mnForms = _database.Forms.Find(x => x.ContractId == mnContrId && x.IsOwnForces == true);
+            var mnForms = _database.Forms.Find(x => x.ContractId == mnContrId && x.IsOwnForces == isOwn);
             var formsRemove = _database.Forms.Find(x => x.ContractId == contractId);
             int opertr = isMultiple ? -1 : 1;
 
@@ -301,24 +301,13 @@ namespace BusinessLayer.Services
             _database.Save();
         }
 
-        public void RemoveFromOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr)
+        public void RemoveFromOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr, bool? isOwn = true)
         {
             if (mnContrId > 0 && newForm is not null)
             {
                 var formOwnForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                                                    && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces == true)
+                                                    && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces == isOwn)
                                                    .FirstOrDefault();
-
-                //var formForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                //                                 && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces != true)
-                //                                .FirstOrDefault();
-
-                //if (formForce is not null)
-                //{
-                //    formForce = SubstractCosts(formForce, _mapper.Map<FormC3a>(newForm), opertr);
-                //    _database.Forms.Update(formForce);
-                //}
-
 
                 if (formOwnForce is not null)
                 {
