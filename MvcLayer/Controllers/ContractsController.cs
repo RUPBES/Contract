@@ -847,16 +847,8 @@ namespace MvcLayer.Controllers
 
             }
             else
-            {
-                TempData["Message"] = "Заполните объем работ";
-                var urlReturn = doc.Id;
-                if (doc.AgreementContractId != null)
-                    urlReturn = (int)doc.AgreementContractId;
-                else if (doc.SubContractId != null)
-                    urlReturn = (int)doc.SubContractId;
-                else if (doc.MultipleContractId != null)
-                    urlReturn = (int)doc.MultipleContractId;
-                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            {                
+                return PartialView("_Message", new ModalViewVodel{ message="Заполните объем работ",header="Информирование", textButton = "Хорошо" });
             }
             if (lastScopeOwn != null)
             {
