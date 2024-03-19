@@ -61,6 +61,21 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
         {
+            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans == null && returnContractId != 0)
+                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans != null)
+            {
+                if (avans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "Условие контракта - без авансов";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+
+                }
+                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            }
             var prepCheck = _prepayment.FindByContractId(contractId);
             if (!prepCheck.Any())
             {
@@ -465,6 +480,21 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractIdWithAmendments(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
         {
+            var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans == null && returnContractId != 0)
+                avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans != null)
+            {
+                if (avans.Contains("Без авансов"))
+                {
+                    TempData["Message"] = "Условие контракта - без авансов";
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+
+                }
+                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            }
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
 

@@ -24,11 +24,13 @@ namespace MvcLayer.Controllers
         private readonly IScopeWorkService _scopeWork;
         private readonly ISWCostService _swCostService;
         private readonly IFormService _formService;
+        private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
-            IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService)
+            IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService, 
+            IPrepaymentService prepayment)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -38,6 +40,7 @@ namespace MvcLayer.Controllers
             _swCostService = swCostService;
             _amendmentService = amendmentService;
             _contractOrganizationService = contractOrganizationService;
+            _prepayment = prepayment;
         }
 
         public IActionResult Index()
@@ -288,7 +291,11 @@ namespace MvcLayer.Controllers
 
                 if (scopeWork.ContractId is not null)
                 {
-                    return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = scopeWork.ContractId, returnContractId = returnContractId });
+                    if (_prepayment.FindByContractId((int)scopeWork.ContractId).Count() == 0 && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                    {
+                        return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = scopeWork.ContractId, isFact = false, returnContractId = returnContractId });
+                    }
+                    else return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = scopeWork.ContractId, returnContractId = returnContractId });
                 }
                 else
                 {
