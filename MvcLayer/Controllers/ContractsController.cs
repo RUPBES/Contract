@@ -367,13 +367,16 @@ namespace MvcLayer.Controllers
                 var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));                
                 if (ViewData["returnContractId"] != null)
                 {
-                    return RedirectToAction(nameof(Details), new { id = ViewBag.returnContractId });
+                    return RedirectToAction("ChoosePeriod","ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });
+                    //return RedirectToAction(nameof(Details), new { id = contractId, returnContractId = ViewBag.returnContractId });
                 }
                 if (contract.IsEngineering == true)
                 {
-                    return RedirectToAction(nameof(Engineerings));
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
+                    //return RedirectToAction(nameof(Engineerings));
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId});
+                //return RedirectToAction(nameof(Index));
             }
 
             return View(contract);

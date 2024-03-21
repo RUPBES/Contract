@@ -80,6 +80,16 @@
 
     var countCol = 2 + ((Model.endPeriod.Value.Year - Model.startPeriod.Value.Year) * 12 + (Model.endPeriod.Value.Month - Model.startPeriod.Value.Month + 1)) * 2;
     var countRow = Model.listSmrWithPrepaymentByAmendment.Count();
+
+    var miniRow = 0;
+    if (ViewData["Current"] != null)
+    {
+        miniRow++;
+    }
+    if (ViewData["Target"] != null)
+    {
+        miniRow++;
+    }
 }
 
 <div class="dm-overlay">
@@ -205,44 +215,44 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td rowspan="@(countRow*2)">
+                                <td rowspan="@(countRow * miniRow)">
                                     <span>
                                         @Model.NameObject
                                     </span>
                                 </td>
-                                <td rowspan="@(countRow*2)">
+                                <td rowspan="@(countRow * miniRow)">
                                     <span>
                                         @Model.Client
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="@(countRow * 2)">
+                                <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
                                         @Model.TheoryTarget?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="@(countRow*2)">
+                                <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
                                         @Model.TheoryCurrent?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="@(countRow*2)">
+                                <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
                                         @Model.TargetRepaid?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="@(countRow*2)">
+                                <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
                                         @Model.TargetReceived?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="@(countRow*2)">
+                                <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
                                         @((Model.TargetRepaid - Model.TargetReceived)?.ToString("N2"))
                                     </span>
                                 </td>
                                 @if (Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment != "Факт")
                                 {
-                                    <td class="td-pointer" rowspan="2" onclick="ShowAmendment()">
+                                    <td class="td-pointer" rowspan="@miniRow" onclick="ShowAmendment()">
                                         <div>
                                             <span>ДC @Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment</span>
                                         </div>
@@ -250,7 +260,7 @@
                                 }
                                 else
                                 {
-                                    <td rowspan="2">
+                                    <td rowspan="@miniRow">
                                         @foreach (var item in Model.listFiles)
                                         {
                                             <span>
@@ -263,7 +273,7 @@
 
                                 @if (Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment != "Факт")
                                 {
-                                    <td rowspan="2">
+                                    <td rowspan="@miniRow">
                                         <span>
                                             План
                                         </span>
@@ -271,46 +281,63 @@
                                 }
                                 else
                                 {
-                                    <td rowspan="2">
+                                    <td rowspan="@miniRow">
                                         <span>
                                             Факт
                                         </span>
                                     </td>
                                 }
-                                <td>
-                                    <span>
-                                        Целевой
-                                    </span>
-                                </td>
+                                @if (ViewData["Target"] != null)
+                                {
+                                    <td>
+                                        <span>
+                                            Целевой
+                                        </span>
+                                    </td>
+                                }
                                 @foreach (var item in Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().listSmrWithAvans)
                                 {
-                                    <td class="text-end" rowspan="2">
+                                    <td class="text-end" rowspan="@miniRow">
                                         <span>
                                             @item.Smr?.ToString("N2")
                                         </span>
                                     </td>
-                                    <td class="text-end">
-                                        <span>
-                                            @item.Target?.ToString("N2")
-                                        </span>
-                                    </td>
+                                    @if (ViewData["Target"] != null)
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.Target?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.Current?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
                                 }
                             </tr>
-                            <tr>
-                                <td>
-                                    <span>
-                                        Текущий
-                                    </span>
-                                </td>
-                                @foreach (var item in Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().listSmrWithAvans)
-                                {
-                                    <td class="text-end">
+                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                            {
+                                <tr>
+                                    <td>
                                         <span>
-                                            @item.Current?.ToString("N2")
+                                            Текущий
                                         </span>
                                     </td>
-                                }
-                            </tr>
+                                    @foreach (var item in Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().listSmrWithAvans)
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.Current?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                             @if (Model.listSmrWithPrepaymentByAmendment.Count > 1)
                             {
                                 for (var i = 1; i < Model.listSmrWithPrepaymentByAmendment.Count();
@@ -320,7 +347,7 @@
                                     <tr>
                                         @if (listSmr.NameAmendment != "Факт")
                                         {
-                                            <td rowspan="2">
+                                            <td rowspan="@miniRow">
                                                 <div>
                                                     Дс <span>@listSmr.NameAmendment</span>
                                                 </div>
@@ -328,7 +355,7 @@
                                         }
                                         else
                                         {
-                                            <td rowspan="2">
+                                            <td rowspan="@miniRow">
                                                 @foreach (var item in Model.listFiles)
                                                 {
                                                     <span>
@@ -340,7 +367,7 @@
 
                                         @if (listSmr.NameAmendment != "Факт")
                                         {
-                                            <td rowspan="2">
+                                            <td rowspan="@miniRow">
                                                 <span>
                                                     План
                                                 </span>
@@ -348,46 +375,63 @@
                                         }
                                         else
                                         {
-                                            <td rowspan="2">
+                                            <td rowspan="@miniRow">
                                                 <span>
                                                     Факт
                                                 </span>
                                             </td>
                                         }
-                                        <td>
-                                            <span>
-                                                Целевой
-                                            </span>
-                                        </td>
+                                        @if (ViewData["Target"] != null)
+                                        {
+                                            <td>
+                                                <span>
+                                                    Целевой
+                                                </span>
+                                            </td>
+                                        }
                                         @foreach (var item in listSmr.listSmrWithAvans)
                                         {
-                                            <td class="text-end" rowspan="2">
+                                            <td class="text-end" rowspan="@miniRow">
                                                 <span>
                                                     @item.Smr?.ToString("N2")
                                                 </span>
                                             </td>
-                                            <td class="text-end">
-                                                <span>
-                                                    @item.Target?.ToString("N2")
-                                                </span>
-                                            </td>
+                                            @if (ViewData["Target"] != null)
+                                            {
+                                                <td class="text-end">
+                                                    <span>
+                                                        @item.Target?.ToString("N2")
+                                                    </span>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-end">
+                                                    <span>
+                                                        @item.Current?.ToString("N2")
+                                                    </span>
+                                                </td>
+                                            }
                                         }
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            <span>
-                                                Текущий
-                                            </span>
-                                        </td>
-                                        @foreach (var item in listSmr.listSmrWithAvans)
-                                        {
-                                            <td class="text-end">
+                                    @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                                    {
+                                        <tr>
+                                            <td>
                                                 <span>
-                                                    @item.Current?.ToString("N2")
+                                                    Текущий
                                                 </span>
                                             </td>
-                                        }
-                                    </tr>
+                                            @foreach (var item in listSmr.listSmrWithAvans)
+                                            {
+                                                <td class="text-end">
+                                                    <span>
+                                                        @item.Current?.ToString("N2")
+                                                    </span>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
                                 }
                             }
                         </tbody>
@@ -399,7 +443,7 @@
 </div>
 <input id="Min" value="@Model.minStartPeriod?.ToString("MM-yyyy")" hidden />
 <input id="Max" value="@Model.maxEndPeriod?.ToString("MM-yyyy")" hidden />
-@section Scripts{
+@section Scripts {
     <script>
         let minDate = $('#Min').val();
         let endDate = $('#Max').val();

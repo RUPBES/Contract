@@ -81,6 +81,19 @@
     }
     Model.listSmrWithAvans = Model.listSmrWithAvans.OrderBy(x => x.Period).ToList();
     var countSmr = 2 + Model.listSmrWithAvans.Count * 2;
+
+    var miniRow = 0;
+    var maxRow = 0;
+    if (ViewData["Current"] != null)
+    {
+        miniRow++;
+        maxRow += 2;
+    }
+    if (ViewData["Target"] != null)
+    {
+        miniRow++;
+        maxRow += 2;
+    }
 }
 
 <div class="dm-overlay">
@@ -183,7 +196,7 @@
                                     else
                                     {
                                         <span>Согласно ДС @Model.NameAmendment</span>
-                                    }                                    
+                                    }
                                 </th>
                                 @foreach (var item in Model.listSmrWithAvans)
                                 {
@@ -212,44 +225,44 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td rowspan="4">
+                                <td rowspan="@maxRow">
                                     <span>
                                         @Model.NameObject
                                     </span>
                                 </td>
-                                <td rowspan="4">
+                                <td rowspan="@maxRow">
                                     <span>
                                         @Model.Client
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="4">
+                                <td class="text-end" rowspan="@maxRow">
                                     <span>
                                         @Model.TheoryTarget?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="4">
+                                <td class="text-end" rowspan="@maxRow">
                                     <span>
                                         @Model.TheoryCurrent?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="4">
+                                <td class="text-end" rowspan="@maxRow">
                                     <span>
                                         @Model.TargetRepaid?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="4">
+                                <td class="text-end" rowspan="@maxRow">
                                     <span>
                                         @Model.TargetReceived?.ToString("N2")
                                     </span>
                                 </td>
-                                <td class="text-end" rowspan="4">
+                                <td class="text-end" rowspan="@maxRow">
                                     <span>
                                         @((Model.TargetRepaid - Model.TargetReceived)?.ToString("N2"))
                                     </span>
                                 </td>
                                 @if (ViewData["Amend"] != null)
                                 {
-                                    <td rowspan="2">
+                                    <td rowspan="@miniRow">
                                         <div>
                                             <span class="btn-text">По контракту</span>
                                         </div>
@@ -257,53 +270,78 @@
                                 }
                                 else
                                 {
-                                    <td class="td-pointer" onclick="ShowAmendment()" rowspan="2">
-                                        <div>                                            
+                                    <td class="td-pointer" onclick="ShowAmendment()" rowspan="@miniRow">
+                                        <div>
                                             <span class="btn-text">ДС @Model.NameAmendment</span>
                                         </div>
                                     </td>
                                 }
-                                <td rowspan="2">
+                                <td rowspan="@miniRow">
                                     <span>
                                         План
                                     </span>
                                 </td>
-                                <td>
-                                    <span>
-                                        Целевой
-                                    </span>
-                                </td>
+                                @if (ViewData["Target"] != null)
+                                {
+                                    <td>
+                                        <span>
+                                            Целевой
+                                        </span>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <span>
+                                            Текущий
+                                        </span>
+                                    </td>
+                                }
                                 @foreach (var item in Model.listSmrWithAvans)
                                 {
-                                    <td class="text-end" rowspan="2">
+                                    <td class="text-end" rowspan="@miniRow">
                                         <span>
                                             @item.SmrPlan?.ToString("N2")
                                         </span>
                                     </td>
-                                    <td class="text-end">
-                                        <span>
-                                            @item.TargetPlan?.ToString("N2")
-                                        </span>
-                                    </td>
+                                    @if (ViewData["Target"] != null)
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.TargetPlan?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.CurrentPlan?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
                                 }
                             </tr>
-                            <tr>
-                                <td>
-                                    <span>
-                                        Текущий
-                                    </span>
-                                </td>
-                                @foreach (var item in Model.listSmrWithAvans)
-                                {
-                                    <td class="text-end">
+                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                            {
+                                <tr>
+                                    <td>
                                         <span>
-                                            @item.CurrentPlan?.ToString("N2")
+                                            Текущий
                                         </span>
                                     </td>
-                                }
-                            </tr>
+                                    @foreach (var item in Model.listSmrWithAvans)
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.CurrentPlan?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                             <tr>
-                                <td rowspan="2">
+                                <td rowspan="@miniRow">
                                     @foreach (var item in Model.listFiles)
                                     {
                                         <span>
@@ -312,45 +350,71 @@
                                         <br>
                                     }
                                 </td>
-                                <td rowspan="2">
+                                <td rowspan="@miniRow">
                                     <span>
                                         Факт
                                     </span>
                                 </td>
-                                <td>
-                                    <span>
-                                        Целевой
-                                    </span>
-                                </td>
+                                @if (ViewData["Target"] != null)
+                                {
+                                    <td>
+                                        <span>
+                                            Целевой
+                                        </span>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <span>
+                                            Текущий
+                                        </span>
+                                    </td>
+                                }
                                 @foreach (var item in Model.listSmrWithAvans)
                                 {
-                                    <td class="text-end" rowspan="2">
+                                    <td class="text-end" rowspan="@miniRow">
                                         <span>
                                             @item.SmrFact?.ToString("N2")
                                         </span>
                                     </td>
-                                    <td class="text-end">
-                                        <span>
-                                            @item.TargetFact?.ToString("N2")
-                                        </span>
-                                    </td>
+                                    @if (ViewData["Target"] != null)
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.TargetFact?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.CurrentFact?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+
                                 }
                             </tr>
-                            <tr>
-                                <td>
-                                    <span>
-                                        Текущий
-                                    </span>
-                                </td>
-                                @foreach (var item in Model.listSmrWithAvans)
-                                {
-                                    <td class="text-end">
+                            @if (ViewData["Target"] != null && ViewData["Current"] != null)
+                            {
+                                <tr>
+                                    <td>
                                         <span>
-                                            @item.CurrentFact?.ToString("N2")
+                                            Текущий
                                         </span>
                                     </td>
-                                }
-                            </tr>
+                                    @foreach (var item in Model.listSmrWithAvans)
+                                    {
+                                        <td class="text-end">
+                                            <span>
+                                                @item.CurrentFact?.ToString("N2")
+                                            </span>
+                                        </td>
+                                    }
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -361,7 +425,7 @@
 <input id="Min" value="@Model.minStartPeriod?.ToString("MM-yyyy")" hidden />
 <input id="Max" value="@Model.maxEndPeriod?.ToString("MM-yyyy")" hidden />
 
-@section Scripts{
+@section Scripts {
     <script>
         let minDate = $('#Min').val();
         let endDate = $('#Max').val();
