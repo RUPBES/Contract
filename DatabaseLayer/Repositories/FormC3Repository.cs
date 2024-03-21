@@ -1,12 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
-using Microsoft.SqlServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
@@ -74,18 +68,18 @@ namespace DatabaseLayer.Repositories
                     form.Period = entity.Period;
                     form.DateSigning = entity.DateSigning;
                     //form.TotalCost = entity.TotalCost;
-                    form.SmrCost = entity.SmrCost;
-                    form.PnrCost = entity.PnrCost;
-                    form.EquipmentCost = entity.EquipmentCost;
-                    form.OtherExpensesCost = entity.OtherExpensesCost;
-                    form.AdditionalCost = entity.AdditionalCost;
-                    form.MaterialCost = entity.MaterialCost;
-                    form.GenServiceCost = entity.GenServiceCost;
+                    form.SmrCost = entity.SmrCost ?? 0;
+                    form.PnrCost = entity.PnrCost ?? 0;
+                    form.EquipmentCost = entity.EquipmentCost ?? 0;
+                    form.OtherExpensesCost = entity.OtherExpensesCost ?? 0;
+                    form.AdditionalCost = entity.AdditionalCost ?? 0;
+                    form.MaterialCost = entity.MaterialCost??0;
+                    form.GenServiceCost = entity.GenServiceCost ?? 0;
                     form.Number = entity.Number;
                     form.IsOwnForces = entity.IsOwnForces;
-                    form.ContractId = entity.ContractId;
-                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment;
-                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment;
+                    form.ContractId = entity.ContractId ?? 0;
+                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment??0;
+                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment??0;
 
                     _context.FormC3as.Update(form);
                 }

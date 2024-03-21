@@ -9,10 +9,8 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using MvcLayer.Mapper;
-//using OpenIddict.Client;
 using Quartz;
 using System.Security.Claims;
-//using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace MvcLayer
 {
@@ -93,14 +91,19 @@ namespace MvcLayer
                 o.Scope.Add("profile");
                 o.Scope.Add("subject");
                 o.Scope.Add("email");
+
                 o.Scope.Add("ContrView");
                 o.Scope.Add("ContrEdit");
                 o.Scope.Add("ContrAdmin");
                 o.Scope.Add("ContrDelete");
+
                 o.Scope.Add("ContrOrgBes");
                 o.Scope.Add("ContrOrgTec2");
                 o.Scope.Add("ContrOrgTec5");
-                //o.Scope.Add("ContrOrgBesm");
+                o.Scope.Add("ContrOrgBesm");
+                o.Scope.Add("ContrOrgBetss");
+                o.Scope.Add("ContrOrgGes");
+
                 // requests a refresh token
                 o.Scope.Add("offline_access");               
                 o.TokenValidationParameters = new TokenValidationParameters

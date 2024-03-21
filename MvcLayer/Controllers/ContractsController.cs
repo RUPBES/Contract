@@ -149,7 +149,7 @@ namespace MvcLayer.Controllers
             }
             ViewData["returnContractId"] = returnContractId;
             ViewBag.MultipleContractId = id;
-
+            
             return View();
         }
 
@@ -593,7 +593,7 @@ namespace MvcLayer.Controllers
             {
                 return View();
             }
-
+             
             var contract = _contractService.GetById(id);
 
             if (contract != null)
@@ -607,6 +607,8 @@ namespace MvcLayer.Controllers
                     {
                         //вычитаем стоимости работ подобъекта из глав.договора
                         _scopeWorkService.RemoveCostsOfMainContract(mainContractId, contract.Id);
+                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true);
+                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true, !true);
                     }
                     else
                     {
@@ -614,13 +616,14 @@ namespace MvcLayer.Controllers
                         var costs = scpId.HasValue ? _swCostService.Find(x => x.ScopeWorkId == scpId) : new List<SWCostDTO>();
 
                         _scopeWorkService.AddOrSubstractCostsOwnForceMnContract(mainContractId, (List<SWCostDTO>)costs, 1);
+                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, false);
                     }
+
                     //удаляем объемы работ подобъектов, после чего удаляем подобъект
                     _contractService.DeleteAfterScopeWork(id);
 
                     //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
-
-                    ///проверить на нулевые значения у главного договора
+                    //проверить на нулевые значения у главного договора
                     if (contract.IsOneOfMultiple)
                     {
                         var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
@@ -630,6 +633,7 @@ namespace MvcLayer.Controllers
                             {
                                 var contractEdit = _contractService.GetById((int)contract.MultipleContractId);
                                 _contractService.DeleteScopeWorks((int)contract.MultipleContractId);
+                                _formService.DeleteNestedFormsByContrId((int)contract.MultipleContractId);
                                 contractEdit.IsMultiple = false;
                                 _contractService.Update(contractEdit);
                             }
@@ -638,7 +642,7 @@ namespace MvcLayer.Controllers
                                 return BadRequest();
                             }
                         }
-                    }
+                    }                   
                 }
                 else
                 {
@@ -843,16 +847,8 @@ namespace MvcLayer.Controllers
 
             }
             else
-            {
-                TempData["Message"] = "Заполните объем работ";
-                var urlReturn = doc.Id;
-                if (doc.AgreementContractId != null)
-                    urlReturn = (int)doc.AgreementContractId;
-                else if (doc.SubContractId != null)
-                    urlReturn = (int)doc.SubContractId;
-                else if (doc.MultipleContractId != null)
-                    urlReturn = (int)doc.MultipleContractId;
-                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            {                
+                return PartialView("_Message", new ModalViewVodel{ message="Заполните объем работ",header="Информирование", textButton = "Хорошо" });
             }
             if (lastScopeOwn != null)
             {

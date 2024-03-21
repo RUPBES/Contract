@@ -247,7 +247,7 @@ namespace MvcLayer.Controllers
                     //если генконтракт, присоздании впервый раз, создаем и объем собст. силами, с теми же значениями (далее их просто обновлять будем)
                     if (!isNotGenContract && newScpId.HasValue)
                     {
-                        if (_scopeWork.GetById((int)newScpId) is null)
+                        if (_scopeWork.GetById((int)newScpId) is not null)
                         {
                             scopeWork.IsOwnForces = true;
                             _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
