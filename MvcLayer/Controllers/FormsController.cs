@@ -195,7 +195,8 @@ namespace MvcLayer.Controllers
                     var formOwnForce = _formService.Find(x => x.IsOwnForces == true && x.ContractId == formViewModel.ContractId).LastOrDefault();
                     if (formOwnForce is not null)
                     {
-                        UpdateOwnForcesForm(formViewModel, (int)formViewModel.ContractId, true);
+                        _formService.UpdateOwnForceMnForm(_mapper.Map<FormDTO>(formViewModel), (int)formViewModel.ContractId, 1);
+                        //UpdateOwnForcesForm(formViewModel, (int)formViewModel.ContractId, true);
                     }
                     else
                     {
