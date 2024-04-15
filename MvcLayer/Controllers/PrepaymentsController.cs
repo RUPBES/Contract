@@ -300,7 +300,8 @@ namespace MvcLayer.Controllers
                 obj.Period = date;
                 prep = _prepaymentFact.GetLastPrepayment(contractId);
                 if (prep != null)
-                {                    
+                {
+                    prep = _prepaymentFact.GetLastPrepayment(contractId);
                     var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
                     && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
                      var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
