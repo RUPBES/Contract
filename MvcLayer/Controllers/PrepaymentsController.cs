@@ -3,17 +3,10 @@ using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using Castle.Components.DictionaryAdapter.Xml;
-using DatabaseLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SqlServer.Server;
 using MvcLayer.Models;
 using MvcLayer.Models.Reports;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Drawing.Drawing2D;
 
 namespace MvcLayer.Controllers
 {
@@ -105,10 +98,24 @@ namespace MvcLayer.Controllers
                 }
                 var orgId = _contractOrganizationService.GetById(contractId);
                 answer.Client = _organization.GetNameByContractId(contractId);
+
                 answer.TheoryCurrent = 0;
                 answer.TheoryTarget = 0;
-                answer.TargetReceived = _form.Find(x => x.ContractId == contractId).Sum(x => x.OffsetTargetPrepayment);
-                answer.TargetRepaid = 0;
+
+                int prepaymentId = prepCheck.Where(x => x.IsChange == false).FirstOrDefault().Id;
+                var sumOfTakePrepayment = _prepaymentTake.Find(x => x.PrepaymentId == prepaymentId);
+                answer.TargetReceived = 0;
+                
+                foreach (var item in sumOfTakePrepayment)
+                {
+                    var sum = item.IsRefund.HasValue && item.IsRefund == false ? item.Total : (-1) * item?.Total;
+                    answer.TargetReceived += sum;
+                }
+               
+                answer.TargetRepaid = _form.Find(x => x.ContractId == contractId).Sum(x => x.OffsetTargetPrepayment);
+
+
+
                 answer.NameAmendment = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).Select(x => x.Number).LastOrDefault();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
                 var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
@@ -291,11 +298,12 @@ namespace MvcLayer.Controllers
             {
                 var obj = new ItemPrepaymentTakeViewModel();
                 obj.Period = date;
+                prep = _prepaymentFact.GetLastPrepayment(contractId);
                 if (prep != null)
                 {                    
                     var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
                     && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
-                    var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
+                     var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
                     && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
                     if (ob != null)
                     {
@@ -343,7 +351,7 @@ namespace MvcLayer.Controllers
                         {
                             foreach (var contract in contr)
                             {
-                                prep = _prepayment.GetLastPrepayment(contract);
+                                prep = _prepaymentFact.GetLastPrepayment(contract);
                                 facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
                                         && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();                                
                                 if (facts.Count > 0)
@@ -693,6 +701,13 @@ namespace MvcLayer.Controllers
                 //находим  по объему работ начало и окончание периода
                 var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
                 var contract = _contractService.GetById(contractId);
+
+                //старт берем из даты заключения договора, если она раньше начала работ, то авансы должны вводиться с начала договора
+                if ((period?.Item1.Year >= contract.Date?.Year) && (period?.Item1.Month > contract.Date?.Month))
+                {
+                    period = ((DateTime, DateTime)?)(contract.Date, period.Value.Item2);
+                }
+
                 if (contract.IsOneOfMultiple)
                 {
                     var contractGen = _contractService.GetById((int)contract.MultipleContractId);

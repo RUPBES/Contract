@@ -8,5 +8,6 @@
         string? GetTypeOfPaymentForWork(int number);
         string? GetTypeOfContract(int number);
         string GetFileClass(string type);
+        DateTime? GetDateFromString(string str);
     }
 }

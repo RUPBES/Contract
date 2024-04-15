@@ -3,14 +3,14 @@ using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
 using System.Text;
-using Contract = DatabaseLayer.Models.Contract;
+using Contract = DatabaseLayer.Models.KDO.Contract;
 
 namespace BusinessLayer.Services
 {
@@ -38,7 +38,7 @@ namespace BusinessLayer.Services
             {
                 if (_database.Contracts.GetById(item.Id) is null)
                 {
-                    var contract = _mapper.Map<DatabaseLayer.Models.Contract>(item);
+                    var contract = _mapper.Map<Contract>(item);
 
                     _database.Contracts.Create(contract);
                     _database.Save();

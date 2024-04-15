@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
+using System.Text;
 
 namespace BusinessLayer.Helpers
 {
@@ -87,6 +88,80 @@ namespace BusinessLayer.Helpers
             "zip" => "zip-file",
             "rar" => "zip-file",
             _ => "default-file"
+        };
+
+
+        /// <summary>
+        /// Получить дату, из строки которую не парсит стандартный метод TryParce
+        /// </summary>
+        /// <param name="str">строка с датой</param>
+        /// <returns>дата</returns>
+        public DateTime? GetDateFromString(string str)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+
+            var resultStr = str.Trim();
+            var bytesStr = Encoding.ASCII.GetBytes(resultStr);
+
+            //перебираем массив кодов (каждый код - код конкретной буквы в ASCII),
+            //если встречается латинский символ, заменяем его на символ из кириллицы в строке resultStr
+            foreach (var item in bytesStr)
+            {
+                if (item == 32)
+                {
+                    break;
+                }
+
+                if (item != 63 && item != 32)
+                {
+                    var chars = GetCharactersForReplace(item);
+                    if (chars is not null)
+                    {
+                        resultStr = resultStr.Replace((char)(chars?.Item1), (char)(chars?.Item2));
+                    }
+                }
+
+            }
+
+            DateTime dateTime;
+            bool isParced = DateTime.TryParse(resultStr, out dateTime);
+
+            return (isParced ? dateTime : null);
+        }
+
+        /// <summary>
+        /// метод возвращает латинский символ и соответствующий ему символ кириллицы
+        /// </summary>
+        /// <param name="codeASCII">Код ASCII, номер символа в таблице</param>
+        /// <returns>Кортеж соответствующего латинскому символу, кирилицы символ</returns>
+        public (char, char)? GetCharactersForReplace(int codeASCII) => codeASCII switch
+        {
+            65 => ('A', 'А'),
+            97 => ('a', 'а'),
+            66 => ('B', 'В'),
+            67 => ('C', 'С'),
+            99 => ('c', 'с'),
+            69 => ('E', 'Е'),
+            101 => ('e', 'е'),
+            72 => ('H', 'Н'),
+            75 => ('K', 'К'),
+            77 => ('M', 'М'),
+            //73 => ('I', 'е'),
+            79 => ('O', 'О'),
+            111 => ('o', 'о'),
+            80 => ('P', 'Р'),
+            112 => ('p', 'р'),
+            84 => ('T', 'Т'),
+            88 => ('X', 'Х'),
+            120 => ('x', 'х'),
+            _ => null
         };
 
     }

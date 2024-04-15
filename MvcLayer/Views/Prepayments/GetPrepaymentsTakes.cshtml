@@ -138,10 +138,10 @@
                                     </span>
                                 </th>
                                 @foreach (var item in Model.List)
-                                {
-                                    countYear++;
+                                {                                    
                                     if (item == Model.List.Last())
                                     {
+                                        countYear++;
                                         countYear++;
                                         <th colspan="@countYear">
                                             <span>
@@ -156,9 +156,10 @@
                                                 @TempYear
                                             </span>
                                         </th>
-                                        TempYear = 1;
-                                        countYear = item.Period.Value.Year;
+                                        countYear = 0;                                        
+                                        TempYear = item.Period.Value.Year;
                                     }
+                                    countYear++;
                                 }
                             </tr>
                             <tr>
@@ -166,7 +167,7 @@
                                 {
                                     <th>
                                         <span>
-                                            @item.Period.Value.ToString("MMMM")
+                                            @item?.Period?.ToString("MMMM")
                                         </span>
                                     </th>
                                 }

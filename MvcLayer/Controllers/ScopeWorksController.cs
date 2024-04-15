@@ -5,12 +5,9 @@ using BusinessLayer.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
-using Microsoft.Extensions.Hosting;
-using DatabaseLayer.Models;
-using System.Diagnostics.Contracts;
-using static System.Formats.Asn1.AsnWriter;
 using MvcLayer.Models.Reports;
-using System.Runtime.Intrinsics.X86;
+using BusinessLayer.Interfaces.CommonInterfaces;
+using DatabaseLayer.Models.KDO;
 
 namespace MvcLayer.Controllers
 {
@@ -26,11 +23,13 @@ namespace MvcLayer.Controllers
         private readonly IFormService _formService;
         private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
+        private readonly IParsService _pars;
+
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
-            IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService, 
-            IPrepaymentService prepayment)
+            IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService,
+            IPrepaymentService prepayment, IParsService parser)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -41,6 +40,7 @@ namespace MvcLayer.Controllers
             _amendmentService = amendmentService;
             _contractOrganizationService = contractOrganizationService;
             _prepayment = prepayment;
+            _pars = parser;
         }
 
         public IActionResult Index()
@@ -89,31 +89,31 @@ namespace MvcLayer.Controllers
                         {
                             start = amendment.DateBeginWork;
                         }
-                            else if (contract.DateBeginWork != null)
-                            {
-                                start = contract.DateBeginWork;
-                            }
-                                else
-                                {
-                                    TempData["Message"] = "Не заполнена дата начала работ!";
-                                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                                }
+                        else if (contract.DateBeginWork != null)
+                        {
+                            start = contract.DateBeginWork;
+                        }
+                        else
+                        {
+                            TempData["Message"] = "Не заполнена дата начала работ!";
+                            var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                            return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                        }
 
                         if (amendment.DateEndWork != null)
                         {
                             end = amendment.DateEndWork;
                         }
-                            else if (contract.DateEndWork != null)
-                            {
-                                end = contract.DateEndWork;
-                            }
-                                else
-                                {
-                                    TempData["Message"] = "Не заполнена дата окончания работ!";
-                                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                                }
+                        else if (contract.DateEndWork != null)
+                        {
+                            end = contract.DateEndWork;
+                        }
+                        else
+                        {
+                            TempData["Message"] = "Не заполнена дата окончания работ!";
+                            var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                            return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                        }
                     }
                     else
                     {
@@ -121,22 +121,22 @@ namespace MvcLayer.Controllers
                         {
                             start = contract.DateBeginWork;
                         }
-                            else
-                            {
-                                TempData["Message"] = "Не заполнена дата начала работ!";
-                                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                            }
+                        else
+                        {
+                            TempData["Message"] = "Не заполнена дата начала работ!";
+                            var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                            return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                        }
                         if (contract.DateEndWork != null)
                         {
                             end = contract.DateEndWork;
                         }
-                            else
-                            {
-                                TempData["Message"] = "Не заполнена дата окончания работ!";
-                                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                            }
+                        else
+                        {
+                            TempData["Message"] = "Не заполнена дата окончания работ!";
+                            var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                            return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                        }
                     }
                     while (Checker.LessOrEquallyFirstDateByMonth((DateTime)start, (DateTime)end))
                     {
@@ -347,14 +347,20 @@ namespace MvcLayer.Controllers
                             _scopeWork.AddOrSubstractCostsOwnForceMnContract(mainContractId, new List<SWCostDTO> { costs }, 1);
                         }
                     }
+                    else
+                    {
+                        _scopeWork.RemoveExistOwnForce((int)scpId, (int)id);
+                    }
                 }
-            }
 
-            _swCostService.Delete((int)id);
-            var isLastSwCost = _swCostService.Find(x => x.ScopeWorkId == scpId).Count() > 0 ? false : true;
-            if (isLastSwCost)
-            {
-                _scopeWork.Delete((int)scpId);
+
+                _swCostService.Delete((int)id);
+                var isLastSwCost = _swCostService.Find(x => x.ScopeWorkId == scpId).Count() > 0 ? false : true;
+                if (isLastSwCost)
+                {
+                    _scopeWork.DeleteAllScopeWorkContract((int)scpId);
+
+                }
             }
             ViewData["reload"] = "Yes";
             return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
@@ -538,12 +544,12 @@ namespace MvcLayer.Controllers
 
         public IActionResult DetailsCostDeviation(int contractId)
         {
-            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+            Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == contractId ||
                 w.AgreementContractId == contractId ||
                 w.MultipleContractId == contractId ||
                 w.SubContractId == contractId;
 
-            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
             {
                 NameObject = s.NameObject,
                 Number = s.Number,
@@ -739,15 +745,15 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "ContrEditPolicy")]
-        public IActionResult Edit(int id, int contractId, int returnContractId = 0)
+        public IActionResult Edit(int id, int contractId, int returnContractId = 0, List<SWCostDTO> costs = null)
         {
             var ob = _contractService.GetById(contractId);
             if (ob.IsEngineering == true)
                 ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
-            var obj = _swCostService.GetById(id);
-            return View(_mapper.Map<SWCostViewModel>(obj));
+            //var obj = costs is not null ? costs : _swCostService.GetById(id);
+            return View(_mapper.Map<SWCostViewModel>(_swCostService.GetById(id)/*obj*/));
         }
 
         [HttpPost]
@@ -786,6 +792,78 @@ namespace MvcLayer.Controllers
         {
             return PartialView("_Period", Id);
         }
+
+        [Authorize(Policy = "ContrAdminPolicy")]
+        public ActionResult GetScopeWorkByFile(int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+
+        public ActionResult GetDataScopes(string path, int contractId, int returnContractId, /*string formId,*/ int page = 0)
+        {
+            try
+            {
+                var answer = _pars.GetScopeWorks(path, page);
+                if (answer is null)
+                {
+                    throw new Exception();
+                }
+
+                //int contId = 0;
+                //bool isInt = int.TryParse(contractId, out contId);
+
+                answer.ContractId = contractId /*contId*/;
+                answer.IsOwnForces = false;
+
+                var amendment = _amendmentService.Find(x => x.ContractId == contractId).OrderBy(o => o.Date).LastOrDefault();
+                var contract = _contractService.GetById(contractId);
+                if (amendment != null)
+                {
+                    ViewData["contractPrice"] = amendment.ContractPrice;
+                }
+                else
+                {
+                    ViewData["contractPrice"] = contract.ContractPrice;
+                }
+
+                //ViewData["IsEngin"] = isInt && contId > 0 ? _contractService.GetById(contId).IsEngineering : false;
+                //ViewData["path"] = path;
+                //ViewData["forId"] = formId;
+                ViewData["contractId"] = contractId;
+                ViewData["returnContractId"] = returnContractId;
+
+                FileInfo fileInf = new FileInfo(path);
+                if (fileInf.Exists)
+                {
+                    fileInf.Delete();
+                }
+
+                return View("CreateScopeWorkByFile", _mapper.Map<ScopeWorkViewModel>(answer));
+            }
+            catch
+            {
+                FileInfo fileInf = new FileInfo(path);
+                if (fileInf.Exists)
+                {
+                    fileInf.Delete();
+                }
+                return PartialView("_error", "Загрузите файл excel (кроме Excel книга 97-2033)");
+            }
+        }
+
+
+        [Authorize(Policy = "ContrAdminPolicy")]
+        public ActionResult CreateScopeWorkByFile(string model, int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+
+
+
 
 
         #region AdditionsMethods

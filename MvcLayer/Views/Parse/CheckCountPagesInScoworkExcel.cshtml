@@ -1,0 +1,40 @@
+﻿@model IEnumerable<ExcelWorksheet>
+@using OfficeOpenXml;
+@{
+    var contractId = int.Parse(ViewBag.contrId);
+    var returnContractId = int.Parse(ViewBag.returnContrId);
+    // var list = Form.GetFreeForms(contractId);
+}
+
+<style>
+    .form_select {
+        display: flex;
+        flex-direction: column;
+    }
+</style>
+
+<form id="target" asp-action="GetDataScopes" asp-controller="ScopeWorks" asp-route-path="@ViewBag.path">
+    <input name="contractId" value="@contractId" hidden />
+    <input name="returnContractId" value="@returnContractId" hidden />
+    <div>
+        <label class="control-label">Выберите необходимую страницу в Excel:</label>
+        <select name="page" id="ex" class="form-select">
+            @foreach (var item in Model)
+            {
+                <option value="@item.Index">
+                    <span>
+                        @item.Name
+                    </span>
+                </option>
+            }
+        </select>
+    </div>
+</form>
+
+
+<script type="text/javascript">
+    $("#ex").on("change", function () {
+        $("#target").trigger("submit");
+    });
+</script>
+

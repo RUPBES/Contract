@@ -1,6 +1,6 @@
-﻿using DatabaseLayer.Models;
+﻿using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
-using File = DatabaseLayer.Models.File;
+using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Data;
 
@@ -554,7 +554,7 @@ public partial class ContractsContext : DbContext
                 .HasConstraintName("FK_EstimateDocFile_File_Id");
         });
 
-        modelBuilder.Entity<Models.File>(entity =>
+        modelBuilder.Entity<File>(entity =>
         {
             entity.ToTable("File");
 

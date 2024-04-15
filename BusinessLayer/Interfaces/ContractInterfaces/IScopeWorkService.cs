@@ -1,6 +1,6 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 
 namespace BusinessLayer.Interfaces.ContractInterfaces
 {
@@ -19,6 +19,9 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         void AddOrSubstractCostsOwnForceMnContract(int? mainOwnContrId, List<SWCostDTO> cost, int addOrSubstr);
         void RemoveCostsOfMainContract(int multipleContractId, int subObjId);
         void RemoveOneCostOfMainContract(int? mainContractScopeId, SWCostDTO cost);
-       
+        void RemoveExistOwnForce(int mainScopeId, int swCostId);
+        bool DeleteAllScopeWorkContract(int scopeWorkId);
+
+
     }
 }

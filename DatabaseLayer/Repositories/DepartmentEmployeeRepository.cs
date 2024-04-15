@@ -1,6 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseLayer.Repositories

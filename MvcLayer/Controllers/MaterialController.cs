@@ -3,7 +3,7 @@ using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using BusinessLayer.Services;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -404,12 +404,12 @@ namespace MvcLayer.Controllers
 
         public IActionResult DetailsCostDeviation(int contractId)
         {
-            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+            Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == contractId ||
                 w.AgreementContractId == contractId ||
                 w.MultipleContractId == contractId ||
                 w.SubContractId == contractId;
 
-            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
             {
                 NameObject = s.NameObject,
                 Number = s.Number,
