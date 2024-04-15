@@ -292,7 +292,8 @@ namespace MvcLayer.Controllers
                 var obj = new ItemPrepaymentTakeViewModel();
                 obj.Period = date;
                 if (prep != null)
-                {                    
+                {
+                    prep = _prepaymentFact.GetLastPrepayment(contractId);
                     var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
                     && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
                     var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
