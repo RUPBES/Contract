@@ -1,4 +1,4 @@
-﻿using DatabaseLayer.Models;
+﻿using DatabaseLayer.Models.KDO;
 namespace BusinessLayer.Models
 {
     public class MaterialDTO

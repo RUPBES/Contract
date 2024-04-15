@@ -17,14 +17,23 @@ namespace MvcLayer.Models.Reports
         public string? NameObject { get; set; }
         [DisplayName("Заказчик")]
         public string? Client { get; set; }
+
         [DisplayName("Целевого")]
         public decimal? TheoryTarget { get; set; }
+
         [DisplayName("Текущего")]
         public decimal? TheoryCurrent { get; set; }
+
+
+
+
         [DisplayName("Получено")]
         public decimal? TargetReceived { get; set; }
+
         [DisplayName("Погашено")]
         public decimal? TargetRepaid { get; set; }
+
+
         [DisplayName("Документ")]
         public string? NameAmendment { get; set; }
         [DisplayName("Файлы")]

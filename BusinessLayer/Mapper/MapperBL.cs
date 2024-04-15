@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 
 namespace BusinessLayer.Mapper
 {
@@ -30,7 +30,7 @@ namespace BusinessLayer.Mapper
             CreateMap<EstimateDocDTO, EstimateDoc>().ReverseMap();
             CreateMap<EstimateDocFileDTO, EstimateDocFile>().ReverseMap();
             CreateMap<FormC3a, FormDTO>().ReverseMap();
-            CreateMap<DatabaseLayer.Models.File, FileDTO>().ReverseMap();
+            CreateMap<DatabaseLayer.Models.KDO.File, FileDTO>().ReverseMap();
             CreateMap<Log, LogDTO>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
             CreateMap<MaterialDTO, MaterialGc>().ReverseMap();

@@ -4,6 +4,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -162,7 +163,7 @@ namespace BusinessLayer.Services
 
         public IEnumerable<PrepaymentDTO> FindByContractId(int id)
         {
-            return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.GetAll().Where(p => p.ContractId == id));
+            return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(p => p.ContractId == id));
         }
 
         public AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId)

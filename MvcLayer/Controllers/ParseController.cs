@@ -1,13 +1,7 @@
 ﻿using AutoMapper;
-using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.CommonInterfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
-using OfficeOpenXml;
-using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
@@ -16,18 +10,20 @@ namespace MvcLayer.Controllers
         private readonly IFileService _file;
         private readonly IWebHostEnvironment _env;
         private readonly IParsService _pars;
+        private readonly IExcelReader _excelReader;
+        private readonly IContractService _contractService;
+        private readonly IMapper _mapper;
 
-        public ParseController(IFileService file, IWebHostEnvironment env, IParsService pars)
+        public ParseController(IFileService file, IWebHostEnvironment env, IParsService pars, IExcelReader excelReader, IContractService contractService, IMapper mapper)
         {
             _file = file;
             _env = env;
             _pars = pars;
+            _excelReader = excelReader;
+            _contractService = contractService;
+            _mapper = mapper;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         public ActionResult DownloadFile(IFormCollection collection)
         {
@@ -55,7 +51,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                var answer = _pars.getListOfBook(path);
+                var answer = _excelReader.GetListOfBook(path);
                 if (answer.Count() < 1) { throw new Exception(); }
                 ViewData["path"] = path;
                 ViewData["contrId"] = contractId;
@@ -77,7 +73,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                var answer = _pars.getListOfBook(path);
+                var answer = _excelReader.GetListOfBook(path);
                 if (answer.Count() < 1) { throw new Exception(); }
                 ViewData["path"] = path;
                 ViewData["forId"] = formId;
@@ -94,6 +90,43 @@ namespace MvcLayer.Controllers
                 }
                 return PartialView("_error", "Загрузите файл excel (кроме Excel книга 97-2033)");
             }
+        }
+
+        public ActionResult CheckCountPagesInScoworkExcel(string path, string contractId, string returnContractId)
+        {
+            var workSheets = _excelReader.GetListOfBook(path);
+
+            if (workSheets.Count() == 1)
+            { 
+                return RedirectToAction("CreateScopeWorkByFile", "ScopeWorks", new { path = path, contractId = contractId, returnContractId = returnContractId/*, formId = formId*/ });
+            }
+
+            ViewData["path"] = path;
+            
+            ViewData["contrId"] = contractId;
+            ViewData["returnContrId"] = returnContractId;
+
+            return PartialView("CheckCountPagesInScoworkExcel",workSheets);
+        }
+
+        public ActionResult CheckCountPagesInExcel(string path, string contractId, string returnContractId, string controllerName = null, string actionName = null, string partialViewName = null)
+        {
+            var workSheets = _excelReader.GetListOfBook(path);
+            ViewData["PartialViewName"] = partialViewName;
+            if (workSheets.Count() == 1)
+            {
+                if (controllerName is not null && actionName is not null)
+                {
+                    return RedirectToAction(actionName, controllerName, new { path = path, contractId = contractId, returnContractId = returnContractId });
+                }
+                return RedirectToAction("", "Estimate", new { path = path, contractId = contractId, returnContractId = returnContractId });
+
+            }
+            else
+            {
+                return PartialView("_ChoosePagePartial", workSheets);
+            }
+
         }
     }
 }

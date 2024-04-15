@@ -31,9 +31,10 @@ namespace BusinessLayer.IoC
             services.AddScoped<ICommissionActService, CommissionActService>();
             services.AddScoped<ICorrespondenceService, CorrespondenceService>();
             services.AddScoped<IContractOrganizationService, ContractOrganizationService>();
-            services.AddScoped<IDepartmentService, DepartmentService>();
+            services.AddScoped<IExcelReader, ExcelReader>();
             services.AddScoped<IEstimateDocService, EstimateDocService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IFormService, FormService>();
             services.AddScoped<IMaterialService, MaterialService>();

@@ -1,6 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Repositories;
 using DatabaseLayer.Repositories.ViewRepo;
 
@@ -385,7 +385,7 @@ namespace DatabaseLayer
                 return estimateDocFileRepository;
             }
         }
-        public IRepository<Models.File> Files
+        public IRepository<Models.KDO.File> Files
         {
             get
             {

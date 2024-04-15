@@ -1,4 +1,4 @@
-﻿using DatabaseLayer.Models;
+﻿using DatabaseLayer.Models.KDO;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.Metrics;
 

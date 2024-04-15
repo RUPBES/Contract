@@ -5,7 +5,7 @@ using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNetCore.Authorization;
