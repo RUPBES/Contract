@@ -237,17 +237,18 @@
                                 </td>
                                 <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
+                                        @Model.TargetReceived?.ToString("N2")
+                                        
+                                    </span>
+                                </td>
+                                <td class="text-end" rowspan="@(countRow * miniRow)">
+                                    <span>
                                         @Model.TargetRepaid?.ToString("N2")
                                     </span>
                                 </td>
                                 <td class="text-end" rowspan="@(countRow * miniRow)">
                                     <span>
-                                        @Model.TargetReceived?.ToString("N2")
-                                    </span>
-                                </td>
-                                <td class="text-end" rowspan="@(countRow * miniRow)">
-                                    <span>
-                                        @((Model.TargetRepaid - Model.TargetReceived)?.ToString("N2"))
+                                        @((Model.TargetReceived - Model.TargetRepaid)?.ToString("N2"))
                                     </span>
                                 </td>
                                 @if (Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().NameAmendment != "Факт")
