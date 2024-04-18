@@ -1,8 +1,11 @@
-﻿@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+﻿@using BusinessLayer.Enums
+@using BusinessLayer.Models
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Convertor
 
-@{   
-    var contract = Contract.GetById(ViewBag.ContrId);
-    ViewData["Title"] = "Передать права на договор";   
+@{
+    ContractDTO contract = Contract.GetById(ViewBag.ContrId);
+    ViewData["Title"] = "Передать права на договор организации";
 }
 <style>
     .dm-modal {
@@ -33,29 +36,43 @@
         <div class="dm-cell">
             <div class="dm-modal">
                 <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>                   
+                    <label class="my-modal-title">@ViewData["Title"]</label>
                     <a asp-action="Index" asp-controller="Contracts" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
-                <form class="row align-items-center" style="max-width:700px;">
+                <form asp-action="ChangeOwner" class="row align-items-center" style="max-width:700px;">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <label>Организации</label>
-                    <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
-                    
-                    <select name="OwnerName" class="form-control js-chosen slt-add-organization">
+                    <input name="contrId" type="number" value="@ViewBag?.ContrId" hidden>
+                    <div class="row">
                         @if (contract is not null)
                         {
-                            @* var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId); *@
-                            <option selected value="@item?.Id">@item?.Name</option>
-                        }
-                        
+                            <div class="">
+                                <label class="control-label mb-3">От</label>
+                                <div>
+                                    <span style="font-weight:600;text-transform:uppercase;">@Convertor?.GetNameOrganizationByCode(contract.Owner)</span>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <label class="control-label mb-3">Кому</label>
+                                <select name="codeName" class="form-control js-chosen">
 
-                        @* @foreach (var item in )
-                        {
-                            <option value="@item.Id">@item.Name</option>
-                        } *@
-                    </select>
-                    <input type="submit" class="btn btn-primary" value="Сохранить">
+                                    @foreach (var item in Enum.GetValues<OrganizationEnum>())
+                                    {
+                                        string code = item.ToString();
+                                        var name = Convertor.GetNameOrganizationByCode(item.ToString());
+                                        if (!contract.Owner.Equals(item.ToString(), StringComparison.OrdinalIgnoreCase))
+                                        {                                           
+                                            <option value="@code">@name</option>
+                                        }
+                                    }
+
+                                </select>
+                            </div>
+                        }
+                        <div class="col-4">
+                            <input type="submit" class="btn btn-primary col-12" value="Сохранить">
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

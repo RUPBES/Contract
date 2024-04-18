@@ -9,5 +9,6 @@
         string? GetTypeOfContract(int number);
         string GetFileClass(string type);
         DateTime? GetDateFromString(string str);
+        string? GetNameOrganizationByCode(string code);
     }
 }
