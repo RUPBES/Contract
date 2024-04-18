@@ -9,7 +9,7 @@ using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class EmployeesController : Controller
     {
         private readonly IEmployeeService _employeesService;
@@ -63,7 +63,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<EmployeeViewModel>(employee));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create()
         {
             ViewData["ContractId"] = new SelectList(_employeesService.GetAll(), "Id", "Name");
@@ -72,7 +72,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
             var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
@@ -86,7 +86,7 @@ namespace MvcLayer.Controllers
             return View(employee);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _employeesService.GetAll() == null)
@@ -117,7 +117,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EmployeeViewModel employee)
         {
@@ -162,7 +162,7 @@ namespace MvcLayer.Controllers
         //    return View(employee);
         //}
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _employeesService.GetAll() == null)
@@ -180,7 +180,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
@@ -196,12 +196,14 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> ShowDelete()
         {
             return PartialView("_ViewDelete");
         }
 
         [HttpPost]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> ShowResultDelete(int id)
         {            
             _employeesService.Delete(id);

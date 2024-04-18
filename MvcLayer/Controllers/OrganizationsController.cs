@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class OrganizationsController : Controller
     {
         private readonly IOrganizationService _organizationService;
@@ -59,7 +59,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Create
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create()
         {
             return View();
@@ -70,7 +70,7 @@ namespace MvcLayer.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create( OrganizationViewModel organization)
         {
@@ -83,7 +83,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Edit/5
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _organizationService.GetAll() == null)
@@ -108,7 +108,7 @@ namespace MvcLayer.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(OrganizationViewModel organization)
         {          
@@ -132,7 +132,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations/Delete/5
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _organizationService.GetAll() == null)
@@ -151,7 +151,7 @@ namespace MvcLayer.Controllers
 
         // POST: Organizations/Delete/5
         [HttpPost, ActionName("Delete")]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

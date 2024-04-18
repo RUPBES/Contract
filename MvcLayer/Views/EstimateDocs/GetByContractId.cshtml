@@ -3,8 +3,12 @@
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Проектно-сметная документация";
     int backId = 0;
     if (ViewBag.returnContractId == 0)
@@ -107,23 +111,32 @@
                                         {
                                             <div>
                                                 <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                @if (isAdmin)
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                                 {
-                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                    @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                 }
                                             </div>
                                         }
                                     </td>
                                     <td>
-                                        <span class="icon file-add" title="Добавить файл к письму">
-                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.EstimateDocumentations" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        </span>
-                                        <span class="icon edit" title="Редактировать письмо">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        </span>
-                                        <span class="icon delete" title="Удалить письмо">
-                                            <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
-                                        </span>
+                                        @if (permissions is not null && permissions.IsCreator)
+                                        {
+                                            <span class="icon file-add" title="Добавить файл к письму">
+                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.EstimateDocumentations" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </span>
+                                        }
+                                        @if (permissions is not null && permissions.IsEditor)
+                                        {
+                                            <span class="icon edit" title="Редактировать письмо">
+                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </span>
+                                        }
+                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                        {
+                                            <span class="icon delete" title="Удалить письмо">
+                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                            </span>
+                                        }
                                     </td>
                                 </tr>
                             }

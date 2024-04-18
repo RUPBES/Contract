@@ -11,7 +11,7 @@ using DatabaseLayer.Models.KDO;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class ScopeWorksController : Controller
     {
         private readonly IContractService _contractService;
@@ -165,7 +165,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork, int contractId, int returnContractId = 0)
         {
             if (scopeWork is not null)
@@ -231,7 +231,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create(ScopeWorkViewModel scopeWork, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -305,13 +305,13 @@ namespace MvcLayer.Controllers
             return View(scopeWork);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> ShowDelete(int? id)
         {
             return PartialView("_ViewDelete");
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> ShowResultDelete(int? id)
         {
             var scpId = _swCostService.GetById((int)id).ScopeWorkId;
@@ -744,7 +744,7 @@ namespace MvcLayer.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public IActionResult Edit(int id, int contractId, int returnContractId = 0, List<SWCostDTO> costs = null)
         {
             var ob = _contractService.GetById(contractId);
@@ -757,7 +757,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
         {
             List<SWCostDTO> costs = new List<SWCostDTO>
@@ -793,7 +793,7 @@ namespace MvcLayer.Controllers
             return PartialView("_Period", Id);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult GetScopeWorkByFile(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -801,6 +801,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult GetDataScopes(string path, int contractId, int returnContractId, /*string formId,*/ int page = 0)
         {
             try
@@ -854,7 +855,7 @@ namespace MvcLayer.Controllers
         }
 
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateScopeWorkByFile(string model, int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;

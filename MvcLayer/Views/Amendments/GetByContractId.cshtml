@@ -3,15 +3,19 @@
 @model IEnumerable<MvcLayer.Models.AmendmentViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
+
     ViewData["Title"] = "Дополнительные соглашения";
     int backId = 0;
     if (ViewBag.returnContractId == 0)
         backId = ViewBag.contractId;
     else backId = ViewBag.returnContractId;
     var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
-    bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Amendments";
 }
@@ -122,23 +126,32 @@
                                         {
                                             <div>
                                                 <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                @if (isAdmin)
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                                 {
                                                     @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
                                                 }
                                             </div>
                                         }
                                     </td>
-                                    <td>                                    
-                                        <span class="icon file-add" title="Добавить файл к изменению">
-                                            <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        </span>
-                                        <span class="icon edit" title="Редактировать изменение по договору">
-                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                        </span>
-                                        <span class="icon delete" title="Удалить изменение по договору">
-                                            <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
-                                        </span>
+                                    <td>
+                                        @if (permissions is not null && permissions.IsCreator)
+                                        {
+                                            <span class="icon file-add" title="Добавить файл к изменению">
+                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </span>
+                                        }
+                                        @if (permissions is not null && permissions.IsEditor)
+                                        {
+                                            <span class="icon edit" title="Редактировать изменение по договору">
+                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                            </span>
+                                        }
+                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                        {
+                                            <span class="icon delete" title="Удалить изменение по договору">
+                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                            </span>
+                                        }
                                     </td>
                                 </tr>
                             }

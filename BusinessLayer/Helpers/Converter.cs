@@ -164,5 +164,21 @@ namespace BusinessLayer.Helpers
             _ => null
         };
 
+        /// <summary>
+        /// Получить по коду орган-ции ее название
+        /// </summary>
+        /// <param name="code">значение ENUM</param>
+        /// <returns>строка с названием организации</returns>
+        public string? GetNameOrganizationByCode(string code) => code switch
+        {
+            "ContrOrgBes" => "Руп",
+            "ContrOrgTec2" => "Средства республиканского бюджета",
+            "ContrOrgTec5" => "Собственные средства",
+            "ContrOrgBesm" => "Средства республиканского бюджета",
+            "ContrOrgBetss" => "Собственные средства",
+            "ContrOrgGes" => "Средства республиканского бюджета",
+            _ => null
+        };
+
     }
 }

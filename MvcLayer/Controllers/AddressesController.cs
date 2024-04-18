@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class AddressesController : Controller
     {
         private readonly IAddressService _addressService;
@@ -45,7 +45,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<AddressViewModel>(address));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         public IActionResult Create()
         {
             ViewData["OrganizationId"] = new SelectList(_addressService.GetAll(), "Id", "Id");
@@ -54,7 +54,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> Create([Bind("Id,FullAddress,PostIndex,OrganizationId")] AddressViewModel address)
         {
             if (ModelState.IsValid)
@@ -66,7 +66,7 @@ namespace MvcLayer.Controllers
             return View(address);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _addressService.GetAll() == null)
@@ -85,7 +85,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FullAddress,PostIndex,OrganizationId")] AddressViewModel address)
         {
             if (id != address.Id)
@@ -116,7 +116,7 @@ namespace MvcLayer.Controllers
             return View(address);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _addressService.GetAll() == null)
@@ -135,7 +135,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

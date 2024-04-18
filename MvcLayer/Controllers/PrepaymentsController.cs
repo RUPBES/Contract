@@ -10,7 +10,7 @@ using MvcLayer.Models.Reports;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class PrepaymentsController : Controller
     {
         private readonly IContractService _contractService;
@@ -392,6 +392,7 @@ namespace MvcLayer.Controllers
             return View(answer);
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreatePrepaymentTake(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -458,6 +459,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreatePrepaymentTake(PrepaymentsTakeAddViewModel[] model, int contractId, int returnContractId = 0)
         {
             foreach (var item in model)
@@ -475,7 +477,8 @@ namespace MvcLayer.Controllers
             }
             return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId, returnContractId });
         }
-        
+
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult AddRowPrepaymentTake(int type, int contractId, int returnContractId, int index, int number)
         {
             ViewData["contractId"] = contractId;
@@ -873,7 +876,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create(PrepaymentViewModel prepayment, int returnContractId = 0)
         {
             if (prepayment is not null)
@@ -897,7 +900,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditPrepayments(List<PrepaymentViewModel> prepayment, int returnContractId = 0)
         {
             if (prepayment is not null || prepayment.Count() > 0)
@@ -912,7 +915,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _prepayment.GetAll() == null)

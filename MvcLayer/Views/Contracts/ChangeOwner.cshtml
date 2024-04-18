@@ -1,0 +1,63 @@
+﻿@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+
+@{   
+    var contract = Contract.GetById(ViewBag.ContrId);
+    ViewData["Title"] = "Передать права на договор";   
+}
+<style>
+    .dm-modal {
+        background-color: lightsteelblue;
+    }
+
+    .close-btn {
+        color: red
+    }
+
+        .close-btn::after {
+            border: 2px solid #F00 !important;
+        }
+
+        .close-btn:hover::after {
+            border-color: red !important;
+            color: red !important;
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -ms-transform: scale(1);
+            transform: scale(1);
+            font-weight: bold;
+        }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>                   
+                    <a asp-action="Index" asp-controller="Contracts" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form class="row align-items-center" style="max-width:700px;">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <label>Организации</label>
+                    <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
+                    
+                    <select name="OwnerName" class="form-control js-chosen slt-add-organization">
+                        @if (contract is not null)
+                        {
+                            @* var item = Organization.GetById((int)Model?.ContractOrganizations[0]?.OrganizationId); *@
+                            <option selected value="@item?.Id">@item?.Name</option>
+                        }
+                        
+
+                        @* @foreach (var item in )
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        } *@
+                    </select>
+                    <input type="submit" class="btn btn-primary" value="Сохранить">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

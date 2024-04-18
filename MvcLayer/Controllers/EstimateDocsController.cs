@@ -8,7 +8,7 @@ using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class EstimateDocsController : Controller
     {
         private readonly IEstimateDocService _estimateDocService;
@@ -34,7 +34,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<EstimateDocViewModel>>(_estimateDocService.Find(x => x.ContractId == id)));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult Create(int contractId, int returnContractId = 0)
         {
             var obj = _estimateDocService.Find(e => e.ContractId == contractId).FirstOrDefault();
@@ -46,7 +46,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Create(EstimateDocViewModel estimateDoc, int returnContractId = 0)
         {
@@ -72,7 +72,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult Edit(int id, int? contractId = null, int returnContractId = 0)
         {
             var obj = _estimateDocService.GetById(id);
@@ -84,7 +84,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EstimateDocViewModel commissionAct, int returnContractId = 0)
         {
@@ -110,7 +110,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public ActionResult Delete(int id, int? contractId = null)
         {
             try

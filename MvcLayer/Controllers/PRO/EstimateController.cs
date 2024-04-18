@@ -35,7 +35,7 @@ namespace MvcLayer.Controllers.PRO
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         public ActionResult CreateScopeWorkByFile(string model, int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;

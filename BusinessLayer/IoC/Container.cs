@@ -37,6 +37,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IFormService, FormService>();
+            services.AddScoped<IHttpHelper, HttpHelper>();
             services.AddScoped<IMaterialService, MaterialService>();
             services.AddScoped<IMaterialCostService, MaterialCostService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
