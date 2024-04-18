@@ -983,6 +983,18 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
+        [HttpPost]
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult ChangeOwner(int contrId, string codeName)
+        {
+            if (contrId > 0 && !string.IsNullOrWhiteSpace(codeName))
+            {
+                var contract = _contractService.GetById(contrId);
+                contract.Owner = codeName;
+                _contractService.Update(contract);                
+            }
+            return RedirectToAction("Index", "Contracts");
+        }
 
         [Authorize(Policy = "EditPolicy")]
         public IActionResult ChangeStatus(string status, int contrId)
