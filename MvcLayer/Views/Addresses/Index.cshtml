@@ -1,14 +1,18 @@
 ﻿@model IEnumerable<MvcLayer.Models.AddressViewModel>
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
-    ViewData["Title"] = "Index";
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
+    ViewData["Title"] = "Адреса";
 }
 
-<h1>Index</h1>
+@if (permissions is not null && permissions.IsCreator)
+{
+    <p><a asp-action="Create">Create New</a></p>
+}
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -25,26 +29,31 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullAddress)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PostIndex)
-            </td>
-            <td>
-                @item.Organization?.Name
-            </td>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FullAddress)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PostIndex)
+                </td>
+                <td>
+                    @item.Organization?.Name
+                </td>
                 <td hidden>
                     @item.Organization?.Id
                 </td>
-            <td>
-                @* <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> | *@
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+                <td>
+                    @* <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> | *@
+
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    @if (permissions is not null && permissions.IsDeleter)
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

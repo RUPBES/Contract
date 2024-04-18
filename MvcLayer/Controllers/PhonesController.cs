@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class PhonesController : Controller
     {
         private readonly IPhoneService _phoneService;
@@ -48,7 +48,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<PhoneViewModel>(phone));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create()
         {
             ViewData["EmployeeId"] = new SelectList(_employeesService.GetAll(), "Id", "FIO");
@@ -58,7 +58,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public async Task<IActionResult> Create([Bind("Id,Number,OrganizationId,EmployeeId")] PhoneViewModel phone)
         {
             if (ModelState.IsValid)
@@ -71,7 +71,7 @@ namespace MvcLayer.Controllers
             return View(phone);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _phoneService.GetAll() == null)
@@ -93,7 +93,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Number,OrganizationId,EmployeeId")] PhoneViewModel phone)
         {
             if (id != phone.Id)
@@ -125,7 +125,7 @@ namespace MvcLayer.Controllers
             return View(phone);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _phoneService.GetAll() == null)
@@ -144,7 +144,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             if (_phoneService.GetAll() == null)

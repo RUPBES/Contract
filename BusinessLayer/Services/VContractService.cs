@@ -77,11 +77,11 @@ namespace BusinessLayer.Services
             IEnumerable<VContract> items;
             if (!String.IsNullOrEmpty(request))
             {     
-                items = _database.vContracts.FindContract(request).Where(x => list.Contains(x.Author) || list.Contains(x.Owner)); 
+                items = _database.vContracts.FindContract(request).Where(x => /*list.Contains(x.Author) ||*/ list.Contains(x.Owner)); 
             }
             else 
             { 
-                items = _database.vContracts.Find(x => list.Contains(x.Author) || list.Contains(x.Owner)); 
+                items = _database.vContracts.Find(x => /*list.Contains(x.Author) ||*/ list.Contains(x.Owner)); 
             }
             int count = items.Count();
 

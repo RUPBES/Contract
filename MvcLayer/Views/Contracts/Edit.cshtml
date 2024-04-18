@@ -421,7 +421,7 @@
                             bool? isValueValid = Model?.PaymentСonditionsRaschet?.Contains(subName, StringComparison.OrdinalIgnoreCase);
                             bool isDayValid = isValueValid == true ? true : false;
                             var number = Contract.GetDayOfRaschet(Model.Id);
-
+                            ViewBag.Days = number;
                             <div class="input-group mb-2">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text" style="display: block;">
@@ -627,9 +627,9 @@
             let dateEnd = $("#DateEndWork").datepicker('getDate');
             let dateEnter = $("#EnteringTerm").datepicker('getDate');
             let dateTerm = $("#ContractTerm").datepicker('getDate');
-
+            let datePlusOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), 1);
             if (dateEnter != null) {
-                let datePlusOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), 1);
+               
                 let dateDecOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), -1);
 
                 if (dateEnter && (!date || dateEnter <= date)) { $("#DateDC").datepicker('update', dateDecOne); }
@@ -814,11 +814,12 @@
         // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
         $(".checkChoise").click(function (e) {
             let elemNumber = $("#dayInput");
+            let days = @ViewBag.Days;
             if (elemNumber !== null || elemNumber !== undefined) {
                 //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                 $("#dayInput").parent().remove();
             }
-            $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+            $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' value='${days}' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
         });
     </script>
 }

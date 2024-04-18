@@ -1,9 +1,11 @@
 ﻿@using BusinessLayer.Enums;
 @model List<BusinessLayer.Models.FileDTO>
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
-
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 <link href="~/kendoui/upload_style.css" rel="stylesheet" />
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = $"Файлы договора";
     var isAdmin = true;
     string controller = ViewBag.redirectController is not null || ViewBag.redirectController == "Files" ? ViewBag.redirectController : "Contracts";
@@ -68,7 +70,7 @@
                                     </h4>
 
                                     <strong style="display:flex; align-items:center">
-                                        @if (isAdmin)
+                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                         {
                                             <div class="icon delete">
                                                 @Html.ActionLink("", "Delete", "Files", new {id = item.Id, redirectAction = "GetByContractId", redirectController="Files",fileCategory= FolderEnum.Contracts, contractId =@ViewBag.entityId,  pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})

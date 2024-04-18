@@ -2,8 +2,12 @@
 @using BusinessLayer.Enums;
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Переписка с заказчиком";
     bool isAdmin = true;
     string redirectAction = "Index";
@@ -66,18 +70,29 @@
                     {
                         <div>
                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                            @if (isAdmin)
+                            @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter))
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                             }
                         </div>
                     }
                 </td>
                 <td>
-                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Correspondences" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
-                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
+                    @if (permissions is not null && permissions.IsCreator)
+                    {
+                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Correspondences" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a>
+                        <span>|</span>
+                    }
+                    @if (permissions is not null && permissions.IsEditor)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a>
+                        <span>|</span>
+                    }
+                    @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter))
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a> <span>|</span>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a>
                 </td>
             </tr>
         }

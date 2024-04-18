@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class SelectionProceduresController : Controller
     {
         private readonly IContractService _contractService;
@@ -35,7 +35,7 @@ namespace MvcLayer.Controllers
 
         //при создании договора, автоматически создается запись в таблице "Процедура выбора" с Видом закупки,
         // поэтому необходимо найти созданную для данного договора проц.выбора и добавить все данные
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create(int contractId)
         {
             if (contractId > 0)
@@ -48,7 +48,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create(SelectionProcedureViewModel selectProcedure)
         {
             if (selectProcedure is not null)
@@ -68,7 +68,7 @@ namespace MvcLayer.Controllers
             return View(selectProcedure);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult Edit(int id, int? contractId = null)
         {
             ViewBag.contractId = contractId;
@@ -77,7 +77,7 @@ namespace MvcLayer.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(SelectionProcedureViewModel selectProcedure)
         {
             if (selectProcedure is not null)
@@ -101,7 +101,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _selectProcedureService.GetAll() == null)

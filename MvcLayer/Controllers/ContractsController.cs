@@ -7,12 +7,11 @@ using MvcLayer.Models;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using MvcLayer.Models.Reports;
-using Castle.Components.DictionaryAdapter.Xml;
 using BusinessLayer.Helpers;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class ContractsController : Controller
     {
         private readonly IContractOrganizationService _contractOrganizationService;
@@ -75,6 +74,7 @@ namespace MvcLayer.Controllers
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
             ViewData["CurrentFilter"] = searchString;
+            ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
             {
@@ -124,7 +124,7 @@ namespace MvcLayer.Controllers
             if (id == null || _contractService.GetAll() == null)
             {
                 return NotFound();
-            }           
+            }
 
             var contract = _contractService.GetById((int)id);
             if (contract == null)
@@ -134,13 +134,13 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create()
         {
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateSubObj(int? id, int returnContractId = 0)
         {
             if (id == null)
@@ -149,12 +149,12 @@ namespace MvcLayer.Controllers
             }
             ViewData["returnContractId"] = returnContractId;
             ViewBag.MultipleContractId = id;
-            
+
             return View();
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateSubObj(ContractViewModel viewModel)
         {
             var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
@@ -177,13 +177,14 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+
         /// <summary>
         /// Создание соглашения с филиалом
         /// </summary>
         /// <param name="id">Договора к которому добавляем субдоговор</param>
         /// <param name="nameObject">название объекта</param>
         /// <returns></returns>
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateAgr(int? id, string? nameObject)
         {
             if (id == null)
@@ -208,11 +209,10 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
-
-        [Authorize(Policy = "ContrAdminPolicy")]
         /// <summary>
         /// Создание  договора на оказание инжиниринговых услуг
         /// </summary> 
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateEngin()
         {
             ContractViewModel contract = new ContractViewModel();
@@ -230,13 +230,14 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+
         /// <summary>
         /// Создание субподрядного договора
         /// </summary>
         /// <param name="id">Договора к которому добавляем субдоговор</param>
         /// <param name="nameObject">название объекта</param>
         /// <returns></returns>
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateSub(int? id, string? nameObject)
         {
             if (id == null)
@@ -262,7 +263,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(ContractViewModel contract)
         {
@@ -299,7 +300,7 @@ namespace MvcLayer.Controllers
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
                 if (contract.PaymentCA.Count == 0) { contract.PaymentCA.Add("Без авансов"); }
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-                
+
                 if (contract.IsEngineering == true)
                     TempData["IsEngin"] = true;
                 contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
@@ -364,10 +365,10 @@ namespace MvcLayer.Controllers
 
                 if (contract.ContractPrice is null) contract.ContractPrice = 0;
                 if (contract.IsEngineering == true && contract.PaymentСonditionsPrice is null) contract.PaymentСonditionsPrice = 0;
-                var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));                
+                var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
                 if (ViewData["returnContractId"] != null)
                 {
-                    return RedirectToAction("ChoosePeriod","ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });
                     //return RedirectToAction(nameof(Details), new { id = contractId, returnContractId = ViewBag.returnContractId });
                 }
                 if (contract.IsEngineering == true)
@@ -375,14 +376,14 @@ namespace MvcLayer.Controllers
                     return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
                     //return RedirectToAction(nameof(Engineerings));
                 }
-                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId});
+                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
                 //return RedirectToAction(nameof(Index));
             }
 
             return View(contract);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -463,7 +464,7 @@ namespace MvcLayer.Controllers
             return View(viewContract);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditSubObj(int? id, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -480,7 +481,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
         {
             try
@@ -505,9 +506,8 @@ namespace MvcLayer.Controllers
             }
         }
 
-
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
         {
             if (contract.IsSubContract != true && contract.IsAgreementContract != true)
@@ -570,7 +570,8 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _contractService.GetAll() == null)
@@ -587,7 +588,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -596,7 +597,7 @@ namespace MvcLayer.Controllers
             {
                 return View();
             }
-             
+
             var contract = _contractService.GetById(id);
 
             if (contract != null)
@@ -645,7 +646,7 @@ namespace MvcLayer.Controllers
                                 return BadRequest();
                             }
                         }
-                    }                   
+                    }
                 }
                 else
                 {
@@ -656,16 +657,19 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public async Task<ActionResult> AddOrganization(ContractViewModel model)
         {
             return PartialView("_PartialAddOrganization", model);
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public async Task<ActionResult> AddEmployee(ContractViewModel model)
         {
             return PartialView("_PartialAddEmployee", model);
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public async Task<ActionResult> AddTypeWork(ContractViewModel model)
         {
             if (model.NameObject is null && model.IsSubContract == true)
@@ -675,6 +679,7 @@ namespace MvcLayer.Controllers
             return PartialView("_PartialAddTypeWork", model);
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult AddNewOrganization(ContractViewModel organization)
         {
             if (organization is not null && organization.ContractOrganizations[2].Organization is not null)
@@ -699,6 +704,7 @@ namespace MvcLayer.Controllers
             return BadRequest();
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult AddNewEmployee(ContractViewModel organization)
         {
             if (organization is not null && organization.EmployeeContracts[2].Employee is not null)
@@ -723,6 +729,7 @@ namespace MvcLayer.Controllers
             return BadRequest();
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult AddNewTypeWork(ContractViewModel organization)
         {
             if (organization is not null && organization.TypeWorkContracts[1].TypeWork is not null)
@@ -834,15 +841,15 @@ namespace MvcLayer.Controllers
                     viewModel.contractPrice.MaterialCost += item.MaterialCost;
                     viewModel.contractPrice.TotalCost += item.CostNds;
                     viewModel.contractPrice.TotalWithoutNds += item.CostNoNds;
-                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year,1,1), (DateTime)item.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period,new DateTime(DateTime.Today.Year, 12, 1)))
+                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
                     {
                         viewModel.todayScope.SmrCost += item.SmrCost;
                         viewModel.todayScope.PnrCost += item.PnrCost;
                         viewModel.todayScope.EquipmentCost += item.EquipmentCost;
                         viewModel.todayScope.OtherExpensesCost += item.OtherExpensesCost;
                         viewModel.todayScope.AdditionalCost += item.AdditionalCost;
-                        viewModel.todayScope.MaterialCost += item.MaterialCost;                        
+                        viewModel.todayScope.MaterialCost += item.MaterialCost;
                         viewModel.todayScope.TotalCost += item.CostNds;
                         viewModel.todayScope.TotalWithoutNds += item.CostNoNds;
                     }
@@ -850,8 +857,8 @@ namespace MvcLayer.Controllers
 
             }
             else
-            {                
-                return PartialView("_Message", new ModalViewVodel{ message="Заполните объем работ",header="Информирование", textButton = "Хорошо" });
+            {
+                return PartialView("_Message", new ModalViewVodel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
             }
             if (lastScopeOwn != null)
             {
@@ -907,7 +914,7 @@ namespace MvcLayer.Controllers
                 ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost;
                 ob.TotalWithoutNds = ob.TotalCost / (decimal)1.2;
                 viewModel.facts.Add(ob);
-                
+
                 if (Checker.LessFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 1, 1)))
                 {
                     viewModel.workTodayYear.SmrCost += item.SmrCost;
@@ -964,6 +971,20 @@ namespace MvcLayer.Controllers
             return PartialView("_ScopeWork", viewModel);
         }
 
+
+        [Authorize(Policy = "AdminPolicy")]
+        public IActionResult ChangeOwner(int contrId)
+        {
+            if (contrId > 0)
+            {
+                ViewBag.ContrId = contrId;
+                return View();
+            }
+            return RedirectToAction("Index", "Contracts");
+        }
+
+
+        [Authorize(Policy = "EditPolicy")]
         public IActionResult ChangeStatus(string status, int contrId)
         {
             if (!string.IsNullOrWhiteSpace(status) && contrId > 0)
@@ -988,7 +1009,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-
+        [Authorize(Policy = "EditPolicy")]
         public IActionResult UpdateStatus(int contractId, string status, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId == 0 ? contractId : returnContractId;
@@ -998,6 +1019,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "EditPolicy")]
         public IActionResult UpdateStatus(string status, int contractId = 0)
         {
 

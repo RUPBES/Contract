@@ -10,7 +10,7 @@ using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class FormsController : Controller
     {
         private readonly IContractService _contractService;
@@ -123,7 +123,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateForm(PeriodChooseViewModel model, int contractId = 0, int? returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -153,7 +153,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Create(FormViewModel formViewModel, int? returnContractId = 0)
         {
@@ -234,7 +234,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
             var contract = _contractService.GetById(contractId);
@@ -261,7 +261,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(FormViewModel formViewModel, int returnContractId = 0)
         {
@@ -333,7 +333,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public ActionResult Delete(int id, int returnContractId = 0)
         {
             try
@@ -392,7 +392,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateFormByFile(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -448,6 +448,8 @@ namespace MvcLayer.Controllers
             return View("AddForm", viewForm);
         }
 
+        
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult EditByFile(string path, int page, int id, int contractId, int returnContractId = 0)
         {
             var currentForm = _formService.GetById(id);
@@ -493,7 +495,7 @@ namespace MvcLayer.Controllers
             return View("Edit", _mapper.Map<FormViewModel>(currentForm));
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult ChooseMethodEdit(int id, int contractId, int returnContractId = 0)
         {
             ViewData["formId"] = id;

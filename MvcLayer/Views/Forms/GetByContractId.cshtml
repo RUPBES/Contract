@@ -5,9 +5,12 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
-
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = string.Empty;
     var id = ViewBag.contractId;
     int backId = 0;
@@ -276,7 +279,7 @@
                                                     {
                                                         <div>
                                                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                            @if (isAdmin)
+                                                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                                             {
                                                                 @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                             }
@@ -286,15 +289,25 @@
 
                                             </td>
                                             <td class="act-btns">
-                                                <span class="icon file-add" title="Добавить файл к форме">
-                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                @if (permissions is not null && permissions.IsCreator)
+                                                {
+                                                    <span class="icon file-add" title="Добавить файл к форме">
+                                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                    </span>
+                                                }
+                                                @if (permissions is not null && permissions.IsEditor)
+                                                {
+                                                    <span class="icon edit" title="Редактировать форму">
+                                                        <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                    </span>
+                                                }
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                {
+                                                    <span class="icon delete" title="Удалить форму">
+                                                        <a onclick="confirmI(@item.Id)"></a>
                                                 </span>
-                                                <span class="icon edit" title="Редактировать форму">
-                                                    <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                                </span>
-                                                <span class="icon delete" title="Удалить форму">
-                                                    <a onclick="confirmI(@item.Id)"></a>
-                                                </span>
+                                                }
+
                                             </td>
                                         }
                                         else
@@ -317,7 +330,7 @@
                                                 {
                                                     <div>
                                                         <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                        @if (isAdmin)
+                                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                                         {
                                                             @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                         }
@@ -325,15 +338,24 @@
                                                 }
                                             </td>
                                             <td>
-                                                <span class="icon file-add" title="Добавить файл к форме">
-                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                                </span>
-                                                <span class="icon edit" title="Редактировать форму">
-                                                    <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                                </span>
-                                                <span class="icon delete" title="Удалить форму">
-                                                    <a onclick="confirmI(@item.Id)"></a>
-                                                </span>
+                                                @if (permissions is not null && permissions.IsCreator)
+                                                {
+                                                    <span class="icon file-add" title="Добавить файл к форме">
+                                                        <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                    </span>
+                                                }
+                                                @if (permissions is not null && permissions.IsEditor)
+                                                {
+                                                    <span class="icon edit" title="Редактировать форму">
+                                                        <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                    </span>
+                                                }
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                {
+                                                    <span class="icon delete" title="Удалить форму">
+                                                        <a onclick="confirmI(@item.Id)"></a>
+                                                    </span>
+                                                }
                                             </td>
                                         }
                                     </tr>
@@ -416,7 +438,7 @@
                                                         {
                                                             <div>
                                                                 <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                                @if (!isAdmin)
+                                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                                                 {
                                                                     @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                                 }

@@ -45,7 +45,7 @@ namespace DatabaseLayer.Repositories.ViewRepo
         {   
             var list = org.Split(',');
             return _context.VContracts
-                .Where(x => list.Contains(x.Author) || list.Contains(x.Owner))
+                .Where(x => /*list.Contains(x.Author) ||*/ list.Contains(x.Owner))
                 .OrderByDescending(x => x.Id)
                 .Skip(skip)
                 .Take(take)
