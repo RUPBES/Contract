@@ -816,7 +816,7 @@ namespace MvcLayer.Controllers
             var doc = _contractService.GetById(id);
             var viewModel = new ScopeWorkContractViewModel();
             var lastScope = _scopeWorkService.GetLastScope(id);
-            var lastScopeOwn = _scopeWorkService.GetLastScope(id, true);
+            #region Заполнение данными из объема работ
             if (lastScope != null)
             {
                 lastScope.SWCosts = lastScope.SWCosts.OrderBy(x => x.Period).ToList();
@@ -855,52 +855,52 @@ namespace MvcLayer.Controllers
                         viewModel.todayScope.TotalWithoutNds += item.CostNoNds;
                     }
                 }
-
             }
             else
             {
                 return PartialView("_Message", new ModalViewVodel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
             }
-            if (lastScopeOwn != null)
-            {
-                lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
-                foreach (var item in lastScopeOwn.SWCosts)
-                {
-                    var ob = new ItemScopeWorkContract();
-                    ob.PnrCost = item.PnrCost;
-                    ob.SmrCost = item.SmrCost;
-                    ob.EquipmentCost = item.EquipmentCost;
-                    ob.OtherExpensesCost = item.OtherExpensesCost;
-                    ob.AdditionalCost = item.AdditionalCost;
-                    ob.MaterialCost = item.MaterialCost;
-                    ob.Period = item.Period;
-                    ob.TotalCost = item.CostNds;
-                    ob.TotalWithoutNds = item.CostNoNds;
-                    viewModel.scopesOwn.Add(ob);
+            #endregion
+            //if (lastScopeOwn != null)
+            //{
+            //    lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
+            //    foreach (var item in lastScopeOwn.SWCosts)
+            //    {
+            //        var ob = new ItemScopeWorkContract();
+            //        ob.PnrCost = item.PnrCost;
+            //        ob.SmrCost = item.SmrCost;
+            //        ob.EquipmentCost = item.EquipmentCost;
+            //        ob.OtherExpensesCost = item.OtherExpensesCost;
+            //        ob.AdditionalCost = item.AdditionalCost;
+            //        ob.MaterialCost = item.MaterialCost;
+            //        ob.Period = item.Period;
+            //        ob.TotalCost = item.CostNds;
+            //        ob.TotalWithoutNds = item.CostNoNds;
+            //        viewModel.scopesOwn.Add(ob);
 
-                    viewModel.contractPriceOwn.SmrCost += item.SmrCost;
-                    viewModel.contractPriceOwn.PnrCost += item.PnrCost;
-                    viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
-                    viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost;
-                    viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
-                    viewModel.contractPriceOwn.MaterialCost += item.MaterialCost;
-                    viewModel.contractPriceOwn.TotalCost += item.CostNds;
-                    viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
-                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
-                    {
-                        viewModel.todayScopeOwn.SmrCost += item.SmrCost;
-                        viewModel.todayScopeOwn.PnrCost += item.PnrCost;
-                        viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
-                        viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost;
-                        viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
-                        viewModel.todayScopeOwn.MaterialCost += item.MaterialCost;
-                        viewModel.todayScopeOwn.TotalCost += item.CostNds;
-                        viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
-                    }
-                }
+            //        viewModel.contractPriceOwn.SmrCost += item.SmrCost;
+            //        viewModel.contractPriceOwn.PnrCost += item.PnrCost;
+            //        viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
+            //        viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost;
+            //        viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
+            //        viewModel.contractPriceOwn.MaterialCost += item.MaterialCost;
+            //        viewModel.contractPriceOwn.TotalCost += item.CostNds;
+            //        viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
+            //        if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
+            //            Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
+            //        {
+            //            viewModel.todayScopeOwn.SmrCost += item.SmrCost;
+            //            viewModel.todayScopeOwn.PnrCost += item.PnrCost;
+            //            viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
+            //            viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost;
+            //            viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
+            //            viewModel.todayScopeOwn.MaterialCost += item.MaterialCost;
+            //            viewModel.todayScopeOwn.TotalCost += item.CostNds;
+            //            viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
+            //        }
+            //    }
 
-            }
+            //}
             var facts = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false).OrderBy(x => x.Period).ToList();
             foreach (var item in facts)
             {
@@ -971,7 +971,6 @@ namespace MvcLayer.Controllers
                 ViewData["Engin"] = true;
             return PartialView("_ScopeWork", viewModel);
         }
-
 
         [Authorize(Policy = "AdminPolicy")]
         public IActionResult ChangeOwner(int contrId)
