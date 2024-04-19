@@ -36,12 +36,17 @@ namespace MVC_layer.Controllers
         public IActionResult Message(string message, string header, string textButton)
         {            
             return PartialView("_Message", new ModalViewVodel(message, header, textButton));
-        }
+        }        
 
         public IActionResult MessageWithReload(string message, string header, string textButton)
         {
             ViewData["reload"] = "Yes";
             return PartialView("_Message", new ModalViewVodel(message, header, textButton));
+        }
+
+        public IActionResult ShowDeleteMessage()
+        {
+            return PartialView("_ViewDelete");
         }
 
     }

@@ -368,7 +368,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             int pageSize = 20;
             if (searchString != null)
             { pageNum = 1; }

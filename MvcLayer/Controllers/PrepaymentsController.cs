@@ -3,10 +3,14 @@ using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using MvcLayer.Models.Data;
 using MvcLayer.Models.Reports;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -437,7 +441,7 @@ namespace MvcLayer.Controllers
                                 #endregion
                                 ob.Period = i;
                                 listSmrWithAvans.Add(ob);
-                            }                            
+                            }
                             planlist.listSmrWithAvans = listSmrWithAvans;
                             #endregion
                         }
@@ -756,7 +760,7 @@ namespace MvcLayer.Controllers
             return PartialView("_AddRowPrepaymentsTake");
 
         }
-        
+
         /// <summary>
         /// Выбор периода для заполнения авансов, на основе заполненного объема работ
         /// </summary>
@@ -822,8 +826,8 @@ namespace MvcLayer.Controllers
                 };
                 #endregion
                 #region Проверка на наличие авансов и переход на View/Action
-                var prepaymentMain = _prepayment.Find(x => x.ContractId == contractId && x.IsChange != true).Select(x => x.Id).FirstOrDefault();                
-                if (prepaymentMain == 0) 
+                var prepaymentMain = _prepayment.Find(x => x.ContractId == contractId && x.IsChange != true).Select(x => x.Id).FirstOrDefault();
+                if (prepaymentMain == 0)
                 {
                     #region Переход на View создания авансов(План)
                     periodChoose.IsChange = false;
@@ -1042,6 +1046,125 @@ namespace MvcLayer.Controllers
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View(amendments);
+        }
+        /// <summary>
+        /// Получение частичного представления с плановыми авансами для view FormEditPrepaymentPlan
+        /// </summary>
+        /// <param name="prepaymentId"></param>
+        /// <param name="contractId"></param>
+        /// <returns></returns>
+        public IActionResult GetPrepaymentPlanByAmendment(int prepaymentId, int contractId, string current, string target)
+        {
+            var prepayment = new PrepaymentDTO();
+            var list = new List<PrepaymentPlanDTO>();
+            ViewData["Current"] = current;
+            ViewData["Target"] = target;
+            #region Нахождение prepayment
+            if (prepaymentId == 0)
+            {
+                prepayment = _prepayment.Find(x => x.ContractId == contractId).FirstOrDefault();
+            }
+            else
+            {
+                prepayment = _mapper.Map<PrepaymentDTO>(_prepayment.GetPrepaymentByAmendment(prepaymentId));
+            }
+            #endregion
+            #region Заполнение листа плановыми авансами, при отсутствии оставить ноль
+            if (prepayment != null)
+            {
+                list = _prepaymentPlan.Find(x => x.PrepaymentId == prepayment.Id).ToList();
+            }
+            #endregion
+            return PartialView("_GetPrepaymentPlanByAmendment", list);
+        }
+
+        [HttpGet]
+        [Authorize(Policy = "ContrEditPolicy")]
+        public async Task<IActionResult> EditPrepaymentPlan(int id)
+        {
+            if (id != null && id != 0)
+            {
+                var prepayment = _prepaymentPlan.Find(x => x.PrepaymentId == id).ToList();
+                var contractId = _prepayment.Find(x => x.Id == id).Select(x => x.ContractId).FirstOrDefault();
+                var returnContractId = _contractService.Find(x => x.Id == contractId).Select(x => x.MultipleContractId).FirstOrDefault();
+                #region Проверка есть ли условие о наличии авансов
+                #region Поиск условий авансов
+                var avans = _contractService.Find(x => x.Id == contractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+                if (avans == null && returnContractId != 0)
+                    avans = _contractService.Find(x => x.Id == returnContractId).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+                #endregion
+                if (avans != null)
+                {
+                    #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
+                    if (avans.Contains("Без авансов"))
+                    {
+                        TempData["Message"] = "Условие контракта - без авансов";
+                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+
+                    }
+                    #endregion
+                    #region Проверка условия авансов
+                    if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                    if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+                    #endregion
+                }
+                #endregion
+                #region Перегонка в пустой класс без виртуальный переменных
+                var list = new List<PrepaymentPlanViewModel>();
+                foreach(var item in prepayment)
+                {
+                    var ob = new PrepaymentPlanViewModel();
+                    ob.Id = item.Id;
+                    ob.WorkingOutValue = item.WorkingOutValue;
+                    ob.CurrentValue = item.CurrentValue;
+                    ob.TargetValue = item.TargetValue;
+                    ob.PrepaymentId = item.PrepaymentId;
+                    ob.Period = item.Period;
+                    list.Add(ob);
+                }
+                #endregion
+                return PartialView("_EditPrepaymentPlan", list);
+            }
+            else
+            { 
+                throw new Exception(); 
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "ContrEditPolicy")]
+        public async Task<IActionResult> EditPrepaymentPlan(List<PrepaymentPlanViewModel> prepayment)
+        {
+            if (prepayment is not null || prepayment.Count() > 0)
+            {
+                foreach (var item in prepayment)
+                {
+                    var ob = new PrepaymentPlanDTO();
+                    ob.Id = item.Id;
+                    ob.WorkingOutValue = item.WorkingOutValue;
+                    ob.CurrentValue = item.CurrentValue;
+                    ob.TargetValue = item.TargetValue;
+                    ob.PrepaymentId = item.PrepaymentId;
+                    ob.Period = item.Period;
+                    _prepaymentPlan.Update(ob);
+                }
+                return PartialView("_ResultMessage", "Удачно обновилось");
+            }
+
+            return PartialView("_ResultMessage", "Произошла ошибка");
+        }
+
+        [Authorize(Policy = "ContrAdminPolicy")]
+        public async Task<IActionResult> DeletePrepaymentPlan(int? id)
+        {
+            if (id == null || _prepayment.GetAll() == null)
+            {
+                return NotFound();
+            }
+
+            _prepayment.Delete((int)id);
+            return PartialView("_ResultMessage", "Успешно удалены записи.");
         }
     }
 }
