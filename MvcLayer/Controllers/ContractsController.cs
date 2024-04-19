@@ -108,6 +108,7 @@ namespace MvcLayer.Controllers
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
             ViewData["CurrentFilter"] = searchString;
+            ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
             {
