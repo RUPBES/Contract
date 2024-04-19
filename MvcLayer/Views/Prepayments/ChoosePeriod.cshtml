@@ -70,8 +70,6 @@
     var contract = Contract.GetById((int)Model.ContractId);
 }
 
-
-
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
@@ -88,7 +86,7 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
+                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
                     <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                     <input asp-for="ChangePrepaymentId" value="@Model?.ChangePrepaymentId" hidden />
                     <input asp-for="IsChange" value="@Model?.IsChange" hidden />
@@ -121,7 +119,6 @@
     </div>
 </div>
 
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -129,13 +126,6 @@
     <script type="text/javascript">
         $("#AmendId").on("change", function () {
             $("#target").trigger("submit");
-        });
-
-        $(document).ready(function () {
-
-            datepickerNull("input.datepickersNull");
-            dateTimepicker("input.datetimepickers");
-            datepicker("input.datepickers");
         });
     </script>
 }

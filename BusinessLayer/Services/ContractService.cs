@@ -6,6 +6,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
@@ -382,6 +383,7 @@ namespace BusinessLayer.Services
 
         public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org)
         {
+            var list = org.Split(',');
             Func<Contract, bool> where;
             Func<Contract, string> orderBy = o => o.NameObject;
             Func<Contract, Contract> select = s => new Contract
@@ -403,7 +405,7 @@ namespace BusinessLayer.Services
                 w.IsAgreementContract == false &&
                 w.IsOneOfMultiple == false &&
                 w.IsSubContract == false &&
-                (w.Author == org || w.Owner == org) &&
+                list.Contains(w.Owner) &&
                 (w.NameObject.Contains(request) || w.Number.Contains(request));
             }
             else
@@ -412,7 +414,7 @@ namespace BusinessLayer.Services
                 w.IsAgreementContract == false &&
                 w.IsOneOfMultiple == false &&
                 w.IsSubContract == false &&
-                (w.Author == org || w.Owner == org) ;
+                 list.Contains(w.Owner);
             }
             IEnumerable<Contract> items = _database.Contracts.Find(where:where, select:select).OrderBy(o => o.NameObject);
             count = items.Count();
@@ -423,11 +425,12 @@ namespace BusinessLayer.Services
 
         public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org)
         {
+            var list = org.Split(',');
             Func<Contract, bool> where = w => w.IsEngineering == false &&
                 w.IsAgreementContract == false &&
                 w.IsOneOfMultiple == false &&
                 w.IsSubContract == false &&
-                (w.Author == org || w.Owner == org);
+                list.Contains(w.Owner);
             Func<Contract, Contract> select = s => new Contract{
                 NameObject = s.NameObject,
                 Number = s.Number,
