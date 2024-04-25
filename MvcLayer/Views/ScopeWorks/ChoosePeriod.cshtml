@@ -141,7 +141,7 @@
                 var listAmendment = Scope.GetFreeAmendment((int)Model?.ContractId);
                 @if (listAmendment.Count() > 0)
                 {
-                    <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result">
+                    <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data">
                         <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                         <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
 
@@ -203,7 +203,7 @@
 
             @if (!hasScope)
             {
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#result" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
+                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
                     @if (contract.IsEngineering == true)
                     {
                         <h4>Выбор периода объема услуг</h4>
@@ -287,15 +287,5 @@
         //         $(this).attr("value", "true")
         //     }
         // });
-
-        $(document).ready(function () {
-            kendo.culture("by-BY");
-            $("input.monthYearPickers").kendoDatePicker({
-                value: new Date(),
-                format: "MM.yyyy",
-                depth: "year",
-                start: "year"
-            });
-        });
     </script>
 }

@@ -181,7 +181,7 @@ namespace BusinessLayer.ServicesCOM
                 var smrCost = (decimal)_excelReader.GetValueDouble(excel, smrCoordates.Item2, col.Item2);
                 smrCost -= additionalWork;
                 c3A.AdditionalCost += additionalWork;
-                c3A.SmrCost = smrCost;
+                c3A.FixedContractPrice = smrCost;
             }
             if (pnrCoordates.Item1 != null)
             {
@@ -206,7 +206,7 @@ namespace BusinessLayer.ServicesCOM
                 pnrCost -= additionalWork;
                 c3A.AdditionalCost += additionalWork;
                 c3A.PnrCost = pnrCost;
-            }
+            }            
             c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault().Item2, col.Item2);
             c3A.OffsetTargetPrepayment = (decimal)_excelReader.GetValueDouble(excel,

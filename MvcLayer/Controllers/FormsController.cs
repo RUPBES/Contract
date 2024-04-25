@@ -161,8 +161,9 @@ namespace MvcLayer.Controllers
             {
                 int mainContrId;
 
-                formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;
-                formViewModel.SmrCost = formViewModel.SmrCost ?? 0;
+                formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;                
+                formViewModel.FixedContractPrice = formViewModel.FixedContractPrice ?? 0;
+                formViewModel.SmrCost = formViewModel.AdditionalCost + formViewModel.FixedContractPrice;
                 formViewModel.PnrCost = formViewModel.PnrCost ?? 0;
                 formViewModel.EquipmentCost = formViewModel.EquipmentCost ?? 0;
                 formViewModel.OtherExpensesCost = formViewModel.OtherExpensesCost ?? 0;
@@ -275,6 +276,7 @@ namespace MvcLayer.Controllers
                     bool isNotGenContract = _contractService.IsNotGenContract(form.ContractId, out mainContrId);
                     var contract = form.ContractId.HasValue ? _contractService.GetById((int)form.ContractId) : null;
                     bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
+                    formViewModel.SmrCost = formViewModel.FixedContractPrice + formViewModel.AdditionalCost;
 
                     if (isNotGenContract && !isOneMultipleContract)
                     {
@@ -411,7 +413,7 @@ namespace MvcLayer.Controllers
 
             var viewForm = new FormViewModel
             {
-                SmrCost = form.SmrCost,
+                FixedContractPrice = form.FixedContractPrice,
                 PnrCost = form.PnrCost,
                 EquipmentCost = form.EquipmentCost,
                 OtherExpensesCost = form.OtherExpensesCost,
