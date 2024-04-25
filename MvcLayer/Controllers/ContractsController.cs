@@ -231,7 +231,6 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
-
         /// <summary>
         /// Создание субподрядного договора
         /// </summary>
@@ -268,7 +267,7 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ContractViewModel contract)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
 
             if (contract != null && (contract.IsSubContract == true || contract.IsAgreementContract == true))
             {

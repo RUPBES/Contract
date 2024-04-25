@@ -1,6 +1,8 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models.KDO;
+using OfficeOpenXml;
+using OfficeOpenXml.Core.Worksheet.Fill;
 
 namespace BusinessLayer.ServicesCOM
 {
@@ -237,54 +239,51 @@ namespace BusinessLayer.ServicesCOM
                
                 var ending = excel.Dimension.End.Column;
 
-                //вернет первое значение строку, второе - столбец
-                var cellAboveDates = _excelReader.FindCellByQuery(excel, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
-                int rowDates = cellAboveDates.FirstOrDefault().Item1;
-                int startColumnOfDates = cellAboveDates.FirstOrDefault().Item2 + 1;
-                var ter = excel.Cells[rowDates, startColumnOfDates].Value?.ToString().Trim();
-
-                var cellAboveDates1 = _excelReader.FindCellByQuery(excel, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
-                int rowDates1 = cellAboveDates1.FirstOrDefault().Item1;
-                int startColumnOfDates1 = cellAboveDates1.FirstOrDefault().Item2 + 1;
-                var ter1 = excel.Cells[rowDates1, startColumnOfDates1].Value?.ToString().Trim();
-
-                var cellAboveDates2 = _excelReader.FindCellByQuery(excel, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
-                int rowDates2 = cellAboveDates2.FirstOrDefault().Item1;
-                int startColumnOfDates2 = cellAboveDates2.FirstOrDefault().Item2 + 1;
-                var ter2 = excel.Cells[rowDates2, startColumnOfDates2].Value?.ToString().Trim();
-
-                var cellAboveDates3 = _excelReader.FindCellByQuery(excel, "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
-                int rowDates3 = cellAboveDates3.FirstOrDefault().Item1;
-                int startColumnOfDates3 = cellAboveDates3.FirstOrDefault().Item2 + 1;
-                var ter3 = excel.Cells[rowDates3, startColumnOfDates3].Value?.ToString().Trim();
-
-                var cellAboveDates4 = _excelReader.FindCellByQuery(excel, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
-                int rowDates4 = cellAboveDates4.FirstOrDefault().Item1;
-                int startColumnOfDates4 = cellAboveDates4.FirstOrDefault().Item2;
-                var ter4 = excel.Cells[rowDates4, startColumnOfDates4].Value?.ToString().Trim();
+                
+                var cellBuilding = GetCellValue(excel,  shiftRow: 0, shiftCol: 1, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
+                var cellCodeBuilding = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
+                var cellDrawing = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
+                var cellNameBuilding = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
+                var cellLocalEstimate = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
 
 
                 //TODO: пересмотреть поиск по всем столбцам, может быть сдвиги
 
-                //var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
-                //int rowDates5 = cellAboveDates5.FirstOrDefault().Item1;
-                //int startColumnOfDates5 = cellAboveDates5.FirstOrDefault().Item2 + 1;
+                var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Составлена в ценах на", "Составлена в", "СОСТАВЛЕНА В");
+                int rowNameEstimate = cellAboveDates5.FirstOrDefault().Item1 - 1;
+                var ddd = string.Empty;
+                for (int i = excel.Dimension.Start.Column; i <= excel.Dimension.End.Column; i++)
+                {
+                    ddd = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
+                    if (ddd is not null)
+                    {
+                        break;
+                    }
+                    if (i == excel.Dimension.End.Column && string.IsNullOrEmpty(ddd))
+                    {
+                        i = excel.Dimension.Start.Column;
+                        rowNameEstimate = rowNameEstimate - 1;
+                    }
+                }
 
-                var ter41 = excel.Cells[rowDates4 + 1, startColumnOfDates4].Value?.ToString().Trim();
+               
 
-
-                var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "ЗАТРАТЫ ТРУДА РАБОЧИХ", "Затраты труда рабочих");
-                int rowDates5 = cellAboveDates4.FirstOrDefault().Item1;
-                int startColumnOfDates5 = cellAboveDates5.LastOrDefault().Item2;
-                var ter5 = excel.Cells[rowDates5, startColumnOfDates5].Value?.ToString().Trim();
 
 
             }
             catch (Exception)
             {
             }
-
             return scopeWork;
+        }
+
+        private string GetCellValue(ExcelWorksheet excel, int shiftRow, int shiftCol, params string[] names)
+        {
+            //вернет первое значение строку, второе - столбец
+            var cell = _excelReader.FindCellByQuery(excel, names);
+            int rowDates = cell.FirstOrDefault().Item1 + shiftRow;
+            int startColumnOfDates = cell.FirstOrDefault().Item2 + shiftCol;
+            return excel.Cells[rowDates, startColumnOfDates].Value?.ToString()?.Trim()??string.Empty;
         }
     }
 }

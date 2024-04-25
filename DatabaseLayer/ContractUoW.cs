@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
 using DatabaseLayer.Repositories.ViewRepo;
 
@@ -11,8 +12,10 @@ namespace DatabaseLayer
         #region valueRepo
         private readonly ContractsContext _context;
 
+        private EstimateRepository estimateRepository;
+        private EstimateFileRepository estimateFileRepository;
         private AddressRepository addressRepository;
-         private ActRepository actRepository;
+        private ActRepository actRepository;
         private ActFileRepository actFileRepository;
         private AmendmentFileRepository amendmentFileRepository;
         private AmendmentRepository amendmentRepository;
@@ -93,6 +96,30 @@ namespace DatabaseLayer
         #endregion
 
         #region tables
+
+        public IEntityWithPagingRepository<Estimate> Estimates
+        {
+            get
+            {
+                if (estimateRepository is null)
+                {
+                    estimateRepository = new EstimateRepository(_context);
+                }
+                return estimateRepository;
+            }
+        }
+
+        public IRepository<EstimateFile> EstimateFiles
+        {
+            get
+            {
+                if (estimateFileRepository is null)
+                {
+                    estimateFileRepository = new EstimateFileRepository(_context);
+                }
+                return estimateFileRepository;
+            }
+        }
 
         public IRepository<DepartmentEmployee> DepartmentEmployees
         {

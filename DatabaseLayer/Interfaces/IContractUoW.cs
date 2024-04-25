@@ -1,4 +1,5 @@
 ﻿using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,9 @@ namespace DatabaseLayer.Interfaces
 {
     public interface IContractUoW : IDisposable
     {
+        IEntityWithPagingRepository<Estimate> Estimates { get; }
+        IRepository<EstimateFile> EstimateFiles { get; }
+
         IRepository<Act> Acts { get; }
         IRepository<Address> Addresses { get; }
         IRepository<AmendmentFile> AmendmentFiles { get; }

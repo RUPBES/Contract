@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
 using DatabaseLayer;
+using DatabaseLayer.Models.PRO;
 
 namespace DatabaseLayer.Models.KDO
 {
@@ -14,6 +15,7 @@ namespace DatabaseLayer.Models.KDO
             EstimateDocFiles = new HashSet<EstimateDocFile>();
             СommissionActFiles = new HashSet<CommissionActFile>();
             ContractFiles = new HashSet<ContractFile>();
+            EstimateFiles = new HashSet<EstimateFile>();
         }
 
         public int Id { get; set; }
@@ -21,6 +23,8 @@ namespace DatabaseLayer.Models.KDO
         public string FilePath { get; set; }
         public string FileType { get; set; }
         public DateTime? DateUploud { get; set; }
+
+        public virtual ICollection<EstimateFile> EstimateFiles { get; set; }
 
         public virtual ICollection<ActFile> ActFiles { get; set; }
         public virtual ICollection<FormFile> FormFiles { get; set; }

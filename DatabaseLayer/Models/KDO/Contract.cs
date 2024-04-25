@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DatabaseLayer.Models.PRO;
+using System;
 using System.Collections.Generic;
 
 #nullable disable
@@ -42,6 +43,7 @@ namespace DatabaseLayer.Models.KDO
         public virtual Contract AgreementContract { get; set; }
         public virtual Contract SubContract { get; set; }
         public virtual List<Act> Acts { get; set; } = new List<Act>();
+        public virtual List<Estimate> Estimates { get; set; } = new List<Estimate>();
         public virtual List<Amendment> Amendments { get; set; } = new List<Amendment>();
         public virtual List<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
         public virtual List<Correspondence> Correspondences { get; set; } = new List<Correspondence>();

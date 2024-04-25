@@ -1,4 +1,5 @@
 ﻿using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using Microsoft.EntityFrameworkCore;
 using File = DatabaseLayer.Models.KDO.File;
 
@@ -17,8 +18,14 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<VContract> VContracts { get; set; }
     public virtual DbSet<VContractEngin> VContractEngins { get; set; }
+    #region DbSetPro
 
-    #region DbSet
+    public virtual DbSet<Estimate> Estimates { get; set; }
+    public virtual DbSet<EstimateFile> EstimateFiles { get; set; }
+
+    #endregion
+
+    #region DbSetKDO
     public virtual DbSet<Act> Acts { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }
@@ -111,6 +118,44 @@ public partial class ContractsContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+        modelBuilder.Entity<Estimate>(entity =>
+        {
+            entity.ToTable("Estimate");
+            entity.HasKey(x => x.Id);
+            entity.HasComment("Локальная смета");
+
+            entity.Property(e => e.PercentOfContrPrice)
+                .HasColumnType("money")
+                .HasComputedColumnSql();
+            
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Estimates)
+                .HasForeignKey(d => d.ContractId)
+                .HasConstraintName("FK_Estimate_Contract_Id");
+        });
+
+        modelBuilder.Entity<EstimateFile>(entity =>
+        {
+            entity.HasKey(e => new { e.EstimateId, e.FileId });
+
+            entity.ToTable("EstimateFile");
+
+            entity.HasComment("Смета-файлы");
+
+            entity.HasOne(d => d.Estimate)
+                .WithMany(p => p.EstimateFiles)
+                .HasForeignKey(d => d.EstimateId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_EstimateFile_Estimate_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.EstimateFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_EstimateFile_File_Id");
+        });
+
 
         modelBuilder.Entity<Act>(entity =>
         {
@@ -312,7 +357,7 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.Author);
             entity.Property(e => e.Owner);
 
-          entity.Property(e => e.NameObject).HasComment("Название объекта");
+            entity.Property(e => e.NameObject).HasComment("Название объекта");
 
             entity.Property(e => e.Number)
                 .HasMaxLength(100)
@@ -625,7 +670,7 @@ public partial class ContractsContext : DbContext
             .HasComputedColumnSql()
                 .HasColumnType("money")
                 .HasComment("Общая стоимость выполненных работ");
-            
+
             entity.Property(e => e.TotalCostToBePaid)
             .HasComputedColumnSql()
                 .HasColumnType("money")
