@@ -421,6 +421,7 @@ namespace BusinessLayer.Services
         {
             oldForm.PnrCost = (oldForm.PnrCost ?? 0) + (opr * (newForm?.PnrCost ?? 0));
             oldForm.SmrCost = (oldForm.SmrCost ?? 0) + (opr * (newForm?.SmrCost ?? 0));
+            oldForm.FixedContractPrice = (oldForm.FixedContractPrice ?? 0) + (opr * (newForm?.FixedContractPrice ?? 0));
             oldForm.EquipmentCost = (oldForm.EquipmentCost ?? 0) + (opr * (newForm?.EquipmentCost ?? 0));
             oldForm.OtherExpensesCost = (oldForm.OtherExpensesCost ?? 0) + (opr * (newForm?.OtherExpensesCost ?? 0));
             oldForm.AdditionalCost = (oldForm.AdditionalCost ?? 0) + (opr * (newForm?.AdditionalCost ?? 0));
@@ -437,6 +438,7 @@ namespace BusinessLayer.Services
         {
             formMain.PnrCost = (formMain.PnrCost ?? 0) + (opr * ((formNew?.PnrCost ?? 0) - (oldFormCost?.PnrCost ?? 0)));
             formMain.SmrCost = (formMain.SmrCost ?? 0) + opr * ((formNew?.SmrCost ?? 0) - (oldFormCost?.SmrCost ?? 0));
+            formMain.FixedContractPrice = (formMain.FixedContractPrice ?? 0) + opr * ((formNew?.FixedContractPrice ?? 0) - (oldFormCost?.FixedContractPrice ?? 0));
             formMain.EquipmentCost = (formMain.EquipmentCost ?? 0) + opr * ((formNew?.EquipmentCost ?? 0) - (oldFormCost?.EquipmentCost ?? 0));
             formMain.OtherExpensesCost = (formMain.OtherExpensesCost ?? 0) + opr * ((formNew?.OtherExpensesCost ?? 0) - (oldFormCost?.OtherExpensesCost ?? 0));
             formMain.AdditionalCost = (formMain.AdditionalCost ?? 0) + opr * ((formNew?.AdditionalCost ?? 0) - (oldFormCost?.AdditionalCost ?? 0));

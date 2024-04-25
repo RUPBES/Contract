@@ -32,7 +32,8 @@
     var otherPayment = 0M;
     var days = Contract.GetDayOfRaschet(id) is not null ? Contract.GetDayOfRaschet(id) : 0;
 
-    var smrSum = 0M;
+    var totalSum = 0M;
+    var fixedContractSum = 0M;
     var pnrSum = 0M;
     var addSum = 0M;
     var eqpSum = 0M;
@@ -131,8 +132,7 @@
                                             Дата оплаты по договору
                                         </th>
                                         <th>
-                                            Общая стоимость
-                                            @* @Html.DisplayNameFor(model => model.TotalCost) *@
+                                            Общая стоимость                                            
                                             <button id="btn_svg" class="totalW btn">
                                                 <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100">
                                                     <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
@@ -140,8 +140,7 @@
                                                     <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
                                                 </svg>
                                             </button>
-                                        </th>
-                                        @* <th colspan="3">в т.ч.</th> *@
+                                        </th>                                        
                                         <th class="col-tog">
                                             Неизменная договорная цена
                                         </th>
@@ -153,8 +152,7 @@
                                         </th>
                                         <th>
                                             @Html.DisplayNameFor(model => model.EquipmentCost)
-                                        </th>
-                                        @* <th colspan="2">Авансы удержанные</th> *@
+                                        </th>                                        
                                         <th>
                                             Удержания
                                             <button id="btn_svg_A" class="totalA btn">
@@ -232,13 +230,13 @@
                                                 @datePaid?.ToShortDateString()
                                             </td>
                                             <td class="text-end">
-                                                @item.SmrCost?.ToString("N2")
-                                            </td>
-                                            <td class="text-end col-tog">
                                                 @{
-                                                    var neizmDogovornayaCena = (item.SmrCost??00) - (item.PnrCost??00) - (item.AdditionalCost??0);
+                                                    var total = item.SmrCost + item.PnrCost;
                                                 }
-                                                @neizmDogovornayaCena.ToString("N2")
+                                                @total?.ToString("N2")
+                                            </td>
+                                            <td class="text-end col-tog">                                                
+                                                @item.FixedContractPrice?.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
                                                 @item.PnrCost?.ToString("N2")
@@ -371,7 +369,8 @@
                                         <tr style="background-color:#92b0b1; color:white;font-weight:600; font-size:0.95rem"><td class="devide-table" colspan="9">в т.ч. Субподряд</td></tr>
                                         @foreach (var sub in formNested)
                                         {
-                                            smrSum += sub?.SmrCost ?? 0;
+                                            totalSum += sub?.SmrCost + sub?.PnrCost ?? 0;
+                                            fixedContractSum += sub?.FixedContractPrice ?? 0;
                                             pnrSum += sub?.PnrCost ?? 0;
                                             addSum += sub?.AdditionalCost ?? 0;
                                             eqpSum += sub?.EquipmentCost ?? 0;
@@ -395,14 +394,13 @@
                                                     @datePaid?.ToShortDateString()
                                                 </td>
                                                 <td class="text-end">
-                                                    @sub?.SmrCost?.ToString("N2")
-                                                    @* @sub?.TotalCost?.ToString("N2") *@
+                                                    @{
+                                                        var total = sub?.SmrCost + sub?.PnrCost;
+                                                    }
+                                                    @total?.ToString("N2")
                                                 </td>
                                                 <td class="text-end col-tog">
-                                                    @{
-                                                        var dw = sub?.SmrCost ?? 0 - sub?.PnrCost ?? 0 - sub?.AdditionalCost ?? 0;
-                                                    }
-                                                    @dw
+                                                    @sub?.FixedContractPrice?.ToString("N2")
                                                 </td>
                                                 <td class="text-end col-tog">
                                                     @sub?.PnrCost?.ToString("N2")
@@ -464,17 +462,10 @@
                                             @* <td></td> *@
                                             <td></td>
                                             <td class="text-end">
-                                                @smrSum.ToString("N2")
-                                               @*  @{
-                                                    var totSubSum = smrSum + pnrSum + addSum;
-                                                }
-                                                @totSubSum.ToString("N2") *@
+                                                @totalSum.ToString("N2")                                               
                                             </td>
-                                            <td class="text-end col-tog">
-                                                @{
-                                                    var totSubSum2 = smrSum - pnrSum - addSum;
-                                                }
-                                                @totSubSum2.ToString("N2")
+                                            <td class="text-end col-tog">                                                
+                                                @fixedContractSum.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
                                                 @pnrSum.ToString("N2")
@@ -508,14 +499,9 @@
                                                 @genSerSum.ToString("N2")
                                             </td>
                                             <td class="text-end">
-                                                <div>
-                                                   @*  @{
-                                                        var totalSubCostToBePaid1 = smrSum + pnrSum + addSum +
-                                                        eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum + genSerSum;
-                                                    }
-                                                    @totalSubCostToBePaid1.ToString("N2") *@
+                                                <div>                                                   
                                                     @{
-                                                        var totalSubCostToBePaid1 = smrSum + pnrSum + addSum +
+                                                        var totalSubCostToBePaid1 = fixedContractSum + pnrSum + addSum +
                                                         eqpSum - offsetCPrepSum - offsetTPrepSum - mtrlSum - otherSum - genSerSum;
                                                     }
                                                     @totalSubCostToBePaid1.ToString("N2")
@@ -530,18 +516,13 @@
                                             <td></td>
                                             <td class="text-end">
                                                  @{
-                                                    var totOwnSmrSum = (item?.SmrCost ?? 0) - smrSum;
+                                                    var totOwnSmrSum = (item?.SmrCost + item?.PnrCost ?? 0) - totalSum;
                                                 }
-                                                @totOwnSmrSum.ToString("N2")
-
-                                                @* @{
-                                                    var totOwnSubSum = (item?.TotalCost ?? 0) - totSubSum;
-                                                }
-                                                @totOwnSubSum.ToString("N2") *@
+                                                @totOwnSmrSum.ToString("N2")                                                
                                             </td>
                                             <td class="text-end col-tog">
                                                 @{
-                                                    var totOwnSubSum2 = ((item?.SmrCost ?? 0) - smrSum) - ((item?.PnrCost ?? 0) - pnrSum)
+                                                    var totOwnSubSum2 = ((item?.SmrCost + item?.PnrCost ?? 0) - totalSum) - ((item?.PnrCost ?? 0) - pnrSum)
                                                     - ((item?.AdditionalCost ?? 0) - addSum);
                                                 }
                                                 @totOwnSubSum2.ToString("N2")
@@ -605,11 +586,8 @@
                                             </td>
                                             <td class="">
                                                 <div class="text-end">
-                                                    @{
-                                                        // var totalOwnSubCostToBePaid = (item.TotalCostToBePaid ?? 0) - (smrSum + pnrSum + addSum +
-                                                        // eqpSum + offsetCPrepSum + offsetTPrepSum + mtrlSum + otherSum);
-
-                                                        var totalOwnSubCostToBePaid = (item.TotalCostToBePaid ?? 0) - (smrSum + pnrSum + addSum +
+                                                    @{   
+                                                        var totalOwnSubCostToBePaid = (item.TotalCostToBePaid ?? 0) - (fixedContractSum + pnrSum + addSum +
                                                         eqpSum - offsetCPrepSum - offsetTPrepSum - mtrlSum- otherSum);
                                                     }
                                                     @totalOwnSubCostToBePaid.ToString("N2")
