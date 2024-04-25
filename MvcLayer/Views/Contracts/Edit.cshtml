@@ -815,13 +815,12 @@
 
         // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
         $(".checkChoise").click(function (e) {
-            let elemNumber = $("#dayInput");
-            let days = @ViewBag.Days;
+            let elemNumber = $("#dayInput");            
             if (elemNumber !== null || elemNumber !== undefined) {
                 //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                 $("#dayInput").parent().remove();
             }
-            $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' value='${days}' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+            $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' value='' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
         });
     </script>
 }

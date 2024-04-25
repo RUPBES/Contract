@@ -7,6 +7,7 @@
         public DateTime? DateSigning { get; set; }
         public decimal? TotalCost { get; set; }
         public decimal? SmrCost { get; set; }
+        public decimal? FixedContractPrice { get; set; }
         public decimal? PnrCost { get; set; }
         public decimal? EquipmentCost { get; set; }
         public decimal? OtherExpensesCost { get; set; }
