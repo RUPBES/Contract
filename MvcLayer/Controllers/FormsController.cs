@@ -386,11 +386,11 @@ namespace MvcLayer.Controllers
                 }
                 //TODO: не перерисовывает страницу после удаления записи
                 ViewData["reload"] = "Yes";
-                return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+                return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
             }
             catch
             {
-                return PartialView("_Message", new ModalViewVodel("Произошла ошибка при удалении.", "Ошибка", "Плохо"));
+                return PartialView("_Message", new ModalViewModel("Произошла ошибка при удалении.", "Ошибка", "Плохо"));
             }
         }
 

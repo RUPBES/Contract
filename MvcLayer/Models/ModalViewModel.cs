@@ -1,17 +1,17 @@
 ﻿namespace MvcLayer.Models
 {
-    public class ModalViewVodel
+    public class ModalViewModel
     {
         public string message { get; set; }
         public string header { get; set; }
         public string textButton { get; set; }
 
-        public ModalViewVodel()
+        public ModalViewModel()
         {
 
         }
 
-        public ModalViewVodel(string message, string header, string textButton)
+        public ModalViewModel(string message, string header, string textButton)
         {
             this.message = message;
             this.header = header;

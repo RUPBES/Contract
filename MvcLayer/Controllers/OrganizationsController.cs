@@ -170,7 +170,7 @@ namespace MvcLayer.Controllers
         {
             _organizationService.Delete(id);
             ViewData["reload"] = "Yes";
-            return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+            return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
         }
     }
     class OrganizationsJson {
