@@ -1,6 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 
 namespace DatabaseLayer.Repositories
 {
@@ -67,7 +67,7 @@ namespace DatabaseLayer.Repositories
                 {
                     form.Period = entity.Period;
                     form.DateSigning = entity.DateSigning;
-                    //form.TotalCost = entity.TotalCost;
+                    form.FixedContractPrice = entity.FixedContractPrice ?? 0;
                     form.SmrCost = entity.SmrCost ?? 0;
                     form.PnrCost = entity.PnrCost ?? 0;
                     form.EquipmentCost = entity.EquipmentCost ?? 0;

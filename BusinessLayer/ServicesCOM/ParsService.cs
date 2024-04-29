@@ -1,129 +1,78 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
-using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using OfficeOpenXml;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DatabaseLayer.Models.KDO;
 
 namespace BusinessLayer.ServicesCOM
 {
     internal class ParsService : IParsService
     {
-        private ExcelPackage OpenFileExcel (string path)
+        private readonly IExcelReader _excelReader;
+        private readonly IConverter _converter;
+        public ParsService(IExcelReader excelReader, IConverter converter)
         {
-            try
-            {
-                var point = path.LastIndexOf(".");
-                var type = path.Substring(point + 1);
-                if (type.ToLower() == "xls")
-                {
-                    throw new Exception();
-                }
-                FileInfo file = new FileInfo(path);
-                ExcelPackage package = new ExcelPackage(file);
-                return package;
-            }
-            catch { return new ExcelPackage(); }
+            _excelReader = excelReader;
+            _converter = converter;
         }
 
-        public Boolean FindByWords(string target, params string[] query)
+        public ScopeWorkDTO GetScopeWorks(string path, int page)
         {
+            var excel = _excelReader.GetExcelWorksheet(path, page);
+
+            var scopeWork = new ScopeWorkDTO();
+            var ending = excel.Dimension.End.Column;
+
+            //вернет первое значение строку, второе - столбец
+            var cellAboveDates = _excelReader.FindCellByQuery(excel, "в том числе по месяцам");
+            int rowDates = cellAboveDates.FirstOrDefault().Item1 + 1;
+            int startColumnOfDates = cellAboveDates.FirstOrDefault().Item2;
+
+
+            var rowTotalSumSMR = _excelReader.FindCellByQuery(excel, "И Т О Г О СМР:", "итого смр", "итогосмр:");
+            var rowTotalSumPNR = _excelReader.FindCellByQuery(excel, "И Т О Г О ПНР:", "итого пнр", "итогопнр:");
+
+            var costs = new List<SWCost>();
+
             try
             {
-                target = target.ToLower();
-                foreach (var item in query)
+                for (int i = startColumnOfDates; i <= ending; i++)
                 {
-                    var fl = true;
-                    var mas = item.Split(' ');
-                    if (mas.Length == 0) { fl = false; break; }
-                    foreach (var word in mas)
+                    var strDate = excel.Cells[rowDates, i].Value?.ToString().Trim();
+
+                    DateTime costPeriod;
+                    DateTime.TryParse(strDate, out costPeriod);
+
+                    var valueSMR = _excelReader.GetValueDouble(excel, rowTotalSumSMR.FirstOrDefault().Item1, i);
+                    var valuePNR = _excelReader.GetValueDouble(excel, rowTotalSumPNR.FirstOrDefault().Item1, i);
+
+                    if (costPeriod == default(DateTime))
                     {
-                        word.ToLower();
-                        if (!target.Contains(word, StringComparison.OrdinalIgnoreCase))
-                        { fl = false; break; }
+                        var date = _converter?.GetDateFromString(strDate);
+                        if (date is not null)
+                        {
+                            costPeriod = (DateTime)date;
+                        }
                     }
-                    if (fl)
-                    { return true; }
-                }
-                return false;
-            }
-            catch { return false; }
-        }
 
-        public IEnumerable<(int, int)> FindCellByQuery(ExcelWorksheet worksheet, params string[] query)
-        {
-            var start = worksheet.Dimension.Start;
-            var end = worksheet.Dimension.End;
-            var listAnswer = new List<(int row, int col)>();
-            for (int row = start.Row; row <= end.Row; row++)
-                for (int col = start.Column; col <= end.Column; col++)
-                {
-                    string cellValue = worksheet.Cells[row, col].Text.ToString().Trim();
-                    if (FindByWords(cellValue, query))
+                    costs.Add(new SWCost
                     {
-                        (int row, int col) answer;
-                        answer.row = row;
-                        answer.col = col;
-                        listAnswer.Add(answer);
-                    }
+                        Period = costPeriod,
+                        SmrCost = (decimal)valueSMR,
+                        PnrCost = (decimal)valuePNR,
+                    });
                 }
-            return listAnswer;
-        }
+                scopeWork.SWCosts = costs;
 
-        public ExcelWorksheet GetExcelWorksheet(string path, int page)
-        {
-            ExcelPackage package = OpenFileExcel(path);
-            ExcelWorksheet sheet = package.Workbook.Worksheets[page];
-            return sheet;
-        }
-
-        public IEnumerable<ExcelWorksheet> getListOfBook(string path)
-        {            
-            ExcelPackage package = OpenFileExcel(path);
-            if (package.Workbook.Worksheets.Count > 0)
-            {
-                var list = new List<ExcelWorksheet>();
-                foreach (var item in package.Workbook.Worksheets)
-                {
-                    list.Add(item);
-                }
-                return list;
             }
-            else
-                return Enumerable.Empty<ExcelWorksheet>();
-        }
-
-        public double GetValueDouble(ExcelWorksheet worksheet, int row, int col)
-        {
-            try
+            catch (Exception)
             {
-                var ob = worksheet.Cells[row, col].Value?.ToString().Trim();
-                double answer = 0;
-                var isDouble = double.TryParse(ob, out answer);
-                if (!isDouble) return 0;
-                else return answer;
             }
-            catch { return 0; }
-        }
 
-        public string GetValueString(ExcelWorksheet worksheet, int row, int col)
-        {
-            try
-            {
-                var ob = worksheet.Cells[row, col].Value?.ToString().Trim();
-                if (ob == null) return "";
-                else return ob;
-            }
-            catch { return ""; }
+            return scopeWork;
         }
 
         public FormDTO Pars_C3A(string path, int page)
         {
-            var excel = GetExcelWorksheet(path, page);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
             var listString = new List<(string, int)>();
             var query = new List<List<string>>
             {
@@ -182,14 +131,14 @@ namespace BusinessLayer.ServicesCOM
                 OtherExpensesCost = 0,
                 PnrCost = 0,
                 SmrCost = 0
-            };           
+            };
 
-            var col = FindCellByQuery(excel, "за отчетный период").FirstOrDefault();
+            var col = _excelReader.FindCellByQuery(excel, "за отчетный период").FirstOrDefault();
             if (col.Item2 == null) return null;
 
             for (var i = 0; i < query.Count; i++)
             {
-                var find = FindCellByQuery(excel, query[i].ToArray());
+                var find = _excelReader.FindCellByQuery(excel, query[i].ToArray());
                 foreach (var item in find)
                 {
                     (string, int) ob;
@@ -199,11 +148,11 @@ namespace BusinessLayer.ServicesCOM
                 }
             }
 
-            var additionalWorkCoordates = listString.Where(x => FindByWords(x.Item1, "стоимость дополнительн работ", "стоимость доп работ")).ToList();
-            var additionalNDSWorkCoordates = listString.Where(x => FindByWords(x.Item1, "сумма НДС дополнительн работ", "сумма НДС доп работ")).ToList();
-            var smrCoordates = listString.Where(x => FindByWords(x.Item1, "стоимость выполненных строительно монтажных работ")).FirstOrDefault();
-            var pnrCoordates = listString.Where(x => FindByWords(x.Item1, "стоимость пусконаладочных работ")).FirstOrDefault();
-            var equipmentCoordates = listString.Where(x => FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault();
+            var additionalWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость дополнительн работ", "стоимость доп работ")).ToList();
+            var additionalNDSWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумма НДС дополнительн работ", "сумма НДС доп работ")).ToList();
+            var smrCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость выполненных строительно монтажных работ")).FirstOrDefault();
+            var pnrCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость пусконаладочных работ")).FirstOrDefault();
+            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault();
 
             if (smrCoordates.Item1 != null)
             {
@@ -213,7 +162,7 @@ namespace BusinessLayer.ServicesCOM
                     if (item.Item2 > smrCoordates.Item2 && item.Item2 < pnrCoordates.Item2 ||
                         item.Item2 > smrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2 && pnrCoordates.Item2 == null)
                     {
-                        additionalWork += (decimal)GetValueDouble(excel, item.Item2, col.Item2);
+                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                         break;
                     }
                 }
@@ -222,15 +171,15 @@ namespace BusinessLayer.ServicesCOM
                     if (item.Item2 > smrCoordates.Item2 && item.Item2 < pnrCoordates.Item2 ||
                         item.Item2 > smrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2 && pnrCoordates.Item2 == null)
                     {
-                        additionalWork += (decimal)GetValueDouble(excel, item.Item2, col.Item2);
+                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                         break;
                     }
                 }
 
-                var smrCost = (decimal)GetValueDouble(excel, smrCoordates.Item2, col.Item2);
+                var smrCost = (decimal)_excelReader.GetValueDouble(excel, smrCoordates.Item2, col.Item2);
                 smrCost -= additionalWork;
                 c3A.AdditionalCost += additionalWork;
-                c3A.SmrCost = smrCost;
+                c3A.FixedContractPrice = smrCost;
             }
             if (pnrCoordates.Item1 != null)
             {
@@ -239,7 +188,7 @@ namespace BusinessLayer.ServicesCOM
                 {
                     if (item.Item2 > pnrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2)
                     {
-                        additionalWork += (decimal)GetValueDouble(excel, item.Item2, col.Item2);
+                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                         break;
                     }
                 }
@@ -247,35 +196,95 @@ namespace BusinessLayer.ServicesCOM
                 {
                     if (item.Item2 > pnrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2)
                     {
-                        additionalWork += (decimal)GetValueDouble(excel, item.Item2, col.Item2);
+                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                         break;
                     }
                 }
-                var pnrCost = (decimal)GetValueDouble(excel, pnrCoordates.Item2, col.Item2);
+                var pnrCost = (decimal)_excelReader.GetValueDouble(excel, pnrCoordates.Item2, col.Item2);
                 pnrCost -= additionalWork;
                 c3A.AdditionalCost += additionalWork;
                 c3A.PnrCost = pnrCost;
-            }
-            c3A.EquipmentCost = (decimal)GetValueDouble(excel,
-                listString.Where(x => FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault().Item2, col.Item2);
-            c3A.OffsetTargetPrepayment = (decimal)GetValueDouble(excel,
-                listString.Where(x => FindByWords(x.Item1, "зачет целевого аванса")).FirstOrDefault().Item2, col.Item2);
-            c3A.OffsetCurrentPrepayment = (decimal)GetValueDouble(excel,
-                listString.Where(x => FindByWords(x.Item1, "зачет текущего аванса")).FirstOrDefault().Item2, col.Item2);
-            c3A.MaterialCost = (decimal)GetValueDouble(excel,
-                listString.Where(x => FindByWords(x.Item1, "материалы")).FirstOrDefault().Item2, col.Item2);
-            c3A.GenServiceCost = (decimal)GetValueDouble(excel,
-                listString.Where(x => FindByWords(x.Item1, "другие генуслуги")).FirstOrDefault().Item2, col.Item2);
+            }            
+            c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault().Item2, col.Item2);
+            c3A.OffsetTargetPrepayment = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "зачет целевого аванса")).FirstOrDefault().Item2, col.Item2);
+            c3A.OffsetCurrentPrepayment = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "зачет текущего аванса")).FirstOrDefault().Item2, col.Item2);
+            c3A.MaterialCost = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "материалы")).FirstOrDefault().Item2, col.Item2);
+            c3A.GenServiceCost = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "другие генуслуги")).FirstOrDefault().Item2, col.Item2);
             c3A.OtherExpensesCost = 0;
-            foreach (var item in listString.Where(x => FindByWords(x.Item1, "другие", "возмещение стоимости", "возврат стоимости")))
+            foreach (var item in listString.Where(x => _excelReader.FindByWords(x.Item1, "другие", "возмещение стоимости", "возврат стоимости")))
             {
-                if (!(FindByWords(item.Item1, "другие генуслуги")))
+                if (!(_excelReader.FindByWords(item.Item1, "другие генуслуги")))
                 {
-                    c3A.OtherExpensesCost += (decimal)GetValueDouble(excel,
+                    c3A.OtherExpensesCost += (decimal)_excelReader.GetValueDouble(excel,
                     item.Item2, col.Item2);
                 }
             }
             return c3A;
+        }
+
+        public ScopeWorkDTO ParseEstimate(string path, int page)
+        { 
+            var scopeWork = new ScopeWorkDTO();
+            try
+            {
+                var excel = _excelReader.GetExcelWorksheet(path, page);
+
+               
+                var ending = excel.Dimension.End.Column;
+
+                //вернет первое значение строку, второе - столбец
+                var cellAboveDates = _excelReader.FindCellByQuery(excel, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
+                int rowDates = cellAboveDates.FirstOrDefault().Item1;
+                int startColumnOfDates = cellAboveDates.FirstOrDefault().Item2 + 1;
+                var ter = excel.Cells[rowDates, startColumnOfDates].Value?.ToString().Trim();
+
+                var cellAboveDates1 = _excelReader.FindCellByQuery(excel, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
+                int rowDates1 = cellAboveDates1.FirstOrDefault().Item1;
+                int startColumnOfDates1 = cellAboveDates1.FirstOrDefault().Item2 + 1;
+                var ter1 = excel.Cells[rowDates1, startColumnOfDates1].Value?.ToString().Trim();
+
+                var cellAboveDates2 = _excelReader.FindCellByQuery(excel, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
+                int rowDates2 = cellAboveDates2.FirstOrDefault().Item1;
+                int startColumnOfDates2 = cellAboveDates2.FirstOrDefault().Item2 + 1;
+                var ter2 = excel.Cells[rowDates2, startColumnOfDates2].Value?.ToString().Trim();
+
+                var cellAboveDates3 = _excelReader.FindCellByQuery(excel, "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
+                int rowDates3 = cellAboveDates3.FirstOrDefault().Item1;
+                int startColumnOfDates3 = cellAboveDates3.FirstOrDefault().Item2 + 1;
+                var ter3 = excel.Cells[rowDates3, startColumnOfDates3].Value?.ToString().Trim();
+
+                var cellAboveDates4 = _excelReader.FindCellByQuery(excel, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
+                int rowDates4 = cellAboveDates4.FirstOrDefault().Item1;
+                int startColumnOfDates4 = cellAboveDates4.FirstOrDefault().Item2;
+                var ter4 = excel.Cells[rowDates4, startColumnOfDates4].Value?.ToString().Trim();
+
+
+                //TODO: пересмотреть поиск по всем столбцам, может быть сдвиги
+
+                //var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
+                //int rowDates5 = cellAboveDates5.FirstOrDefault().Item1;
+                //int startColumnOfDates5 = cellAboveDates5.FirstOrDefault().Item2 + 1;
+
+                var ter41 = excel.Cells[rowDates4 + 1, startColumnOfDates4].Value?.ToString().Trim();
+
+
+                var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "ЗАТРАТЫ ТРУДА РАБОЧИХ", "Затраты труда рабочих");
+                int rowDates5 = cellAboveDates4.FirstOrDefault().Item1;
+                int startColumnOfDates5 = cellAboveDates5.LastOrDefault().Item2;
+                var ter5 = excel.Cells[rowDates5, startColumnOfDates5].Value?.ToString().Trim();
+
+
+            }
+            catch (Exception)
+            {
+            }
+
+            return scopeWork;
         }
     }
 }

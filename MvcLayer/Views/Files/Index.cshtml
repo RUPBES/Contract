@@ -1,14 +1,15 @@
 ﻿@model IEnumerable<BusinessLayer.Models.FileDTO>
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
-    ViewData["Title"] = "Index";
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
+    ViewData["Title"] = "Список файлов";
 }
 
-<h1>Index</h1>
+<h1>@ViewData["Title"]</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table table-main">
     <thead>
         <tr>
@@ -28,26 +29,28 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FilePath)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateUploud)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FileName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FilePath)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FileType)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateUploud)
+                </td>
+                <td>
+                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

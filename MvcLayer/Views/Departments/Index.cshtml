@@ -1,6 +1,10 @@
 ﻿@model IEnumerable<MvcLayer.Models.DepartmentViewModel>
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Отделы";
 }
 <style>
@@ -35,7 +39,10 @@
                     <a asp-controller="Home" asp-action="" class="close-btn "></a>
                 </div>
                 <p>
-                    <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Departments")'">Новый договор</button>
+                    @if (permissions is not null && permissions.IsCreator)
+                    {
+                        <button type="button" class="btn btn-success" onclick="location.href='@Url.Action("Create", "Departments")'">Новый отдел</button>
+                    }
                     @using (Html.BeginForm("Index", "Departments", FormMethod.Get))
                     {
                         <form style="search-form">
@@ -44,15 +51,15 @@
                         </form>
                     }
                 </p>
-                <table class="table"> 
+                <table class="table">
                     <thead>
                         <tr>
                             <th>
-                                @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class=""})
+                                @Html.ActionLink("Название", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayName", @class = "" })
                                 @Html.DisplayNameFor(model => model.Name)
                             </th>
                             <th>
-                                @Html.ActionLink("Организация", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayOrganization", @class=""})
+                                @Html.ActionLink("Организация", "Index", new { sortOrder = ViewBag.DateSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayOrganization", @class = "" })
                                 @Html.DisplayNameFor(model => model.Organization)
                             </th>
                             <th></th>
@@ -69,12 +76,18 @@
                                     @item.Organization.Name
                                 </td>
                                 <td>
-                                    <span class="icon edit" title="Редактировать">
-                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                    </span>
-                                    <span class="icon delete" title="Удалить">
-                                        <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                    </span>
+                                    @if (permissions is not null && permissions.IsEditor)
+                                    {
+                                        <span class="icon edit" title="Редактировать">
+                                            <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                        </span>
+                                    }
+                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                    {
+                                        <span class="icon delete" title="Удалить">
+                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                        </span>
+                                    }
                                 </td>
                             </tr>
                         }

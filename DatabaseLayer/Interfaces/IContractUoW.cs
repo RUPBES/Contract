@@ -1,4 +1,4 @@
-﻿using DatabaseLayer.Models;
+﻿using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Repositories;
 using System;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<EstimateDoc> EstimateDocs { get; }
         IRepository<EstimateDocFile> EstimateDocFiles { get; }
         IRepository<FormC3a> Forms { get; }
-        IRepository<Models.File> Files { get; }
+        IRepository<Models.KDO.File> Files { get; }
         IRepository<FormFile> FormFiles { get; }
         IRepository<MaterialAmendment> MaterialAmendments { get; }
         IRepository<MaterialGc> Materials { get; }

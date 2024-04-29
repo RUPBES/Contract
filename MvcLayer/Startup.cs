@@ -24,7 +24,6 @@ namespace MvcLayer
         public IConfiguration Configuration { get; }
         public void ConfigureServices(IServiceCollection services)
         {
-
             string connectionData = Configuration.GetConnectionString("Data");
             //string connectionIdentity = Configuration.GetConnectionString("Identity");
             Container.RegisterContainer(services, connectionData);
@@ -34,7 +33,6 @@ namespace MvcLayer
             ///
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
             IdentityModelEventSource.ShowPII = true;
-
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders =
@@ -42,14 +40,12 @@ namespace MvcLayer
                     ForwardedHeaders.XForwardedProto |
                     ForwardedHeaders.XForwardedHost;
             });
-
             services.Configure<FormOptions>(options =>
             {
                 // Set the limit to 512 MB
                 options.ValueLengthLimit = int.MaxValue;
                 options.MultipartBodyLengthLimit = int.MaxValue;
             });
-
             services.AddAutoMapper(typeof(MapperViewModel));
             services.AddDbContext<ContractsContext>(options =>
             {
@@ -96,6 +92,7 @@ namespace MvcLayer
                 o.Scope.Add("ContrEdit");
                 o.Scope.Add("ContrAdmin");
                 o.Scope.Add("ContrDelete");
+                o.Scope.Add("ContrCreate");
 
                 o.Scope.Add("ContrOrgBes");
                 o.Scope.Add("ContrOrgTec2");
@@ -103,6 +100,7 @@ namespace MvcLayer
                 o.Scope.Add("ContrOrgBesm");
                 o.Scope.Add("ContrOrgBetss");
                 o.Scope.Add("ContrOrgGes");
+                o.Scope.Add("ContrOrgMajor");
 
                 // requests a refresh token
                 o.Scope.Add("offline_access");               
@@ -144,21 +142,36 @@ namespace MvcLayer
             });
 
             services.AddAuthorization(options => {
-                options.AddPolicy("ContrViewPolicy", policy =>
+               
+                options.AddPolicy("ViewPolicy", policy =>
                    policy.RequireAssertion(context =>
                    {
                        bool r = context.User.HasClaim(c => (c.Type == "scope" || c.Value == "ContrView"));
                        return r;
                    }
                 ));
-                options.AddPolicy("ContrEditPolicy", policy =>
+                options.AddPolicy("CreatePolicy", policy =>
+                  policy.RequireAssertion(context =>
+                  {
+                      bool r = context.User.HasClaim(c => (c.Type == "scope" || c.Value == "ContrCreate"));
+                      return r;
+                  }
+               ));
+                options.AddPolicy("EditPolicy", policy =>
                   policy.RequireAssertion(context =>
                   {
                       bool r = context.User.HasClaim(c => (c.Type == "scope" || c.Value == "ContrEdit"));
                       return r;
                   }
                ));
-                options.AddPolicy("ContrAdminPolicy", policy =>
+                options.AddPolicy("DeletePolicy", policy =>
+                  policy.RequireAssertion(context =>
+                  {
+                      bool r = context.User.HasClaim(c => (c.Type == "scope" || c.Value == "ContrDelete"));
+                      return r;
+                  }
+               ));
+                options.AddPolicy("AdminPolicy", policy =>
                    policy.RequireAssertion(context =>
                    {
                        bool r = context.User.HasClaim(c => (c.Type == "scope"&& c.Value == "ContrAdmin"));
@@ -170,7 +183,6 @@ namespace MvcLayer
             services.AddMvc();            
             services.AddHttpClient();
             services.AddControllersWithViews();
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

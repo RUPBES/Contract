@@ -101,164 +101,79 @@
                 <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
                     <div class="cont-table">
                         <table class="table table-bordered table-main table-hover">
-
-                            @if (!isFact)
+                            <tr>
+                                <th>Период</th>
+                                @foreach (var item in Model.PrepaymentPlans)
+                                {
+                                    <th>
+                                        @item.Period?.ToString("MMMM yyyy")
+                                        <input asp-for="@Model.PrepaymentPlans[index].Period" type="text" class="form-control" value="@item.Period" hidden />
+                                    </th>
+                                    index++;
+                                }
+                                @{
+                                    index = 0;
+                                }
+                            </tr>
+                            @if (ViewBag.Current != null)
                             {
                                 <tr>
-                                    <th>Период</th>
+                                    <th>Текущие авансы:</th>
                                     @foreach (var item in Model.PrepaymentPlans)
                                     {
-                                        <th>
-                                            @item.Period?.ToString("MMM yyyy")
-                                            <input asp-for="@Model.PrepaymentPlans[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                        </th>
+                                        if (Model.PrepaymentPlans[index].CurrentValue != null && Model.PrepaymentPlans[index].CurrentValue != 0)
+                                        {
+                                            <td><input name="PrepaymentPlans[@index].CurrentValue" value="@Model.PrepaymentPlans[index].CurrentValue" type="text" class="form-control cost" /></td>
+                                        }
+                                        else
+                                        {
+                                            <td><input name="PrepaymentPlans[@index].CurrentValue" type="text" class="form-control cost" /></td>
+                                        }
                                         index++;
                                     }
                                     @{
                                         index = 0;
                                     }
                                 </tr>
-                                @if (ViewBag.Current != null)
-                                {
-                                    <tr>
-                                        <th>Текущие авансы:</th>
-                                        @foreach (var item in Model.PrepaymentPlans)
-                                        {
-                                            if (Model.PrepaymentPlans[index].CurrentValue != null && Model.PrepaymentPlans[index].CurrentValue != 0)
-                                            {
-                                                <td><input name="PrepaymentPlans[@index].CurrentValue" value="@Model.PrepaymentPlans[index].CurrentValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td><input name="PrepaymentPlans[@index].CurrentValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            index++;
-                                        }
-                                        @{
-                                            index = 0;
-                                        }
-                                    </tr>
-                                }
-                                @if (ViewBag.Target != null)
-                                {
-                                    <tr>
-                                        <th>Целевые авансы</th>
-                                        @foreach (var item in Model.PrepaymentPlans)
-                                        {
-                                            if (Model.PrepaymentPlans[index].TargetValue != null && Model.PrepaymentPlans[index].TargetValue != 0)
-                                            {
-                                                <td><input name="PrepaymentPlans[@index].TargetValue" value="@Model.PrepaymentPlans[index].TargetValue" type="text" class="target form-control cost" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td><input name="PrepaymentPlans[@index].TargetValue" type="text" class="target form-control cost" /></td>
-                                            }
-                                            index++;
-                                        }
-                                        @{
-                                            index = 0;
-                                        }
-                                    </tr>
-                                    <tr>
-                                        <th>Отработка целевых авансов</th>
-                                        @foreach (var item in Model.PrepaymentPlans)
-                                        {
-                                            if (Model.PrepaymentPlans[index].WorkingOutValue != null && Model.PrepaymentPlans[index].WorkingOutValue != 0)
-                                            {
-                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" value="@Model.PrepaymentPlans[index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td><input name="PrepaymentPlans[@index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
-                                            }
-                                            index++;
-                                        }
-                                        @{
-                                            index = 0;
-                                        }
-                                    </tr>
-                                }
                             }
-                            @if (isFact)
+                            @if (ViewBag.Target != null)
                             {
                                 <tr>
-                                    <th>Период:</th>
-                                    @foreach (var item in Model.PrepaymentFacts)
+                                    <th>Целевые авансы</th>
+                                    @foreach (var item in Model.PrepaymentPlans)
                                     {
-                                        <td>
-                                            @item.Period?.ToString("MMM yyyy")
-                                            <input asp-for="@Model.PrepaymentFacts[index].Period" type="text" class="form-control" value="@item.Period" hidden />
-                                        </td>
+                                        if (Model.PrepaymentPlans[index].TargetValue != null && Model.PrepaymentPlans[index].TargetValue != 0)
+                                        {
+                                            <td><input name="PrepaymentPlans[@index].TargetValue" value="@Model.PrepaymentPlans[index].TargetValue" type="text" class="target form-control cost" /></td>
+                                        }
+                                        else
+                                        {
+                                            <td><input name="PrepaymentPlans[@index].TargetValue" type="text" class="target form-control cost" /></td>
+                                        }
                                         index++;
                                     }
                                     @{
                                         index = 0;
                                     }
                                 </tr>
-                                @if (ViewBag.Current != null)
-                                {
-                                    <tr>
-                                        <th>Текущие авансы по факту:</th>
-                                        @foreach (var item in Model.PrepaymentFacts)
+                                <tr>
+                                    <th>Отработка целевых авансов</th>
+                                    @foreach (var item in Model.PrepaymentPlans)
+                                    {
+                                        if (Model.PrepaymentPlans[index].WorkingOutValue != null && Model.PrepaymentPlans[index].WorkingOutValue != 0)
                                         {
-                                            if (Model.PrepaymentFacts[index].CurrentValue != null && Model.PrepaymentFacts[index].CurrentValue != 0)
-                                            {
-                                                <td><input name="PrepaymentFacts[@index].CurrentValue" value="@Model.PrepaymentFacts[index].CurrentValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td><input name="PrepaymentFacts[@index].CurrentValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            index++;
+                                            <td><input name="PrepaymentPlans[@index].WorkingOutValue" value="@Model.PrepaymentPlans[index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
                                         }
-                                        @{
-                                            index = 0;
-                                        }
-                                    </tr>
-                                }
-                                @if (ViewBag.Target != null)
-                                {
-                                    <tr>
-                                        <th>Текущие авансы по факту:</th>
-                                        @foreach (var item in Model.PrepaymentFacts)
+                                        else
                                         {
-                                            if (Model.PrepaymentFacts[index].TargetValue != null && Model.PrepaymentFacts[index].TargetValue != 0)
-                                            {
-                                                <td><input name="PrepaymentFacts[@index].TargetValue" value="@Model.PrepaymentFacts[index].TargetValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td><input name="PrepaymentFacts[@index].TargetValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            index++;
+                                            <td><input name="PrepaymentPlans[@index].WorkingOutValue" type="text" class="targetWork form-control cost" /></td>
                                         }
-                                        @{
-                                            index = 0;
-                                        }
-                                    </tr>
-                                    <tr>
-                                        <th>Отработка целевых по факту:</th>
-                                        @foreach (var item in Model.PrepaymentFacts)
-                                        {
-                                            if (Model.PrepaymentFacts[index].WorkingOutValue != null && Model.PrepaymentFacts[index].WorkingOutValue != 0)
-                                            {
-                                                <td><input name="PrepaymentFacts[@index].WorkingOutValue" value="@Model.PrepaymentFacts[index].WorkingOutValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            else
-                                            {
-                                                <td><input name="PrepaymentFacts[@index].WorkingOutValue" type="text" class="form-control cost" /></td>
-                                            }
-                                            index++;
-                                        }
-                                        @{
-                                            index = 0;
-                                        }
-                                    </tr>
-                                }
-                            }
-                            @if (isFact)
-                            {
-                                <input asp-for="@Model.Id" hidden />
+                                        index++;
+                                    }
+                                    @{
+                                        index = 0;
+                                    }
+                                </tr>
                             }
                             <input asp-for="@Model.AmendmentId" hidden />
                             <input asp-for="@Model.ContractId" hidden />
@@ -316,9 +231,11 @@
             });
         });
         $('body').on('input', '.target', function (e) {
+            digits_float(this);
             check();
         });
         $('body').on('input', '.targetWork', function (e) {
+            digits_float(this);
             check();
         });
 
@@ -340,7 +257,8 @@
                 let num = item.value.replaceAll(' ', '').replace(regExp, '.')
                 sumTargetWork += +num;
             }
-
+            sumTarget = Math.round(sumTarget * 100) / 100;
+            sumTargetWork = Math.round(sumTargetWork * 100) / 100;
             result = sumTarget - sumTargetWork;
             if (result === 0) {
                 $("#result").focus(function () { $(this).addClass("focused") });

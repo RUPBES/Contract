@@ -12,7 +12,7 @@ using static System.Formats.Asn1.AsnWriter;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class ServiceGCController : Controller
     {
 
@@ -146,6 +146,7 @@ namespace MvcLayer.Controllers
             }
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateServiceFact(PeriodChooseViewModel model, int returnContractId = 0)
         {
             int id = TempData["serviceId"] is int preId ? preId : 0;
@@ -162,6 +163,7 @@ namespace MvcLayer.Controllers
             });
         }
 
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel, int returnContractId = 0)
         {
             if (periodViewModel is not null)
@@ -207,7 +209,7 @@ namespace MvcLayer.Controllers
     
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create(ServiceGCViewModel listServiceGC, int returnContractId = 0)
         {
             if (listServiceGC is not null)
@@ -227,7 +229,7 @@ namespace MvcLayer.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(ServiceGCViewModel serviceGC, int returnContractId = 0)
         {
             if (serviceGC is not null)
@@ -244,7 +246,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _serviceGC.GetAll() == null)

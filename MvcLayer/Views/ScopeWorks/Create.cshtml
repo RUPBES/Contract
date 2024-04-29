@@ -353,6 +353,8 @@
                         }
                         <span id="text_error" class="text_error"></span>
 
+                        <a class="btn btn-success btn_load" asp-action="GetScopeWorkByFile" asp-route-returnContractId="@ViewData["returnContractId"]" asp-route-contractId="@ViewData["contractId"]">Загрузить из Excel</a>
+
                         <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
 
                     </div>
@@ -379,15 +381,19 @@
         });
         check();
         $('body').on('input', '.SmrCost', function (e) {
+            digits_float(this);
             check();
         });
         $('body').on('input', '.PnrCost', function (e) {
+            digits_float(this);
             check();
         });
         $('body').on('input', '.EquipmentCost', function (e) {
+            digits_float(this);
             check();
         });
         $('body').on('input', '.OtherExpensesCost', function (e) {
+            digits_float(this);
             check();
         });
 
@@ -420,6 +426,7 @@
                 let num = item.value.replaceAll(' ', '').replace(regExp, '.')
                 sum += +num;
             }
+            sum = Math.round(sum*100)/100;
             const regExp = /,/g;
             let o = document.querySelector("#sumTarget").value.replace(regExp, '.');
             o = o.replace(/\s+/g, '');

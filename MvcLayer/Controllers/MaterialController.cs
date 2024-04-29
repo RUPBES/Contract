@@ -3,7 +3,7 @@ using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using BusinessLayer.Services;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -14,7 +14,7 @@ using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class MaterialController : Controller
     {
 
@@ -155,7 +155,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateMaterialFact(PeriodChooseViewModel model)
         {
             int id = TempData["materialId"] is int preId ? preId : 0;
@@ -171,7 +171,7 @@ namespace MvcLayer.Controllers
             });
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel periodViewModel, int? contractId = 0, int? returnContractId = 0)
         {
             if (TempData["contractId"] != null)
@@ -216,7 +216,7 @@ namespace MvcLayer.Controllers
             return View(periodViewModel);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult Create(int contractId, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
@@ -234,7 +234,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(MaterialViewModel material, int returnContractId = 0)
         {
@@ -253,7 +253,7 @@ namespace MvcLayer.Controllers
             return View(material);
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public IActionResult Edit(MaterialViewModel material)
         {
             if (material is not null)
@@ -269,7 +269,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _materialService.GetAll() == null)
@@ -283,7 +283,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             int pageSize = 20;
             if (searchString != null)
             { pageNum = 1; }
@@ -404,12 +404,12 @@ namespace MvcLayer.Controllers
 
         public IActionResult DetailsCostDeviation(int contractId)
         {
-            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+            Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == contractId ||
                 w.AgreementContractId == contractId ||
                 w.MultipleContractId == contractId ||
                 w.SubContractId == contractId;
 
-            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
             {
                 NameObject = s.NameObject,
                 Number = s.Number,

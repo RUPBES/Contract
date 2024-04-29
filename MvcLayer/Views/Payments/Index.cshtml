@@ -1,7 +1,12 @@
 ﻿@using MvcLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @model IEnumerable<MvcLayer.Models.PaymentViewModel>
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
+
+@{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);}
 <h1>Список оплат по договорам</h1>
 <table class="table table-striped table-bordered table-main" id="contractTable">
     <thead>
@@ -41,7 +46,10 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    }
                 </td>
             </tr>            
         }

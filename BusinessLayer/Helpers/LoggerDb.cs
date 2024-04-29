@@ -3,6 +3,7 @@ using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
 
 namespace BusinessLayer.Helpers

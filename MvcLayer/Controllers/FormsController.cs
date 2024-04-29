@@ -6,12 +6,11 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Query;
 using MvcLayer.Models;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class FormsController : Controller
     {
         private readonly IContractService _contractService;
@@ -124,7 +123,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateForm(PeriodChooseViewModel model, int contractId = 0, int? returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -154,7 +153,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Create(FormViewModel formViewModel, int? returnContractId = 0)
         {
@@ -162,8 +161,9 @@ namespace MvcLayer.Controllers
             {
                 int mainContrId;
 
-                formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;
-                formViewModel.SmrCost = formViewModel.SmrCost ?? 0;
+                formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;                
+                formViewModel.FixedContractPrice = formViewModel.FixedContractPrice ?? 0;
+                formViewModel.SmrCost = formViewModel.AdditionalCost + formViewModel.FixedContractPrice;
                 formViewModel.PnrCost = formViewModel.PnrCost ?? 0;
                 formViewModel.EquipmentCost = formViewModel.EquipmentCost ?? 0;
                 formViewModel.OtherExpensesCost = formViewModel.OtherExpensesCost ?? 0;
@@ -195,7 +195,8 @@ namespace MvcLayer.Controllers
                     var formOwnForce = _formService.Find(x => x.IsOwnForces == true && x.ContractId == formViewModel.ContractId).LastOrDefault();
                     if (formOwnForce is not null)
                     {
-                        UpdateOwnForcesForm(formViewModel, (int)formViewModel.ContractId, true);
+                        _formService.UpdateOwnForceMnForm(_mapper.Map<FormDTO>(formViewModel), (int)formViewModel.ContractId, 1);
+                        //UpdateOwnForcesForm(formViewModel, (int)formViewModel.ContractId, true);
                     }
                     else
                     {
@@ -234,7 +235,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult Edit(int id, int contractId, int returnContractId = 0)
         {
             var contract = _contractService.GetById(contractId);
@@ -261,7 +262,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(FormViewModel formViewModel, int returnContractId = 0)
         {
@@ -275,6 +276,7 @@ namespace MvcLayer.Controllers
                     bool isNotGenContract = _contractService.IsNotGenContract(form.ContractId, out mainContrId);
                     var contract = form.ContractId.HasValue ? _contractService.GetById((int)form.ContractId) : null;
                     bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
+                    formViewModel.SmrCost = formViewModel.FixedContractPrice + formViewModel.AdditionalCost;
 
                     if (isNotGenContract && !isOneMultipleContract)
                     {
@@ -333,7 +335,7 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public ActionResult Delete(int id, int returnContractId = 0)
         {
             try
@@ -384,15 +386,15 @@ namespace MvcLayer.Controllers
                 }
                 //TODO: не перерисовывает страницу после удаления записи
                 ViewData["reload"] = "Yes";
-                return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+                return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
             }
             catch
             {
-                return PartialView("_Message", new ModalViewVodel("Произошла ошибка при удалении.", "Ошибка", "Плохо"));
+                return PartialView("_Message", new ModalViewModel("Произошла ошибка при удалении.", "Ошибка", "Плохо"));
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult CreateFormByFile(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -411,7 +413,7 @@ namespace MvcLayer.Controllers
 
             var viewForm = new FormViewModel
             {
-                SmrCost = form.SmrCost,
+                FixedContractPrice = form.FixedContractPrice,
                 PnrCost = form.PnrCost,
                 EquipmentCost = form.EquipmentCost,
                 OtherExpensesCost = form.OtherExpensesCost,
@@ -448,6 +450,8 @@ namespace MvcLayer.Controllers
             return View("AddForm", viewForm);
         }
 
+        
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult EditByFile(string path, int page, int id, int contractId, int returnContractId = 0)
         {
             var currentForm = _formService.GetById(id);
@@ -493,7 +497,7 @@ namespace MvcLayer.Controllers
             return View("Edit", _mapper.Map<FormViewModel>(currentForm));
         }
 
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public ActionResult ChooseMethodEdit(int id, int contractId, int returnContractId = 0)
         {
             ViewData["formId"] = id;

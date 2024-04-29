@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using MvcLayer.Controllers;
 using MvcLayer.Models;
 
@@ -27,7 +27,6 @@ namespace MvcLayer.Mapper
             CreateMap<MaterialViewModel, MaterialDTO>().ReverseMap();
             CreateMap<OrganizationViewModel, OrganizationDTO>().ReverseMap();
             CreateMap<PhoneViewModel, PhoneDTO>().ReverseMap();
-            CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
             CreateMap<SWCostViewModel, SWCostDTO>().ReverseMap();
 
             CreateMap<OrganizationDTO, OrganizationsJson>().ReverseMap();

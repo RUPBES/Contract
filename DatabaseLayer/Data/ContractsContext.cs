@@ -1,6 +1,6 @@
-﻿using DatabaseLayer.Models;
+﻿using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
-using File = DatabaseLayer.Models.File;
+using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Data;
 
@@ -554,7 +554,7 @@ public partial class ContractsContext : DbContext
                 .HasConstraintName("FK_EstimateDocFile_File_Id");
         });
 
-        modelBuilder.Entity<Models.File>(entity =>
+        modelBuilder.Entity<File>(entity =>
         {
             entity.ToTable("File");
 
@@ -595,6 +595,10 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.GenServiceCost)
                 .HasColumnType("money")
                 .HasComment("стоимость ген.услуг");
+
+            entity.Property(e => e.FixedContractPrice)
+                .HasColumnType("money")
+                .HasComment("Неизменная договорная цена");
 
             entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
             entity.Property(e => e.IsFinal).HasDefaultValueSql("0");

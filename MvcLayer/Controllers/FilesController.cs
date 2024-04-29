@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class FilesController : Controller
     {
         private readonly IFileService _file;
@@ -25,7 +25,7 @@ namespace MvcLayer.Controllers
             return View(_file.GetAll());
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
@@ -37,7 +37,7 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [HttpPost]
         public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
@@ -66,14 +66,14 @@ namespace MvcLayer.Controllers
             return View(files);
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult Create()
         {
             return View();
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public ActionResult Create(IFormCollection collection)
         {
             try
@@ -88,7 +88,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "DeletePolicy")]
         public ActionResult Delete(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
         {
             try
@@ -114,7 +114,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        //[Authorize(Policy = "AdminPolicy")]
         public ActionResult GetFile(int id)
         {
             if (id != 0)
@@ -126,32 +126,6 @@ namespace MvcLayer.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-        }
-        
-        //[HttpGet]
-        //public ActionResult TUT()
-        //{
-        //    return View();
-        //}
-
-
-        //[HttpPost]
-        //[DisableFormValueModelBindingAttribute]
-        //[RequestFormLimits(MultipartBodyLengthLimit = 268435456)]
-        //public async Task<ActionResult> TUTAsync([FromForm] IFormCollection streamReader)
-        //{
-        //    var file = streamReader.Files["file"];
-        //    if (file != null && file.Length > 0)
-        //    {
-        //        string nameFile = file.FileName;
-        //        string filePath = Path.GetFullPath(Path.Combine(_env.WebRootPath + "\\StaticFiles\\Contracts", nameFile));
-        //        // using (var stream = new MemoryStream())
-        //        using (var stream = System.IO.File.Create(filePath))
-        //        {
-        //            await file.CopyToAsync(stream);
-        //        }
-        //    }
-        //    return Content($"ХАйй");
-        //}
+        }        
     }
 }

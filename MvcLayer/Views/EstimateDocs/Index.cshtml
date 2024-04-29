@@ -2,8 +2,12 @@
 @using BusinessLayer.Enums;
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Проектно-сметная документация";
     bool isAdmin = true;
     string redirectAction = "Index";
@@ -41,45 +45,57 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Number)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateChange)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DateOutput)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Reason)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsChange)
-            </td>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Number)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateChange)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateOutput)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Reason)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsChange)
+                </td>
                 <td>
                     @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.EstimateDocumentations))
                     {
                         <div>
                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                            @if (isAdmin)
+                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                             }
                         </div>
                     }
                 </td>
                 <td>
-                    <a asp-action="AddFile" asp-controller="Files"
-                       asp-route-entityId="@item.Id"
-                       asp-route-fileCategory="@FolderEnum.EstimateDocumentations"
-                       asp-route-redirectAction=@redirectAction
-                       asp-route-redirectController=@redirectController>Добавить файл</a> |
-
-                    <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|
+                    @if (permissions is not null && permissions.IsCreator)
+                    {
+                        <a asp-action="AddFile" asp-controller="Files"
+                           asp-route-entityId="@item.Id"
+                           asp-route-fileCategory="@FolderEnum.EstimateDocumentations"
+                           asp-route-redirectAction=@redirectAction
+                           asp-route-redirectController=@redirectController>Добавить файл</a>
+                        <span>|</span>
+                    }
+                    @if (permissions is not null && permissions.IsEditor)
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a>
+                        <span>|</span>
+                    }
+                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                    {
+                        <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>
+                        <span>|</span>
+                    }
+                    <a asp-action="Details" asp-route-id="@item.Id">Детали</a>
                 </td>
             </tr>
         }

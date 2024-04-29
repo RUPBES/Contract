@@ -2,7 +2,7 @@
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 
 namespace BusinessLayer.Services
 {

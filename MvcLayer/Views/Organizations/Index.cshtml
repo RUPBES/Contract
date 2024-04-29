@@ -1,7 +1,11 @@
 ﻿@model BusinessLayer.Models.IndexViewModel
 @using BusinessLayer.Models;
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Список организаций";
 }
 
@@ -10,7 +14,7 @@
         min-width: 700px;
     }
 
-    .dropdown-menu{
+    .dropdown-menu {
         z-index: 1;
     }
 
@@ -36,9 +40,10 @@
             transform: scale(1);
             font-weight: bold;
         }
-        .input-group_flex {
+
+    .input-group_flex {
         justify-content: right;
-        }
+    }
 
     .img_newAgr {
         width: 24px;
@@ -63,8 +68,10 @@
                                     <input type="text" name="searchString" placeholder="Поиск по названию" value="@ViewData["CurrentFilter"]" id="er" />
                                     <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
                                 </form>
-                                <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Organizations")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить организацию</button>
-
+                                @if (permissions is not null && permissions.IsCreator)
+                                {
+                                    <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Organizations")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить организацию</button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -76,21 +83,21 @@
                                     <th>
                                         <span class="column_300">
                                             Название
-                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayName", @class="up"})
+                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayName", @class = "up" })
 
                                         </span>
                                     </th>
                                     <th>
                                         <span class="column_150">
                                             Аббревиатура
-                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayAbbr", @class="up"})
+                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayAbbr", @class = "up" })
                                         </span>
                                     </th>
                                     <th>
                                         <span class="column_100">
                                             УНП
-                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter=ViewBag.CurrentFilter } , new {id="arrayUnp", @class="up"})
-                                   </span>
+                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayUnp", @class = "up" })
+                                        </span>
                                     </th>
                                     <th>
                                         <span class="column_75">
@@ -140,8 +147,10 @@
                                                 <span class="icon link_to_page dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
                                                 </span>
                                                 <div class="dropdown-menu">
-                                                    <a class="icon view_to_add_pages " asp-controller="Departments"
-                                                       asp-action="Create" asp-route-idOrg="@item.Id"></a>
+                                                    @if (permissions is not null && permissions.IsCreator)
+                                                    {
+                                                        <a class="icon view_to_add_pages " asp-controller="Departments" asp-action="Create" asp-route-idOrg="@item.Id"></a>
+                                                    }
                                                     <div class="dropdown-divider"></div>
                                                     @foreach (var department in item.Departments)
                                                     {
@@ -193,13 +202,19 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="icon edit" title="Редактировать">
-                                                <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                            </span>
-                                           <span class="icon delete" title="Удалить">
-                                                @* <a asp-action="Delete" asp-route-id="@item.Id"></a> *@
-                                                <a onclick="confirmI(@item.Id)"></a>
-                                            </span>                                           
+                                            @if (permissions is not null && permissions.IsEditor)
+                                            {
+                                                <span class="icon edit" title="Редактировать">
+                                                    <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                                </span>
+                                            }
+                                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                            {
+                                                <span class="icon delete" title="Удалить">
+                                                    @* <a asp-action="Delete" asp-route-id="@item.Id"></a> *@
+                                                    <a onclick="confirmI(@item.Id)"></a>
+                                                </span>
+                                            }
                                         </td>
                                     </tr>
                                 }
@@ -213,15 +228,15 @@
                                     @if (Model.PageViewModel.PageNumber > 1)
                                     {
                                         <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
-                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                        asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                           asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
                                     }
                                     @if (Model.PageViewModel.PageNumber <= 1)
                                     {
                                         <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
-                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                        asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                        tabindex="-1" aria-disabled="true">&lt;</a>
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                           tabindex="-1" aria-disabled="true">&lt;</a>
                                     }
                                 }
                             </li>
@@ -230,10 +245,11 @@
                                 int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
                                 for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
                                 {
-                                    <li class="page-item pag_btn_num"><a class="page-link " asp-action="Index" asp-route-pageNum="@i"
-                                   asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                   asp-route-currentFilter="@ViewData["CurrentFilter"]" 
-                                   value="@i">@i</a>
+                                    <li class="page-item pag_btn_num">
+                                        <a class="page-link " asp-action="Index" asp-route-pageNum="@i"
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                           value="@i">@i</a>
                                     </li>
                                     if (counter == 5)
                                     {
@@ -247,15 +263,15 @@
                                     @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
                                     {
                                         <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
-                                   asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                   asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                           asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
                                     }
                                     else
                                     {
                                         <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
-                                        asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                        asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                        aria-disabled="true">&gt;</a>
+                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                           aria-disabled="true">&gt;</a>
                                     }
                                 }
                             </li>
@@ -273,49 +289,43 @@
 
         ////// Pagination
         paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
-                //////ENd pagination
+        //////ENd pagination
 
-        window.onload = function () 
-        {
+        window.onload = function () {
             let actualUrl = window.location.search;
             let elementArrayName = document.getElementById("arrayName");
             let elementArrayAbbr = document.getElementById("arrayAbbr");
-            let elementArrayUnp = document.getElementById("arrayUnp");            
+            let elementArrayUnp = document.getElementById("arrayUnp");
 
-            if (actualUrl.includes('nameDesc')) 
-            {
+            if (actualUrl.includes('nameDesc')) {
                 elementArrayName.classList.remove("up")
                 elementArrayName.classList.add("up-down-active")
                 elementArrayName.classList.add('down')
-            } 
-                else if (actualUrl.includes('name')) 
-                {
-                    elementArrayName.classList.add("up-down-active")
-                } 
-            else if (actualUrl.includes('abbrDesc')) 
-            {
+            }
+            else if (actualUrl.includes('name')) {
+                elementArrayName.classList.add("up-down-active")
+            }
+            else if (actualUrl.includes('abbrDesc')) {
                 elementArrayAbbr.classList.remove("up")
                 elementArrayAbbr.classList.add("up-down-active")
                 elementArrayAbbr.classList.add('down')
             }
-                else if (actualUrl.includes('abbr'))
-                {
-                    elementArrayAbbr.classList.add("up-down-active")
-                }
-            else if (actualUrl.includes('unpDesc')) {
-                 elementArrayUnp.classList.remove("up")
-                 elementArrayUnp.classList.add("up-down-active")
-                 elementArrayUnp.classList.add('down')
+            else if (actualUrl.includes('abbr')) {
+                elementArrayAbbr.classList.add("up-down-active")
             }
-                 else if (actualUrl.includes('unp'))
-                 {
-                    elementArrayUnp.classList.add("up-down-active")
-                 }
+            else if (actualUrl.includes('unpDesc')) {
+                elementArrayUnp.classList.remove("up")
+                elementArrayUnp.classList.add("up-down-active")
+                elementArrayUnp.classList.add('down')
+            }
+            else if (actualUrl.includes('unp')) {
+                elementArrayUnp.classList.add("up-down-active")
+            }
         }
         function confirmI(val) {
             $.ajax({
                 type: 'POST',
-                url: '@Url.Action("ShowDelete","Employees")',
+                url: '@Url.Action("ShowDelete", "Employees")',
                 contentType: "application/html; charset=utf-8",
                 dataType: 'html',
                 success: function (result) {
@@ -327,17 +337,17 @@
                     elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
                             type: 'POST',
-                            url: '@Url.Action("ShowResultDelete","Organizations")',
+                            url: '@Url.Action("ShowResultDelete", "Organizations")',
                             dataType: 'html',
                             data: { id: val },
                             success: function (result) {
                                 let buttonElement = document.querySelectorAll('#dialogContent')
                                 $('#dialogContent').html(result);
                             },
-                            error: function (result) {                                
+                            error: function (result) {
                                 $.ajax({
                                     type: 'POST',
-                                    url: '@Url.Action("Message","Home")',
+                                    url: '@Url.Action("Message", "Home")',
                                     dataType: 'html',
                                     data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
                                     success: function (result) {
@@ -348,7 +358,7 @@
                         });
                     })
                 },
-                error: function (result) {                    
+                error: function (result) {
                     alert("Ошибка отображения");
                 }
             })

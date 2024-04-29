@@ -1,8 +1,12 @@
 ﻿@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     if (ViewBag.IsEngin != null)
     {
         ViewData["Title"] = "Объем услуг";
@@ -18,6 +22,7 @@
         backId = ViewBag.contractId;
     else backId = ViewBag.returnContractId;
 }
+
 <style>
     .dm-modal {
         background-color: lightsteelblue;
@@ -174,12 +179,18 @@
                                                 </td>
                                             }
                                             <td>
-                                                <div class="icon edit" title="Редактировать">
-                                                    <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                                </div>
+                                                @if (permissions is not null && permissions.IsEditor)
+                                                {
+                                                    <div class="icon edit" title="Редактировать">
+                                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                    </div>
+                                                }
                                             </td>
                                             <td>
-                                                <a class="icon delete" onclick="confirm(@item.Id)"></a>
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                {
+                                                    <a class="icon delete" onclick="confirm(@item.Id)"></a>
+                                                }
                                             </td>
                                         </tr>
                                     }
@@ -212,12 +223,12 @@
         </div>
     </div>
 </div>
-@section Scripts{
+@section Scripts {
     <script>
         function confirm(val) {
             $.ajax({
                 type: 'POST',
-                url: '@Url.Action("ShowDelete","ScopeWorks")',
+                url: '@Url.Action("ShowDelete", "ScopeWorks")',
                 contentType: "application/html; charset=utf-8",
                 dataType: 'html',
                 success: function (result) {
@@ -229,7 +240,7 @@
                     elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
                             type: 'POST',
-                            url: '@Url.Action("ShowResultDelete","ScopeWorks")',
+                            url: '@Url.Action("ShowResultDelete", "ScopeWorks")',
                             dataType: 'html',
                             data: { id: val },
                             success: function (result) {
@@ -239,7 +250,7 @@
                             error: function (result) {
                                 $.ajax({
                                     type: 'POST',
-                                    url: '@Url.Action("Message","Home")',
+                                    url: '@Url.Action("Message", "Home")',
                                     dataType: 'html',
                                     data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
                                     success: function (result) {
@@ -255,6 +266,6 @@
                 }
             })
 
-        }     
+        }
     </script>
 }

@@ -1,4 +1,10 @@
-﻿@{
+﻿@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
+
+@{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
+
     ViewData["Title"] = "Изменить статус договора";
     string status = ViewData["status"] as string;
     int backId = 0;
@@ -78,9 +84,12 @@
                             <label class="btn btn-outline-secondary" for="btnradio2">Просрочен</label>
                         </div>
                     }
-                    <div class="btn-group" role="group">
-                    <input class="btn btn-primary btn-md mt-4" type="submit" value="Сохранить изменения" />
-                    </div>
+                    @if (permissions is not null && (permissions.IsAdmin || permissions.IsEditor))
+                    {
+                        <div class="btn-group" role="group">
+                            <input class="btn btn-primary btn-md mt-4" type="submit" value="Сохранить изменения" />
+                        </div>
+                    }
                 </form>
             </div>
         </div>

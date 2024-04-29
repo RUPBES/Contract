@@ -2,7 +2,12 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
 
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
+
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Список объемов работ";
 }
 
@@ -125,7 +130,10 @@
                                     }
                                 </td>
                                 <td>
-                                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                    }
                                 </td>
                             </tr>
                         }

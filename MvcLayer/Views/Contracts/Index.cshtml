@@ -1,6 +1,7 @@
 ﻿@using BusinessLayer.Enums;
 @using BusinessLayer.Models;
-@using System.Diagnostics
+@using System.Diagnostics;
+
 @model BusinessLayer.Models.IndexViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
@@ -8,10 +9,14 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @inject BusinessLayer.Interfaces.ContractInterfaces.IServiceGCService ServiceGc
-
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
+
     var isEngineering = (bool)ViewData["IsEngineering"];
     bool isAdmin = true;
     string redirectAction = "Index";
@@ -32,7 +37,6 @@
 
         .overdue {
             background-color: #79a6fbb0 !important;
-            
         }
 
         .form_agreement {
@@ -54,10 +58,9 @@
         }
 
         h1 {
-            
-/*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-            color: #004d8e;
-            transition: all 1s; */
+            /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
+                                                            color: #004d8e;
+                                                            transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
@@ -67,12 +70,13 @@
             border-radius: 20px;
             margin-left: 1%;
             font-weight: bold;
-        } 
+        }
 
 
         .contracts-list {
             justify-content: space-between;
         }
+
         .color_label {
             display: flex;
             font-weight: bold;
@@ -90,12 +94,14 @@
         .table-main tr:nth-child(even) {
             background-color: #ecf2f9;
         }
+
         .img_newAgr {
             width: 24px;
             height: 24px;
             margin-right: 3px;
         }
-    input {
+
+        input {
             margin: 0;
             font-family: inherit;
             font-size: inherit;
@@ -103,45 +109,51 @@
             border-radius: 20px;
             padding: 0px 30px 0px 10px;
             box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
-    }
+        }
 
-    form {
-        position: relative;
-    }
+        form {
+            position: relative;
+        }
 
     </style>
     <div>
         <div class="contracts-list">
             <h1 class="list_agreement">Список договоров</h1>
 
-                @if (ViewBag.IsEngineering)
+            @if (ViewBag.IsEngineering)
+            {
+                @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                 {
-                    @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
-                    {
-                                            <div class="form_agreement">
-
-                    <form method="get">
-                          @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                        <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                    </form>
-                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
-                        </div>
-
-                }
-                }
-                @if (!ViewBag.IsEngineering)
-                {
-                    @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
-                    {
                     <div class="form_agreement">
-                    <form method="get">
-                        @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                        <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                    </form>
-                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
+
+                        <form method="get">
+                            @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+                        </form>
+                        @if (permissions is not null && permissions.IsCreator)
+                        {
+                            <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
+                        }
                     </div>
-                    }
+
                 }
+            }
+            @if (!ViewBag.IsEngineering)
+            {
+                @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
+                {
+                    <div class="form_agreement">
+                        <form method="get">
+                            @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
+                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+                        </form>
+                        @if (permissions is not null && permissions.IsCreator)
+                        {
+                            <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
+                        }
+                    </div>
+                }
+            }
 
         </div>
 
@@ -213,7 +225,7 @@
 
                     @foreach (VContractDTO item in Model.Objects)
                     {
-                        if (item.DateEndWork < DateTime.Today)
+                        if (item.DateEndWork < DateTime.Today.Date)
                         {
                             <tr class="overdue">
                                 @*Номер и дата договора*@
@@ -340,12 +352,28 @@
                                         <div class="icon view" title="Просмотр детальной информации по договору">
                                             <a asp-action="Details" asp-route-id="@item.Id"></a>
                                         </div>
-                                        <div class="icon edit" title="Редактировать договор">
-                                            <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                        </div>
-                                        <div class="icon delete" title="Удалить договор">
-                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                        </div>
+                                        @if (permissions is not null && permissions.IsEditor)
+                                        {
+                                            <div class="icon edit" title="Редактировать договор">
+                                                <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                            </div>
+                                        }
+
+                                        @if (permissions is not null && permissions.IsDeleter)
+                                        {
+                                            <div class="icon delete" title="Удалить договор">
+                                                <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                            </div>
+                                        }
+
+
+                                        @if (ViewBag?.IsMajorOrganization)
+                                        {
+                                            <div class="icon transfer" title="Передать договор филиалу">
+                                                <a asp-action="ChangeOwner" asp-route-id="@item.Id"></a>
+                                            </div>
+                                        }
+
                                         @if (!item.IsArchive)
                                         {
                                             <div class="icon archive" title="Переместить в архив">
@@ -503,12 +531,30 @@
                                         <div class="icon view" title="Просмотр детальной информации по договору">
                                             <a asp-action="Details" asp-route-id="@item.Id"></a>
                                         </div>
-                                        <div class="icon edit" title="Редактировать договор">
-                                            <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                        </div>
-                                        <div class="icon delete" title="Удалить договор">
-                                            <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                        </div>
+
+                                        @if (permissions is not null && permissions.IsEditor)
+                                        {
+                                            <div class="icon edit" title="Редактировать договор">
+                                                <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                            </div>
+                                        }
+
+                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                        {
+                                            <div class="icon delete" title="Удалить договор">
+                                                <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                            </div>
+                                        }
+
+                                        @if (ViewBag?.IsMajorOrganization)
+                                        {
+                                            @if (permissions is not null && permissions.IsAdmin)
+                                            {
+                                                <div class="icon transfer" title="Передать договор филиалу">
+                                                    <a asp-action="ChangeOwner" asp-route-contrId="@item.Id"></a>
+                                                </div>
+                                            }
+                                        }
                                     </span>
                                 </td>
                             </tr>

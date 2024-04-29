@@ -2,7 +2,7 @@
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -12,7 +12,7 @@ using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
-    [Authorize(Policy = "ContrViewPolicy")]
+    [Authorize(Policy = "ViewPolicy")]
     public class PaymentsController : Controller
     {
         private readonly IContractService _contractService;
@@ -102,7 +102,7 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreatePeriods(PeriodChooseViewModel paymentViewModel, int? contractId = 0, int? returnContractId = 0)
         {
             if (TempData["contractId"] != null)
@@ -142,7 +142,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(List<PaymentViewModel> payment, int returnContractId = 0)
         {
@@ -159,7 +159,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditPayments(List<PaymentViewModel> payment, int returnContractId = 0)
         {
             if (payment is not null || payment.Count() > 0)
@@ -176,7 +176,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetPayableCash(string currentFilter, int? pageNum, string searchString)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             int pageSize = 20;
             if (searchString != null)
             { pageNum = 1; }
@@ -296,12 +296,12 @@ namespace MvcLayer.Controllers
 
         public IActionResult DetailsPayableCash(int contractId)
         {
-            Func<DatabaseLayer.Models.Contract, bool> where = w => w.Id == contractId ||
+            Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == contractId ||
                w.AgreementContractId == contractId ||
                w.MultipleContractId == contractId ||
                w.SubContractId == contractId;
 
-            Func<DatabaseLayer.Models.Contract, DatabaseLayer.Models.Contract> select = s => new DatabaseLayer.Models.Contract
+            Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
             {
                 NameObject = s.NameObject,
                 Number = s.Number,

@@ -20,6 +20,9 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость СМР")]
         public decimal? SmrCost { get; set; }
 
+        [DisplayName("Неизменная договорная цена")]
+        public decimal? FixedContractPrice { get; set; }
+
         [DisplayName("Стоимость ПНР")]
         public decimal? PnrCost { get; set; }
 

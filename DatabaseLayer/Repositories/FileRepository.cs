@@ -1,7 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
-using File = DatabaseLayer.Models.File;
+using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Repositories
 {

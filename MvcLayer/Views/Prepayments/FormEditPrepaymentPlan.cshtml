@@ -1,0 +1,72 @@
+﻿@using BusinessLayer.Models
+@model List<AmendmentDTO>;          
+@{
+    ViewData["Title"] = "Редактирование плановых авансов";
+    var contractId = (int)ViewData["contractId"];
+    string current, target;
+    #region Получение условий авансов целовой/текущий
+    if (ViewData["Current"] != null)
+        current = "true";
+    else current = "false";
+
+    if (ViewData["Target"] != null)
+        target = "true";
+    else target = "false";
+    #endregion
+    #region Нахождение id генконтракта для возвращения
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+    #endregion
+}
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <select id="Amendment">
+                    <option selected disabled>Выберите версию</option>
+                    <option value="0">Контракт</option>
+                    @foreach (var item in Model)
+                    {
+                        <option value="@item.Id">Дополнительное соглашение №@item.Number</option>
+                    }
+                </select>
+                <hr class="modal-line">
+                <div id="ContentCreate">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script type="text/javascript">
+        var amend = document.getElementById("Amendment");
+        amend.addEventListener("input", function (e) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetPrepaymentPlanByAmendment", "Prepayments")',
+                data: { prepaymentId: event.target.value, contractId: @contractId, current: @current, target: @target },
+                dataType: 'html',
+                success: function (data) {
+                    $('#ContentCreate').html(data)
+                }
+            });
+        });
+    </script>
+}

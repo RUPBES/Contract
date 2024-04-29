@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<MvcLayer.Models.SelectionProcedureViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
 
 @{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
     var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
     ViewData["Title"] = "Процедура выбора";
     bool isAdmin = true;
@@ -74,19 +78,19 @@
                             </th>
                             <th rowspan="2"></th>
                         </tr>
-                        <tr>                            
+                        <tr>
                             <th>
                                 @Html.DisplayNameFor(model => model.DateBegin)
                             </th>
                             <th>
                                 @Html.DisplayNameFor(model => model.DateEnd)
-                            </th>                            
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>                               
+                            <tr>
                                 <td>
                                     @Html.DisplayFor(modelItem => item.TypeProcedure)
                                 </td>
@@ -113,16 +117,22 @@
                                 </td>
                                 <td>
                                     @Html.DisplayFor(modelItem => item.AcceptanceNumber)
-                                от
+                                    от
                                     @item.DateAcceptance?.ToShortDateString()
                                 </td>
                                 <td>
-                                    <span class="icon edit" title="Редактировать процедуру закупки">
-                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
-                                    </span>
-                                    <span class="icon delete" title="Удалить процедуру закупки">
-                                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
-                                    </span>
+                                    @if (permissions is not null && permissions.IsEditor)
+                                    {
+                                        <span class="icon edit" title="Редактировать процедуру закупки">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                        </span>
+                                    }
+                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                    {
+                                        <span class="icon delete" title="Удалить процедуру закупки">
+                                            <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                        </span>
+                                    }
                                 </td>
                             </tr>
                         }

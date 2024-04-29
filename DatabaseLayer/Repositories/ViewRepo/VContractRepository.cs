@@ -1,6 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -45,7 +45,7 @@ namespace DatabaseLayer.Repositories.ViewRepo
         {   
             var list = org.Split(',');
             return _context.VContracts
-                .Where(x => list.Contains(x.Author) || list.Contains(x.Owner))
+                .Where(x => /*list.Contains(x.Author) ||*/ list.Contains(x.Owner))
                 .OrderByDescending(x => x.Id)
                 .Skip(skip)
                 .Take(take)

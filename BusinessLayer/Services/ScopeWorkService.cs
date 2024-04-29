@@ -3,7 +3,7 @@ using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
@@ -289,6 +289,28 @@ namespace BusinessLayer.Services
             return _mapper.Map<ScopeWork>(listSort.Select(x => x.Item1).LastOrDefault());
         }
 
+        /// <summary>
+        /// удаляет стоимость соб.силами объемов за тот же период что и стоимость которая удаляется
+        /// </summary>
+        /// <param name="mainScopeId">ID объема работ, у которого удаляется стоимость</param>
+        /// <param name="swCostId">ID удаляемой стоимости</param>
+        public void RemoveExistOwnForce(int mainScopeId, int swCostId)
+        {
+            var contractId = _database.ScopeWorks.GetById(mainScopeId).ContractId;
+            var ownScpId = _database?.ScopeWorks?.Find(x => x.ContractId == contractId && x.IsOwnForces == true)
+                                                 ?.LastOrDefault()?.Id;
+
+            var periodRemove = _database?.SWCosts?.GetById(swCostId)?.Period;
+            var swCostOwnForce = _database?.SWCosts?.Find(x => x.ScopeWorkId == ownScpId 
+                                                            && x.Period?.Year == periodRemove?.Year 
+                                                            && x.Period?.Month == periodRemove?.Month)
+                                                  ?.LastOrDefault();
+            if (swCostOwnForce is not null)
+            {
+                _database?.SWCosts?.Delete(swCostOwnForce.Id);
+                _database.Save();
+            }            
+        }
 
 
         public void AddSWCostForMainContract(int? scopeId, List<SWCostDTO> costs)
@@ -592,6 +614,31 @@ namespace BusinessLayer.Services
 
             return scpMain;
         }
+
+
+        public bool DeleteAllScopeWorkContract(int scopeWorkId)
+        {
+            bool isRemove = false;
+
+            var contractId = _database.ScopeWorks.GetById(scopeWorkId).ContractId;  
+            
+
+            if (scopeWorkId > 0)
+            {
+                _database.ScopeWorks.Delete(scopeWorkId);
+                var scpOwnId = _database?.ScopeWorks?.Find(x => x.ContractId == contractId && x.IsOwnForces == true)?.LastOrDefault()?.Id;
+                
+                if (scpOwnId != null)
+                {                    
+                    _database?.ScopeWorks.Delete((int)scpOwnId);
+                }
+
+                _database.Save();
+                isRemove = true;
+            }
+            return isRemove;
+        }
+
         #endregion
     }
 }

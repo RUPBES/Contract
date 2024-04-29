@@ -1,7 +1,7 @@
 ﻿using BusinessLayer.Enums;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Http;
-using File = DatabaseLayer.Models.File;
+using File = DatabaseLayer.Models.KDO.File;
 
 namespace BusinessLayer.Interfaces.ContractInterfaces
 {
