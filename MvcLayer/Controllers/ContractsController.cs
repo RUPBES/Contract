@@ -859,7 +859,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
-                return PartialView("_Message", new ModalViewVodel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
+                return PartialView("_Message", new ModalViewModel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
             }
             #endregion
             #region Заполнение данными из объема работ(Собственными силами)
