@@ -60,6 +60,12 @@
             transform: scale(1);
             font-weight: bold;
         }
+
+    .img_newAgr {
+        width: 24px;
+        height: 24px;
+        margin-right: 3px;
+    }
 </style>
 @{
     ViewData["Title"] = "Выбрать период";
@@ -86,34 +92,55 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
-                    <input asp-for="ContractId" value="@Model?.ContractId" hidden />
-                    <input asp-for="ChangePrepaymentId" value="@Model?.ChangePrepaymentId" hidden />
-                    <input asp-for="IsChange" value="@Model?.IsChange" hidden />
-                    <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
-                    <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
+                @{
+                    var listAmendment = Prepayment.GetFreeAmendment((int)Model?.ContractId);
+                    if (listAmendment.Count() > 0)
+                    {
+                        <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
+                            <input asp-for="ContractId" value="@Model?.ContractId" hidden />
+                            <input asp-for="ChangePrepaymentId" value="@Model?.ChangePrepaymentId" hidden />
+                            <input asp-for="IsChange" value="@Model?.IsChange" hidden />
+                            <input asp-for="PeriodStart" type="datetime" value="@Model?.PeriodStart" hidden />
+                            <input asp-for="PeriodEnd" type="datetime" value="@Model?.PeriodEnd" hidden />
 
-                    <div class="form-group col-12">
-                        <div class="title-warning"><span>Авансы для данного договора заполнены</span></div>
-                    </div>
-                    <div id="chooseAmendment" class="row" >
-                        <div class="form-group">
-                            <label class="control-label label_agreement">Выбрать доп.соглашение:</label>
-                            <select name="AmendmentId" id="AmendId" class="form-control select">
-                                <option disabled selected>Выберите</option>                                
-                                {
-                                @{
-                                    var listAmendment = Prepayment.GetFreeAmendment((int)Model?.ContractId);
-                                }
-                                @foreach (AmendmentDTO org in listAmendment)
-                                    {
-                                        <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
-                                    }
-                                }
-                            </select>
+                            <div class="form-group col-12">
+                                <div class="title-warning"><span>Авансы для данного договора заполнены</span></div>
+                            </div>
+                            <div id="chooseAmendment" class="row">
+                                <div class="form-group">
+                                    <label class="control-label label_agreement">Выбрать доп.соглашение:</label>
+                                    <select name="AmendmentId" id="AmendId" class="form-control select">
+                                        <option disabled selected>Выберите</option>
+                                        {
+                                        @{
+
+                                        }
+                                        @foreach (AmendmentDTO org in listAmendment)
+                                        {
+                                            <option value="@org.Id">Номер: @org.Number - Изменено: @org.ContractChanges</option>
+                                        }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="d-inline-block alert alert-primary">                           
+                                <label class="control-label">Аванс заполнен</label>                            
                         </div>
-                    </div>
-                </form>
+                        <div class="label-block alert alert-primary">
+                            <label class="control-label">Отсутствуют незаполненные дополнительные соглашения</label>
+                        </div>
+                        <div class="btn-block">
+                            <a class="btn btn-success" asp-controller="Amendments" asp-action="Create" asp-route-contractId="@contract.Id" asp-route-isPrepament="true"
+                               asp-route-returnContractId="@ViewBag.returnContractId"><img class="img_newAgr" src="~/icons/plus_icon.png" />+ Доп. соглашение</a>
+                            <a class="btn btn-warning" asp-controller="Prepayments" asp-action="GetByContractId" asp-route-contractId="@contract.Id"
+                               asp-route-returnContractId="@ViewBag.returnContractId"><img class="img_newAgr" src="~/icons/search-file_icon.png" />Просмотр заполненных данных</a>
+                        </div>
+                    }
+                }               
             </div>
         </div>
     </div>

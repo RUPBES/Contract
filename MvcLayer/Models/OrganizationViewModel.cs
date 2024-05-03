@@ -40,7 +40,7 @@ namespace MvcLayer.Models
         /// расчетный счет
         /// </summary
         [DisplayName("Расчетный счет")]
-        [RegularExpression("[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{4}([A-Z0-9]?){16}", ErrorMessage = "28 - разрядов; 1,2 - буквы;  3,4,9-12  - цифры; 5-8,13-28 латиница и цифры")]
+        [RegularExpression("[A-Z]{2}[0-9]{2}-[A-Z0-9]{4}-[0-9]{4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}", ErrorMessage = "28 - разрядов; 1,2 - буквы;  3,4,9-12  - цифры; 5-8,13-28 латиница и цифры")]
         [Required(ErrorMessage = "Необходимо заполнить расчетный счет")]
         public string? PaymentAccount { get; set; }
 

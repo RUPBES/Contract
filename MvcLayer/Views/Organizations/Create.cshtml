@@ -67,7 +67,7 @@
                             <label asp-for="PaymentAccount" pattern="^[А-Яа-яЁё\s]+$" for="ac"></label>
                             <div class="input-group">
                                 <div class="input-group-text"><img src="~/icons/account_balance_wallet.svg" /></div>
-                                <input asp-for="PaymentAccount" type="text" class="form-control" id="ac" placeholder="BY20OLMP31350000001000000933">
+                                <input asp-for="PaymentAccount" type="text" class="form-control ac" id="ac" placeholder="BY20OLMP31350000001000000933">
                             </div>
                             <span asp-validation-for="PaymentAccount" class="text-danger"></span>
                         </div>
@@ -123,5 +123,26 @@
     }
     <script>
         fillPhoneInput();
+
+        PaymentAccountSpace($('#ac'));
+        $('body').on('input', '.ac', function (e) {
+            PaymentAccountSpace(this);
+        });
+
+        function PaymentAccountSpace(target) {
+            val = $(target).val().replace(/-/g, "");
+            val = val.substring(0, 28);
+            var val1 = '';
+            var c = 0;
+            Array.from(val).forEach(elem => {
+                if (c == 4) {
+                    val1 += '-';
+                    c = 0;
+                }
+                val1 += elem;
+                c++;
+            });
+            $(target).val(val1)
+        }
     </script>
 }

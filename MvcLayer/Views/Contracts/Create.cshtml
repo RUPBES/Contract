@@ -300,6 +300,18 @@
                                 </div>
                             }
                         </fieldset>
+                        <div class="col-12 mt-2">
+                            <div class="input-group mb-2">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text" style="display: block;">
+
+                                        <input id="radioSubObject" type="checkbox" name="hidden">                                     
+                                    </div>
+                                </div>
+                                <input style="font-weight: bold;" type="text" class="form-control" value="Имеются подобъекты?" disabled>
+                            </div>
+                            <input name="isSubObject" hidden value="false" />
+                        </div>
                     </div>
                     <div class="col-4">
                         <div class="form-group">
@@ -432,7 +444,16 @@
 
 @section Scripts {
     <script type="text/javascript">
+        $('body').on('change', '#radioSubObject', function (e) {
+            if (!$('[name="hidden"]').prop('checked')) {
+                console.log($('[name="isSubObject"]'))
 
+                $('[name="isSubObject"]').val(false);
+            }
+            else {
+                $('[name="isSubObject"]').val(true);
+            }
+        });
 
         window.onload = function () {
             $('#logoRupbes').hide();
