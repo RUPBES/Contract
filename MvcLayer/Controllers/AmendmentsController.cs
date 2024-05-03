@@ -41,10 +41,12 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult Create(int contractId, int returnContractId = 0)
+        public ActionResult Create(int contractId, int returnContractId = 0, bool isScope = false, bool isPrepament = false)
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
+            ViewData["isScope"] = isScope.ToString();
+            ViewData["isPrepament"] = isPrepament.ToString();
             var model = new AmendmentViewModel();
             var prevAmend = _amendment.Find(a => a.ContractId == contractId).LastOrDefault();
             if (prevAmend == null)
@@ -68,7 +70,7 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult Create(AmendmentViewModel amendment, int returnContractId = 0)
+        public ActionResult Create(AmendmentViewModel amendment, int returnContractId = 0, bool isScope = false, bool isPrepament = false)
         {
             try
             {
@@ -76,6 +78,10 @@ namespace MvcLayer.Controllers
                 int fileId = (int)_fileService.Create(amendment.FilesEntity, FolderEnum.Amendment, amendId);
 
                 _amendment.AddFile(amendId, fileId);
+                if (isScope)
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                if (isPrepament)
+                    return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
 
                 return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
             }
