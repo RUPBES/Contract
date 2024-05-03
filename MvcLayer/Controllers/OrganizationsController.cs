@@ -76,7 +76,9 @@ namespace MvcLayer.Controllers
         {
             if (organization is not null)
             {
-                _organizationService.Create(_mapper.Map<OrganizationDTO>(organization));
+                var org = _mapper.Map<OrganizationDTO>(organization);
+                org.PaymentAccount = org.PaymentAccount.Replace("-", "");
+                _organizationService.Create(org);
                 return RedirectToAction(nameof(Index));
             }
             return View(organization);
@@ -121,7 +123,9 @@ namespace MvcLayer.Controllers
                     {
                         organization.Addresses.Clear();
                     }
-                    _organizationService.Update(_mapper.Map<OrganizationDTO>(organization));
+                    var org = _mapper.Map<OrganizationDTO>(organization);
+                    org.PaymentAccount = org.PaymentAccount.Replace("-", "");
+                    _organizationService.Update(org);
                 }
                 catch
                 {
