@@ -20,12 +20,12 @@ namespace MvcLayer.Controllers
         private readonly IMapper _mapper;
         private readonly IPrepaymentFactService _prepFact;
         private readonly IPrepaymentService _prep;
-        private readonly IParsService _pars;
+        private readonly IParseService _pars;
 
         public FormsController(IFormService formService, IMapper mapper,
                                 IFileService fileService, IScopeWorkService scopeWork,
                                 IContractService contractService, IPrepaymentFactService prepFact,
-                                IPrepaymentService prep, IParsService pars)
+                                IPrepaymentService prep, IParseService pars)
         {
             _formService = formService;
             _mapper = mapper;

@@ -1,19 +1,32 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
-using OfficeOpenXml.Core.Worksheet.Fill;
+using System.Reflection;
 
 namespace BusinessLayer.ServicesCOM
 {
-    internal class ParsService : IParsService
+    internal class ParseService : IParseService
     {
         private readonly IExcelReader _excelReader;
         private readonly IConverter _converter;
-        public ParsService(IExcelReader excelReader, IConverter converter)
+        private readonly ILoggerContract _logger;
+        private readonly IHttpContextAccessor _http;
+        private readonly ITextSearcher _textSearcher;
+        private readonly IEstimateService _estimateService;
+        public ParseService(IExcelReader excelReader, IConverter converter, ILoggerContract logger, IHttpContextAccessor http, 
+            ITextSearcher textSearcher,IEstimateService estimateService)
         {
             _excelReader = excelReader;
             _converter = converter;
+            _logger = logger;
+            _http = http;
+            _textSearcher = textSearcher;
+            _estimateService = estimateService;
         }
 
         public ScopeWorkDTO GetScopeWorks(string path, int page)
@@ -206,7 +219,7 @@ namespace BusinessLayer.ServicesCOM
                 pnrCost -= additionalWork;
                 c3A.AdditionalCost += additionalWork;
                 c3A.PnrCost = pnrCost;
-            }            
+            }
             c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault().Item2, col.Item2);
             c3A.OffsetTargetPrepayment = (decimal)_excelReader.GetValueDouble(excel,
@@ -229,53 +242,97 @@ namespace BusinessLayer.ServicesCOM
             return c3A;
         }
 
-        public ScopeWorkDTO ParseEstimate(string path, int page)
-        { 
-            var scopeWork = new ScopeWorkDTO();
+        public EstimateDTO ParseEstimate(string path, int page)
+        {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
+            var estimate = new EstimateDTO();
             try
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
-
-               
                 var ending = excel.Dimension.End.Column;
 
-                
-                var cellBuilding = GetCellValue(excel,  shiftRow: 0, shiftCol: 1, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
-                var cellCodeBuilding = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
-                var cellDrawing = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
-                var cellNameBuilding = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
-                var cellLocalEstimate = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
+                estimate.BuildingName = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
+                estimate.BuildingCode = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
+                estimate.DrawingsKit = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
+                var Number = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
 
+                estimate.Number = _textSearcher?.FindEstimateNumber(Number) ?? "";
 
                 //TODO: пересмотреть поиск по всем столбцам, может быть сдвиги
 
                 var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Составлена в ценах на", "Составлена в", "СОСТАВЛЕНА В");
                 int rowNameEstimate = cellAboveDates5.FirstOrDefault().Item1 - 1;
-                var ddd = string.Empty;
+                var drawingName = string.Empty;
+
                 for (int i = excel.Dimension.Start.Column; i <= excel.Dimension.End.Column; i++)
                 {
-                    ddd = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
-                    if (ddd is not null)
+                    drawingName = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
+                    if (drawingName is not null)
                     {
                         break;
                     }
-                    if (i == excel.Dimension.End.Column && string.IsNullOrEmpty(ddd))
+                    if (i == excel.Dimension.End.Column && string.IsNullOrEmpty(drawingName))
                     {
                         i = excel.Dimension.Start.Column;
                         rowNameEstimate = rowNameEstimate - 1;
                     }
                 }
-
-               
-
-
-
+                estimate.DrawingsName = drawingName;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.WriteLog(
+                               logLevel: LogLevel.Warning,
+                               message: e.Message,
+                               nameSpace: typeof(ParseService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user
+                               );
             }
-            return scopeWork;
+            return estimate;
         }
+
+        public void ParseAndReturnLaborCosts(string path, int page, int estimateId)
+        {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
+            //TODO: только начал делать)))
+            var estimate = _estimateService.GetById(estimateId);
+
+            var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
+            try
+            {
+                var excel = _excelReader.GetExcelWorksheet(path, page);
+                //var ending = excel.Dimension.End.Column;
+
+              
+                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "трудозатраты", "трудозатрат", "трудозатраты чел.час.", "ТРУДОЗАТРАТ");
+                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {numberEstimate}", $"ИТОГО по смете {numberEstimate}", $"Итого по смете {numberEstimate}");
+                var col = nameColumnLabor.FirstOrDefault().Item2;
+                var row = nameRowEstimate.FirstOrDefault().Item1;
+                var result = excel.Cells[row, col].Value ?? 0;
+
+                estimate.LaborCost = (double)result;
+                _estimateService.Update(estimate);
+
+            }
+            catch (Exception e)
+            {
+                _logger.WriteLog(
+                               logLevel: LogLevel.Warning,
+                               message: e.Message,
+                               nameSpace: typeof(ParseService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user
+                               );
+            }           
+        }
+
 
         private string GetCellValue(ExcelWorksheet excel, int shiftRow, int shiftCol, params string[] names)
         {
@@ -283,7 +340,7 @@ namespace BusinessLayer.ServicesCOM
             var cell = _excelReader.FindCellByQuery(excel, names);
             int rowDates = cell.FirstOrDefault().Item1 + shiftRow;
             int startColumnOfDates = cell.FirstOrDefault().Item2 + shiftCol;
-            return excel.Cells[rowDates, startColumnOfDates].Value?.ToString()?.Trim()??string.Empty;
+            return excel.Cells[rowDates, startColumnOfDates].Value?.ToString()?.Trim() ?? string.Empty;
         }
     }
 }

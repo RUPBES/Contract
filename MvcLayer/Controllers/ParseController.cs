@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using Microsoft.AspNetCore.Mvc;
+using BusinessLayer.Enums;
 
 namespace MvcLayer.Controllers
 {
@@ -9,12 +10,16 @@ namespace MvcLayer.Controllers
     {
         private readonly IFileService _file;
         private readonly IWebHostEnvironment _env;
-        private readonly IParsService _pars;
+        private readonly IParseService _pars;
         private readonly IExcelReader _excelReader;
         private readonly IContractService _contractService;
         private readonly IMapper _mapper;
 
-        public ParseController(IFileService file, IWebHostEnvironment env, IParsService pars, IExcelReader excelReader, IContractService contractService, IMapper mapper)
+        private readonly IEstimateService _estimateService;
+
+        public ParseController(IFileService file, IWebHostEnvironment env, IParseService pars, 
+            IExcelReader excelReader, IContractService contractService, 
+            IMapper mapper, IEstimateService estimateService)
         {
             _file = file;
             _env = env;
@@ -22,6 +27,7 @@ namespace MvcLayer.Controllers
             _excelReader = excelReader;
             _contractService = contractService;
             _mapper = mapper;
+            _estimateService = estimateService;
         }
 
 
@@ -97,36 +103,49 @@ namespace MvcLayer.Controllers
             var workSheets = _excelReader.GetListOfBook(path);
 
             if (workSheets.Count() == 1)
-            { 
+            {
                 return RedirectToAction("CreateScopeWorkByFile", "ScopeWorks", new { path = path, contractId = contractId, returnContractId = returnContractId/*, formId = formId*/ });
             }
 
             ViewData["path"] = path;
-            
+
             ViewData["contrId"] = contractId;
             ViewData["returnContrId"] = returnContractId;
 
-            return PartialView("CheckCountPagesInScoworkExcel",workSheets);
+            return PartialView("CheckCountPagesInScoworkExcel", workSheets);
         }
 
-        public ActionResult CheckCountPagesInExcel(string path, string contractId, string returnContractId, string controllerName = null, string actionName = null, string partialViewName = null)
+        public ActionResult CheckCountPagesInExcel(string path, string contractId, string returnContractId,DateTime dateStart, string controllerName = null, string actionName = null,int? estimateId = null, string partialViewName = null)
         {
             var workSheets = _excelReader.GetListOfBook(path);
-            ViewData["PartialViewName"] = partialViewName;
             if (workSheets.Count() == 1)
             {
                 if (controllerName is not null && actionName is not null)
                 {
-                    return RedirectToAction(actionName, controllerName, new { path = path, contractId = contractId, returnContractId = returnContractId });
+                    return RedirectToAction(actionName, controllerName, new { path = path, contractId = contractId, returnContractId = returnContractId, date = dateStart, estimateId = estimateId });
                 }
-                return RedirectToAction("", "Estimate", new { path = path, contractId = contractId, returnContractId = returnContractId });
+                return RedirectToAction("", "Estimate", new { path = path, contractId = contractId, returnContractId = returnContractId, estimateId = estimateId });
 
             }
             else
             {
-                return PartialView("_ChoosePagePartial", workSheets);
+                ViewBag.contrId = contractId;
+                ViewBag.returnContrId = returnContractId;
+                ViewBag.controllerName = controllerName;
+                ViewBag.actionName = actionName;
+                return PartialView("_ChoosePagePartial2", workSheets);
             }
 
         }
+
+        public ActionResult DownloadDrawingOfEstimate(IFormCollection collection, string drawingKitName, int estimateId, DateTime dateStart)
+        {
+            _file.Create(collection.Files, FolderEnum.Estimate, estimateId, drawingKitName);
+            var estimate = _estimateService.GetById(estimateId);
+            estimate.DrawingsDate = dateStart;
+            _estimateService.Update( estimate);
+            return Content($"{estimateId}");
+        }
+
     }
 }

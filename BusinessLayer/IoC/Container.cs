@@ -32,6 +32,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<ICorrespondenceService, CorrespondenceService>();
             services.AddScoped<IContractOrganizationService, ContractOrganizationService>();
             services.AddScoped<IExcelReader, ExcelReader>();
+            services.AddScoped<IEstimateService, EstimateService>();
             services.AddScoped<IEstimateDocService, EstimateDocService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
@@ -53,13 +54,14 @@ namespace BusinessLayer.IoC
             services.AddScoped<ISelectionProcedureService, SelectionProcedureService>();
             services.AddScoped<IServiceGCService, ServiceGCService>();
             services.AddScoped<IServiceCostService, ServiceCostService>();
+            services.AddScoped<ITextSearcher, TextSearcher>();
             services.AddScoped<ITypeWorkService, TypeWorkService>();
 
             services.AddScoped<IVContractEnginService, VContractEnginService>();
             services.AddScoped<IVContractService, VContractService>();
 
             services.AddTransient<IStreamFileUploadService, StreamFileUploadLocalService>();
-            services.AddTransient<IParsService, ParsService>();
+            services.AddTransient<IParseService, ParseService>();
         }
     }
 }

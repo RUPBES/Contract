@@ -23,13 +23,13 @@ namespace MvcLayer.Controllers
         private readonly IFormService _formService;
         private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
-        private readonly IParsService _pars;
+        private readonly IParseService _pars;
 
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
             IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService,
-            IPrepaymentService prepayment, IParsService parser)
+            IPrepaymentService prepayment, IParseService parser)
         {
             _contractService = contractService;
             _mapper = mapper;

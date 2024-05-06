@@ -24,7 +24,7 @@ namespace DatabaseLayer.Models.PRO
         public DateTime? AmendmentDrawingsDate { get; set; }
         public DateTime? AmendmentEstimateDate { get; set; }
         public decimal ContractsCost { get; set; }
-        public decimal LaborCost { get; set; }
+        public double LaborCost { get; set; }
         public decimal DoneSmrCost { get; set; }
         public string SubContractor { get; set; }
         public decimal PercentOfContrPrice { get; set; }

@@ -1,9 +1,17 @@
-﻿@{
-    ViewData["Title"] = "Чтение данных из локальной сметы";
-    int backId = 0;
-    if ((int)ViewData["returnContractId"] == 0)
-        backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
+﻿@model int;
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEstimateService Estimate
+@{
+    ViewData["Title"] = "Загрузка чертежей";
+    var estimates = @Model != 0 ? Estimate.GetById(Model) : null;
+    int backId = estimates?.ContractId ?? 0;
+    // if ((int)ViewData["returnContractId"] == 0)
+    // {
+    //     backId = (int)ViewData["contractId"];
+    // }
+    // else
+    // {
+    //     backId = (int)ViewData["returnContractId"];
+    // }
 }
 <style>
     .demo-section {
@@ -51,12 +59,13 @@
                     </div>
                     <hr class="modal-line">
 
-                    <form id="files" method="post" enctype="multipart/form-data">
+                    <form id="files2" method="post" enctype="multipart/form-data">
                         <div id="example" style="min-width:400px; max-width: 800px;">
                             <div class="demo-section input-group mb-2">
-                                <label>Дата получения сметы</label>
-                                <input class="form-control" name="date" type="date" id="dateEstimateId" />
+                                <label>Дата получения чертежей</label>
+                                <input class="form-control" name="dateStart" type="date" id="dateDrawingId" />
                             </div>
+
                             <div class="demo-section input-group mb-2">
                                 <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
                                 <div class="input-group-append">
@@ -66,7 +75,13 @@
                             <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
                                 <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
                             </div>
+                            <input name="estimateId" value="@Model" id="estimateId" hidden />
+                            <input name="drawingKitName" value="@estimates.DrawingsKit" id="drawingKitId" hidden />
                         </div>
+                        <input name="drawingKitName" value="@estimates.DrawingsKit" id="drawingKitId" hidden />
+                        
+                        <input id="contractId" value="@ViewBag.contractId" hidden />
+                        <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
                     </form>
                     <div id="result">
                     </div>
@@ -74,16 +89,16 @@
             </div>
         </div>
     </div>
-    <input id="contractId" value="@ViewBag.contractId" hidden />
-    <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script>
-        $("form#files").submit(function () {
+        $("form#files2").submit(function () {
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();
-            let dateEstimateId = $("#dateEstimateId").val();
+            let dateDrawingId = $("#dateDrawingId").val();
+            let drawingKitName = $("#drawingKitId").val();
+            let estimateId = $("#estimateId").val();
 
-            let formData = new FormData(files);
+            let formData = new FormData(files2);
             event.preventDefault()
             function setProgress(e) {
                 if (e.lengthComputable) {
@@ -102,20 +117,11 @@
                     return xhr;
                 },
                 type: 'POST',
-                url: '@Url.Action("DownloadFile", "Parse")',
+                url: '@Url.Action("DownloadDrawingOfEstimate", "Parse")',
                 data: formData,
                 success: function (data) {
                     let path = data;
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("CheckCountPagesInExcel", "Parse")',
-                        data: { path: path, contractId: contractId, returnContractId: returnContractId, dateStart: dateEstimateId, controllerName: 'Estimate', actionName: 'GetEstimateData' },
-                        dataType: 'html',
-                        success: function (data) {
-                            location.href = `./Estimate/AttachingFiles?estimateId=${data}`;
-                        }
-                    });
-                    $("#container_progress").attr('style', `display:none`);
+                    location.href = `./GetEstimateCost?estimateId=${data}`;
                 },
                 error: function (result) {
                     $.ajax({

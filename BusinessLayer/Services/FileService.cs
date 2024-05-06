@@ -6,6 +6,7 @@ using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models;
 using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -31,34 +32,37 @@ namespace BusinessLayer.Services
             _env = env;
         }
 
-        public int? Create(IFormFileCollection files, FolderEnum folder, int entityId)
+        public int? Create(IFormFileCollection files, FolderEnum folder, int entityId, string nestedFolder = null)
         {
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
             var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
 
             int id = default;
-            if (files != null /*&& item != null*/)
+            if (files != null)
             {
                 foreach (var file in files)
                 {
                     string fileName = file.FileName;
-                    string folderPath = @$"\StaticFiles\{folder}\";
+                    string folderNested = nestedFolder is null ? $@"{folder}" : $@"{folder}\{nestedFolder}";
+                    string folderPath = @$"\StaticFiles\{folderNested}\";
                     string fullPath = _env.WebRootPath + folderPath + fileName;
 
                     int i = 1;
                     int positionDot = file.FileName.LastIndexOf('.');
 
-                    if (!Directory.Exists(_env.WebRootPath + "\\StaticFiles\\" + folder))
+                    if (!Directory.Exists(_env.WebRootPath + "\\StaticFiles\\" + folderNested))
                     {
-                        DirectoryInfo directory = new DirectoryInfo($@"{_env.WebRootPath}\StaticFiles\{folder}");
+                        DirectoryInfo directory = new DirectoryInfo($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
                         directory.Create();
                     }
+
+
 
                     while (System.IO.File.Exists(fullPath))
                     {
                         fileName = file.FileName.Insert(positionDot, "[" + i + "]");
-                        fullPath = @$"{_env.WebRootPath}\StaticFiles\{folder}\{fileName}";
+                        fullPath = @$"{_env.WebRootPath}\StaticFiles\{folderNested}\{fileName}";
                         i++;
                     }
 
@@ -392,6 +396,18 @@ namespace BusinessLayer.Services
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"attach file to contract",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name,
+                            userName: user);
+                        break;
+
+                    case FolderEnum.Estimate:
+                        _database.EstimateFiles.Create(new EstimateFile { FileId = fileId, EstimateId = entityId });
+                        _database.Save();
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to estimate",
                             nameSpace: typeof(FileService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);

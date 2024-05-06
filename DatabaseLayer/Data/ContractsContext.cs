@@ -125,10 +125,16 @@ public partial class ContractsContext : DbContext
             entity.HasKey(x => x.Id);
             entity.HasComment("Локальная смета");
 
+            entity.Property(e => e.ContractsCost)
+                .HasColumnType("money");
+
             entity.Property(e => e.PercentOfContrPrice)
                 .HasColumnType("money")
                 .HasComputedColumnSql();
-            
+            entity.Property(e => e.RemainsSmrCost)
+                .HasColumnType("money")
+                .HasComputedColumnSql();
+
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.Estimates)
                 .HasForeignKey(d => d.ContractId)

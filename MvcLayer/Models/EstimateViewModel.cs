@@ -1,13 +1,9 @@
-﻿using DatabaseLayer.Models.PRO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BusinessLayer.Models.PRO;
+using BusinessLayer.Models;
 
-namespace BusinessLayer.Models.PRO
+namespace MvcLayer.Models
 {
-    public class EstimateDTO
+    public class EstimateViewModel
     {
         public int Id { get; set; }
         public string Number { get; set; }
