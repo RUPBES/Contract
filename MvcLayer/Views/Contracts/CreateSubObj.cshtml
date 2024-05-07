@@ -7,11 +7,11 @@
 
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
-        backId = Model.Id;
+        backId = ViewBag.MultipleContractId;
     else backId = (int)ViewData["returnContractId"];
-    int? idContr = @ViewBag.MultipleContractId;
+    int? idContr = ViewBag.MultipleContractId;
     string? currency = null;
-    var contract = @Contract?.GetById((int)idContr);
+    var contract = Contract?.GetById((int)idContr);
     if (contract is not null)
     {
         currency = contract.Сurrency is null ? "BYN" : contract?.Сurrency;

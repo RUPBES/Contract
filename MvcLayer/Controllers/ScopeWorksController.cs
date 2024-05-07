@@ -363,7 +363,7 @@ namespace MvcLayer.Controllers
                 }
             }
             ViewData["reload"] = "Yes";
-            return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+            return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
         }
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)

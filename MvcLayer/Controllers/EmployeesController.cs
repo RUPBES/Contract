@@ -205,7 +205,7 @@ namespace MvcLayer.Controllers
         {
             _employeesService.Delete(id);
             ViewData["reload"] = "Yes";
-            return PartialView("_Message", new ModalViewVodel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+            return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
         }
     }
 }

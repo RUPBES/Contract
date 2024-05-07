@@ -265,7 +265,7 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ContractViewModel contract)
+        public IActionResult Create(ContractViewModel contract, bool isSubObject = false)
         {
             var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
 
@@ -366,18 +366,19 @@ namespace MvcLayer.Controllers
                 if (contract.ContractPrice is null) contract.ContractPrice = 0;
                 if (contract.IsEngineering == true && contract.PaymentСonditionsPrice is null) contract.PaymentСonditionsPrice = 0;
                 var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
+                if (isSubObject == true)
+                {
+                    return RedirectToAction("CreateSubObj", "Contracts", new { Id = contractId, returnContractId = ViewBag.returnContractId });
+                }
                 if (ViewData["returnContractId"] != null)
                 {
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });
-                    //return RedirectToAction(nameof(Details), new { id = contractId, returnContractId = ViewBag.returnContractId });
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });                    
                 }
                 if (contract.IsEngineering == true)
                 {
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
-                    //return RedirectToAction(nameof(Engineerings));
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });                    
                 }
-                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
-                //return RedirectToAction(nameof(Index));
+                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });                
             }
 
             return View(contract);
@@ -858,7 +859,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
-                return PartialView("_Message", new ModalViewVodel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
+                return PartialView("_Message", new ModalViewModel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
             }
             #endregion
             #region Заполнение данными из объема работ(Собственными силами)

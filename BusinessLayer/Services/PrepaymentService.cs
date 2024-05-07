@@ -216,7 +216,7 @@ namespace BusinessLayer.Services
                 if (ob == null)
                     answer.Add(item);
             }
-            return _mapper.Map<IEnumerable<AmendmentDTO>>(list);
+            return _mapper.Map<IEnumerable<AmendmentDTO>>(answer);
         }
 
         public Prepayment GetLastPrepayment(int contractId)
