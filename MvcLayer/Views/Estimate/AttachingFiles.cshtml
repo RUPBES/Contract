@@ -89,8 +89,18 @@
             </div>
         </div>
     </div>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+}
+@section Scripts {
     <script>
+        $("#dateDrawingId").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
         $("form#files2").submit(function () {
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();

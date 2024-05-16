@@ -88,16 +88,6 @@ namespace MvcLayer.Controllers.PRO
             return Content("");
         }
 
-
-
-
-
-
-
-
-
-
-
         public ActionResult GetEstimateCost(int estimateId)
         {
             return View(estimateId);
@@ -145,12 +135,6 @@ namespace MvcLayer.Controllers.PRO
         {
             return View(estimateId);
         }
-
-
-
-
-
-
 
         // GET: EstimateController/Details/5
         public ActionResult Details(int id)

@@ -3,7 +3,7 @@
 
 @{
     var estimate = Estimate.GetById(Model);
-    ViewData["Title"] = "Чтение данных из графика строительства";
+    ViewData["Title"] = "Чтение данных из расчета стоимости";
     int backId = 0;
     if (estimate != null){
         backId = estimate?.ContractId??0;
@@ -75,9 +75,9 @@
             </div>
         </div>
     </div>
-   
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script>
+   }
+   @section Scripts {  
+    <script>   
         $("form#files3").submit(function () {
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();

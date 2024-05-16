@@ -55,7 +55,7 @@
                         <div id="example" style="min-width:400px; max-width: 800px;">
                             <div class="demo-section input-group mb-2">
                                 <label>Дата получения сметы</label>
-                                <input class="form-control" name="date" type="date" id="dateEstimateId" />
+                                <input class="form-control" name="date" type="text" id="dateEstimateId" />
                             </div>
                             <div class="demo-section input-group mb-2">
                                 <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
@@ -76,8 +76,18 @@
     </div>
     <input id="contractId" value="@ViewBag.contractId" hidden />
     <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+}
+@section Scripts {    
     <script>
+        $("#dateEstimateId").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();

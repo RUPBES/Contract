@@ -4,6 +4,7 @@ using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using System.Reflection;
@@ -300,24 +301,63 @@ namespace BusinessLayer.ServicesCOM
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
             var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
-            //TODO: только начал делать)))
+            
             var estimate = _estimateService.GetById(estimateId);
 
             var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
             try
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
-                //var ending = excel.Dimension.End.Column;
-
-              
+                //var ending = excel.Dimension.End.Column;              
                 var nameColumnLabor = _excelReader.FindCellByQuery(excel, "трудозатраты", "трудозатрат", "трудозатраты чел.час.", "ТРУДОЗАТРАТ");
-                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {numberEstimate}", $"ИТОГО по смете {numberEstimate}", $"Итого по смете {numberEstimate}");
+                var OneofNumber = _excelReader.FindCellByQuery(excel, estimate.DrawingsName).FirstOrDefault();
+                var num = excel.Cells[OneofNumber.Item1, OneofNumber.Item2].Value?.ToString() ?? "";
+                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0))-1).Trim();
+                if (num.Last() == '.') num = num.Substring(0, num.Count() - 1);
+                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {num}", $"ИТОГО по смете {num}", $"Итого по смете {num}");
                 var col = nameColumnLabor.FirstOrDefault().Item2;
                 var row = nameRowEstimate.FirstOrDefault().Item1;
                 var result = excel.Cells[row, col].Value ?? 0;
 
                 estimate.LaborCost = (double)result;
+                _estimateService.Update(estimate);
+
+            }
+            catch (Exception e)
+            { 
+                _logger.WriteLog(
+                               logLevel: LogLevel.Warning,
+                               message: e.Message,
+                               nameSpace: typeof(ParseService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user
+                               );
+            }           
+        }
+
+        public void ParseAndReturnContractCosts(string path, int page, int estimateId)
+        {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+            
+            var estimate = _estimateService.GetById(estimateId);
+
+            var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
+            try
+            {
+                var excel = _excelReader.GetExcelWorksheet(path, page);                
+                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "всего");
+                var OneofNumber = _excelReader.FindCellByQuery(excel, estimate.DrawingsName).FirstOrDefault();
+                var num = excel.Cells[OneofNumber.Item1, OneofNumber.Item2].Value?.ToString() ?? "";
+                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0)) - 1).Trim();
+                if (num.Last() == '.') num = num.Substring(0, num.Count() - 1);
+                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {num}", $"ИТОГО по смете {num}", $"Итого по смете {num}");
+                var col = nameColumnLabor.FirstOrDefault().Item2;
+                var row = nameRowEstimate.FirstOrDefault().Item1;
+                var result = excel.Cells[row, col].Value ?? 0;
+
+                estimate.ContractsCost = (decimal)result;
                 _estimateService.Update(estimate);
 
             }
@@ -330,9 +370,46 @@ namespace BusinessLayer.ServicesCOM
                                methodName: MethodBase.GetCurrentMethod().Name,
                                userName: user
                                );
-            }           
+            }
         }
 
+        public void ParseAndReturnDoneSmrCost(string path, int page, int estimateId)
+        {
+            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+
+            var estimate = _estimateService.GetById(estimateId);
+
+            var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
+            try
+            {
+                var excel = _excelReader.GetExcelWorksheet(path, page);
+                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "с начала строительства");
+                var OneofNumber = _excelReader.FindCellByQuery(excel, estimate.DrawingsName).FirstOrDefault();
+                var num = excel.Cells[OneofNumber.Item1, OneofNumber.Item2].Value?.ToString() ?? "";
+                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0)) - 1).Trim();
+                if (num.Last() == '.') num = num.Substring(0, num.Count() - 1);
+                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"в с е г о по смете {num}", $"всего по смете {num}");
+                var col = nameColumnLabor.FirstOrDefault().Item2;
+                var row = nameRowEstimate.FirstOrDefault().Item1;
+                var result = excel.Cells[row, col+1].Value ?? 0;
+
+                estimate.DoneSmrCost = (decimal)result;
+                _estimateService.Update(estimate);
+
+            }
+            catch (Exception e)
+            {
+                _logger.WriteLog(
+                               logLevel: LogLevel.Warning,
+                               message: e.Message,
+                               nameSpace: typeof(ParseService).Name,
+                               methodName: MethodBase.GetCurrentMethod().Name,
+                               userName: user
+                               );
+            }
+        }
 
         private string GetCellValue(ExcelWorksheet excel, int shiftRow, int shiftCol, params string[] names)
         {
