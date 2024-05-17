@@ -1,6 +1,7 @@
 ﻿@using BusinessLayer.Enums;
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 
 @{
     ViewData["Title"] = "Добавление подобъекта";
@@ -45,7 +46,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:500px;">
+            <div class="dm-modal" style="max-width:700px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (backId != 0)
@@ -73,24 +74,62 @@
                             <label asp-for="Сurrency"></label>
                             <input asp-for="Сurrency" type="text" value="@currency" readonly class="form-control">
                         </div>
-                        <div class="form-group mt-1">
-                            <label class="control-label" asp-for="DateBeginWork"></label>
-                            <input asp-for="DateBeginWork" value="@contract.DateBeginWork?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="DateBeginWork">
-                            <label class="form-label" id="labelBeginWork" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
-                            <label class="form-label" id="labelBeginWorkMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
+                       
+                        <div class="col-6">
+                            <fieldset class="border rounded-1 p-3 mt-4">
+                                <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                                @{
+                                    int numberCheckbox = 0;
+                                }
+                                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                                {
+                                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                    var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
+                                    string idCh = "check" + @numberCheckbox;
+                                    <div>
+                                        <div class="input-group mb-2">
+                                            <div class="input-group-prepend input-prepayment-container">
+                                                <div class="prepayment_container" style="display:flex">
+                                                    <div class="input-group-text" style="display: block;">
+                                                        @if (valueArray is not null)
+                                                        {
+                                                            <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                                        }
+                                                        @if (valueArray is null)
+                                                        {
+                                                            <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                                        }
+                                                    </div>
+                                                    <input type="text" class="form-control" value="@value" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    numberCheckbox++;
+                                }
+                            </fieldset>
                         </div>
-                        <div class="form-group mt-1">
-                            <label class="control-label" asp-for="DateEndWork"></label>
-                            <input asp-for="DateEndWork" value="@contract.DateEndWork?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="DateEndWork">
-                            <label class="form-label" id="labelEndWork" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
-                            <label class="form-label" id="labelEndWorkMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
+                        <div class="col-6">
+                            <div class="form-group mt-1">
+                                <label class="control-label" asp-for="DateBeginWork"></label>
+                                <input asp-for="DateBeginWork" value="@contract.DateBeginWork?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="DateBeginWork">
+                                <label class="form-label" id="labelBeginWork" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
+                                <label class="form-label" id="labelBeginWorkMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
+                            </div>
+                            <div class="form-group mt-1">
+                                <label class="control-label" asp-for="DateEndWork"></label>
+                                <input asp-for="DateEndWork" value="@contract.DateEndWork?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="DateEndWork">
+                                <label class="form-label" id="labelEndWork" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
+                                <label class="form-label" id="labelEndWorkMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
+                            </div>
+                            <div class="form-group mt-1">
+                                <label class="control-label" asp-for="EnteringTerm"></label>
+                                <input asp-for="EnteringTerm" value="@contract.EnteringTerm?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="EnteringTerm">
+                                <label class="form-label" id="labelEnteringTerm" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
+                                <label class="form-label" id="labelEnteringTermMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
+                            </div>
                         </div>
-                        <div class="form-group mt-1">
-                            <label class="control-label" asp-for="EnteringTerm"></label>
-                            <input asp-for="EnteringTerm" value="@contract.EnteringTerm?.ToString("d-MM-yyyy")" type="text" class="form-control" required id="EnteringTerm">
-                            <label class="form-label" id="labelEnteringTerm" style="display:none">Минимальная дата: @contract.DateBeginWork?.ToString("d MMMM yyyy")</label>
-                            <label class="form-label" id="labelEnteringTermMax" style="display:none">Максимальная дата: @contract.EnteringTerm?.ToString("d MMMM yyyy")</label>
-                        </div>
+                       
                         <div class="col-12 mt-2">
                             <label class="control-label">Наименование объекта</label>
                             <textarea asp-for="NameObject" required class="form-control" rows="3"></textarea>
@@ -281,5 +320,42 @@
             let monthStr = month < 10 ? "0" + String(month) : String(month);
             return dayStr + '-' + monthStr + '-' + newDateOfyear;
         }
+
+        ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+
+        let ch1 = document.querySelector("#check0");
+        let ch2 = document.querySelector("#check1");
+        let ch3 = document.querySelector("#check2");
+
+        ch1.addEventListener('change', (e) => {
+            if (e.currentTarget.checked) {
+                ch2.setAttribute("disabled", true);
+                ch3.setAttribute("disabled", true);
+            }
+
+            if (!e.currentTarget.checked) {
+                ch2.removeAttribute("disabled");
+                ch3.removeAttribute("disabled");
+            }
+        });
+        ch2.addEventListener('change', (e) => {
+            if (e.currentTarget.checked) {
+                ch1.setAttribute("disabled", true);
+            }
+            if (!e.currentTarget.checked && !ch3.checked) {
+                ch1.removeAttribute("disabled");
+            }
+
+        });
+        ch3.addEventListener('change', (e) => {
+            if (e.currentTarget.checked) {
+                ch1.setAttribute("disabled", true);
+            }
+            if (!e.currentTarget.checked && !ch2.checked) {
+                ch1.removeAttribute("disabled");
+            }
+        });
+
+        ///////
     </script>
 }

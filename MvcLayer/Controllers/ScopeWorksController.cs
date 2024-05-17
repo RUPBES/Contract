@@ -291,7 +291,7 @@ namespace MvcLayer.Controllers
 
                 if (scopeWork.ContractId is not null)
                 {
-                    if (_prepayment.FindByContractId((int)scopeWork.ContractId).Count() == 0 && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                    if (_prepayment.FindByContractId((int)scopeWork.ContractId).Count() == 0 && contract.PaymentСonditionsAvans != null && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
                     {
                         return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = scopeWork.ContractId, isFact = false, returnContractId = returnContractId });
                     }
