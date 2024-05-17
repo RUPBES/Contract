@@ -6,6 +6,7 @@ using BusinessLayer.Models;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.SqlServer.Server;
 using MvcLayer.Models;
 using MvcLayer.Models.Data;
 using MvcLayer.Models.Reports;
@@ -156,39 +157,38 @@ namespace MvcLayer.Controllers
             }
             #endregion
             #region Получение списка Id форм
-            List<int> formId;
+            var formId = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false).OrderBy(x => x.Period).Select(x => new { x.Id, x.Period }).ToList();
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
-                formId = _form.Find(x => x.ContractId == contractId &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
+                formId = formId.Where(x => Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
-                formId = _form.Find(x => x.ContractId == contractId &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).Select(x => x.Id).ToList();
+                formId = formId.Where(x => 
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).ToList();
                 answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
             }
             else if (answer.startPeriod == null && answer.endPeriod != null)
             {
-                formId = _form.Find(x => x.ContractId == contractId &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
+                formId = formId.Where(x => 
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
             }
             else
-            {
-                var list = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).ToList();
-                answer.startPeriod = list.FirstOrDefault();
-                answer.endPeriod = list.LastOrDefault();
-                formId = _form.Find(x => x.ContractId == contractId).Select(x => x.Id).ToList();
+            {                
+                answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
+                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();                 
             }
             #endregion
             #region Заполнение спикса файлов по справкам С-3А
-            answer.listFiles = new List<FileDTO>();
+            answer.listFiles = new List<FileWithDate>();
             foreach (var item in formId)
             {
-                var obj = _file.GetFilesOfEntity(item, FolderEnum.Form3C);
-                answer.listFiles.AddRange(obj);
+                var obj = new FileWithDate();
+                obj.file = _file.GetFilesOfEntity(item.Id, FolderEnum.Form3C);
+                obj.date = item.Period;
+                answer.listFiles.Add(obj);
             }
             #endregion
             #region Заполнение данных(объем работ/авансы)
@@ -303,41 +303,38 @@ namespace MvcLayer.Controllers
             var amend = _amendment.Find(x => x.ContractId == contractId).OrderBy(x => x.Date).ToList();
 
             #region Получение списка форм С-3А
-            List<int> formId;
+            var formId = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false).OrderBy(x => x.Period).Select(x => new { x.Id, x.Period }).ToList();
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
-                formId = _form.Find(x =>
-                    x.ContractId == contractId &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)viewModel.startPeriod, (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)viewModel.endPeriod)).
-                        Select(x => x.Id).ToList();
+                formId = formId.Where(x => Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
-                formId = _form.Find(x => x.ContractId == contractId &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).Select(x => x.Id).ToList();
+                formId = formId.Where(x =>
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).ToList();
                 answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
             }
             else if (answer.startPeriod == null && answer.endPeriod != null)
             {
-                formId = _form.Find(x => x.ContractId == contractId &&
-            Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).Select(x => x.Id).ToList();
+                formId = formId.Where(x =>
+                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
             }
             else
             {
-                var list = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).ToList();
-                answer.startPeriod = list.FirstOrDefault();
-                answer.endPeriod = list.LastOrDefault();
-                formId = _form.Find(x => x.ContractId == contractId).Select(x => x.Id).ToList();
+                answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
+                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
             }
             #endregion
             #region Получение список файлов справок С-3А
-            answer.listFiles = new List<FileDTO>();
+            answer.listFiles = new List<FileWithDate>();
             foreach (var item in formId)
             {
-                var obj = _file.GetFilesOfEntity(item, FolderEnum.Form3C);
-                answer.listFiles.AddRange(obj);
+                var obj = new FileWithDate();
+                obj.file = _file.GetFilesOfEntity(item.Id, FolderEnum.Form3C);
+                obj.date = item.Period;
+                answer.listFiles.Add(obj);
             }
             #endregion
             #region Заполнение списков по контракту и доп. соглашениям
@@ -1079,7 +1076,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditPrepaymentPlan(int id)
         {
             if (id != null && id != 0)
@@ -1133,7 +1130,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = "ContrEditPolicy")]
+        [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditPrepaymentPlan(List<PrepaymentPlanViewModel> prepayment)
         {
             if (prepayment is not null || prepayment.Count() > 0)
@@ -1155,7 +1152,7 @@ namespace MvcLayer.Controllers
             return PartialView("_ResultMessage", "Произошла ошибка");
         }
 
-        [Authorize(Policy = "ContrAdminPolicy")]
+        [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> DeletePrepaymentPlan(int? id)
         {
             if (id == null || _prepayment.GetAll() == null)
