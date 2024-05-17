@@ -24,22 +24,24 @@ namespace MvcLayer.Models.Reports
         [DisplayName("Текущего")]
         public decimal? TheoryCurrent { get; set; }
 
-
-
-
         [DisplayName("Получено")]
         public decimal? TargetReceived { get; set; }
 
         [DisplayName("Погашено")]
         public decimal? TargetRepaid { get; set; }
 
-
         [DisplayName("Документ")]
         public string? NameAmendment { get; set; }
         [DisplayName("Файлы")]
-        public List<FileDTO>? listFiles { get; set; }
+        public List<FileWithDate>? listFiles { get; set; }
         [DisplayName("СМР и Авансы")]
         public List<SmrWithPrepayment>? listSmrWithAvans { get; set; }
+    }
+
+    public class FileWithDate
+    {
+        public IEnumerable<FileDTO>? file { get; set; }
+        public DateTime? date { get; set; }
     }
 
     public class SmrWithPrepayment
@@ -83,7 +85,7 @@ namespace MvcLayer.Models.Reports
         [DisplayName("Погашено")]
         public decimal? TargetRepaid { get; set; }
         [DisplayName("Файлы")]
-        public List<FileDTO>? listFiles { get; set; }
+        public List<FileWithDate>? listFiles { get; set; }
         [DisplayName("СМР и Авансы")]
         public List<ListSmrPrepByAmendment>? listSmrWithPrepaymentByAmendment { get; set; }
     }
@@ -107,6 +109,4 @@ namespace MvcLayer.Models.Reports
         [DisplayName("СМР")]
         public decimal? Smr { get; set; }
     }
-
-
 }
