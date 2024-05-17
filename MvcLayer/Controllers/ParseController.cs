@@ -115,27 +115,13 @@ namespace MvcLayer.Controllers
             return PartialView("CheckCountPagesInScoworkExcel", workSheets);
         }
 
-        public ActionResult CheckCountPagesInExcel(string path, string contractId, string returnContractId,DateTime dateStart, string controllerName = null, string actionName = null,int? estimateId = null, string partialViewName = null)
+        public ActionResult GetCountPagesInExcel(string path, string controllerName = "", string actionName = "")
         {
             var workSheets = _excelReader.GetListOfBook(path);
-            if (workSheets.Count() == 1)
-            {
-                if (controllerName is not null && actionName is not null)
-                {
-                    return RedirectToAction(actionName, controllerName, new { path = path, contractId = contractId, returnContractId = returnContractId, date = dateStart, estimateId = estimateId });
-                }
-                return RedirectToAction("", "Estimate", new { path = path, contractId = contractId, returnContractId = returnContractId, estimateId = estimateId });
-
-            }
-            else
-            {
-                ViewBag.contrId = contractId;
-                ViewBag.returnContrId = returnContractId;
-                ViewBag.controllerName = controllerName;
-                ViewBag.actionName = actionName;
-                return PartialView("_ChoosePagePartial2", workSheets);
-            }
-
+            ViewData["controllerName"] = controllerName;
+            ViewData["actionName"] = actionName;
+            ViewData["path"] = path;
+            return PartialView("_ListOfSheets", workSheets);
         }
 
         public ActionResult DownloadDrawingOfEstimate(IFormCollection collection, string drawingKitName, int estimateId, DateTime dateStart)

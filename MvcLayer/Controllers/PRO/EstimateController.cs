@@ -40,6 +40,13 @@ namespace MvcLayer.Controllers.PRO
             return View();
         }
 
+        public ActionResult AddEstimate(int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+
         //TODO: что за метод в Estimate? проверить используется где? если нет удалить!
         [Authorize(Policy = "AdminPolicy")]
         public ActionResult CreateScopeWorkByFile(string model, int contractId, int returnContractId = 0)
@@ -73,7 +80,7 @@ namespace MvcLayer.Controllers.PRO
                         fileInf.Delete();
                     }
 
-                    return Content(estimateId.ToString());
+                    return PartialView("_ResultMessage", "Успешно загружено");
                 }
             }
             catch
