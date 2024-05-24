@@ -1,4 +1,7 @@
-﻿@{
+﻿@using BusinessLayer.Models.PRO
+@using DatabaseLayer.Models.PRO
+@model List<EstimateDTO>
+@{
     ViewData["Title"] = "Чтение данных из локальной сметы";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
@@ -34,11 +37,114 @@
         }
 </style>
 @section Table {
-    <div>
+    <div class="full-width">
         <a asp-action="AddEstimate" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]" class="k-button btn-success">Добавить смету</a>
+        <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
+            <thead>
+                <tr>
+                    <th>
+                        Шифр здания, сооружения
+                    </th>
+                    <th>
+                        Наименование здания, сооружения
+                    </th>
+                    <th>
+                        Комплект чертежей
+                    </th>
+                    <th>
+                        Наименование чертежа
+                    </th>
+                    <th>
+                        Дата получения чертежа
+                    </th>
+                    <th>
+                        Дата получения изменения чертежа
+                    </th>
+                    <th>
+                        Номер сметы
+                    </th>
+                    <th>
+                        Дата получения сметы
+                    </th>
+                    <th>
+                        Дата получения изменения сметы
+                    </th>
+                    <th>
+                        Стоимость по договору, руб.
+                    </th>
+                    <th>
+                        Трудозатраты, чел/час
+                    </th>
+                    <th>
+                        Выполнено СМР, руб.
+                    </th>
+                    <th>
+                        Процент выполнения, %
+                    </th>
+                    <th>
+                        Остаток СМР, руб.
+                    </th>
+                    <th>
+                        Подрядчик
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="table_tbody">
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @item.BuildingCode
+                        </td>
+                        <td>
+                            @item.BuildingName
+                        </td>
+                        <td>
+                            @item.DrawingsKit
+                        </td>
+                        <td>
+                            @item.DrawingsName
+                        </td>
+                        <td>
+                            @item.DrawingsDate.Value.ToString("dd MMMM yyyy")
+                        </td>
+                        <td>
+                            -
+                        </td>
+                        <td>
+                            @item.Number
+                        </td>
+                        <td>
+                            @item.EstimateDate.Value.ToString("dd MMMM yyyy")
+                        </td>
+                        <td>
+                            -
+                        </td>
+                        <td>
+                            @item.ContractsCost
+                        </td>
+                        <td>
+                            @item.LaborCost
+                        </td>
+                        <td>
+                            @item.DoneSmrCost
+                        </td>
+                        <td>
+                            @item.PercentOfContrPrice
+                        </td>
+                        <td>
+                            @item.RemainsSmrCost
+                        </td>
+                        <td>
+                            @item.SubContractor
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 }
-@section Scripts {    
+@section Scripts {
     <script>
     </script>
 }

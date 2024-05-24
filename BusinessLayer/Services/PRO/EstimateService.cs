@@ -81,7 +81,7 @@ namespace BusinessLayer.Services
 
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
-                            message: $"delete employee, ID={id}",
+                            message: $"delete Estimate, ID={id}",
                             nameSpace: typeof(EstimateService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name,
                             userName: user);

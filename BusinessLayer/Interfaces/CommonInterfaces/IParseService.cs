@@ -9,6 +9,8 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
         FormDTO Pars_C3A(string path, int page);
         ScopeWorkDTO GetScopeWorks(string path, int page);
         EstimateDTO ParseEstimate(string path, int page);
-        void ParseAndReturnLaborCosts(string path, int page, int estimateId);
+        bool ParseAndReturnLaborCosts(string path, int page, int estimateId);
+        bool ParseAndReturnContractCosts(string path, int page, int estimateId);
+        bool ParseAndReturnDoneSmrCost(string path, int page, int estimateId);        
     }
 }

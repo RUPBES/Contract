@@ -13,6 +13,8 @@ namespace DatabaseLayer.Interfaces
     {
         IEntityWithPagingRepository<Estimate> Estimates { get; }
         IRepository<EstimateFile> EstimateFiles { get; }
+        IRepository<KindOfWork> KindOfWorks { get; }
+        IRepository<AbbreviationKindOfWork> AbbreviationKindOfWorks { get; }
 
         IRepository<Act> Acts { get; }
         IRepository<Address> Addresses { get; }

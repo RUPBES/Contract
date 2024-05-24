@@ -115,22 +115,20 @@ namespace MvcLayer.Controllers
             return PartialView("CheckCountPagesInScoworkExcel", workSheets);
         }
 
-        public ActionResult GetCountPagesInExcel(string path, string controllerName = "", string actionName = "")
+        public ActionResult GetCountPagesInExcel(string path)
         {
-            var workSheets = _excelReader.GetListOfBook(path);
-            ViewData["controllerName"] = controllerName;
-            ViewData["actionName"] = actionName;
+            var workSheets = _excelReader.GetListOfBook(path);            
             ViewData["path"] = path;
             return PartialView("_ListOfSheets", workSheets);
         }
 
-        public ActionResult DownloadDrawingOfEstimate(IFormCollection collection, string drawingKitName, int estimateId, DateTime dateStart)
+        public ActionResult DownloadDrawingOfEstimate(IFormCollection collection, int estimateId, DateTime dateStart)
         {
-            _file.Create(collection.Files, FolderEnum.Estimate, estimateId, drawingKitName);
             var estimate = _estimateService.GetById(estimateId);
+            _file.Create(collection.Files, FolderEnum.Estimate, estimateId, estimate.DrawingsKit);            
             estimate.DrawingsDate = dateStart;
-            _estimateService.Update( estimate);
-            return Content($"{estimateId}");
+            _estimateService.Update(estimate);
+            return PartialView("_ResultMessage","Комплект чертежей загружен.");
         }
 
     }

@@ -22,6 +22,8 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<Estimate> Estimates { get; set; }
     public virtual DbSet<EstimateFile> EstimateFiles { get; set; }
+    public virtual DbSet<KindOfWork> KindOfWorks { get; set; }
+    public virtual DbSet<AbbreviationKindOfWork> AbbreviationKindOfWorks { get; set; }
 
     #endregion
 
@@ -109,8 +111,8 @@ public partial class ContractsContext : DbContext
             //var connectionString = configuration.GetConnectionString("Data");
             //optionsBuilder.UseSqlServer(connectionString);
 
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
 
         }
     }
@@ -139,6 +141,11 @@ public partial class ContractsContext : DbContext
                 .WithMany(p => p.Estimates)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_Estimate_Contract_Id");
+
+            entity.HasOne(d => d.AbbreviationKindOfWork)
+             .WithMany(p => p.Estimates)
+             .HasForeignKey(d => d.KindOfWorkId)
+             .HasConstraintName("FK_Estimate_KindOfWork_Id");
         });
 
         modelBuilder.Entity<EstimateFile>(entity =>
@@ -1225,6 +1232,36 @@ public partial class ContractsContext : DbContext
                 .HasForeignKey(d => d.СommissionActId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_СommissionActFile_СommissionAct_Id");
+        });
+
+        modelBuilder.Entity<KindOfWork>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("KindOfWork");
+
+            entity.HasComment("Вид работ");
+
+            entity.Property(e => e.name)                
+                .HasComment("Наименование");
+        });
+
+        modelBuilder.Entity<AbbreviationKindOfWork>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("AbbreviationKindOfWork");
+
+            entity.HasComment("Аббревитуры типов работы");
+
+            entity.Property(e => e.name)
+                .HasComment("Наименование");
+
+            entity.HasOne(d => d.KindOfWork)
+            .WithMany(d => d.AbbreviationKindOfWorks)
+            .HasForeignKey(d => d.KindOfWorkId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("FK_AbbreviationKindOfWork_KindOfWork_Id");
         });
 
         #region views

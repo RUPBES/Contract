@@ -30,8 +30,9 @@ namespace DatabaseLayer.Models.PRO
         public decimal PercentOfContrPrice { get; set; }
         public decimal RemainsSmrCost { get; set; }
         public string Owner { get; set; }
-        public string KindOfWork { get; set; }
+        public int KindOfWorkId { get; set; }
 
+        public virtual AbbreviationKindOfWork AbbreviationKindOfWork { get; set; }
         public int ContractId { get; set; }
         public virtual KDO.Contract Contract { get; set; }
         public virtual ICollection<EstimateFile> EstimateFiles { get; set; }

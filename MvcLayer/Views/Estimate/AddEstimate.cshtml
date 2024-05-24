@@ -1,9 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "Загрузка сметы";
+    ViewData["Title"] = "Загрузка данных по смете";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
+
 }
 <style>
     .demo-section {
@@ -33,12 +34,16 @@
             font-weight: bold;
         }
 </style>
+<input id="contractId" value="@ViewData["contractId"]" hidden />
+<input id="returnContractId" value="@ViewData["returnContractId"]" hidden />
+<input id="EstimateId" hidden />
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal" style="max-width:600px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
+                    <label id="HeaderLabel" class="my-modal-title">Этап 1: Выбор сметы</label>
                     @if (backId > 0)
                     {
                         <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" asp-route-contractId="@backId" class="close-btn"></a>
@@ -69,7 +74,7 @@
                     </form>
                 </div>
                 <div id="ListOfSheet"></div>
-                <div id="result"></div>
+                <div id="result" style="color: green;"></div>
             </div>
         </div>
     </div>
@@ -88,7 +93,7 @@
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();
-            let dateEstimateId = $("#dateEstimateId").val();
+            let dateEstimate = $("#dateEstimateId").val();
 
             let formData = new FormData(files);
             event.preventDefault()
@@ -116,10 +121,67 @@
                     $.ajax({
                         type: 'POST',
                         url: '@Url.Action("GetCountPagesInExcel", "Parse")',
-                        data: { path: path, controllerName: 'Estimate', actionName: 'GetEstimateData' },
+                        data: { path: path },
                         dataType: 'html',
                         success: function (data) {
                             $("#ListOfSheet").html(data)
+                            $('#GetDataFromFile').click(function () {
+                                let ex = $("#ex").val();                                                              
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("GetEstimateData", "Estimate")',
+                                    data: { path: path, contractId: contractId, page: ex, date: dateEstimate },                                    
+                                    success: function (data) {
+                                        $("#EstimateId").val(data)
+                                        $("#result").html("<h3>Данные из локальной сметы загружены.</h3>")
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+                                            success: function (viewData) {
+                                                $("#divForm").html(viewData)
+                                                $("#ListOfSheet").html("")
+                                                $("#HeaderLabel").text("Этап 2: Загрузка чертежей")
+                                            },
+                                            error: function (error) {
+                                                var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: '@Url.Action("ShowError", "Parse")',
+                                                    data: { message: errorMes },
+                                                    dataType: 'html',
+                                                    success: function (data) {
+                                                        $("#result").html(data)
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    },
+                                    error: function (error) {
+                                        var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));                                                                             
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: '@Url.Action("ShowError", "Parse")',
+                                            data: { message: errorMes },
+                                            dataType: 'html',
+                                            success: function (data) {
+                                                $("#result").html(data)                                                
+                                            }
+                                        });
+                                    }
+                                });
+                            });                
+                        },
+                        error: function (error) {
+                            var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("ShowError", "Parse")',
+                                data: { message: errorMes },
+                                dataType: 'html',
+                                success: function (data) {
+                                    $("#result").html(data)
+                                }
+                            });
                         }
                     });
                     $("#container_progress").attr('style', `display:none`);
@@ -128,7 +190,7 @@
                     $.ajax({
                         type: 'POST',
                         url: '@Url.Action("ShowError", "Parse")',
-                        data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
+                        data: { message: result },
                         dataType: 'html',
                         success: function (data) {
                             $("#result").html(data)
@@ -139,7 +201,6 @@
                 contentType: false,
                 processData: false
             });
-
             return false;
         });
     </script>

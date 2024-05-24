@@ -93,7 +93,10 @@ namespace BusinessLayer.Services
 
                     id = fileNew.Id;
 
-                    AttachFileToEntity(fileNew.Id, entityId, folder);
+                    if (folder != FolderEnum.Other && entityId != 0)
+                    {
+                        AttachFileToEntity(fileNew.Id, entityId, folder);
+                    }
                 }
             }
             else

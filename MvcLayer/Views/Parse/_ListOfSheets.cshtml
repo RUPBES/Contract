@@ -1,44 +1,14 @@
 ﻿@using OfficeOpenXml
 @model IEnumerable<ExcelWorksheet>
-@{
-    var path = ViewBag.path;
-    var actionName = ViewData["actionName"] as string;
-    var controllerName = ViewData["controllerName"] as string;
-}
-
-<form id="CountList" asp-route-path="@path">
-    <div>
-        <label class="control-label">Лист:</label>
-        <select name="page" id="ex" class="form-select">
-            @foreach (var item in Model)
-            {
-                <option value="@item.Index">
-                    <span>
-                        @item.Name
-                    </span>
-                </option>
-            }
-        </select>
-    </div>
-    <button class="mt-3 btn btn-primary" onclick="SendDate" type="button">Извлечь данные</button>
-</form>
-@section Scripts {
-    <script>
-        function SendDate() {
-            console.log("12111")
-            let formData = new FormData(CountList);
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action(actionName, controllerName)',
-                data: formData,
-                dataType: 'html',
-                success: function (data) {
-                    $("#ListOfSheet").html(data)
-                },
-                error: function (error) {
-
-                }
-            });
-        }
-    </script>
-}  
+<label class="control-label">Лист:</label>
+<select name="page" id="ex" class="form-select">
+    @foreach (var item in Model)
+    {
+        <option value="@item.Index">
+            <span>
+                @item.Name
+            </span>
+        </option>
+    }
+</select>
+<button id="GetDataFromFile" class="mt-3 btn btn-primary" type="button">Извлечь данные</button>
