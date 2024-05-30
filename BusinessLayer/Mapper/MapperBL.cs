@@ -41,6 +41,8 @@ namespace BusinessLayer.Mapper
             CreateMap<MaterialDTO, MaterialGc>().ReverseMap();
             CreateMap<MaterialCostDTO, MaterialCost>().ReverseMap();
             CreateMap<MaterialAmendmentDTO, MaterialAmendment>().ReverseMap();
+            CreateMap<KindOfWorkDTO, KindOfWork>().ReverseMap();
+            CreateMap<AbbreviationKindOfWorkDTO, AbbreviationKindOfWork>().ReverseMap();
             CreateMap<Payment, PaymentDTO>().ReverseMap();
             CreateMap<PrepaymentDTO, Prepayment>().ReverseMap();
             CreateMap<PrepaymentAmendmentDTO, PrepaymentAmendment>().ReverseMap();

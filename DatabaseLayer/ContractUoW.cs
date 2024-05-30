@@ -3,6 +3,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
+using DatabaseLayer.Repositories.PRO;
 using DatabaseLayer.Repositories.ViewRepo;
 
 namespace DatabaseLayer
@@ -63,6 +64,9 @@ namespace DatabaseLayer
         private VContractRepository vContractRepository;
         private VContractEnginRepository vContractEnginRepository;
         private LogRepository logRepository;
+
+        private KindOfWorkRepository kindOfWorkRepository;
+        private AbbreviationKindOfWorkRepository abbreviationKindOfWorkRepository;
         #endregion
         public ContractUoW()
         {
@@ -578,6 +582,30 @@ namespace DatabaseLayer
                     logRepository = new LogRepository(_context);
                 }
                 return logRepository;
+            }
+        }
+
+        public IRepository<KindOfWork> KindOfWorks
+        {
+            get
+            {
+                if (kindOfWorkRepository is null)
+                {
+                    kindOfWorkRepository = new KindOfWorkRepository(_context);
+                }
+                return kindOfWorkRepository;
+            }
+        }
+
+        public IRepository<AbbreviationKindOfWork> AbbreviationKindOfWorks
+        {
+            get
+            {
+                if (abbreviationKindOfWorkRepository is null)
+                {
+                    abbreviationKindOfWorkRepository = new AbbreviationKindOfWorkRepository(_context);
+                }
+                return abbreviationKindOfWorkRepository;
             }
         }
 

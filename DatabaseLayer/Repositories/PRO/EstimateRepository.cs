@@ -113,7 +113,7 @@ namespace DatabaseLayer.Repositories
                     estimate.Owner = entity.Owner;
 
                     estimate.DrawingsKit = entity.DrawingsKit;
-                    estimate.KindOfWork = entity.KindOfWork;
+                    estimate.KindOfWorkId = entity.KindOfWorkId;
                     estimate.ContractId = entity.ContractId;
                     _context.Estimates.Update(estimate);
                 }

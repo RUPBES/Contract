@@ -27,10 +27,11 @@ namespace BusinessLayer.Models.PRO
         public decimal PercentOfContrPrice { get; set; }
         public decimal RemainsSmrCost { get; set; }
         public string Owner { get; set; }
-        public string KindOfWork { get; set; }
+        public int KindOfWorkId { get; set; }
 
+        public virtual AbbreviationKindOfWorkDTO AbbreviationKindOfWorkDTO { get; set; }
         public int ContractId { get; set; }
         public ContractDTO Contract { get; set; }
-        public List<EstimateFileDTO> EstimateFiles { get; set; } = new List<EstimateFileDTO>();
+        public List<EstimateFileDTO> EstimateFiles { get; set; } = new List<EstimateFileDTO>();        
     }
 }

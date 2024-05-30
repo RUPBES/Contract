@@ -67,24 +67,9 @@ else
 <script>
     function GetEditView(id) {
         $.ajax({
-            type: 'GET',
-            url: '@Url.Action("EditPrepaymentPlan", "Prepayments")',
+            type: 'POST',
+            url: '@Url.Action("EditPrepaymentPlanView", "Prepayments")',
             data: { id},
-            dataType: 'html',
-            success: function (data) {
-                $('#ContentCreate').html(data)
-            },
-            error: function (exception) {
-                console.log("Ошибка")
-            }
-        });
-    }
-
-    function DeletePrepaymentsPlan(id) {
-        $.ajax({
-            type: 'GET',
-            url: '@Url.Action("EditPrepaymentPlan", "Prepayments")',
-            data: { id },
             dataType: 'html',
             success: function (data) {
                 $('#ContentCreate').html(data)

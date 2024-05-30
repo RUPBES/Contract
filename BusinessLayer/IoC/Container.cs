@@ -10,6 +10,8 @@ using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Helpers;
 using Microsoft.AspNetCore.Http;
 using BusinessLayer.ServicesCOM;
+using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Services.PRO;
 
 namespace BusinessLayer.IoC
 {
@@ -59,6 +61,9 @@ namespace BusinessLayer.IoC
 
             services.AddScoped<IVContractEnginService, VContractEnginService>();
             services.AddScoped<IVContractService, VContractService>();
+
+            services.AddScoped<IKindOfWorkService, KindOfWorkService>();
+            services.AddScoped<IAbbreviationKindOfWorkService, AbbreviationKindOfWorkService>();
 
             services.AddTransient<IStreamFileUploadService, StreamFileUploadLocalService>();
             services.AddTransient<IParseService, ParseService>();
