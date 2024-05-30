@@ -55,6 +55,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<ScopeWork> ScopeWorks { get; }
         IRepository<SWCost> SWCosts { get; }
         IRepository<ScopeWorkAmendment> ScopeWorkAmendments { get; }
+        IRepository<TypeWorkContract> TypeWorkContracts { get; }
         IRepository<TypeWork> TypeWorks { get; }
 
         IViewRepository<VContract> vContracts { get; }

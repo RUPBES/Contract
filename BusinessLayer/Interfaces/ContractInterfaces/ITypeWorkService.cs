@@ -11,5 +11,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface ITypeWorkService : IService<TypeWorkDTO, TypeWork>
     {
+        TypeWorkDTO GetByContractId(int contractId);
     }
 }

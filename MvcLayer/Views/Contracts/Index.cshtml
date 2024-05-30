@@ -316,7 +316,8 @@
                                 {
                                     <td>
                                         <span class="table_span-work">
-                                            @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                            @* @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name *@
+                                            @TypeWork?.GetByContractId((int)item?.Id)?.Name
                                         </span>
                                     </td>
                                 }
@@ -336,9 +337,6 @@
                                 @*Остаток*@
                                 <td class="text-end">
                                     <span class="table_span-remains">
-                                        @* @{
-                            var ostatok = item.ContractPrice - factWork;
-                            } *@
                                         @item.RemainingSum?.ToString("N2")
                                     </span>
                                 </td>
@@ -349,9 +347,9 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
-                                        <div class="icon view" title="Сметы">
+                                       @*  <div class="icon view" title="Сметы">
                                             <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
-                                        </div>
+                                        </div> *@
 
 
                                         <div class="icon view" title="Просмотр детальной информации по договору">
@@ -501,7 +499,8 @@
                                 {
                                     <td>
                                         <span class="table_span-work">
-                                            @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                            @* @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name *@
+                                            @TypeWork?.GetByContractId((int)item?.Id)?.Name
                                         </span>
                                     </td>
                                 }
@@ -520,9 +519,6 @@
                                 @*Остаток*@
                                 <td class="text-end">
                                     <span class="table_span-remains">
-                                        @*  @{
-                            var ostatok = item.ContractPrice - factWork;
-                            } *@
                                         @item.RemainingSum?.ToString("N2")
                                     </span>
                                 </td>
@@ -533,9 +529,9 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
-                                        <div class="icon view" title="Сметы">
+                                       @*  <div class="icon view" title="Сметы">
                                             <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
-                                        </div>
+                                        </div> *@
 
 
 

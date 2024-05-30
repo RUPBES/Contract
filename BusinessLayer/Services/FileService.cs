@@ -56,9 +56,6 @@ namespace BusinessLayer.Services
                         DirectoryInfo directory = new DirectoryInfo($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
                         directory.Create();
                     }
-
-
-
                     while (System.IO.File.Exists(fullPath))
                     {
                         fileName = file.FileName.Insert(positionDot, "[" + i + "]");

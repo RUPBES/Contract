@@ -27,7 +27,7 @@ namespace DatabaseLayer
         private EmployeeRepository employeeRepository;
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
-        private TypeWorkRepository typeWorkRepository;
+       
 
         private PrepaymentPlanRepository prepaymentPlanRepository;
         private PrepaymentFactRepository prepaymentFactRepository;
@@ -58,7 +58,8 @@ namespace DatabaseLayer
         private SWCostRepository sWCostRepository;
         private ScopeWorkAmendmentRepository scopeWorkAmendmentRepository;
         private PrepaymentAmendmentRepository prepaymentAmendmentRepository;
-
+        private TypeWorkRepository typeWorkRepository;
+        private TypeWorkContractRepository typeWorkContractRepository;
         private VContractRepository vContractRepository;
         private VContractEnginRepository vContractEnginRepository;
         private LogRepository logRepository;
@@ -106,6 +107,18 @@ namespace DatabaseLayer
                     estimateRepository = new EstimateRepository(_context);
                 }
                 return estimateRepository;
+            }
+        }
+
+        public IRepository<TypeWorkContract> TypeWorkContracts
+        {
+            get
+            {
+                if (typeWorkContractRepository is null)
+                {
+                    typeWorkContractRepository = new TypeWorkContractRepository(_context);
+                }
+                return typeWorkContractRepository;
             }
         }
 
