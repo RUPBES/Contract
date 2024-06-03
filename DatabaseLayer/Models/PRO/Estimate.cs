@@ -18,11 +18,8 @@ namespace DatabaseLayer.Models.PRO
         public string BuildingCode { get; set; }
         public string BuildingName { get; set; }
         public DateTime? DrawingsDate { get; set; }       
-        public string DrawingsKit { get; set; }
-        public string DrawingsCode { get; set; }
+        public string DrawingsKit { get; set; }        
         public string DrawingsName { get; set; }
-        public DateTime? AmendmentDrawingsDate { get; set; }
-        public DateTime? AmendmentEstimateDate { get; set; }
         public decimal ContractsCost { get; set; }
         public double LaborCost { get; set; }
         public decimal DoneSmrCost { get; set; }

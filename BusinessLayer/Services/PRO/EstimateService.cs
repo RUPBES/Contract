@@ -8,6 +8,7 @@ using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Reflection;
 
 namespace BusinessLayer.Services
@@ -36,7 +37,7 @@ namespace BusinessLayer.Services
             if (item is not null)
             {
                 if (_database.Estimates.GetById(item.Id) is null)
-                {                   
+                {
                     var estimate = _mapper.Map<Estimate>(item);
                     _database.Estimates.Create(estimate);
                     _database.Save();
@@ -162,9 +163,9 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPage(int pageSize, int pageNum, string org)
-        {            
+        {
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Estimates.GetEntityWithSkipTake(skipEntities,pageSize, org).OrderBy(x => x.BuildingCode);
+            var items = _database.Estimates.GetEntityWithSkipTake(skipEntities, pageSize, org).OrderBy(x => x.BuildingCode);
             int count = items.Count();
             var t = _mapper.Map<IEnumerable<EstimateDTO>>(items);
 
@@ -179,8 +180,7 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
-        {
-            //TODO: erfewr добавить и убувить!!
+        {            
             var list = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Estimate> items;
@@ -191,7 +191,7 @@ namespace BusinessLayer.Services
                     .Where(e => list.Contains(e.Owner))
                     .ToList();
             }
-            else 
+            else
             {
                 items = _database.Estimates.Find(e => list.Contains(e.Owner));
             }
@@ -239,6 +239,160 @@ namespace BusinessLayer.Services
             };
 
             return viewModel;
-        }               
+        }
+
+        public IndexViewModel GetPageFilterByContract(int pageSize, int pageNum, string request, string sortOrder, int ContractId, List<string> KeySearchString, List<string> ValueSearchString)
+        {            
+            int skipEntities = (pageNum - 1) * pageSize;
+            IEnumerable<Estimate> items = _database.Estimates.GetAll();
+            if (!String.IsNullOrEmpty(request))
+            {
+                items = items.Where(x => x.ContractId == ContractId &&
+                    (x.BuildingName.Contains(request) ||
+                    x.DrawingsName.Contains(request) ||
+                    x.SubContractor.Contains(request)))
+                    .ToList();
+            }
+
+            for(var index = 0; index<KeySearchString.Count; index++ )
+            {
+                var key = KeySearchString[index];
+                var value = ValueSearchString[index];
+                switch (key)
+                {
+                    case "Шифр здания":
+                        if(value != null)
+                            items = items.Where(x => x.BuildingCode.Contains(value)).ToList(); 
+                        break;
+                    case "Название здания":
+                        if (value != null)
+                            items = items.Where(x => x.BuildingName.Contains(value)).ToList();
+                        break;
+                    case "Подрядчику":
+                        if (value != null)
+                            items = items.Where(x => x.SubContractor.Contains(value)).ToList();
+                        break;
+                    case "Начало периода получения чертежа":
+                        if (value != null)
+                        {
+                            DateTime date;
+                            DateTime.TryParse(value,out date);
+                            items = items.Where(x => x.DrawingsDate >= date ).ToList();
+                        }
+                        break;
+                    case "Конец периода получения чертежа":
+                        if (value != null)
+                        {
+                            DateTime date;
+                            DateTime.TryParse(value, out date);
+                            items = items.Where(x => x.DrawingsDate <= date).ToList();
+                        }
+                        break;
+                    case "Начало периода получения сметы":
+                        if (value != null)
+                        {
+                            DateTime date;
+                            DateTime.TryParse(value, out date);
+                            items = items.Where(x => x.EstimateDate >= date).ToList();
+                        }
+                        break;
+                    case "Конец периода получения сметы":
+                        if (value != null)
+                        {
+                            DateTime date;
+                            DateTime.TryParse(value, out date);
+                            items = items.Where(x => x.EstimateDate <= date).ToList();
+                        }
+                        break;
+                    case "Буквенный индекс чертежей":
+                        if (value != null)
+                        {
+                            var abbrKind = _database.AbbreviationKindOfWorks.Find(x => x.name.Contains(value)).ToList();
+                            var answer = new List<Estimate>();
+                            foreach (var abbr in abbrKind)
+                            {                                
+                                answer.AddRange(items.Where(x => x.KindOfWorkId == abbr.Id));
+                            }
+                            items = answer;
+                        }
+                        break;
+                    case "Вид работы":
+                        if (value != null)
+                        {
+                            var Kind = _database.KindOfWorks.Find(x => x.name.Contains(value)).ToList();
+                            var abbrKind = new List<AbbreviationKindOfWork>();
+                            foreach(var itemKind in Kind)
+                            {
+                                var list = _database.AbbreviationKindOfWorks.Find(x => x.KindOfWorkId == itemKind.Id).ToList();
+                                abbrKind.AddRange(list);
+                            }                            
+                            var answer = new List<Estimate>();
+                            foreach (var abbr in abbrKind)
+                            {
+                                answer.AddRange(items.Where(x => x.KindOfWorkId == abbr.Id));
+                            }
+                            items = answer;
+                        }
+                        break;
+                    default: break;
+                }
+                
+            }
+
+            int count = items.Count();
+
+            //switch (sortOrder)
+            //{
+            //    case "fullName":
+            //        items = items.OrderBy(s => s.FullName);
+            //        break;
+            //    case "fullNameDesc":
+            //        items = items.OrderByDescending(s => s.FullName);
+            //        break;
+            //    case "fio":
+            //        items = items.OrderBy(s => s.Fio);
+            //        break;
+            //    case "fioDesc":
+            //        items = items.OrderByDescending(s => s.Fio);
+            //        break;
+            //    case "position":
+            //        items = items.OrderBy(s => s.Position);
+            //        break;
+            //    case "positionDesc":
+            //        items = items.OrderByDescending(s => s.Position);
+            //        break;
+            //    case "email":
+            //        items = items.OrderBy(s => s.Email);
+            //        break;
+            //    case "emailDesc":
+            //        items = items.OrderByDescending(s => s.Email);
+            //        break;
+            //    default:
+            //        items = items.OrderBy(s => s.Id);
+            //        break;
+            //}
+            items = items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<EstimateDTO>>(items);
+
+            PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = t
+            };
+
+            return viewModel;
+        }
+
+        public List<DatabaseLayer.Models.KDO.File> GetFiles(int EstimateId)
+        {
+            var filesId = _database.EstimateFiles.Find(x => x.EstimateId == EstimateId).Select(x => x.FileId).ToList();
+            List<DatabaseLayer.Models.KDO.File> files = new List<DatabaseLayer.Models.KDO.File>();
+            foreach (var item in filesId)
+            {
+                files.AddRange(_database.Files.Find(x => x.Id == item));
+            }
+            return files;
+        }
     }
 }

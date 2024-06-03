@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using BusinessLayer.Services;
 using DatabaseLayer.Models.PRO;
@@ -24,8 +25,8 @@ namespace MvcLayer.Controllers.PRO
         private readonly IEstimateService _estimateService;
         private readonly IAbbreviationKindOfWorkService _abbreviationKindOfWorkService;
 
-        public EstimateController(IFileService file, IWebHostEnvironment env, IParseService pars, 
-            IExcelReader excelReader, IContractService contractService, IMapper mapper, 
+        public EstimateController(IFileService file, IWebHostEnvironment env, IParseService pars,
+            IExcelReader excelReader, IContractService contractService, IMapper mapper,
             IVContractService vContractService, IEstimateService estimateService,
             IAbbreviationKindOfWorkService abbreviationKindOfWorkService)
         {
@@ -40,20 +41,60 @@ namespace MvcLayer.Controllers.PRO
             _abbreviationKindOfWorkService = abbreviationKindOfWorkService;
         }
 
-        public ActionResult Index(int contractId, int returnContractId = 0)
+        public ActionResult Index(string currentFilter, string searchString, string sortOrder, int contractId, List<string> KeySearchString, List<string> ValueSearchString, int returnContractId = 0, int? pageNum = 1)
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            return View(_estimateService.GetAll().ToList());
+            var pageSize = 100;
+            if (pageNum < 1)
+            {
+                pageNum = 1;
+            }
+            if (searchString != null)
+            {
+                pageNum = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+            var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, searchString, sortOrder, contractId, KeySearchString, ValueSearchString);
+            var answer = new IndexViewModel();
+            answer.PageViewModel = list.PageViewModel;
+            var listEstimate = new List<EstimateViewModel>();
+            foreach (EstimateDTO item in list.Objects)
+            {
+                var estimateView = new EstimateViewModel();
+                estimateView.BuildingName = item.BuildingName;
+                estimateView.BuildingCode = item.BuildingCode;
+                var estimateViewItem = new EstimateViewModelItem();
+                estimateViewItem.Number = item.Number;
+                estimateViewItem.PercentOfContrPrice = item.PercentOfContrPrice;
+                estimateViewItem.EstimateDate = item.EstimateDate;
+                estimateViewItem.DrawingsDate = item.DrawingsDate;
+                estimateViewItem.ContractsCost = item.ContractsCost;
+                estimateViewItem.DoneSmrCost = item.DoneSmrCost;
+                estimateViewItem.DrawingsKit = item.DrawingsKit;
+                estimateViewItem.DrawingsName = item.DrawingsName;
+                estimateViewItem.LaborCost = item.LaborCost;
+                estimateViewItem.RemainsSmrCost = item.RemainsSmrCost;
+                estimateViewItem.SubContractor = item.SubContractor;
+                estimateView.DetailsView.Add(estimateViewItem);
+                listEstimate.Add(estimateView);
+            }
+            answer.Objects = listEstimate;
+            ViewData["CurrentFilter"] = searchString;
+            return View(answer);
         }
 
         public ActionResult AddEstimate(int contractId, int returnContractId = 0)
         {
+            var list = _estimateService.Find(x => x.Id != 0).Select(x => new Estimate { Id = x.Id, Number = x.Number }).ToList();
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            return View();
+            return View(list);
         }
-        
+
         [Authorize(Policy = "AdminPolicy")]
         public ActionResult CreateScopeWorkByFile(string model, int contractId, int returnContractId = 0)
         {
@@ -77,8 +118,8 @@ namespace MvcLayer.Controllers.PRO
                     }
                     var contract = _contractService.GetById(contractId);
                     var abbrKindWork = _abbreviationKindOfWorkService.GetAll();
-                    List<AbbreviationKindOfWorkDTO> list= new List<AbbreviationKindOfWorkDTO>();
-                    foreach(var item in abbrKindWork)
+                    List<AbbreviationKindOfWorkDTO> list = new List<AbbreviationKindOfWorkDTO>();
+                    foreach (var item in abbrKindWork)
                     {
                         if (answer.DrawingsKit.Contains(item.name))
                             list.Add(item);
@@ -87,7 +128,7 @@ namespace MvcLayer.Controllers.PRO
                     {
                         answer.KindOfWorkId = list[0].Id;
                     }
-                    else if (list.Count == 2) 
+                    else if (list.Count == 2)
                     {
                         foreach (var item in list)
                         {
@@ -114,7 +155,7 @@ namespace MvcLayer.Controllers.PRO
                     return Content(estimateId.ToString());
                 }
                 else
-                {                    
+                {
                     throw new Exception("Загрузите файл локальной сметы");
                 }
             }
@@ -129,9 +170,10 @@ namespace MvcLayer.Controllers.PRO
             }
         }
         [HttpGet]
-        public ActionResult GetEstimateLaborCost()
+        public ActionResult GetEstimateLaborCost(int EstimateId)
         {
-            return PartialView("_GetEstimateLaborCost");
+            var LaborCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.LaborCost).FirstOrDefault();
+            return PartialView("_GetEstimateLaborCost", LaborCost);
         }
         [HttpPost]
         public ActionResult GetEstimateLaborCost(string path, int? estimateId, int page = 0)
@@ -139,14 +181,14 @@ namespace MvcLayer.Controllers.PRO
             try
             {
                 if (estimateId is not null)
-                {                    
+                {
                     _pars.ParseAndReturnLaborCosts(path, page, (int)estimateId);
                     FileInfo fileInf = new FileInfo(path);
                     if (fileInf.Exists)
                     {
                         fileInf.Delete();
                     }
-                    return PartialView("_ResultMessage", "Трудозатраты чел/час загружены");               
+                    return PartialView("_ResultMessage", "Трудозатраты чел/час загружены");
                 }
                 else
                 {
@@ -161,17 +203,19 @@ namespace MvcLayer.Controllers.PRO
                     fileInf.Delete();
                 }
                 throw new Exception(ex.Message);
-            }            
+            }
         }
 
-        public ActionResult GetDrawingsFiles()
+        public ActionResult GetDrawingsFiles(int EstimateId)
         {
-            return PartialView("_GetDrawingsFiles");
+            var files = _estimateService.GetFiles(EstimateId);
+            return PartialView("_GetDrawingsFiles", files);
         }
         [HttpGet]
-        public ActionResult GetEstimateContractCost()
+        public ActionResult GetEstimateContractCost(int EstimateId)
         {
-            return PartialView("_GetContractCost");
+            var ContractCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.ContractsCost).FirstOrDefault();
+            return PartialView("_GetContractCost", ContractCost);
         }
 
         [HttpPost]
@@ -205,9 +249,10 @@ namespace MvcLayer.Controllers.PRO
             }
         }
         [HttpGet]
-        public ActionResult GetEstimateDoneSmrCost()
+        public ActionResult GetEstimateDoneSmrCost(int EstimateId)
         {
-            return PartialView("_GetSmrDoneCost");
+            var DoneSmrCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.DoneSmrCost).FirstOrDefault();
+            return PartialView("_GetSmrDoneCost", DoneSmrCost);
         }
 
         [HttpPost]
@@ -239,6 +284,29 @@ namespace MvcLayer.Controllers.PRO
                 }
                 throw new Exception(ex.Message);
             }
+        }
+
+        [HttpGet]
+        public ActionResult GetEstimateResult(int EstimateId)
+        {
+            var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
+            var estimateView = new EstimateViewModel();
+            estimateView.BuildingName = estimate.BuildingName;
+            estimateView.BuildingCode = estimate.BuildingCode;
+            var estimateViewItem = new EstimateViewModelItem();
+            estimateViewItem.Number = estimate.Number;
+            estimateViewItem.PercentOfContrPrice = estimate.PercentOfContrPrice;
+            estimateViewItem.EstimateDate = estimate.EstimateDate;
+            estimateViewItem.DrawingsDate = estimate.DrawingsDate;
+            estimateViewItem.ContractsCost = estimate.ContractsCost;
+            estimateViewItem.DoneSmrCost = estimate.DoneSmrCost;
+            estimateViewItem.DrawingsKit = estimate.DrawingsKit;
+            estimateViewItem.DrawingsName = estimate.DrawingsName;
+            estimateViewItem.LaborCost = estimate.LaborCost;
+            estimateViewItem.RemainsSmrCost = estimate.RemainsSmrCost;
+            estimateViewItem.SubContractor = estimate.SubContractor;
+            estimateView.DetailsView.Add(estimateViewItem);
+            return PartialView("_GetEstimateResult", estimateView);
         }
 
         // GET: EstimateController/Details/5

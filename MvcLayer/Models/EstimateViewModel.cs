@@ -5,17 +5,26 @@ namespace MvcLayer.Models
 {
     public class EstimateViewModel
     {
+        public EstimateViewModel()
+        {
+            DetailsView = new List<EstimateViewModelItem>();
+        }
+
+        public string BuildingCode { get; set; }
+        public string BuildingName { get; set; }
+        public List<EstimateViewModelItem> DetailsView { get; set; }
+     }
+
+    public class EstimateViewModelItem
+    {
         public int Id { get; set; }
         public string Number { get; set; }
         public DateTime? EstimateDate { get; set; }
-        public string BuildingCode { get; set; }
-        public string BuildingName { get; set; }
+        public DateTime? EstimateChangeDate { get; set; }
         public DateTime? DrawingsDate { get; set; }
-        public string DrawingsKit { get; set; }
-        public string DrawingsCode { get; set; }
-        public string DrawingsName { get; set; }
-        public DateTime? AmendmentDrawingsDate { get; set; }
-        public DateTime? AmendmentEstimateDate { get; set; }
+        public DateTime? DrawingsChangeDate { get; set; }
+        public string DrawingsKit { get; set; }        
+        public string DrawingsName { get; set; }        
         public decimal ContractsCost { get; set; }
         public double LaborCost { get; set; }
         public decimal DoneSmrCost { get; set; }
@@ -24,9 +33,6 @@ namespace MvcLayer.Models
         public decimal RemainsSmrCost { get; set; }
         public string Owner { get; set; }
         public string KindOfWork { get; set; }
-
-        public int ContractId { get; set; }
-        public ContractDTO Contract { get; set; }
         public List<EstimateFileDTO> EstimateFiles { get; set; } = new List<EstimateFileDTO>();
     }
 }

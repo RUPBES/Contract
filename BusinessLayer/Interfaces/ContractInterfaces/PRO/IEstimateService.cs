@@ -9,5 +9,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     {
         public IndexViewModel GetPage(int pageSize, int pageNum, string org);
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org);
+        public IndexViewModel GetPageFilterByContract(int pageSize, int pageNum, string request, string sortOrder, int ContractId, List<string> KeySearchString, List<string> ValueSearchString);
+        public List<DatabaseLayer.Models.KDO.File> GetFiles(int EstimateId);
     }
 }

@@ -1,10 +1,19 @@
-﻿@inject BusinessLayer.Interfaces.ContractInterfaces.IEstimateService Estimate
+﻿@model double
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEstimateService Estimate
+@if (Model != 0)
+{
+    <label>Трудозатраты</label>
+    <input style="font-weight:bold; " value="@Model.ToString("N2")" readonly />
+}
 <form id="files3" method="post" enctype="multipart/form-data">
     <div id="example" style="min-width:400px; max-width: 800px;">
         <div class="demo-section input-group mb-2">
             <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
-            <div class="input-group-append">
+            <div class="btn-group" role="group">
+
                 <button type="submit" class="btn btn-success">Загрузить</button>
+                <button id="NextStep" class="btn btn-primary" type="button">Пропустить</button>
+
             </div>
         </div>
         <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
@@ -14,6 +23,33 @@
 </form>
 
 <script>
+    $("#NextStep").on('click', function (e) {
+        $("#result").html("3 Этап пропущен.")
+        var estimateId = $("#EstimateId").val();
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetEstimateContractCost", "Estimate")',
+            data: { EstimateId: estimateId },
+            success: function (viewData) {
+                $("#divForm").html(viewData)
+                $("#ListOfSheet").html("")
+                $("#HeaderLabel").text("Этап 4: Загрузка графика производства работ")
+            },
+            error: function (error) {
+                var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ShowError", "Parse")',
+                    data: { message: errorMes },
+                    dataType: 'html',
+                    success: function (data) {
+                        $("#result").html(data)
+                    }
+                });
+            }
+        });
+    });
+
     $("form#files3").submit(function () {        
         let formData = new FormData(files3);
         event.preventDefault()
@@ -57,6 +93,7 @@
                                     $.ajax({
                                         type: 'GET',
                                         url: '@Url.Action("GetEstimateContractCost", "Estimate")',
+                                        data: { EstimateId: estimateId },
                                         success: function (viewData) {
                                             $("#divForm").html(viewData)
                                             $("#ListOfSheet").html("")
