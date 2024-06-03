@@ -23,13 +23,13 @@ namespace MvcLayer.Controllers
         private readonly IFormService _formService;
         private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
-        private readonly IParsService _pars;
+        private readonly IParseService _pars;
 
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
             IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService,
-            IPrepaymentService prepayment, IParsService parser)
+            IPrepaymentService prepayment, IParseService parser)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -291,7 +291,7 @@ namespace MvcLayer.Controllers
 
                 if (scopeWork.ContractId is not null)
                 {
-                    if (_prepayment.FindByContractId((int)scopeWork.ContractId).Count() == 0 && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                    if (_prepayment.FindByContractId((int)scopeWork.ContractId).Count() == 0 && contract.PaymentСonditionsAvans != null && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
                     {
                         return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = scopeWork.ContractId, isFact = false, returnContractId = returnContractId });
                     }

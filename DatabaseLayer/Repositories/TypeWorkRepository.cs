@@ -43,14 +43,14 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<TypeWork> GetAll()
         {
-            return _context.TypeWorks.Include(x=>x.TypeWorkContracts).ToList();
+            return _context.TypeWorks.Include(x => x.TypeWorkContracts).Include(x=>x.TypeWorkContracts).ToList();
         }
 
         public TypeWork GetById(int id, int? secondId = null)
         {
             if (id > 0)
             {
-                return _context.TypeWorks.Find(id);
+                return _context?.TypeWorks?.Include(x => x.TypeWorkContracts)?.FirstOrDefault(x=>x.Id == id);
             }
             else
             {

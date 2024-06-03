@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
+using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 
 namespace BusinessLayer.Mapper
 {
@@ -27,6 +29,9 @@ namespace BusinessLayer.Mapper
             CreateMap<DepartmentEmployee, DepartmentEmployeeDTO>().ReverseMap();
             CreateMap<Employee, EmployeeDTO>().ReverseMap();
             CreateMap<EmployeeContract, EmployeeContractDTO>().ReverseMap();
+
+            CreateMap<EstimateDTO, Estimate>().ReverseMap();
+            CreateMap<EstimateFileDTO, EstimateFile>().ReverseMap();
             CreateMap<EstimateDocDTO, EstimateDoc>().ReverseMap();
             CreateMap<EstimateDocFileDTO, EstimateDocFile>().ReverseMap();
             CreateMap<FormC3a, FormDTO>().ReverseMap();
@@ -36,6 +41,8 @@ namespace BusinessLayer.Mapper
             CreateMap<MaterialDTO, MaterialGc>().ReverseMap();
             CreateMap<MaterialCostDTO, MaterialCost>().ReverseMap();
             CreateMap<MaterialAmendmentDTO, MaterialAmendment>().ReverseMap();
+            CreateMap<KindOfWorkDTO, KindOfWork>().ReverseMap();
+            CreateMap<AbbreviationKindOfWorkDTO, AbbreviationKindOfWork>().ReverseMap();
             CreateMap<Payment, PaymentDTO>().ReverseMap();
             CreateMap<PrepaymentDTO, Prepayment>().ReverseMap();
             CreateMap<PrepaymentAmendmentDTO, PrepaymentAmendment>().ReverseMap();

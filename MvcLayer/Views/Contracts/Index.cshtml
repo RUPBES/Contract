@@ -142,11 +142,9 @@
             {
                 @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                 {
-                    <div class="form_agreement">
-                        <form method="get">
+                    <div class="form_agreement">                        
                             @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                        </form>
+                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>                        
                         @if (permissions is not null && permissions.IsCreator)
                         {
                             <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
@@ -316,7 +314,8 @@
                                 {
                                     <td>
                                         <span class="table_span-work">
-                                            @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                            @* @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name *@
+                                            @TypeWork?.GetByContractId((int)item?.Id)?.Name
                                         </span>
                                     </td>
                                 }
@@ -336,9 +335,6 @@
                                 @*Остаток*@
                                 <td class="text-end">
                                     <span class="table_span-remains">
-                                        @* @{
-                            var ostatok = item.ContractPrice - factWork;
-                            } *@
                                         @item.RemainingSum?.ToString("N2")
                                     </span>
                                 </td>
@@ -349,6 +345,11 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
+                                       @*  <div class="icon view" title="Сметы">
+                                            <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
+                                        </div> *@
+
+
                                         <div class="icon view" title="Просмотр детальной информации по договору">
                                             <a asp-action="Details" asp-route-id="@item.Id"></a>
                                         </div>
@@ -496,7 +497,8 @@
                                 {
                                     <td>
                                         <span class="table_span-work">
-                                            @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name
+                                            @* @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name *@
+                                            @TypeWork?.GetByContractId((int)item?.Id)?.Name
                                         </span>
                                     </td>
                                 }
@@ -515,9 +517,6 @@
                                 @*Остаток*@
                                 <td class="text-end">
                                     <span class="table_span-remains">
-                                        @*  @{
-                            var ostatok = item.ContractPrice - factWork;
-                            } *@
                                         @item.RemainingSum?.ToString("N2")
                                     </span>
                                 </td>
@@ -528,6 +527,12 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
+                                       @*  <div class="icon view" title="Сметы">
+                                            <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
+                                        </div> *@
+
+
+
                                         <div class="icon view" title="Просмотр детальной информации по договору">
                                             <a asp-action="Details" asp-route-id="@item.Id"></a>
                                         </div>

@@ -159,5 +159,23 @@ namespace BusinessLayer.Services
                             userName: user);
             }
         }
+
+        public TypeWorkDTO GetByContractId(int contractId)
+        {
+            var typeWorkId = _database.TypeWorkContracts.Find(x=>x.ContractId == contractId)?.FirstOrDefault()?.TypeWorkId;
+            if (typeWorkId is null)
+            {
+                return null;
+            }
+            var typeWork = _database.TypeWorks.GetById((int)typeWorkId);
+            if (typeWork is not null)
+            {
+                return _mapper.Map<TypeWorkDTO>(typeWork);
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

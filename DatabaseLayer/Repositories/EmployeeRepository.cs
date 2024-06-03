@@ -112,7 +112,15 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Employee> GetEntityWithSkipTake(int skip, int take, string org)
         {
-            return _context.Employees.Where(e => e.Author == org).Include(x => x.DepartmentEmployees).Include(x => x.Phones).OrderByDescending(x => x.Id).Skip(skip).Take(take).ToList();
+            var list = org.Split(',');
+            return _context.Employees
+                .Where(e => list.Contains(e.Author)).
+                Include(x => x.DepartmentEmployees)
+                .Include(x => x.Phones)
+                .OrderByDescending(x => x.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
         }
 
         public IEnumerable<Employee> FindLike(string propName, string queryString) => propName switch

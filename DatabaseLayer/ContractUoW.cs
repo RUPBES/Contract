@@ -1,7 +1,9 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
+using DatabaseLayer.Repositories.PRO;
 using DatabaseLayer.Repositories.ViewRepo;
 
 namespace DatabaseLayer
@@ -11,8 +13,10 @@ namespace DatabaseLayer
         #region valueRepo
         private readonly ContractsContext _context;
 
+        private EstimateRepository estimateRepository;
+        private EstimateFileRepository estimateFileRepository;
         private AddressRepository addressRepository;
-         private ActRepository actRepository;
+        private ActRepository actRepository;
         private ActFileRepository actFileRepository;
         private AmendmentFileRepository amendmentFileRepository;
         private AmendmentRepository amendmentRepository;
@@ -24,7 +28,7 @@ namespace DatabaseLayer
         private EmployeeRepository employeeRepository;
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
-        private TypeWorkRepository typeWorkRepository;
+       
 
         private PrepaymentPlanRepository prepaymentPlanRepository;
         private PrepaymentFactRepository prepaymentFactRepository;
@@ -55,10 +59,14 @@ namespace DatabaseLayer
         private SWCostRepository sWCostRepository;
         private ScopeWorkAmendmentRepository scopeWorkAmendmentRepository;
         private PrepaymentAmendmentRepository prepaymentAmendmentRepository;
-
+        private TypeWorkRepository typeWorkRepository;
+        private TypeWorkContractRepository typeWorkContractRepository;
         private VContractRepository vContractRepository;
         private VContractEnginRepository vContractEnginRepository;
         private LogRepository logRepository;
+
+        private KindOfWorkRepository kindOfWorkRepository;
+        private AbbreviationKindOfWorkRepository abbreviationKindOfWorkRepository;
         #endregion
         public ContractUoW()
         {
@@ -93,6 +101,42 @@ namespace DatabaseLayer
         #endregion
 
         #region tables
+
+        public IEntityWithPagingRepository<Estimate> Estimates
+        {
+            get
+            {
+                if (estimateRepository is null)
+                {
+                    estimateRepository = new EstimateRepository(_context);
+                }
+                return estimateRepository;
+            }
+        }
+
+        public IRepository<TypeWorkContract> TypeWorkContracts
+        {
+            get
+            {
+                if (typeWorkContractRepository is null)
+                {
+                    typeWorkContractRepository = new TypeWorkContractRepository(_context);
+                }
+                return typeWorkContractRepository;
+            }
+        }
+
+        public IRepository<EstimateFile> EstimateFiles
+        {
+            get
+            {
+                if (estimateFileRepository is null)
+                {
+                    estimateFileRepository = new EstimateFileRepository(_context);
+                }
+                return estimateFileRepository;
+            }
+        }
 
         public IRepository<DepartmentEmployee> DepartmentEmployees
         {
@@ -538,6 +582,30 @@ namespace DatabaseLayer
                     logRepository = new LogRepository(_context);
                 }
                 return logRepository;
+            }
+        }
+
+        public IRepository<KindOfWork> KindOfWorks
+        {
+            get
+            {
+                if (kindOfWorkRepository is null)
+                {
+                    kindOfWorkRepository = new KindOfWorkRepository(_context);
+                }
+                return kindOfWorkRepository;
+            }
+        }
+
+        public IRepository<AbbreviationKindOfWork> AbbreviationKindOfWorks
+        {
+            get
+            {
+                if (abbreviationKindOfWorkRepository is null)
+                {
+                    abbreviationKindOfWorkRepository = new AbbreviationKindOfWorkRepository(_context);
+                }
+                return abbreviationKindOfWorkRepository;
             }
         }
 

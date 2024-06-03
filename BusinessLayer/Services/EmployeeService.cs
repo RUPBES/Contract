@@ -35,8 +35,8 @@ namespace BusinessLayer.Services
             {
                 if (_database.Employees.GetById(item.Id) is null)
                 {
-                    item.FullName = $"{item?.LastName} {item?.FirstName} {item?.FatherName}";
-                    item.Fio = $"{item?.LastName} {item?.FirstName?[0]}.{item?.FatherName?[0]}.";
+                    item.FullName = $"{item?.LastName?.Trim()} {item?.FirstName?.Trim()} {item?.FatherName?.Trim()}";
+                    item.Fio = $"{item?.LastName?.Trim()} {item?.FirstName?.Trim()[0]}.{item?.FatherName?.Trim()[0]}.";
 
                     var employee = _mapper.Map<Employee>(item);
                     _database.Employees.Create(employee);
@@ -181,12 +181,18 @@ namespace BusinessLayer.Services
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
         {
-            
+            var list = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Employee> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Employees.FindLike("FullName", request).Where(e => e.Author == org).ToList(); }
-            else { items = _database.Employees.GetAll().Where(e => e.Author == org); }
+            { 
+                items = _database.Employees.FindLike("FullName", request).Where(e => list.Contains(e.Author)).ToList(); 
+            }
+            else 
+            { 
+                items = _database.Employees.Find(e => e.Author == org); 
+            }
+
             int count = items.Count();
 
             switch (sortOrder)

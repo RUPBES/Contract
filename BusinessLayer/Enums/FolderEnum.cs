@@ -10,6 +10,7 @@
         Form3C,
         Contracts,
         PrepaymentTake,
-        Other
+        Other,
+        Estimate
     }
 }

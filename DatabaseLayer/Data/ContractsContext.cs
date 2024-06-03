@@ -1,4 +1,5 @@
 ﻿using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using Microsoft.EntityFrameworkCore;
 using File = DatabaseLayer.Models.KDO.File;
 
@@ -17,8 +18,16 @@ public partial class ContractsContext : DbContext
 
     public virtual DbSet<VContract> VContracts { get; set; }
     public virtual DbSet<VContractEngin> VContractEngins { get; set; }
+    #region DbSetPro
 
-    #region DbSet
+    public virtual DbSet<Estimate> Estimates { get; set; }
+    public virtual DbSet<EstimateFile> EstimateFiles { get; set; }
+    public virtual DbSet<KindOfWork> KindOfWorks { get; set; }
+    public virtual DbSet<AbbreviationKindOfWork> AbbreviationKindOfWorks { get; set; }
+
+    #endregion
+
+    #region DbSetKDO
     public virtual DbSet<Act> Acts { get; set; }
 
     public virtual DbSet<Address> Addresses { get; set; }
@@ -111,6 +120,55 @@ public partial class ContractsContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+        modelBuilder.Entity<Estimate>(entity =>
+        {
+            entity.ToTable("Estimate");
+            entity.HasKey(x => x.Id);
+            entity.HasComment("Локальная смета");
+
+            entity.Property(e => e.ContractsCost)
+                .HasColumnType("money");
+
+            entity.Property(e => e.PercentOfContrPrice)
+                .HasColumnType("money")
+                .HasComputedColumnSql();
+            entity.Property(e => e.RemainsSmrCost)
+                .HasColumnType("money")
+                .HasComputedColumnSql();
+
+            entity.HasOne(d => d.Contract)
+                .WithMany(p => p.Estimates)
+                .HasForeignKey(d => d.ContractId)
+                .HasConstraintName("FK_Estimate_Contract_Id");
+
+            entity.HasOne(d => d.AbbreviationKindOfWork)
+             .WithMany(p => p.Estimates)
+             .HasForeignKey(d => d.KindOfWorkId)
+             .HasConstraintName("FK_Estimate_KindOfWork_Id");
+        });
+
+        modelBuilder.Entity<EstimateFile>(entity =>
+        {
+            entity.HasKey(e => new { e.EstimateId, e.FileId });
+
+            entity.ToTable("EstimateFile");
+
+            entity.HasComment("Смета-файлы");
+
+            entity.HasOne(d => d.Estimate)
+                .WithMany(p => p.EstimateFiles)
+                .HasForeignKey(d => d.EstimateId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_EstimateFile_Estimate_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.EstimateFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_EstimateFile_File_Id");
+        });
+
 
         modelBuilder.Entity<Act>(entity =>
         {
@@ -312,7 +370,7 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.Author);
             entity.Property(e => e.Owner);
 
-          entity.Property(e => e.NameObject).HasComment("Название объекта");
+            entity.Property(e => e.NameObject).HasComment("Название объекта");
 
             entity.Property(e => e.Number)
                 .HasMaxLength(100)
@@ -629,7 +687,7 @@ public partial class ContractsContext : DbContext
             .HasComputedColumnSql()
                 .HasColumnType("money")
                 .HasComment("Общая стоимость выполненных работ");
-            
+
             entity.Property(e => e.TotalCostToBePaid)
             .HasComputedColumnSql()
                 .HasColumnType("money")
@@ -1174,6 +1232,36 @@ public partial class ContractsContext : DbContext
                 .HasForeignKey(d => d.СommissionActId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_СommissionActFile_СommissionAct_Id");
+        });
+
+        modelBuilder.Entity<KindOfWork>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("KindOfWork");
+
+            entity.HasComment("Вид работ");
+
+            entity.Property(e => e.name)                
+                .HasComment("Наименование");
+        });
+
+        modelBuilder.Entity<AbbreviationKindOfWork>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("AbbreviationKindOfWork");
+
+            entity.HasComment("Аббревитуры типов работы");
+
+            entity.Property(e => e.name)
+                .HasComment("Наименование");
+
+            entity.HasOne(d => d.KindOfWork)
+            .WithMany(d => d.AbbreviationKindOfWorks)
+            .HasForeignKey(d => d.KindOfWorkId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("FK_AbbreviationKindOfWork_KindOfWork_Id");
         });
 
         #region views

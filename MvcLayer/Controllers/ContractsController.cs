@@ -24,6 +24,7 @@ namespace MvcLayer.Controllers
         private readonly ISWCostService _swCostService;
         private readonly IPrepaymentService _prepaymentService;
         private readonly IFormService _formService;
+        private readonly IAmendmentService _amendmentService;
 
         private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
@@ -31,7 +32,7 @@ namespace MvcLayer.Controllers
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
             IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService,
-            ISWCostService sWCostService, IPrepaymentService prepaymentService, IFormService formService)
+            ISWCostService sWCostService, IPrepaymentService prepaymentService, IFormService formService, IAmendmentService amendmentService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -45,6 +46,7 @@ namespace MvcLayer.Controllers
             _swCostService = sWCostService;
             _prepaymentService = prepaymentService;
             _formService = formService;
+            _amendmentService = amendmentService;
         }
 
         // GET: Contracts        
@@ -132,6 +134,11 @@ namespace MvcLayer.Controllers
             {
                 return NotFound();
             }
+            var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).LastOrDefault();
+            if (amendment is not null)
+            {
+                contract.ContractPrice = amendment.ContractPrice;
+            }
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -158,7 +165,7 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateSubObj(ContractViewModel viewModel)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
             if (viewModel is not null)
             {
                 var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
@@ -168,10 +175,20 @@ namespace MvcLayer.Controllers
                     _contractService.Update(oldContract);
                 }
 
+                if (viewModel.PaymentCA.Count == 0)
+                {
+                    viewModel.PaymentCA.Add("Без авансов");
+                }
+
+                viewModel.PaymentСonditionsAvans = string.Join(", ", viewModel.PaymentCA);
                 viewModel.IsOneOfMultiple = true;
                 viewModel.Author = organizationName;
                 viewModel.Owner = organizationName;
-                if (viewModel.ContractPrice is null) viewModel.ContractPrice = 0;
+                
+                if (viewModel.ContractPrice is null)
+                {
+                    viewModel.ContractPrice = 0;
+                }
                 _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
                 return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });
             }
@@ -231,7 +248,6 @@ namespace MvcLayer.Controllers
             return View(contract);
         }
 
-
         /// <summary>
         /// Создание субподрядного договора
         /// </summary>
@@ -268,7 +284,7 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ContractViewModel contract, bool isSubObject = false)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
 
             if (contract != null && (contract.IsSubContract == true || contract.IsAgreementContract == true))
             {
@@ -299,7 +315,11 @@ namespace MvcLayer.Controllers
             if (contract is not null)
             {
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
-                if (contract.PaymentCA.Count == 0) { contract.PaymentCA.Add("Без авансов"); }
+                if (contract.PaymentCA.Count == 0) 
+                { 
+                    contract.PaymentCA.Add("Без авансов"); 
+                }
+
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
 
                 if (contract.IsEngineering == true)

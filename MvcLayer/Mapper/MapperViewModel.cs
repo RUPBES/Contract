@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models;
+using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
 using MvcLayer.Controllers;
 using MvcLayer.Models;
@@ -18,7 +19,7 @@ namespace MvcLayer.Mapper
             CreateMap<CommissionActDTO, CommissionActViewModel>().ReverseMap();
             CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
             CreateMap<AmendmentViewModel, AmendmentDTO>().ReverseMap();
-            CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();
+            CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();            
             CreateMap<EstimateDocDTO, EstimateDocViewModel>().ReverseMap();
             CreateMap<FileDTO, FileViewModel>().ReverseMap();
             CreateMap<FormDTO, FormViewModel>().ReverseMap();

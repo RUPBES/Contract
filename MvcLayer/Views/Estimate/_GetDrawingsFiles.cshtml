@@ -1,0 +1,156 @@
+﻿@model List<DatabaseLayer.Models.KDO.File>
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEstimateService Estimate
+@{
+    ViewData["Title"] = "Загрузка чертежей";
+}
+
+<style>
+    .divForm_modal {
+        overflow: initial;
+    }
+    .dropdown-menu {
+        height: 200px !important;
+        overflow: auto !important;
+    }
+</style>
+<div class="input-group mb-2">
+@if (Model.Count > 0)
+{
+        <label class="input-group-text" for="inputGroupFile01">Загруженные чертежи по смете</label>
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Список таблиц</button>
+        <ul class="dropdown-menu">
+        @foreach (var item in Model)
+        {
+            <li>
+            <a class="btn btn-outline-success" type="button" href="~/Files/GetFile?id=@item.Id" target="_blank" id="inputGroupFile01">
+               
+                @item.FileName
+            </a>
+            </li>
+                
+        }        
+        </ul>
+
+}
+    <button id="NextStep" class="btn btn-primary" type="button">Пропустить</button>
+</div>
+<form id="files2" method="post" enctype="multipart/form-data">
+    <div id="example" style="min-width:400px; max-width: 800px;">
+        <div class="demo-section input-group mb-2">
+            <label class="input-group-text" for="dateDrawingId">Дата получения чертежей</label>
+            <input class="form-control" name="dateStart" type="text" id="dateDrawingId" />
+        </div>
+
+        <div class="demo-section input-group mb-2">
+            <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
+            <div class="input-group-append">
+                <button type="submit" class="btn btn-success">Загрузить</button>
+            </div>
+        </div>
+        <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
+            <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
+        </div>
+    </div>
+</form>
+<script>
+    $("#dateDrawingId").datepicker({
+        format: "d MM yyyy",
+        language: "ru",
+        calendarWeeks: true,
+        autoclose: true,
+        keyboardNavigation: false,
+        assumeNearbyYear: true,
+        toggleActive: true
+    });
+
+    $("#NextStep").on('click', function (e) {
+        $("#result").html("2 Этап пропущен.")
+        var estimateId = $("#EstimateId").val();
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetEstimateLaborCost", "Estimate")',
+            data: { EstimateId: estimateId},
+            success: function (viewData) {
+                $("#divForm").html(viewData)
+                $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
+            },
+            error: function (error) {
+                var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ShowError", "Parse")',
+                    data: { message: errorMes },
+                    dataType: 'html',
+                    success: function (data) {
+                        $("#result").html(data)
+                    }
+                });
+            }
+        });
+    });
+
+    $("form#files2").submit(function () {
+        let estimateId = $("#EstimateId").val();
+        let formData = new FormData(files2);
+        formData.append("estimateId", estimateId);
+        event.preventDefault()
+        function setProgress(e) {
+            if (e.lengthComputable) {
+                $("#container_progress").removeAttr('style');
+                var complete = e.loaded / e.total;
+                var completeFloor = Math.floor(complete * 100)
+                $("#pBar").attr('style', `width:${completeFloor}%`);
+                $("#pBar").text(`${completeFloor}%`);
+            }
+        }
+        $.ajax({
+            xhr: function () {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener("progress", setProgress, false);
+                xhr.addEventListener("progress", setProgress, false);
+                return xhr;
+            },
+            type: 'POST',
+            url: '@Url.Action("DownloadDrawingOfEstimate", "Parse")',
+            data: formData,
+            success: function (data) {
+                $("#result").html(data)
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetEstimateLaborCost", "Estimate")',
+                    data: { EstimateId: estimateId },
+                    success: function (viewData) {
+                        $("#divForm").html(viewData)
+                        $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
+                    },
+                    error: function (error) {
+                        var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("ShowError", "Parse")',
+                            data: { message: errorMes },
+                            dataType: 'html',
+                            success: function (data) {
+                                $("#result").html(data)
+                            }
+                        });
+                    }
+                });
+            },
+            error: function (result) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ShowError", "Parse")',
+                    data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
+                    dataType: 'html',
+                    success: function (data) {
+                        $("#result").html(data)
+                    }
+                });
+            },
+            contentType: false,
+            processData: false
+        });
+        return false;
+    });
+</script>

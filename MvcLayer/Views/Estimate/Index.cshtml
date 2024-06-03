@@ -1,134 +1,353 @@
-﻿@{
-    ViewData["Title"] = "Чтение данных из файла";
+﻿@using BusinessLayer.Models
+@using BusinessLayer.Models.PRO
+@using DatabaseLayer.Models.PRO
+@using MvcLayer.Models
+@model IndexViewModel
+@{
+    ViewData["Title"] = "Чтение данных из локальной сметы";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
+    var index = 0;
 }
-<style>
-    .demo-section {
-        display: flex;
-        flex-direction: column;
-    }
 
-    .dm-modal {
-        background-color: lightsteelblue;
-    }
-
-    .close-btn {
-        color: red
-    }
-
-        .close-btn::after {
-            border: 2px solid #F00 !important;
+@section Table {
+    <style>
+        .demo-section {
+            display: flex;
+            flex-direction: column;
         }
 
-        .close-btn:hover::after {
-            border-color: red !important;
-            color: red !important;
-            -webkit-transform: scale(1);
-            -moz-transform: scale(1);
-            -ms-transform: scale(1);
-            transform: scale(1);
+        .dm-modal {
+            background-color: lightsteelblue;
+        }
+
+        .close-btn {
+            color: red
+        }
+
+            .close-btn::after {
+                border: 2px solid #F00 !important;
+            }
+
+            .close-btn:hover::after {
+                border-color: red !important;
+                color: red !important;
+                -webkit-transform: scale(1);
+                -moz-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
+                font-weight: bold;
+            }
+
+        .square {
+            width: 20px;
+            height: 20px;
+            margin-left: 1%;
+            margin-right: 1%;
+            border: solid black;
+        }
+
+        .overdue {
+            background-color: #79a6fbb0 !important;
+        }
+
+        .form_agreement {
+            display: flex !important;
+            padding: 0 30px !important;
+            margin-top: 0.5%;
+            margin-bottom: 0.5%;
+        }
+
+        .search_btn {
+            width: 2vh !important;
+            position: absolute;
+            padding: 0;
+            margin: 0 10px;
+            background-color: inherit;
+            border: none;
+            right: 210px;
+            top: 8px;
+        }
+
+        h1 {
+            /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
+                                                                                color: #004d8e;
+                                                                                transition: all 1s; */
+            font-family: 'Ampersand', Montserrat, sans-serif;
+            font-size: 32px;
+        }
+
+        .btn_agreement {
+            width: 180px;
+            border-radius: 20px;
+            margin-left: 1%;
             font-weight: bold;
         }
-</style>
-@section Table {
-    <div class="dm-overlay">
-        <div class="dm-table">
-            <div class="dm-cell">
-                <div class="dm-modal" style="width:500px;">
-                    <div class="top-modal-block">
-                        <label class="my-modal-title">@ViewData["Title"]</label>
-                        @if (backId != null && backId > 0)
-                        {
-                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                        }
-                        @if (backId == null || backId == 0)
-                        {
-                            <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                        }
-                    </div>
-                    <hr class="modal-line">
 
-                    <form id="files" asp-action="GetDataScopes" asp-controller="ScopeWorks" method="post" enctype="multipart/form-data">
-                        <div id="example" style="min-width:400px; max-width: 800px;">
-                            <div class="demo-section input-group mb-2">
-                                <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
-                                <div class="input-group-append">
-                                    <button type="submit" class="btn btn-success">Загрузить</button>
-                                </div>
-                            </div>
-                            <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
-                                <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </form>
-                    <div id="result">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <input id="contractId" value="@ViewBag.contractId" hidden />
-    <input id="returnContractId" value="@ViewBag.returnContractId" hidden />
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script>
-        $("form#files").submit(function () {
-            let contractId = $("#contractId").val();
-            let returnContractId = $("#returnContractId").val();
 
-            let formData = new FormData(files);
-            event.preventDefault()
-            function setProgress(e) {
-                if (e.lengthComputable) {
-                    $("#container_progress").removeAttr('style');
-                    var complete = e.loaded / e.total;
-                    var completeFloor = Math.floor(complete * 100)
-                    $("#pBar").attr('style', `width:${completeFloor}%`);
-                    $("#pBar").text(`${completeFloor}%`);
+        .contracts-list {
+            justify-content: space-between;
+        }
+
+        .color_label {
+            display: flex;
+            font-weight: bold;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+        }
+
+        .label_postion {
+            margin-top: 0.4%;
+        }
+
+        .wrapper-table {
+            width: 100%;
+        }
+
+        .table-main tr:nth-child(even) {
+            background-color: #ecf2f9;
+        }
+
+        .img_newAgr {
+            width: 24px;
+            height: 24px;
+            margin-right: 3px;
+        }
+
+        input {
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            border-radius: 20px;
+            padding: 0px 30px 0px 10px;
+            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+        }
+
+        form {
+            position: relative;
+        }
+    </style>
+    <div>
+        <div class="contracts-list">
+
+            <h1 class="list_agreement">Смета</h1>
+
+            <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
+                  asp-route-returnContractId="@ViewData["returnContractId"]">
+                <label>Шифр здания</label>
+                <input name="KeySearchString[@index]" value="Шифр здания" hidden />
+                <input name="ValueSearchString[@index]" value="" />
+                @{
+                    index++;
                 }
-            }
-            $.ajax({
-                xhr: function () {
-                    var xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener("progress", setProgress, false);
-                    xhr.addEventListener("progress", setProgress, false);
-                    return xhr;
-                },
-                type: 'POST',
-                url: '@Url.Action("DownloadFile", "Parse")',
-                data: formData,
-                success: function (data) {
-                    let path = data;
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("CheckCountPagesInExcel", "Parse")',
-                        data: { path: path, contractId: contractId, returnContractId: returnContractId,  controllerName:'Estimate', actionName:'GetEstimateData'},
-                        dataType: 'html',
-                        success: function (data) {
-                            $("#result").html(data)
-                        }
-                    });
-                    $("#container_progress").attr('style', `display:none`);
-                },
-                error: function (result) {
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("ShowError", "Parse")',
-                        data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
-                        dataType: 'html',
-                        success: function (data) {
-                            $("#result").html(data)
-                            $("#container_progress").attr('style', `display:none`);
-                        }
-                    });
-                },
-                contentType: false,
-                processData: false
-            });
+                <label>Название здания</label>
+                <input name="KeySearchString[@index]" value="Название здания" hidden />
+                <input name="ValueSearchString[@index]" value="" />
+                @{
+                    index++;
+                }
+                <label>Подрядчику</label>
+                <input name="KeySearchString[@index]" value="Подрядчику" hidden />
+                <input name="ValueSearchString[@index]" value="" />
+                @{
+                    index++;
+                }
+                <label>Начало периода получения чертежа</label>
+                <input name="KeySearchString[@index]" value="Начало периода получения чертежа" hidden />
+                <input name="ValueSearchString[@index]" id="StartPeriodDrawing" value="" />
+                @{
+                    index++;
+                }
+                <label>Конец периода получения чертежа</label>
+                <input name="KeySearchString[@index]" value="Конец периода получения чертежа" hidden />
+                <input name="ValueSearchString[@index]" id="EndPeriodDrawing" value="" />
+                @{
+                    index++;
+                }
+                <label>Начало периода получения сметы</label>
+                <input name="KeySearchString[@index]" value="Начало периода получения сметы" hidden />
+                <input name="ValueSearchString[@index]" id="StartPeriodEstimate" value="" />
+                @{
+                    index++;
+                }
+                <label>Конец периода получения сметы</label>
+                <input name="KeySearchString[@index]" value="Конец периода получения сметы" hidden />
+                <input name="ValueSearchString[@index]" id="EndPeriodEstimate" value="" />
+                @{
+                    index++;
+                }
+                <label>Буквенный индекс чертежей</label>
+                <input name="KeySearchString[@index]" value="Буквенный индекс чертежей" hidden />
+                <input name="ValueSearchString[@index]" value="" />
+                @{
+                    index++;
+                }
+                <label>Вид работы</label>
+                <input name="KeySearchString[@index]" value="Вид работы" hidden />
+                <input name="ValueSearchString[@index]" value="" />
+                @{
+                    index++;
+                }
+                <div class="form_agreement">
+                    <input name="searchString" value="@ViewBag.CurrentFilter" />
+                    <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
 
-            return false;
+                    <a type="button" class="btn btn-success btn_agreement" asp-action="AddEstimate"
+                       asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
+                       asp-route-returnContractId="@ViewData["returnContractId"]">
+                        <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить смету
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div class="full-width">
+        <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
+            <thead>
+                <tr>
+                    <th>
+                        Шифр здания, сооружения
+                    </th>
+                    <th>
+                        Наименование здания, сооружения
+                    </th>
+                    <th>
+                        Комплект чертежей
+                    </th>
+                    <th>
+                        Наименование чертежа
+                    </th>
+                    <th>
+                        Дата получения чертежа
+                    </th>
+                    <th>
+                        Дата получения изменения чертежа
+                    </th>
+                    <th>
+                        Номер сметы
+                    </th>
+                    <th>
+                        Дата получения сметы
+                    </th>
+                    <th>
+                        Дата получения изменения сметы
+                    </th>
+                    <th>
+                        Стоимость по договору, руб.
+                    </th>
+                    <th>
+                        Трудозатраты, чел/час
+                    </th>
+                    <th>
+                        Выполнено СМР, руб.
+                    </th>
+                    <th>
+                        Процент выполнения, %
+                    </th>
+                    <th>
+                        Остаток СМР, руб.
+                    </th>
+                    <th>
+                        Подрядчик
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="table_tbody">
+                @foreach (EstimateViewModel item in Model.Objects)
+                {
+                    <tr>
+                        <td>
+                            @item.BuildingCode
+                        </td>
+                        <td>
+                            @item.BuildingName
+                        </td>
+                        <td>
+                            @item.DetailsView.First().DrawingsKit
+                        </td>
+                        <td>
+                            @item.DetailsView.First().DrawingsName
+                        </td>
+                        <td>
+                            @item.DetailsView.First().DrawingsDate.Value.ToString("dd MMMM yyyy")
+                        </td>
+                        <td>
+                            -
+                        </td>
+                        <td>
+                            @item.DetailsView.First().Number
+                        </td>
+                        <td>
+                            @item.DetailsView.First().EstimateDate.Value.ToString("dd MMMM yyyy")
+                        </td>
+                        <td>
+                            -
+                        </td>
+                        <td>
+                            @item.DetailsView.First().ContractsCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.DetailsView.First().LaborCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.DetailsView.First().DoneSmrCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.DetailsView.First().PercentOfContrPrice.ToString("N2")
+                        </td>
+                        <td>
+                            @item.DetailsView.First().RemainsSmrCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.DetailsView.First().SubContractor
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+@section Scripts {
+    <script>
+        $("#StartPeriodDrawing").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
         });
+        $("#EndPeriodDrawing").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#StartPeriodEstimate").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#EndPeriodEstimate").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+
     </script>
 }

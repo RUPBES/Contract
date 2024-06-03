@@ -35,7 +35,7 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость доп. работ")]
         public decimal? AdditionalCost { get; set; }
 
-        [DisplayName("Материалы заказчика (справочно)")]
+        [DisplayName("Материалы генподрядчика")]
         public decimal? MaterialCost { get; set; }
 
         [DisplayName("Стоимость ген.услуг")]
