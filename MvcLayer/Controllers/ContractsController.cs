@@ -123,12 +123,7 @@ namespace MvcLayer.Controllers
         }
 
         public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _contractService.GetAll() == null)
-            {
-                return NotFound();
-            }
-
+        {           
             var contract = _contractService.GetById((int)id);
             if (contract == null)
             {
