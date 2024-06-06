@@ -2,6 +2,8 @@
 @using BusinessLayer.Models.PRO
 @using DatabaseLayer.Models.PRO
 @using MvcLayer.Models
+@inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IKindOfWorkService KindOfWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IAbbreviationKindOfWorkService AbbrKindOfWork
 @model IndexViewModel
 @{
     ViewData["Title"] = "Чтение данных из локальной сметы";
@@ -9,7 +11,7 @@
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
-    var index = 0;
+    var isWrite = false;
 }
 
 @section Table {
@@ -73,8 +75,8 @@
 
         h1 {
             /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-                                                                                color: #004d8e;
-                                                                                transition: all 1s; */
+                                                                                                                                                                                                color: #004d8e;
+                                                                                                                                                                                                transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
@@ -136,62 +138,236 @@
 
             <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
                   asp-route-returnContractId="@ViewData["returnContractId"]">
-                <label>Шифр здания</label>
-                <input name="KeySearchString[@index]" value="Шифр здания" hidden />
-                <input name="ValueSearchString[@index]" value="" />
-                @{
-                    index++;
-                }
-                <label>Название здания</label>
-                <input name="KeySearchString[@index]" value="Название здания" hidden />
-                <input name="ValueSearchString[@index]" value="" />
-                @{
-                    index++;
-                }
-                <label>Подрядчику</label>
-                <input name="KeySearchString[@index]" value="Подрядчику" hidden />
-                <input name="ValueSearchString[@index]" value="" />
-                @{
-                    index++;
-                }
-                <label>Начало периода получения чертежа</label>
-                <input name="KeySearchString[@index]" value="Начало периода получения чертежа" hidden />
-                <input name="ValueSearchString[@index]" id="StartPeriodDrawing" value="" />
-                @{
-                    index++;
-                }
-                <label>Конец периода получения чертежа</label>
-                <input name="KeySearchString[@index]" value="Конец периода получения чертежа" hidden />
-                <input name="ValueSearchString[@index]" id="EndPeriodDrawing" value="" />
-                @{
-                    index++;
-                }
-                <label>Начало периода получения сметы</label>
-                <input name="KeySearchString[@index]" value="Начало периода получения сметы" hidden />
-                <input name="ValueSearchString[@index]" id="StartPeriodEstimate" value="" />
-                @{
-                    index++;
-                }
-                <label>Конец периода получения сметы</label>
-                <input name="KeySearchString[@index]" value="Конец периода получения сметы" hidden />
-                <input name="ValueSearchString[@index]" id="EndPeriodEstimate" value="" />
-                @{
-                    index++;
-                }
-                <label>Буквенный индекс чертежей</label>
-                <input name="KeySearchString[@index]" value="Буквенный индекс чертежей" hidden />
-                <input name="ValueSearchString[@index]" value="" />
-                @{
-                    index++;
-                }
-                <label>Вид работы</label>
-                <input name="KeySearchString[@index]" value="Вид работы" hidden />
-                <input name="ValueSearchString[@index]" value="" />
-                @{
-                    index++;
-                }
+                <div class="dropdown" title="Просмотр информации">
+                    <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
+                    </span>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <label>Шифр здания</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Шифр здания")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Шифр здания]" value="@item.Value" />
+
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Шифр здания]" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Название здания</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Название здания")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Название здания]" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Название здания]" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Подрядчик</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Подрядчик")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Подрядчик]" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Подрядчик]" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Начало периода получения чертежа</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Начало периода получения чертежа")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Конец периода получения чертежа</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Конец периода получения чертежа")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Начало периода получения сметы</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Начало периода получения сметы")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Конец периода получения сметы</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Конец периода получения сметы")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Буквенный индекс чертежей</label>
+                            @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
+                            {
+                                if (item.Key == "Буквенный индекс чертежей")
+                                {
+                                    isWrite = true;
+                                    <select class="js-chosen" name="ListSearchString[Буквенный индекс чертежей]" multiple>
+                                        @foreach (var itemAbr in AbbrKindOfWork.GetAll())
+                                        {
+                                            var IsGet = false;
+                                            foreach(var value in item.Value)
+                                            {
+                                                if (itemAbr.Id == value)
+                                                {
+                                                    IsGet = true;
+                                                    <option value="@itemAbr.Id" selected>@itemAbr.name</option>
+                                                    break;
+                                                }
+                                            }
+                                            if (!IsGet)
+                                            {
+                                                <option value="@itemAbr.Id">@itemAbr.name</option>
+                                            }                                            
+                                        }
+                                    </select>                                    
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <select class="js-chosen" name="ListSearchString[Буквенный индекс чертежей]" multiple>
+                                    @foreach (var itemAbr in AbbrKindOfWork.GetAll())
+                                    {
+                                        <option value="@itemAbr.Id">@itemAbr.name</option>
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }                            
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Вид работы</label>
+                            @{isWrite = false;}
+                            @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
+                            {
+                                if (item.Key == "Вид работы")
+                                {
+                                    isWrite = true;
+                                    <select class="js-chosen" name="ListSearchString[Вид работы]" multiple>
+                                        @foreach (var itemAbr in KindOfWork.GetAll())
+                                        {
+                                            var IsGet = false;
+                                            foreach (var value in item.Value)
+                                            {
+                                                if (itemAbr.Id == value)
+                                                {
+                                                    IsGet = true;
+                                                    <option value="@itemAbr.Id" selected>@itemAbr.name</option>
+                                                    break;
+                                                }
+                                            }
+                                            if (!IsGet)
+                                            {
+                                                <option value="@itemAbr.Id">@itemAbr.name</option>
+                                            }
+                                        }
+                                    </select>
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <select class="js-chosen" name="ListSearchString[Вид работы]" multiple>
+                                    @foreach (var itemAbr in KindOfWork.GetAll())
+                                    {
+                                        <option value="@itemAbr.Id">@itemAbr.name</option>
+                                    }
+                                </select>
+                            }                                                 
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form_agreement">
-                    <input name="searchString" value="@ViewBag.CurrentFilter" />
                     <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
 
                     <a type="button" class="btn btn-success btn_agreement" asp-action="AddEstimate"
@@ -259,10 +435,10 @@
                 @foreach (EstimateViewModel item in Model.Objects)
                 {
                     <tr>
-                        <td>
+                        <td rowspan="@item.DetailsView.Count">
                             @item.BuildingCode
                         </td>
-                        <td>
+                        <td rowspan="@item.DetailsView.Count">
                             @item.BuildingName
                         </td>
                         <td>
@@ -305,11 +481,56 @@
                             @item.DetailsView.First().SubContractor
                         </td>
                     </tr>
+                    @foreach (var detail in item.DetailsView.Skip(1))
+                    {
+                        <tr>
+                            <td>
+                                @detail.DrawingsKit
+                            </td>
+                            <td>
+                                @detail.DrawingsName
+                            </td>
+                            <td>
+                                @detail.DrawingsDate.Value.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                -
+                            </td>
+                            <td>
+                                @detail.Number
+                            </td>
+                            <td>
+                                @detail.EstimateDate.Value.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                -
+                            </td>
+                            <td>
+                                @detail.ContractsCost.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.LaborCost.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.DoneSmrCost.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.PercentOfContrPrice.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.RemainsSmrCost.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.SubContractor
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
 }
+
 @section Scripts {
     <script>
         $("#StartPeriodDrawing").datepicker({

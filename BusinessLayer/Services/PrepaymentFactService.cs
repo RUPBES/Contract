@@ -165,21 +165,10 @@ namespace BusinessLayer.Services
         {
             try
             {
-                var list = _database.Prepayments.Find(a => a.ContractId == contractId && a.IsChange != true).ToList();
-                List<(Prepayment, DateTime)> listSort = new List<(Prepayment, DateTime)>();
-                foreach (var item in list)
-                {
-                    (Prepayment, DateTime) obj;
-                    var ob = _database.PrepaymentAmendments.Find(s => s.PrepaymentId == item.Id).FirstOrDefault();
-                    if (ob == null)
-                        obj.Item2 = new DateTime(1900, 1, 1);
-                    else obj.Item2 = (DateTime)_database.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault();
-                    obj.Item1 = item;
-                    listSort.Add(obj);
-                }
-                listSort = listSort.OrderBy(x => x.Item2).ToList();
-
-                return _mapper.Map<Prepayment>(listSort.Select(x => x.Item1).LastOrDefault());
+                var prep = _database.Prepayments.Find(a => a.ContractId == contractId && a.IsChange != true).FirstOrDefault();
+                if (prep == null)
+                    return null;
+                return prep;
             }
             catch { return null; }
         }

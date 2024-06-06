@@ -180,7 +180,7 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
-        {            
+        {
             var list = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Estimate> items;
@@ -241,137 +241,106 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilterByContract(int pageSize, int pageNum, string request, string sortOrder, int ContractId, List<string> KeySearchString, List<string> ValueSearchString)
-        {            
+        public IndexViewModel GetPageFilterByContract(int pageSize, int pageNum, string sortOrder, int ContractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString)
+        {
+            if (SearchString != CurrentSearchString)
+                pageNum = 1;
             int skipEntities = (pageNum - 1) * pageSize;
-            IEnumerable<Estimate> items = _database.Estimates.GetAll();
-            if (!String.IsNullOrEmpty(request))
+
+            List<Estimate> items = _database.Estimates.Find(x => x.ContractId == ContractId).ToList();
+
+            #region SearchString
+            string value;
+            SearchString.TryGetValue("Шифр здания", out value);
+            if (value != null)
+                items = items.Where(x => x.BuildingCode.Contains(value)).ToList();
+
+            SearchString.TryGetValue("Название здания", out value);     
+            if (value != null)
+                items = items.Where(x => x.BuildingName.Contains(value)).ToList();
+
+            SearchString.TryGetValue("Подрядчик", out value);            
+            if (value != null)
+                items = items.Where(x => x.SubContractor.Contains(value)).ToList();
+            
+            SearchString.TryGetValue("Начало периода получения чертежа", out value);
+            if (value != null)
             {
-                items = items.Where(x => x.ContractId == ContractId &&
-                    (x.BuildingName.Contains(request) ||
-                    x.DrawingsName.Contains(request) ||
-                    x.SubContractor.Contains(request)))
-                    .ToList();
+                DateTime date;
+                DateTime.TryParse(value, out date);
+                items = items.Where(x => x.DrawingsDate >= date).ToList();
+            }
+            
+            SearchString.TryGetValue("Конец периода получения чертежа", out value);
+            if (value != null)
+            {
+                DateTime date;
+                DateTime.TryParse(value, out date);
+                items = items.Where(x => x.DrawingsDate <= date).ToList();
+            }
+            
+            SearchString.TryGetValue("Начало периода получения сметы", out value);
+            if (value != null)
+            {
+                DateTime date;
+                DateTime.TryParse(value, out date);
+                items = items.Where(x => x.EstimateDate >= date).ToList();
+            }
+            
+            SearchString.TryGetValue("Конец периода получения сметы", out value);
+            if (value != null)
+            {
+                DateTime date;
+                DateTime.TryParse(value, out date);
+                items = items.Where(x => x.EstimateDate <= date).ToList();
+            }
+            #endregion
+
+            #region ListSearchString            
+            List<int> listItems;
+            ListSearchString.TryGetValue("Буквенный индекс чертежей", out listItems);
+            if (listItems!= null && listItems.Count > 0)
+            {
+                var answer = new List<Estimate>();
+                foreach (var item in listItems)
+                {
+                    answer.AddRange(items.Where(x => x.KindOfWorkId == item));
+                }
+                items = answer;
             }
 
-            for(var index = 0; index<KeySearchString.Count; index++ )
+            ListSearchString.TryGetValue("Вид работы", out listItems);            
+            if (listItems != null && listItems.Count > 0)
             {
-                var key = KeySearchString[index];
-                var value = ValueSearchString[index];
-                switch (key)
+                var answer = new List<Estimate>();
+                var abbrKind = new List<AbbreviationKindOfWork>();
+                foreach (var item in listItems)
                 {
-                    case "Шифр здания":
-                        if(value != null)
-                            items = items.Where(x => x.BuildingCode.Contains(value)).ToList(); 
-                        break;
-                    case "Название здания":
-                        if (value != null)
-                            items = items.Where(x => x.BuildingName.Contains(value)).ToList();
-                        break;
-                    case "Подрядчику":
-                        if (value != null)
-                            items = items.Where(x => x.SubContractor.Contains(value)).ToList();
-                        break;
-                    case "Начало периода получения чертежа":
-                        if (value != null)
-                        {
-                            DateTime date;
-                            DateTime.TryParse(value,out date);
-                            items = items.Where(x => x.DrawingsDate >= date ).ToList();
-                        }
-                        break;
-                    case "Конец периода получения чертежа":
-                        if (value != null)
-                        {
-                            DateTime date;
-                            DateTime.TryParse(value, out date);
-                            items = items.Where(x => x.DrawingsDate <= date).ToList();
-                        }
-                        break;
-                    case "Начало периода получения сметы":
-                        if (value != null)
-                        {
-                            DateTime date;
-                            DateTime.TryParse(value, out date);
-                            items = items.Where(x => x.EstimateDate >= date).ToList();
-                        }
-                        break;
-                    case "Конец периода получения сметы":
-                        if (value != null)
-                        {
-                            DateTime date;
-                            DateTime.TryParse(value, out date);
-                            items = items.Where(x => x.EstimateDate <= date).ToList();
-                        }
-                        break;
-                    case "Буквенный индекс чертежей":
-                        if (value != null)
-                        {
-                            var abbrKind = _database.AbbreviationKindOfWorks.Find(x => x.name.Contains(value)).ToList();
-                            var answer = new List<Estimate>();
-                            foreach (var abbr in abbrKind)
-                            {                                
-                                answer.AddRange(items.Where(x => x.KindOfWorkId == abbr.Id));
-                            }
-                            items = answer;
-                        }
-                        break;
-                    case "Вид работы":
-                        if (value != null)
-                        {
-                            var Kind = _database.KindOfWorks.Find(x => x.name.Contains(value)).ToList();
-                            var abbrKind = new List<AbbreviationKindOfWork>();
-                            foreach(var itemKind in Kind)
-                            {
-                                var list = _database.AbbreviationKindOfWorks.Find(x => x.KindOfWorkId == itemKind.Id).ToList();
-                                abbrKind.AddRange(list);
-                            }                            
-                            var answer = new List<Estimate>();
-                            foreach (var abbr in abbrKind)
-                            {
-                                answer.AddRange(items.Where(x => x.KindOfWorkId == abbr.Id));
-                            }
-                            items = answer;
-                        }
-                        break;
-                    default: break;
+                    var list = _database.AbbreviationKindOfWorks.Find(x => x.KindOfWorkId == item).ToList();
+                    abbrKind.AddRange(list);
                 }
-                
+                foreach (var item in abbrKind)
+                {
+                    answer.AddRange(items.Where(x => x.KindOfWorkId == item.Id));
+                }
+                items = answer;
             }
+            #endregion
 
             int count = items.Count();
 
-            //switch (sortOrder)
-            //{
-            //    case "fullName":
-            //        items = items.OrderBy(s => s.FullName);
-            //        break;
-            //    case "fullNameDesc":
-            //        items = items.OrderByDescending(s => s.FullName);
-            //        break;
-            //    case "fio":
-            //        items = items.OrderBy(s => s.Fio);
-            //        break;
-            //    case "fioDesc":
-            //        items = items.OrderByDescending(s => s.Fio);
-            //        break;
-            //    case "position":
-            //        items = items.OrderBy(s => s.Position);
-            //        break;
-            //    case "positionDesc":
-            //        items = items.OrderByDescending(s => s.Position);
-            //        break;
-            //    case "email":
-            //        items = items.OrderBy(s => s.Email);
-            //        break;
-            //    case "emailDesc":
-            //        items = items.OrderByDescending(s => s.Email);
-            //        break;
-            //    default:
-            //        items = items.OrderBy(s => s.Id);
-            //        break;
-            //}
-            items = items.Skip(skipEntities).Take(pageSize);
+            switch (sortOrder)
+            {
+                case "fullName":
+                    items = items.OrderBy(s => s.BuildingName).ToList();
+                    break;
+                case "fullNameDesc":
+                    items = items.OrderByDescending(s => s.BuildingName).ToList();
+                    break;
+                default:
+                    break;
+            }
+            items = items.Skip(skipEntities).Take(pageSize).ToList();
             var t = _mapper.Map<IEnumerable<EstimateDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -380,7 +349,6 @@ namespace BusinessLayer.Services
                 PageViewModel = pageViewModel,
                 Objects = t
             };
-
             return viewModel;
         }
 

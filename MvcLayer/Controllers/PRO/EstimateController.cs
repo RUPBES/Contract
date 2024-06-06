@@ -41,7 +41,7 @@ namespace MvcLayer.Controllers.PRO
             _abbreviationKindOfWorkService = abbreviationKindOfWorkService;
         }
 
-        public ActionResult Index(string currentFilter, string searchString, string sortOrder, int contractId, List<string> KeySearchString, List<string> ValueSearchString, int returnContractId = 0, int? pageNum = 1)
+        public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
@@ -49,24 +49,14 @@ namespace MvcLayer.Controllers.PRO
             if (pageNum < 1)
             {
                 pageNum = 1;
-            }
-            if (searchString != null)
-            {
-                pageNum = 1;
-            }
-            else
-            {
-                searchString = currentFilter;
-            }
-            var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, searchString, sortOrder, contractId, KeySearchString, ValueSearchString);
+            }          
+            var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId, SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
             var answer = new IndexViewModel();
             answer.PageViewModel = list.PageViewModel;
             var listEstimate = new List<EstimateViewModel>();
             foreach (EstimateDTO item in list.Objects)
-            {
-                var estimateView = new EstimateViewModel();
-                estimateView.BuildingName = item.BuildingName;
-                estimateView.BuildingCode = item.BuildingCode;
+            {                
+                var estimateView = listEstimate.Where(x => x.BuildingName == item.BuildingName && x.BuildingCode == item.BuildingCode).FirstOrDefault();
                 var estimateViewItem = new EstimateViewModelItem();
                 estimateViewItem.Number = item.Number;
                 estimateViewItem.PercentOfContrPrice = item.PercentOfContrPrice;
@@ -79,11 +69,22 @@ namespace MvcLayer.Controllers.PRO
                 estimateViewItem.LaborCost = item.LaborCost;
                 estimateViewItem.RemainsSmrCost = item.RemainsSmrCost;
                 estimateViewItem.SubContractor = item.SubContractor;
-                estimateView.DetailsView.Add(estimateViewItem);
-                listEstimate.Add(estimateView);
+                if (estimateView is null)
+                {
+                    estimateView = new EstimateViewModel();
+                    estimateView.BuildingName = item.BuildingName;
+                    estimateView.BuildingCode = item.BuildingCode;
+                    estimateView.DetailsView.Add(estimateViewItem);
+                    listEstimate.Add(estimateView);
+                }
+                else
+                {
+                    estimateView.DetailsView.Add(estimateViewItem);
+                }
             }
             answer.Objects = listEstimate;
-            ViewData["CurrentFilter"] = searchString;
+            ViewBag.CurrentSearchString = SearchString;
+            ViewBag.CurrentListSearchString = ListSearchString;
             return View(answer);
         }
 

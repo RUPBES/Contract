@@ -8,6 +8,7 @@ using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Helpers;
+using System.Diagnostics;
 
 namespace MvcLayer.Controllers
 {
@@ -123,13 +124,8 @@ namespace MvcLayer.Controllers
         }
 
         public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null || _contractService.GetAll() == null)
-            {
-                return NotFound();
-            }
-
-            var contract = _contractService.GetById((int)id);
+        {           
+            var contract = _contractService.GetById((int)id);            
             if (contract == null)
             {
                 return NotFound();
@@ -138,8 +134,8 @@ namespace MvcLayer.Controllers
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
-            }
-            return View(_mapper.Map<ContractViewModel>(contract));
+            }          
+            return View(_mapper.Map<ContractViewModel>(contract));            
         }
 
         [Authorize(Policy = "CreatePolicy")]
