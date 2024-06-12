@@ -24,11 +24,12 @@ namespace MvcLayer.Controllers.PRO
         private readonly IMapper _mapper;
         private readonly IEstimateService _estimateService;
         private readonly IAbbreviationKindOfWorkService _abbreviationKindOfWorkService;
+        private readonly IKindOfWorkService _kindOfWorkService;
 
         public EstimateController(IFileService file, IWebHostEnvironment env, IParseService pars,
             IExcelReader excelReader, IContractService contractService, IMapper mapper,
             IVContractService vContractService, IEstimateService estimateService,
-            IAbbreviationKindOfWorkService abbreviationKindOfWorkService)
+            IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService)
         {
             _file = file;
             _env = env;
@@ -39,6 +40,7 @@ namespace MvcLayer.Controllers.PRO
             _vContractService = vContractService;
             _estimateService = estimateService;
             _abbreviationKindOfWorkService = abbreviationKindOfWorkService;
+            _kindOfWorkService = kindOfWorkService;
         }
 
         public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
@@ -54,33 +56,71 @@ namespace MvcLayer.Controllers.PRO
             var answer = new IndexViewModel();
             answer.PageViewModel = list.PageViewModel;
             var listEstimate = new List<EstimateViewModel>();
+            var listEstimateSum = new List<EstimateDTO>();
             foreach (EstimateDTO item in list.Objects)
             {                
                 var estimateView = listEstimate.Where(x => x.BuildingName == item.BuildingName && x.BuildingCode == item.BuildingCode).FirstOrDefault();
-                var estimateViewItem = new EstimateViewModelItem();
-                estimateViewItem.Number = item.Number;
-                estimateViewItem.PercentOfContrPrice = item.PercentOfContrPrice;
-                estimateViewItem.EstimateDate = item.EstimateDate;
-                estimateViewItem.DrawingsDate = item.DrawingsDate;
-                estimateViewItem.ContractsCost = item.ContractsCost;
-                estimateViewItem.DoneSmrCost = item.DoneSmrCost;
-                estimateViewItem.DrawingsKit = item.DrawingsKit;
-                estimateViewItem.DrawingsName = item.DrawingsName;
-                estimateViewItem.LaborCost = item.LaborCost;
-                estimateViewItem.RemainsSmrCost = item.RemainsSmrCost;
-                estimateViewItem.SubContractor = item.SubContractor;
+                EstimateViewModelItem estimateViewItem;
+
+                var estimateViewDrawning = new EstimateViewModelDrawning();
+                estimateViewDrawning.Number = item.Number;
+                estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice;
+                estimateViewDrawning.EstimateDate = item.EstimateDate;
+                estimateViewDrawning.DrawingsDate = item.DrawingsDate;
+                estimateViewDrawning.ContractsCost = item.ContractsCost;
+                estimateViewDrawning.DoneSmrCost = item.DoneSmrCost;
+                estimateViewDrawning.DrawingsKit = item.DrawingsKit;                
+                estimateViewDrawning.LaborCost = item.LaborCost;
+                estimateViewDrawning.RemainsSmrCost = item.RemainsSmrCost;
+                estimateViewDrawning.SubContractor = item.SubContractor;
+                var IsInList = listEstimateSum.Where(x => x.Number == item.Number && x.BuildingCode == item.BuildingCode
+                && x.BuildingName == item.BuildingName).FirstOrDefault();               
                 if (estimateView is null)
                 {
                     estimateView = new EstimateViewModel();
                     estimateView.BuildingName = item.BuildingName;
                     estimateView.BuildingCode = item.BuildingCode;
-                    estimateView.DetailsView.Add(estimateViewItem);
+
+                    estimateViewItem = new EstimateViewModelItem();
+                    estimateViewItem.DrawingsName = item.DrawingsName;
+                    estimateView.DetailsView.Add(estimateViewItem);                    
                     listEstimate.Add(estimateView);
                 }
                 else
                 {
-                    estimateView.DetailsView.Add(estimateViewItem);
+                    estimateViewItem = estimateView.DetailsView.Where(x => x.DrawingsName == item.DrawingsName).FirstOrDefault();
+                    if (estimateViewItem == null) {
+                        estimateViewItem = new EstimateViewModelItem();
+                        estimateViewItem.DrawingsName = item.DrawingsName;
+                        estimateView.DetailsView.Add(estimateViewItem);                        
+                    }                    
                 }
+                if (IsInList == null)
+                {
+                    listEstimateSum.Add(item);
+                    var kindId =_abbreviationKindOfWorkService.Find(x => x.Id == item.KindOfWorkId).Select(x => x.KindOfWorkId).FirstOrDefault();
+                    var KindName = _kindOfWorkService.Find(x => x.Id == kindId).Select(x => x.name).FirstOrDefault();
+                    EstimateViewResultBuilding report;
+                    if (!estimateView.report.TryGetValue(KindName, out report))
+                    {
+                        var estimateViewResultBuilding = new EstimateViewResultBuilding();
+                        estimateViewResultBuilding.RemainsSmrCost = item.RemainsSmrCost;
+                        estimateViewResultBuilding.DoneSmrCost = item.DoneSmrCost;
+                        estimateViewResultBuilding.ContractsCost = item.ContractsCost;
+                        estimateViewResultBuilding.PercentOfContrPrice = item.PercentOfContrPrice;
+                        estimateViewResultBuilding.LaborCost = item.LaborCost;
+                        estimateView.report.Add(KindName, estimateViewResultBuilding);
+                    }
+                    else
+                    {
+                        report.ContractsCost += item.ContractsCost;
+                        report.RemainsSmrCost += item.RemainsSmrCost;
+                        report.DoneSmrCost += item.DoneSmrCost;
+                        report.PercentOfContrPrice += item.PercentOfContrPrice;
+                        report.LaborCost += item.LaborCost;
+                    }
+                }
+                estimateViewItem.EstimateViewModelDrawnings.Add(estimateViewDrawning);
             }
             answer.Objects = listEstimate;
             ViewBag.CurrentSearchString = SearchString;
@@ -113,7 +153,9 @@ namespace MvcLayer.Controllers.PRO
 
                 if (answer is not null)
                 {
-                    if (_estimateService.Find(x => x.DrawingsKit == answer.DrawingsKit && x.DrawingsName == answer.DrawingsKit).FirstOrDefault() != null)
+                    if (_estimateService.Find(x => x.DrawingsKit == answer.DrawingsKit && x.DrawingsName == answer.DrawingsKit
+                    && x.BuildingCode == answer.BuildingCode && x.BuildingName == answer.BuildingName
+                    && x.Number == answer.Number).FirstOrDefault() != null)
                     {
                         throw new Exception("Такая локальная смета уже загружена.");
                     }
@@ -291,23 +333,7 @@ namespace MvcLayer.Controllers.PRO
         public ActionResult GetEstimateResult(int EstimateId)
         {
             var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
-            var estimateView = new EstimateViewModel();
-            estimateView.BuildingName = estimate.BuildingName;
-            estimateView.BuildingCode = estimate.BuildingCode;
-            var estimateViewItem = new EstimateViewModelItem();
-            estimateViewItem.Number = estimate.Number;
-            estimateViewItem.PercentOfContrPrice = estimate.PercentOfContrPrice;
-            estimateViewItem.EstimateDate = estimate.EstimateDate;
-            estimateViewItem.DrawingsDate = estimate.DrawingsDate;
-            estimateViewItem.ContractsCost = estimate.ContractsCost;
-            estimateViewItem.DoneSmrCost = estimate.DoneSmrCost;
-            estimateViewItem.DrawingsKit = estimate.DrawingsKit;
-            estimateViewItem.DrawingsName = estimate.DrawingsName;
-            estimateViewItem.LaborCost = estimate.LaborCost;
-            estimateViewItem.RemainsSmrCost = estimate.RemainsSmrCost;
-            estimateViewItem.SubContractor = estimate.SubContractor;
-            estimateView.DetailsView.Add(estimateViewItem);
-            return PartialView("_GetEstimateResult", estimateView);
+            return PartialView("_GetEstimateResult", estimate);
         }
 
         // GET: EstimateController/Details/5

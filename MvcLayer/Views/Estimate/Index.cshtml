@@ -6,12 +6,13 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IAbbreviationKindOfWorkService AbbrKindOfWork
 @model IndexViewModel
 @{
-    ViewData["Title"] = "Чтение данных из локальной сметы";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
     var isWrite = false;
+    var total = new Dictionary<string, EstimateViewResultBuilding>();
+    var totalResult = new EstimateViewResultBuilding();
 }
 
 @section Table {
@@ -75,8 +76,8 @@
 
         h1 {
             /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-                                                                                                                                                                                                color: #004d8e;
-                                                                                                                                                                                                transition: all 1s; */
+                                                                                                                                                                                                                                color: #004d8e;
+                                                                                                                                                                                                                                transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
@@ -294,7 +295,7 @@
                                         @foreach (var itemAbr in AbbrKindOfWork.GetAll())
                                         {
                                             var IsGet = false;
-                                            foreach(var value in item.Value)
+                                            foreach (var value in item.Value)
                                             {
                                                 if (itemAbr.Id == value)
                                                 {
@@ -306,9 +307,9 @@
                                             if (!IsGet)
                                             {
                                                 <option value="@itemAbr.Id">@itemAbr.name</option>
-                                            }                                            
+                                            }
                                         }
-                                    </select>                                    
+                                    </select>
                                 }
                             }
                             @if (!isWrite)
@@ -323,11 +324,13 @@
                             else
                             {
                                 isWrite = false;
-                            }                            
+                            }
                         </div>
                         <div class="dropdown-item">
                             <label>Вид работы</label>
-                            @{isWrite = false;}
+                            @{
+                                isWrite = false;
+                            }
                             @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
                             {
                                 if (item.Key == "Вид работы")
@@ -362,7 +365,7 @@
                                         <option value="@itemAbr.Id">@itemAbr.name</option>
                                     }
                                 </select>
-                            }                                                 
+                            }
                         </div>
                     </div>
                 </div>
@@ -434,97 +437,321 @@
             <tbody class="table_tbody">
                 @foreach (EstimateViewModel item in Model.Objects)
                 {
+                    var indexObject = 0;
+                    foreach (var detail in item.DetailsView)
+                    {
+                        indexObject += detail.EstimateViewModelDrawnings.Count;
+                    }
                     <tr>
-                        <td rowspan="@item.DetailsView.Count">
+                        <td rowspan="@indexObject">
                             @item.BuildingCode
                         </td>
-                        <td rowspan="@item.DetailsView.Count">
+                        <td rowspan="@indexObject">
                             @item.BuildingName
                         </td>
                         <td>
-                            @item.DetailsView.First().DrawingsKit
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsKit
                         </td>
-                        <td>
+                        <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count">
                             @item.DetailsView.First().DrawingsName
                         </td>
                         <td>
-                            @item.DetailsView.First().DrawingsDate.Value.ToString("dd MMMM yyyy")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate.Value.ToString("dd MMMM yyyy")
                         </td>
                         <td>
-                            -
                         </td>
                         <td>
-                            @item.DetailsView.First().Number
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().Number
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateDate.Value.ToString("dd MMMM yyyy")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate.Value.ToString("dd MMMM yyyy")
                         </td>
                         <td>
-                            -
                         </td>
                         <td>
-                            @item.DetailsView.First().ContractsCost.ToString("N2")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().ContractsCost.ToString("N2")
                         </td>
                         <td>
-                            @item.DetailsView.First().LaborCost.ToString("N2")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost.ToString("N2")
                         </td>
                         <td>
-                            @item.DetailsView.First().DoneSmrCost.ToString("N2")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost.ToString("N2")
                         </td>
                         <td>
-                            @item.DetailsView.First().PercentOfContrPrice.ToString("N2")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().PercentOfContrPrice.ToString("N2")
                         </td>
                         <td>
-                            @item.DetailsView.First().RemainsSmrCost.ToString("N2")
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost.ToString("N2")
                         </td>
                         <td>
-                            @item.DetailsView.First().SubContractor
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().SubContractor
                         </td>
                     </tr>
+                    @foreach (var draw in item.DetailsView.First().EstimateViewModelDrawnings.Skip(1))
+                    {
+                        <tr>
+                            <td>
+                                @draw.DrawingsKit
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                @draw.DrawingsDate.Value.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                @draw.Number
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                @draw.EstimateDate.Value.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                @draw.ContractsCost.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.LaborCost.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.DoneSmrCost.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.PercentOfContrPrice.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.RemainsSmrCost.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.SubContractor
+                            </td>
+                        </tr>
+                    }                   
                     @foreach (var detail in item.DetailsView.Skip(1))
                     {
                         <tr>
                             <td>
-                                @detail.DrawingsKit
+                                @detail.EstimateViewModelDrawnings.First().DrawingsKit
                             </td>
-                            <td>
+                            <td rowspan="@detail.EstimateViewModelDrawnings.Count">
                                 @detail.DrawingsName
                             </td>
                             <td>
-                                @detail.DrawingsDate.Value.ToString("dd MMMM yyyy")
+                                @detail.EstimateViewModelDrawnings.First().DrawingsDate.Value.ToString("dd MMMM yyyy")
                             </td>
                             <td>
                                 -
                             </td>
                             <td>
-                                @detail.Number
+                                @detail.EstimateViewModelDrawnings.First().Number
                             </td>
                             <td>
-                                @detail.EstimateDate.Value.ToString("dd MMMM yyyy")
+                                @detail.EstimateViewModelDrawnings.First().EstimateDate.Value.ToString("dd MMMM yyyy")
                             </td>
                             <td>
                                 -
                             </td>
                             <td>
-                                @detail.ContractsCost.ToString("N2")
+                                @detail.EstimateViewModelDrawnings.First().ContractsCost.ToString("N2")
                             </td>
                             <td>
-                                @detail.LaborCost.ToString("N2")
+                                @detail.EstimateViewModelDrawnings.First().LaborCost.ToString("N2")
                             </td>
                             <td>
-                                @detail.DoneSmrCost.ToString("N2")
+                                @detail.EstimateViewModelDrawnings.First().DoneSmrCost.ToString("N2")
                             </td>
                             <td>
-                                @detail.PercentOfContrPrice.ToString("N2")
+                                @detail.EstimateViewModelDrawnings.First().PercentOfContrPrice.ToString("N2")
                             </td>
                             <td>
-                                @detail.RemainsSmrCost.ToString("N2")
+                                @detail.EstimateViewModelDrawnings.First().RemainsSmrCost.ToString("N2")
                             </td>
                             <td>
-                                @detail.SubContractor
+                                @detail.EstimateViewModelDrawnings.First().SubContractor
+                            </td>
+                        </tr>
+                        @foreach (var draw in detail.EstimateViewModelDrawnings.Skip(1))
+                        {
+                            <tr>
+                                <td>
+                                    @draw.DrawingsKit
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                    @draw.DrawingsDate.Value.ToString("dd MMMM yyyy")
+                                </td>
+                                <td>
+                                    @draw.Number
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                    @draw.EstimateDate.Value.ToString("dd MMMM yyyy")
+                                </td>
+                                <td>
+                                    @draw.ContractsCost.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.LaborCost.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.DoneSmrCost.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.PercentOfContrPrice.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.RemainsSmrCost.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.SubContractor
+                                </td>
+                            </tr>
+                        }
+                    }
+                    var sumBuilding = new EstimateViewResultBuilding();
+                    foreach (var result in item.report)
+                    {
+                        sumBuilding.RemainsSmrCost += result.Value.RemainsSmrCost;
+                        sumBuilding.ContractsCost += result.Value.ContractsCost;
+                        sumBuilding.DoneSmrCost += result.Value.DoneSmrCost;
+                        sumBuilding.LaborCost += result.Value.LaborCost;
+                        sumBuilding.PercentOfContrPrice += result.Value.PercentOfContrPrice;
+                        if (!total.ContainsKey(result.Key))
+                        {
+                            var estimateViewResultBuilding = new EstimateViewResultBuilding();
+                            estimateViewResultBuilding.RemainsSmrCost = result.Value.RemainsSmrCost;
+                            estimateViewResultBuilding.DoneSmrCost = result.Value.DoneSmrCost;
+                            estimateViewResultBuilding.ContractsCost = result.Value.ContractsCost;
+                            estimateViewResultBuilding.PercentOfContrPrice = result.Value.PercentOfContrPrice;
+                            estimateViewResultBuilding.LaborCost = result.Value.LaborCost;
+                            total.Add(result.Key, estimateViewResultBuilding);
+                        }
+                        else
+                        {
+                            total[result.Key].ContractsCost += result.Value.ContractsCost;
+                            total[result.Key].RemainsSmrCost += result.Value.RemainsSmrCost;
+                            total[result.Key].DoneSmrCost += result.Value.DoneSmrCost;
+                            total[result.Key].PercentOfContrPrice += result.Value.PercentOfContrPrice;
+                            total[result.Key].LaborCost += result.Value.LaborCost;
+                        }
+                    }
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            Итого по зданию, сооружению:
+                        </td>
+                        <td>
+                            @sumBuilding.ContractsCost.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.LaborCost.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.DoneSmrCost.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.PercentOfContrPrice.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.RemainsSmrCost.ToString("N2")
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            в том числе:
+                        </td>
+                        <td colspan="6">                            
+                        </td>                        
+                    </tr>
+                    foreach (var result in item.report)
+                    {
+                        <tr>
+                            <td class="text-end" colspan="9">
+                                @result.Key
+                            </td>
+                            <td>
+                                @result.Value.ContractsCost.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.LaborCost.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.DoneSmrCost.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.PercentOfContrPrice.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.RemainsSmrCost.ToString("N2")
+                            </td>
+                            <td>                                
                             </td>
                         </tr>
                     }
+                }
+                @foreach(var item in total)
+                {
+                    totalResult.PercentOfContrPrice += item.Value.PercentOfContrPrice;
+                    totalResult.LaborCost += item.Value.LaborCost;
+                    totalResult.ContractsCost += item.Value.ContractsCost;
+                    totalResult.DoneSmrCost += item.Value.DoneSmrCost;
+                    totalResult.RemainsSmrCost += item.Value.RemainsSmrCost;
+                }
+                <tr>
+                    <td class="text-end" colspan="9">
+                        ВСЕГО по объекту:
+                    </td>
+                    <td>
+                        @totalResult.ContractsCost.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.LaborCost.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.DoneSmrCost.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.PercentOfContrPrice.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.RemainsSmrCost.ToString("N2")
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-end" colspan="9">
+                        в том числе:
+                    </td>
+                    <td colspan="6">
+                    </td>
+                </tr>
+                @foreach (var item in total)
+                {
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            @item.Key
+                        </td>
+                        <td>
+                            @item.Value.ContractsCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.LaborCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.DoneSmrCost.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.PercentOfContrPrice.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.RemainsSmrCost.ToString("N2")
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>

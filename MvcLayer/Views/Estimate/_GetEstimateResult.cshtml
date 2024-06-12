@@ -1,5 +1,5 @@
-﻿@using MvcLayer.Models
-@model EstimateViewModel
+﻿@using BusinessLayer.Models.PRO
+@model EstimateDTO
 
 <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
     <thead>
@@ -18,19 +18,13 @@
             </th>
             <th>
                 Дата получения чертежа
-            </th>
-            <th>
-                Дата получения изменения чертежа
-            </th>
+            </th>    
             <th>
                 Номер сметы
             </th>
             <th>
                 Дата получения сметы
-            </th>
-            <th>
-                Дата получения изменения сметы
-            </th>
+            </th>     
             <th>
                 Стоимость по договору, руб.
             </th>
@@ -60,43 +54,37 @@
                 @Model.BuildingName
             </td>
             <td>
-                @Model.DetailsView.First().DrawingsKit
+                @Model.DrawingsKit
             </td>
             <td>
-                @Model.DetailsView.First().DrawingsName
+                @Model.DrawingsName
             </td>
             <td>
-                @Model.DetailsView.First().DrawingsDate.Value.ToString("dd MMMM yyyy")
+                @Model.DrawingsDate.Value.ToString("dd MMMM yyyy")
+            </td>        
+            <td>
+                @Model.Number
             </td>
             <td>
-                -
+                @Model.EstimateDate.Value.ToString("dd MMMM yyyy")
+            </td>          
+            <td>
+                @Model.ContractsCost.ToString("N2")
             </td>
             <td>
-                @Model.DetailsView.First().Number
+                @Model.LaborCost.ToString("N2")
             </td>
             <td>
-                @Model.DetailsView.First().EstimateDate.Value.ToString("dd MMMM yyyy")
+                @Model.DoneSmrCost.ToString("N2")
             </td>
             <td>
-                -
+                @Model.PercentOfContrPrice.ToString("N2")
             </td>
             <td>
-                @Model.DetailsView.First().ContractsCost.ToString("N2")
+                @Model.RemainsSmrCost.ToString("N2")
             </td>
             <td>
-                @Model.DetailsView.First().LaborCost.ToString("N2")
-            </td>
-            <td>
-                @Model.DetailsView.First().DoneSmrCost.ToString("N2")
-            </td>
-            <td>
-                @Model.DetailsView.First().PercentOfContrPrice.ToString("N2")
-            </td>
-            <td>
-                @Model.DetailsView.First().RemainsSmrCost.ToString("N2")
-            </td>
-            <td>
-                @Model.DetailsView.First().SubContractor
+                @Model.SubContractor
             </td>
         </tr>
     </tbody>
