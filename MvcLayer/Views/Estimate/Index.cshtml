@@ -130,167 +130,202 @@
         form {
             position: relative;
         }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            padding: 1em;
+        }
+
+        .chosen-container {
+            width: auto !important;
+            display: block;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border-radius: .25rem;
+            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+            flex: 1 1 auto;
+        }
     </style>
-    <div>
         <div class="contracts-list">
 
             <h1 class="list_agreement">Смета</h1>
 
-            <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
+            <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" style="display: flex;"
                   asp-route-returnContractId="@ViewData["returnContractId"]">
-                <div class="dropdown" title="Просмотр информации">
-                    <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
-                    </span>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item">
-                            <label>Шифр здания</label>
+                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title">Поиск:</h3>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="form-label">
+                                <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSearch01">Шифр здания</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Шифр здания")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Шифр здания]" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Шифр здания]" value="@item.Value" id="inputGroupSearch01" />
 
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Шифр здания]" value="" />
+                                    <input class="form-control" name="SearchString[Шифр здания]" value="" id="inputGroupSearch01" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Название здания</label>
+                            </div>
+                                <div class="input-group mb-3">
+
+                          <label class="input-group-text" for="inputGroupSearch02">Название здания</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Название здания")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Название здания]" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Название здания]" value="@item.Value" id="inputGroupSearch02" />
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Название здания]" value="" />
+                                    <input class="form-control" name="SearchString[Название здания]" value="" id="inputGroupSearch02" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Подрядчик</label>
+                                </div>
+                                <div class="input-group mb-3">
+
+                           <label class="input-group-text" for="inputGroupSearch03">Подрядчик</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Подрядчик")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Подрядчик]" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Подрядчик]" value="@item.Value" id="inputGroupSearch03" />
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Подрядчик]" value="" />
+                                    <input class="form-control" name="SearchString[Подрядчик]" value="" id="inputGroupSearch03" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Начало периода получения чертежа</label>
+                                </div>
+                                <div class="input-group mb-3">
+
+                           <label class="input-group-text" for="StartPeriodDrawing">Начало периода получения чертежа</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Начало периода получения чертежа")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="@item.Value" />
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="" />
+                                    <input class="form-control" name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Конец периода получения чертежа</label>
+                                </div>
+                                <div class="input-group mb-3">
+
+                            <label class="input-group-text" for="EndPeriodDrawing">Конец периода получения чертежа</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Конец периода получения чертежа")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="@item.Value" />
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="" />
+                                    <input class="form-control" name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Начало периода получения сметы</label>
+                                </div>
+                                <div class="input-group mb-3">
+
+                            <label class="input-group-text" for="StartPeriodEstimate">Начало периода получения сметы</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Начало периода получения сметы")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="@item.Value" />
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="" />
+                                    <input class="form-control" name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Конец периода получения сметы</label>
+                                </div>
+                                <div class="input-group mb-3">
+
+                           <label class="input-group-text" for="EndPeriodEstimate">Конец периода получения сметы</label>
                             @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
                             {
                                 if (item.Key == "Конец периода получения сметы")
                                 {
                                     isWrite = true;
-                                    <input name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="@item.Value" />
+                                        <input class="form-control" name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="@item.Value" />
                                     break;
                                 }
                             }
                             @if (!isWrite)
                             {
-                                <input name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="" />
+                                    <input class="form-control" name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="" />
                             }
                             else
                             {
                                 isWrite = false;
                             }
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Буквенный индекс чертежей</label>
+                                </div>
+                                <div class="input-group mb-3">
+
+                                <label class="input-group-text" for="letterIndex">Буквенный индекс чертежей</label>
                             @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
                             {
                                 if (item.Key == "Буквенный индекс чертежей")
                                 {
                                     isWrite = true;
-                                    <select class="js-chosen" name="ListSearchString[Буквенный индекс чертежей]" multiple>
+                                            <select class="js-chosen" multiple name="ListSearchString[Буквенный индекс чертежей]" id="letterIndex">
                                         @foreach (var itemAbr in AbbrKindOfWork.GetAll())
                                         {
                                             var IsGet = false;
@@ -313,7 +348,7 @@
                             }
                             @if (!isWrite)
                             {
-                                <select class="js-chosen" name="ListSearchString[Буквенный индекс чертежей]" multiple>
+                                        <select class="js-chosen" multiple name="ListSearchString[Буквенный индекс чертежей]" id="letterIndex">
                                     @foreach (var itemAbr in AbbrKindOfWork.GetAll())
                                     {
                                         <option value="@itemAbr.Id">@itemAbr.name</option>
@@ -323,17 +358,19 @@
                             else
                             {
                                 isWrite = false;
-                            }                            
-                        </div>
-                        <div class="dropdown-item">
-                            <label>Вид работы</label>
+                            }
+                                </div>
+                                <div class="input-group mb-3">
+
+                                    <label class="input-group-text" for="kindOfWork">Вид работы</label>
                             @{isWrite = false;}
                             @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
                             {
                                 if (item.Key == "Вид работы")
                                 {
                                     isWrite = true;
-                                    <select class="js-chosen" name="ListSearchString[Вид работы]" multiple>
+                                            <select class="js-chosen" multiple id="kindOfWork" name="ListSearchString[Вид работы]">
+                                     
                                         @foreach (var itemAbr in KindOfWork.GetAll())
                                         {
                                             var IsGet = false;
@@ -356,19 +393,31 @@
                             }
                             @if (!isWrite)
                             {
-                                <select class="js-chosen" name="ListSearchString[Вид работы]" multiple>
+                                        <select class="js-chosen" multiple id="kindOfWork" name="ListSearchString[Вид работы]">
                                     @foreach (var itemAbr in KindOfWork.GetAll())
                                     {
                                         <option value="@itemAbr.Id">@itemAbr.name</option>
                                     }
                                 </select>
-                            }                                                 
+                            }
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" type="submit" title="Поиск организации" alt="Поиск организации">Поиск</button>
+
+                                <button type="button" class="btn btn-warning">Обнулить</button>
+                            </div>
                         </div>
+                      
+
                     </div>
                 </div>
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="font-weight: bold; margin-top: 0.5%; margin-bottom: 0.5%;">
+                    Поиск по параметрам
+                </button>
 
                 <div class="form_agreement">
-                    <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
 
                     <a type="button" class="btn btn-success btn_agreement" asp-action="AddEstimate"
                        asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
@@ -376,8 +425,7 @@
                         <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить смету
                     </a>
                 </div>
-            </form>
-        </div>
+                    </form>
 
     </div>
     <div class="full-width">
