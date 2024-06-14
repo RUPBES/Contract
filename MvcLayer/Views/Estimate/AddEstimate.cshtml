@@ -41,7 +41,7 @@
     }
 
     .chosen-container-single .chosen-single {
-       margin-left: 0% !important;
+        margin-left: 0% !important;
     }
 
     .estimate__group-container {
@@ -52,7 +52,6 @@
         padding: 0rem .75rem !important;
     }
 
-    
 </style>
 <input id="contractId" value="@ViewData["contractId"]" hidden />
 <input id="EstimateId" hidden />
@@ -74,13 +73,25 @@
                 </div>
                 <hr class="modal-line">
                 <div id="divForm" class="divForm_modal">
+                    <button>Редактриовать готовую смету</button>
+                    <button>Добавить к готовой смете измененные чертежи</button>
                     <div class="input-group estimate__group-container">
                         <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
                         <select id="NumberEstimate" class="js-chosen form-control">
                             <option selected disabled>Выберите смету для изменения</option>
                             @foreach (var item in Model)
                             {
-                                <option value="@item.Id">@item.Number</option>
+                                <option value="@item.Id">@item.BuildingName/@item.DrawingsName/@item.DrawingsKit/@item.Number</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="input-group estimate__group-container">
+                        <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
+                        <select id="NumberEstimate" class="js-chosen form-control">
+                            <option selected disabled>Выберите смету для изменения</option>
+                            @foreach (var item in Model)
+                            {
+                                <option value="@item.Id">@item.BuildingName/@item.DrawingsName/@item.DrawingsKit/@item.Number</option>
                             }
                         </select>
                     </div>
@@ -120,9 +131,9 @@
             toggleActive: true
         });
 
-        $("#NumberEstimate").on('change', function (e) {   
-            var number = this.value;            
-            $("#EstimateId").val(number);            
+        $("#NumberEstimate").on('change', function (e) {
+            var number = this.value;
+            $("#EstimateId").val(number);
             $.ajax({
                 type: 'POST',
                 data: { EstimateId: number },
@@ -193,7 +204,7 @@
                                         $.ajax({
                                             type: 'POST',
                                             url: '@Url.Action("GetDrawingsFiles", "Estimate")',
-                                            data: { EstimateId : data},
+                                            data: { EstimateId: data },
                                             success: function (viewData) {
                                                 $("#divForm").html(viewData)
                                                 $("#ListOfSheet").html("")

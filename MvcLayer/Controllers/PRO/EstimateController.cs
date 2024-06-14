@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using System.Diagnostics;
 
 namespace MvcLayer.Controllers.PRO
 {
@@ -45,9 +46,12 @@ namespace MvcLayer.Controllers.PRO
 
         public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            ///////////////////////
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
-            var pageSize = 100;
+            var pageSize = 1000;
             if (pageNum < 1)
             {
                 pageNum = 1;
@@ -63,15 +67,15 @@ namespace MvcLayer.Controllers.PRO
                 EstimateViewModelItem estimateViewItem;
 
                 var estimateViewDrawning = new EstimateViewModelDrawning();
-                estimateViewDrawning.Number = item.Number;
-                estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice;
-                estimateViewDrawning.EstimateDate = item.EstimateDate;
+                estimateViewDrawning.Number = item.Number ?? "-";
+                estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice ?? 0M;
+                estimateViewDrawning.EstimateDate = item.EstimateDate ?? new DateTime(1,1,1);
                 estimateViewDrawning.DrawingsDate = item.DrawingsDate;
-                estimateViewDrawning.ContractsCost = item.ContractsCost;
-                estimateViewDrawning.DoneSmrCost = item.DoneSmrCost;
+                estimateViewDrawning.ContractsCost = item.ContractsCost ?? 0M;
+                estimateViewDrawning.DoneSmrCost = item.DoneSmrCost ?? 0M;
                 estimateViewDrawning.DrawingsKit = item.DrawingsKit;                
-                estimateViewDrawning.LaborCost = item.LaborCost;
-                estimateViewDrawning.RemainsSmrCost = item.RemainsSmrCost;
+                estimateViewDrawning.LaborCost = item.LaborCost ?? 0;
+                estimateViewDrawning.RemainsSmrCost = item.RemainsSmrCost ?? 0M;
                 estimateViewDrawning.SubContractor = item.SubContractor;
                 var IsInList = listEstimateSum.Where(x => x.Number == item.Number && x.BuildingCode == item.BuildingCode
                 && x.BuildingName == item.BuildingName).FirstOrDefault();               
@@ -104,33 +108,44 @@ namespace MvcLayer.Controllers.PRO
                     if (!estimateView.report.TryGetValue(KindName, out report))
                     {
                         var estimateViewResultBuilding = new EstimateViewResultBuilding();
-                        estimateViewResultBuilding.RemainsSmrCost = item.RemainsSmrCost;
-                        estimateViewResultBuilding.DoneSmrCost = item.DoneSmrCost;
-                        estimateViewResultBuilding.ContractsCost = item.ContractsCost;
-                        estimateViewResultBuilding.PercentOfContrPrice = item.PercentOfContrPrice;
-                        estimateViewResultBuilding.LaborCost = item.LaborCost;
+                        estimateViewResultBuilding.RemainsSmrCost = item.RemainsSmrCost ?? 0;
+                        estimateViewResultBuilding.DoneSmrCost = item.DoneSmrCost ?? 0;
+                        estimateViewResultBuilding.ContractsCost = item.ContractsCost ?? 0;
+                        estimateViewResultBuilding.PercentOfContrPrice = item.PercentOfContrPrice ?? 0;
+                        estimateViewResultBuilding.LaborCost = item.LaborCost ?? 0;
                         estimateView.report.Add(KindName, estimateViewResultBuilding);
                     }
                     else
                     {
-                        report.ContractsCost += item.ContractsCost;
-                        report.RemainsSmrCost += item.RemainsSmrCost;
-                        report.DoneSmrCost += item.DoneSmrCost;
-                        report.PercentOfContrPrice += item.PercentOfContrPrice;
-                        report.LaborCost += item.LaborCost;
+                        report.ContractsCost += item.ContractsCost ?? 0;
+                        report.RemainsSmrCost += item.RemainsSmrCost ?? 0;
+                        report.DoneSmrCost += item.DoneSmrCost ?? 0;
+                        report.PercentOfContrPrice += item.PercentOfContrPrice ?? 0;
+                        report.LaborCost += item.LaborCost ?? 0;
                     }
                 }
                 estimateViewItem.EstimateViewModelDrawnings.Add(estimateViewDrawning);
             }
+            var i1 = stopwatch.ElapsedMilliseconds;
+            foreach (var detailsView in listEstimate)
+            {                
+                foreach (var item in detailsView.DetailsView)
+                {
+                    item.EstimateViewModelDrawnings = item.EstimateViewModelDrawnings.OrderBy(x => x.DrawingsDate).ToList();
+                }
+            }
+            var i2 = stopwatch.ElapsedMilliseconds;
             answer.Objects = listEstimate;
             ViewBag.CurrentSearchString = SearchString;
             ViewBag.CurrentListSearchString = ListSearchString;
+            var i3 = stopwatch.ElapsedMilliseconds;
             return View(answer);
         }
 
         public ActionResult AddEstimate(int contractId, int returnContractId = 0)
         {
-            var list = _estimateService.Find(x => x.Id != 0).Select(x => new Estimate { Id = x.Id, Number = x.Number }).ToList();
+            var list = _estimateService.Find(x => x.Id != 0).Select(x => new Estimate { Id = x.Id, Number = x.Number, BuildingName = x.BuildingName, 
+                DrawingsName = x.DrawingsName, DrawingsKit = x.DrawingsKit }).ToList();
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View(list);

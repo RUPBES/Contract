@@ -14,24 +14,26 @@ namespace MvcLayer.Models
     public class EstimateViewModelItem
     {
         public string DrawingsName { get; set; }
+        public int EstimateCount { get; set; } = 0;
+        public List<int> NumberEntriesByEstimate { get; set; } = new List<int>();
         public List<EstimateViewModelDrawning> EstimateViewModelDrawnings { get; set; } = new List<EstimateViewModelDrawning>();
     }
 
     public class EstimateViewModelDrawning
     {
         public int Id { get; set; }
-        public string Number { get; set; }
+        public string? Number { get; set; }
         public DateTime? EstimateDate { get; set; }
         public DateTime? EstimateChangeDate { get; set; }
         public DateTime? DrawingsDate { get; set; }
         public DateTime? DrawingsChangeDate { get; set; }
         public string DrawingsKit { get; set; }
-        public decimal ContractsCost { get; set; }
-        public double LaborCost { get; set; }
-        public decimal DoneSmrCost { get; set; }
+        public decimal? ContractsCost { get; set; }
+        public double? LaborCost { get; set; }
+        public decimal? DoneSmrCost { get; set; }
         public string SubContractor { get; set; }
-        public decimal PercentOfContrPrice { get; set; }
-        public decimal RemainsSmrCost { get; set; }
+        public decimal? PercentOfContrPrice { get; set; }
+        public decimal? RemainsSmrCost { get; set; }
         public string Owner { get; set; }
         public string KindOfWork { get; set; }
         public List<EstimateFileDTO> EstimateFiles { get; set; } = new List<EstimateFileDTO>();
@@ -48,10 +50,10 @@ namespace MvcLayer.Models
             RemainsSmrCost = 0;
         }
 
-        public decimal ContractsCost { get; set; }
-        public double LaborCost { get; set; }
-        public decimal DoneSmrCost { get; set; }
-        public decimal PercentOfContrPrice { get; set; }
-        public decimal RemainsSmrCost { get; set; }
+        public decimal? ContractsCost { get; set; }
+        public double? LaborCost { get; set; }
+        public decimal? DoneSmrCost { get; set; }
+        public decimal? PercentOfContrPrice { get; set; }
+        public decimal? RemainsSmrCost { get; set; }
     }
 }

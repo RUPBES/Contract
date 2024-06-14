@@ -419,7 +419,7 @@ namespace MvcLayer.Controllers
 
                 #endregion
                 #region Лист. Факт значений
-                Func<FormC3a, bool> where = w => w.ContractId == contract.Id;
+                Func<FormC3a, bool> where = w => w.ContractId == contract.Id && w.IsOwnForces != false;
                 Func<FormC3a, FormC3a> select = s => new FormC3a
                 {
                     Period = s.Period,
@@ -442,7 +442,7 @@ namespace MvcLayer.Controllers
                     var scope = _scopeWork.GetScopeByAmendment(item.Id);
                     if (scope != null)
                     {
-                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id && w.IsOwnForces == false;
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             Period = s.Period,
@@ -463,7 +463,7 @@ namespace MvcLayer.Controllers
                     var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
                     if (scope != null)
                     {
-                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id && w.IsOwnForces == false;
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             Period = s.Period,
@@ -599,7 +599,7 @@ namespace MvcLayer.Controllers
 
                 #endregion
                 #region Лист. Факт значений
-                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id;
+                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id && w.IsOwnForces == false;
                 Func<FormC3a, FormC3a> selectF = s => new FormC3a
                 {
                     Period = s.Period,
@@ -622,7 +622,7 @@ namespace MvcLayer.Controllers
                     var scope = _scopeWork.GetScopeByAmendment(item.Id);
                     if (scope != null)
                     {
-                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
+                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id && w.IsOwnForces == false;
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             Period = s.Period,
@@ -640,7 +640,7 @@ namespace MvcLayer.Controllers
                 }
                 if (listScope.Count() == 0)
                 {
-                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
+                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id && x.IsOwnForces == false).FirstOrDefault();
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
