@@ -1,4 +1,6 @@
-﻿@{
+﻿@using DatabaseLayer.Models.PRO
+@model List<Estimate>
+@{
     ViewData["Title"] = "Загрузка данных по смете";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
@@ -33,9 +35,25 @@
             transform: scale(1);
             font-weight: bold;
         }
+
+    .divForm_modal {
+        overflow: auto;
+    }
+
+    .chosen-container-single .chosen-single {
+        margin-left: 0% !important;
+    }
+
+    .estimate__group-container {
+        flex-wrap: nowrap !important;
+    }
+
+    .input_estimate {
+        padding: 0rem .75rem !important;
+    }
+
 </style>
 <input id="contractId" value="@ViewData["contractId"]" hidden />
-<input id="returnContractId" value="@ViewData["returnContractId"]" hidden />
 <input id="EstimateId" hidden />
 <div class="dm-overlay">
     <div class="dm-table">
@@ -54,11 +72,33 @@
                     }
                 </div>
                 <hr class="modal-line">
-                <div id="divForm">
+                <div id="divForm" class="divForm_modal">
+                    <button>Редактриовать готовую смету</button>
+                    <button>Добавить к готовой смете измененные чертежи</button>
+                    <div class="input-group estimate__group-container">
+                        <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
+                        <select id="NumberEstimate" class="js-chosen form-control">
+                            <option selected disabled>Выберите смету для изменения</option>
+                            @foreach (var item in Model)
+                            {
+                                <option value="@item.Id">@item.BuildingName/@item.DrawingsName/@item.DrawingsKit/@item.Number</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="input-group estimate__group-container">
+                        <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
+                        <select id="NumberEstimate" class="js-chosen form-control">
+                            <option selected disabled>Выберите смету для изменения</option>
+                            @foreach (var item in Model)
+                            {
+                                <option value="@item.Id">@item.BuildingName/@item.DrawingsName/@item.DrawingsKit/@item.Number</option>
+                            }
+                        </select>
+                    </div>
                     <form id="files" method="post" enctype="multipart/form-data">
                         <div id="example" style="min-width:400px; max-width: 800px;">
-                            <div class="demo-section input-group mb-2">
-                                <label>Дата получения сметы</label>
+                            <div class="demo-section input-group mb-2 mt-2">
+                                <label class="input-group-text" for="dateEstimateId">Дата получения сметы</label>
                                 <input class="form-control" name="date" type="text" id="dateEstimateId" />
                             </div>
                             <div class="demo-section input-group mb-2">
@@ -90,9 +130,36 @@
             assumeNearbyYear: true,
             toggleActive: true
         });
+
+        $("#NumberEstimate").on('change', function (e) {
+            var number = this.value;
+            $("#EstimateId").val(number);
+            $.ajax({
+                type: 'POST',
+                data: { EstimateId: number },
+                url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+                success: function (viewData) {
+                    $("#divForm").html(viewData)
+                    $("#ListOfSheet").html("")
+                    $("#HeaderLabel").text("Этап 2: Загрузка чертежей")
+                },
+                error: function (error) {
+                    var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ShowError", "Parse")',
+                        data: { message: errorMes },
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#result").html(data)
+                        }
+                    });
+                }
+            });
+        });
+
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
-            let returnContractId = $("#returnContractId").val();
             let dateEstimate = $("#dateEstimateId").val();
 
             let formData = new FormData(files);
@@ -126,17 +193,18 @@
                         success: function (data) {
                             $("#ListOfSheet").html(data)
                             $('#GetDataFromFile').click(function () {
-                                let ex = $("#ex").val();                                                              
+                                let ex = $("#ex").val();
                                 $.ajax({
                                     type: 'POST',
                                     url: '@Url.Action("GetEstimateData", "Estimate")',
-                                    data: { path: path, contractId: contractId, page: ex, date: dateEstimate },                                    
+                                    data: { path: path, contractId: contractId, page: ex, date: dateEstimate },
                                     success: function (data) {
                                         $("#EstimateId").val(data)
                                         $("#result").html("<h3>Данные из локальной сметы загружены.</h3>")
                                         $.ajax({
                                             type: 'POST',
                                             url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+                                            data: { EstimateId: data },
                                             success: function (viewData) {
                                                 $("#divForm").html(viewData)
                                                 $("#ListOfSheet").html("")
@@ -157,19 +225,19 @@
                                         });
                                     },
                                     error: function (error) {
-                                        var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));                                                                             
+                                        var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
                                         $.ajax({
                                             type: 'POST',
                                             url: '@Url.Action("ShowError", "Parse")',
                                             data: { message: errorMes },
                                             dataType: 'html',
                                             success: function (data) {
-                                                $("#result").html(data)                                                
+                                                $("#result").html(data)
                                             }
                                         });
                                     }
                                 });
-                            });                
+                            });
                         },
                         error: function (error) {
                             var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));

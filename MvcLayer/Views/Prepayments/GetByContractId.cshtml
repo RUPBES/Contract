@@ -83,7 +83,7 @@
     var countSmr = 2 + Model.listSmrWithAvans.Count * 2;
 
     var miniRow = 0;
-    var maxRow = 0;
+    var maxRow = 1;
     if (ViewData["Current"] != null)
     {
         miniRow++;
@@ -342,13 +342,7 @@
                             }
                             <tr>
                                 <td rowspan="@miniRow">
-                                    @foreach (var item in Model.listFiles)
-                                    {
-                                        <span>
-                                            <a href="~/Files/GetFile?id=@item.file.FirstOrDefault().Id" target="_blank">@item.date.Value.ToString("MMMM yy")</a>
-                                        </span>
-                                        <br>
-                                    }
+                                    
                                 </td>
                                 <td rowspan="@miniRow">
                                     <span>
@@ -415,6 +409,19 @@
                                     }
                                 </tr>
                             }
+                            <tr>
+                                <td colspan="3"></td>
+                                @foreach (var item in Model.listSmrWithAvans)
+                                {
+                                    var fileT = Model.listFiles.Where(x => Checker.EquallyDateByMonth((DateTime)x.date, (DateTime)item.Period)).FirstOrDefault();
+                                    <td colspan="2" class="text-center">
+                                        @if (fileT is not null && fileT.file.Count() > 0)
+                                        {
+                                            <a href="~/Files/GetFile?id=@fileT.file.FirstOrDefault().Id" target="_blank">@fileT.date.Value.ToString("MMMM yy")</a>
+                                        }
+                                    </td>
+                                }
+                            </tr>
                         </tbody>
                     </table>
                 </div>

@@ -1,44 +1,389 @@
-﻿@using BusinessLayer.Models.PRO
+﻿@using BusinessLayer.Models
+@using BusinessLayer.Models.PRO
 @using DatabaseLayer.Models.PRO
-@model List<EstimateDTO>
+@using MvcLayer.Models
+@inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IKindOfWorkService KindOfWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IAbbreviationKindOfWorkService AbbrKindOfWork
+@model IndexViewModel
 @{
-    ViewData["Title"] = "Чтение данных из локальной сметы";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
+    var isWrite = false;
+    var total = new Dictionary<string, EstimateViewResultBuilding>();
+    var totalResult = new EstimateViewResultBuilding();
 }
-<style>
-    .demo-section {
-        display: flex;
-        flex-direction: column;
-    }
 
-    .dm-modal {
-        background-color: lightsteelblue;
-    }
-
-    .close-btn {
-        color: red
-    }
-
-        .close-btn::after {
-            border: 2px solid #F00 !important;
+@section Table {
+    <style>
+        .demo-section {
+            display: flex;
+            flex-direction: column;
         }
 
-        .close-btn:hover::after {
-            border-color: red !important;
-            color: red !important;
-            -webkit-transform: scale(1);
-            -moz-transform: scale(1);
-            -ms-transform: scale(1);
-            transform: scale(1);
+        .dm-modal {
+            background-color: lightsteelblue;
+        }
+
+        .close-btn {
+            color: red
+        }
+
+            .close-btn::after {
+                border: 2px solid #F00 !important;
+            }
+
+            .close-btn:hover::after {
+                border-color: red !important;
+                color: red !important;
+                -webkit-transform: scale(1);
+                -moz-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
+                font-weight: bold;
+            }
+
+        .square {
+            width: 20px;
+            height: 20px;
+            margin-left: 1%;
+            margin-right: 1%;
+            border: solid black;
+        }
+
+        .overdue {
+            background-color: #79a6fbb0 !important;
+        }
+
+        .form_agreement {
+            display: flex !important;
+            padding: 0 30px !important;
+            margin-top: 0.5%;
+            margin-bottom: 0.5%;
+        }
+
+        .search_btn {
+            width: 2vh !important;
+            position: absolute;
+            padding: 0;
+            margin: 0 10px;
+            background-color: inherit;
+            border: none;
+            right: 210px;
+            top: 8px;
+        }
+
+        h1 {
+            /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
+                                                                                                                                                                                                                                color: #004d8e;
+                                                                                                                                                                                                                                transition: all 1s; */
+            font-family: 'Ampersand', Montserrat, sans-serif;
+            font-size: 32px;
+        }
+
+        .btn_agreement {
+            width: 180px;
+            border-radius: 20px;
+            margin-left: 1%;
             font-weight: bold;
         }
-</style>
-@section Table {
+
+
+        .contracts-list {
+            justify-content: space-between;
+        }
+
+        .color_label {
+            display: flex;
+            font-weight: bold;
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+        }
+
+        .label_postion {
+            margin-top: 0.4%;
+        }
+
+        .wrapper-table {
+            width: 100%;
+        }
+
+        .table-main tr:nth-child(even) {
+            background-color: #ecf2f9;
+        }
+
+        .img_newAgr {
+            width: 24px;
+            height: 24px;
+            margin-right: 3px;
+        }
+
+        input {
+            margin: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            border-radius: 20px;
+            padding: 0px 30px 0px 10px;
+            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+        }
+
+        form {
+            position: relative;
+        }
+    </style>
+    <div>
+        <div class="contracts-list">
+
+            <h1 class="list_agreement">Смета</h1>
+
+            <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
+                  asp-route-returnContractId="@ViewData["returnContractId"]">
+                <div class="dropdown" title="Просмотр информации">
+                    <span class="icon view_list_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
+                    </span>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item">
+                            <label>Шифр здания</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Шифр здания")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Шифр здания]" value="@item.Value" />
+
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Шифр здания]" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Название здания</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Название здания")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Название здания]" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Название здания]" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Подрядчик</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Подрядчик")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Подрядчик]" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Подрядчик]" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Начало периода получения чертежа</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Начало периода получения чертежа")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Начало периода получения чертежа]" id="StartPeriodDrawing" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Конец периода получения чертежа</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Конец периода получения чертежа")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Конец периода получения чертежа]" id="EndPeriodDrawing" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Начало периода получения сметы</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Начало периода получения сметы")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Начало периода получения сметы]" id="StartPeriodEstimate" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Конец периода получения сметы</label>
+                            @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                            {
+                                if (item.Key == "Конец периода получения сметы")
+                                {
+                                    isWrite = true;
+                                    <input name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="@item.Value" />
+                                    break;
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <input name="SearchString[Конец периода получения сметы]" id="EndPeriodEstimate" value="" />
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Буквенный индекс чертежей</label>
+                            @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
+                            {
+                                if (item.Key == "Буквенный индекс чертежей")
+                                {
+                                    isWrite = true;
+                                    <select class="js-chosen" name="ListSearchString[Буквенный индекс чертежей]" multiple>
+                                        @foreach (var itemAbr in AbbrKindOfWork.GetAll())
+                                        {
+                                            var IsGet = false;
+                                            foreach (var value in item.Value)
+                                            {
+                                                if (itemAbr.Id == value)
+                                                {
+                                                    IsGet = true;
+                                                    <option value="@itemAbr.Id" selected>@itemAbr.name</option>
+                                                    break;
+                                                }
+                                            }
+                                            if (!IsGet)
+                                            {
+                                                <option value="@itemAbr.Id">@itemAbr.name</option>
+                                            }
+                                        }
+                                    </select>
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <select class="js-chosen" name="ListSearchString[Буквенный индекс чертежей]" multiple>
+                                    @foreach (var itemAbr in AbbrKindOfWork.GetAll())
+                                    {
+                                        <option value="@itemAbr.Id">@itemAbr.name</option>
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                isWrite = false;
+                            }
+                        </div>
+                        <div class="dropdown-item">
+                            <label>Вид работы</label>
+                            @{
+                                isWrite = false;
+                            }
+                            @foreach (KeyValuePair<string, List<int>> item in ViewBag.CurrentListSearchString)
+                            {
+                                if (item.Key == "Вид работы")
+                                {
+                                    isWrite = true;
+                                    <select class="js-chosen" name="ListSearchString[Вид работы]" multiple>
+                                        @foreach (var itemAbr in KindOfWork.GetAll())
+                                        {
+                                            var IsGet = false;
+                                            foreach (var value in item.Value)
+                                            {
+                                                if (itemAbr.Id == value)
+                                                {
+                                                    IsGet = true;
+                                                    <option value="@itemAbr.Id" selected>@itemAbr.name</option>
+                                                    break;
+                                                }
+                                            }
+                                            if (!IsGet)
+                                            {
+                                                <option value="@itemAbr.Id">@itemAbr.name</option>
+                                            }
+                                        }
+                                    </select>
+                                }
+                            }
+                            @if (!isWrite)
+                            {
+                                <select class="js-chosen" name="ListSearchString[Вид работы]" multiple>
+                                    @foreach (var itemAbr in KindOfWork.GetAll())
+                                    {
+                                        <option value="@itemAbr.Id">@itemAbr.name</option>
+                                    }
+                                </select>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form_agreement">
+                    <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+
+                    <a type="button" class="btn btn-success btn_agreement" asp-action="AddEstimate"
+                       asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
+                       asp-route-returnContractId="@ViewData["returnContractId"]">
+                        <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить смету
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
     <div class="full-width">
-        <a asp-action="AddEstimate" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]" class="k-button btn-success">Добавить смету</a>
         <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
             <thead>
                 <tr>
@@ -90,53 +435,321 @@
                 </tr>
             </thead>
             <tbody class="table_tbody">
-                @foreach (var item in Model)
+                @foreach (EstimateViewModel item in Model.Objects)
                 {
+                    var indexObject = 0;
+                    foreach (var detail in item.DetailsView)
+                    {
+                        indexObject += detail.EstimateViewModelDrawnings.Count;
+                    }
                     <tr>
-                        <td>
+                        <td rowspan="@indexObject">
                             @item.BuildingCode
                         </td>
-                        <td>
+                        <td rowspan="@indexObject">
                             @item.BuildingName
                         </td>
                         <td>
-                            @item.DrawingsKit
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsKit
+                        </td>
+                        <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count">
+                            @item.DetailsView.First().DrawingsName
                         </td>
                         <td>
-                            @item.DrawingsName
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy")
                         </td>
                         <td>
-                            @item.DrawingsDate.Value.ToString("dd MMMM yyyy")
                         </td>
                         <td>
-                            -
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().Number
                         </td>
                         <td>
-                            @item.Number
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy")
                         </td>
                         <td>
-                            @item.EstimateDate.Value.ToString("dd MMMM yyyy")
                         </td>
                         <td>
-                            -
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2")
                         </td>
                         <td>
-                            @item.ContractsCost
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost?.ToString("N2")
                         </td>
                         <td>
-                            @item.LaborCost
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2")
                         </td>
                         <td>
-                            @item.DoneSmrCost
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2")
                         </td>
                         <td>
-                            @item.PercentOfContrPrice
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2")
                         </td>
                         <td>
-                            @item.RemainsSmrCost
+                            @item.DetailsView.First().EstimateViewModelDrawnings.First().SubContractor
+                        </td>
+                    </tr>
+                    @foreach (var draw in item.DetailsView.First().EstimateViewModelDrawnings.Skip(1))
+                    {
+                        <tr>
+                            <td>
+                                @draw.DrawingsKit
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                @draw.DrawingsDate?.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                @draw.Number
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                                @draw.EstimateDate?.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                @draw.ContractsCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.LaborCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.DoneSmrCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.PercentOfContrPrice?.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.RemainsSmrCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @draw.SubContractor
+                            </td>
+                        </tr>
+                    }                   
+                    @foreach (var detail in item.DetailsView.Skip(1))
+                    {
+                        <tr>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().DrawingsKit
+                            </td>
+                            <td rowspan="@detail.EstimateViewModelDrawnings.Count">
+                                @detail.DrawingsName
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                -
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().Number
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy")
+                            </td>
+                            <td>
+                                -
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().LaborCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @detail.EstimateViewModelDrawnings.First().SubContractor
+                            </td>
+                        </tr>
+                        @foreach (var draw in detail.EstimateViewModelDrawnings.Skip(1))
+                        {
+                            <tr>
+                                <td>
+                                    @draw.DrawingsKit
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                    @draw.DrawingsDate?.ToString("dd MMMM yyyy")
+                                </td>
+                                <td>
+                                    @draw.Number
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                    @draw.EstimateDate?.ToString("dd MMMM yyyy")
+                                </td>
+                                <td>
+                                    @draw.ContractsCost?.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.LaborCost?.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.DoneSmrCost?.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.PercentOfContrPrice?.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.RemainsSmrCost?.ToString("N2")
+                                </td>
+                                <td>
+                                    @draw.SubContractor
+                                </td>
+                            </tr>
+                        }
+                    }
+                    var sumBuilding = new EstimateViewResultBuilding();
+                    foreach (var result in item.report)
+                    {
+                        sumBuilding.RemainsSmrCost += result.Value.RemainsSmrCost;
+                        sumBuilding.ContractsCost += result.Value.ContractsCost;
+                        sumBuilding.DoneSmrCost += result.Value.DoneSmrCost;
+                        sumBuilding.LaborCost += result.Value.LaborCost;
+                        sumBuilding.PercentOfContrPrice += result.Value.PercentOfContrPrice;
+                        if (!total.ContainsKey(result.Key))
+                        {
+                            var estimateViewResultBuilding = new EstimateViewResultBuilding();
+                            estimateViewResultBuilding.RemainsSmrCost = result.Value.RemainsSmrCost;
+                            estimateViewResultBuilding.DoneSmrCost = result.Value.DoneSmrCost;
+                            estimateViewResultBuilding.ContractsCost = result.Value.ContractsCost;
+                            estimateViewResultBuilding.PercentOfContrPrice = result.Value.PercentOfContrPrice;
+                            estimateViewResultBuilding.LaborCost = result.Value.LaborCost;
+                            total.Add(result.Key, estimateViewResultBuilding);
+                        }
+                        else
+                        {
+                            total[result.Key].ContractsCost += result.Value.ContractsCost;
+                            total[result.Key].RemainsSmrCost += result.Value.RemainsSmrCost;
+                            total[result.Key].DoneSmrCost += result.Value.DoneSmrCost;
+                            total[result.Key].PercentOfContrPrice += result.Value.PercentOfContrPrice;
+                            total[result.Key].LaborCost += result.Value.LaborCost;
+                        }
+                    }
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            Итого по зданию, сооружению:
                         </td>
                         <td>
-                            @item.SubContractor
+                            @sumBuilding.ContractsCost?.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.LaborCost?.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.DoneSmrCost?.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.PercentOfContrPrice?.ToString("N2")
+                        </td>
+                        <td>
+                            @sumBuilding.RemainsSmrCost?.ToString("N2")
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            в том числе:
+                        </td>
+                        <td colspan="6">                            
+                        </td>                        
+                    </tr>
+                    foreach (var result in item.report)
+                    {
+                        <tr>
+                            <td class="text-end" colspan="9">
+                                @result.Key
+                            </td>
+                            <td>
+                                @result.Value.ContractsCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.LaborCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.DoneSmrCost?.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.PercentOfContrPrice?.ToString("N2")
+                            </td>
+                            <td>
+                                @result.Value.RemainsSmrCost?.ToString("N2")
+                            </td>
+                            <td>                                
+                            </td>
+                        </tr>
+                    }
+                }
+                @foreach(var item in total)
+                {
+                    totalResult.PercentOfContrPrice += item.Value.PercentOfContrPrice;
+                    totalResult.LaborCost += item.Value.LaborCost;
+                    totalResult.ContractsCost += item.Value.ContractsCost;
+                    totalResult.DoneSmrCost += item.Value.DoneSmrCost;
+                    totalResult.RemainsSmrCost += item.Value.RemainsSmrCost;
+                }
+                <tr>
+                    <td class="text-end" colspan="9">
+                        ВСЕГО по объекту:
+                    </td>
+                    <td>
+                        @totalResult.ContractsCost?.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.LaborCost?.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.DoneSmrCost?.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.PercentOfContrPrice?.ToString("N2")
+                    </td>
+                    <td>
+                        @totalResult.RemainsSmrCost?.ToString("N2")
+                    </td>
+                    <td>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-end" colspan="9">
+                        в том числе:
+                    </td>
+                    <td colspan="6">
+                    </td>
+                </tr>
+                @foreach (var item in total)
+                {
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            @item.Key
+                        </td>
+                        <td>
+                            @item.Value.ContractsCost?.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.LaborCost?.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.DoneSmrCost?.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.PercentOfContrPrice?.ToString("N2")
+                        </td>
+                        <td>
+                            @item.Value.RemainsSmrCost?.ToString("N2")
+                        </td>
+                        <td>
                         </td>
                     </tr>
                 }
@@ -144,7 +757,45 @@
         </table>
     </div>
 }
+
 @section Scripts {
     <script>
+        $("#StartPeriodDrawing").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#EndPeriodDrawing").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#StartPeriodEstimate").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        $("#EndPeriodEstimate").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+
     </script>
 }

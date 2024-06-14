@@ -219,7 +219,7 @@ namespace MvcLayer.Controllers
                 }
                 #endregion
                 #region Объем работ и авансы по форме С-3А
-                var form3C = _form.Find(x => x.ContractId == contractId && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
                 if (form3C != null)
                 {
                     ob.SmrFact = form3C.SmrCost != null ? form3C.SmrCost : 0;
@@ -474,7 +474,7 @@ namespace MvcLayer.Controllers
             for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
             {
                 var ob = new ElementOfListSmrPrepByAmend();
-                var form3C = _form.Find(x => x.ContractId == contractId && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
                 if (form3C != null)
                 {
                     ob.Smr = form3C.SmrCost != null ? form3C.SmrCost : 0;
@@ -569,8 +569,7 @@ namespace MvcLayer.Controllers
                 obj.Period = date;
                 prep = _prepaymentFact.GetLastPrepayment(contractId);
                 if (prep != null)
-                {
-                    prep = _prepaymentFact.GetLastPrepayment(contractId);
+                {                    
                     var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
                     && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
                     var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
@@ -622,31 +621,34 @@ namespace MvcLayer.Controllers
                             foreach (var contract in contr)
                             {
                                 prep = _prepaymentFact.GetLastPrepayment(contract);
-                                facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
-                                        && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
-                                if (facts.Count > 0)
+                                if (prep != null)
                                 {
-                                    foreach (var item in facts)
+                                    facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
+                                            && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
+                                    if (facts.Count > 0)
                                     {
-                                        if (item.IsRefund == true)
+                                        foreach (var item in facts)
                                         {
-                                            if (item.IsTarget == true)
-                                                obj.TargetFact -= item.Total;
+                                            if (item.IsRefund == true)
+                                            {
+                                                if (item.IsTarget == true)
+                                                    obj.TargetFact -= item.Total;
+                                                else
+                                                {
+                                                    obj.CurrentFact -= item.Total;
+                                                }
+                                            }
                                             else
                                             {
-                                                obj.CurrentFact -= item.Total;
+                                                if (item.IsTarget == true)
+                                                    obj.TargetFact += item.Total;
+                                                else
+                                                {
+                                                    obj.CurrentFact += item.Total;
+                                                }
                                             }
+                                            obj.Files.AddRange(_file.GetFilesOfEntity((int)item.FileId, FolderEnum.PrepaymentTake));
                                         }
-                                        else
-                                        {
-                                            if (item.IsTarget == true)
-                                                obj.TargetFact += item.Total;
-                                            else
-                                            {
-                                                obj.CurrentFact += item.Total;
-                                            }
-                                        }
-                                        obj.Files.AddRange(_file.GetFilesOfEntity((int)item.FileId, FolderEnum.PrepaymentTake));
                                     }
                                 }
                             }

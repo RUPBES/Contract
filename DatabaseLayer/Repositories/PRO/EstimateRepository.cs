@@ -78,8 +78,7 @@ namespace DatabaseLayer.Repositories
         public IEnumerable<Estimate> FindLike(string propName, string queryString) => propName switch
         {
             "BuildingCode" => _context.Estimates.Where(x => EF.Functions.Like(x.BuildingCode, $"%{queryString}%")).OrderBy(x => x.BuildingCode).ToList(),
-            "BuildingName" => _context.Estimates.Where(x => EF.Functions.Like(x.BuildingName, $"%{queryString}%")).OrderBy(x => x.BuildingName).ToList(),
-            "DrawingsCode" => _context.Estimates.Where(x => EF.Functions.Like(x.DrawingsCode, $"%{queryString}%")).OrderBy(x => x.DrawingsCode).ToList(),
+            "BuildingName" => _context.Estimates.Where(x => EF.Functions.Like(x.BuildingName, $"%{queryString}%")).OrderBy(x => x.BuildingName).ToList(),            
             "DrawingsName" => _context.Estimates.Where(x => EF.Functions.Like(x.DrawingsName, $"%{queryString}%")).OrderBy(x => x.DrawingsName).ToList(),
             "SubContractor" => _context.Estimates.Where(x => EF.Functions.Like(x.SubContractor, $" %{queryString}%")).OrderBy(x => x.SubContractor).ToList(),            
             _ => new List<Estimate>()
@@ -96,14 +95,11 @@ namespace DatabaseLayer.Repositories
                     estimate.Number = entity.Number;
                     estimate.EstimateDate = entity.EstimateDate;
                     estimate.BuildingCode = entity.BuildingCode;
-                    estimate.BuildingName = entity.BuildingName;
-                    estimate.DrawingsCode = entity.DrawingsCode;
+                    estimate.BuildingName = entity.BuildingName;                    
                     estimate.ContractId = entity.ContractId;
                     estimate.DrawingsName = entity.DrawingsName;
 
                     estimate.DrawingsDate = entity.DrawingsDate;
-                    estimate.AmendmentDrawingsDate = entity.AmendmentDrawingsDate;
-                    estimate.AmendmentEstimateDate = entity.AmendmentEstimateDate;
                     estimate.ContractsCost = entity.ContractsCost;
                     estimate.LaborCost = entity.LaborCost;
 

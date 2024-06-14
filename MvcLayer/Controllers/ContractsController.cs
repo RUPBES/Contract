@@ -8,6 +8,7 @@ using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Helpers;
+using System.Diagnostics;
 
 namespace MvcLayer.Controllers
 {
@@ -133,8 +134,8 @@ namespace MvcLayer.Controllers
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
-            }
-            return View(_mapper.Map<ContractViewModel>(contract));
+            }          
+            return View(_mapper.Map<ContractViewModel>(contract));            
         }
 
         [Authorize(Policy = "CreatePolicy")]

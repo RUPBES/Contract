@@ -1,0 +1,91 @@
+﻿@using BusinessLayer.Models.PRO
+@model EstimateDTO
+
+<table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
+    <thead>
+        <tr>
+            <th>
+                Шифр здания, сооружения
+            </th>
+            <th>
+                Наименование здания, сооружения
+            </th>
+            <th>
+                Комплект чертежей
+            </th>
+            <th>
+                Наименование чертежа
+            </th>
+            <th>
+                Дата получения чертежа
+            </th>    
+            <th>
+                Номер сметы
+            </th>
+            <th>
+                Дата получения сметы
+            </th>     
+            <th>
+                Стоимость по договору, руб.
+            </th>
+            <th>
+                Трудозатраты, чел/час
+            </th>
+            <th>
+                Выполнено СМР, руб.
+            </th>
+            <th>
+                Процент выполнения, %
+            </th>
+            <th>
+                Остаток СМР, руб.
+            </th>
+            <th>
+                Подрядчик
+            </th>
+        </tr>
+    </thead>
+    <tbody class="table_tbody">
+        <tr>
+            <td>
+                @Model.BuildingCode
+            </td>
+            <td>
+                @Model.BuildingName
+            </td>
+            <td>
+                @Model.DrawingsKit
+            </td>
+            <td>
+                @Model.DrawingsName
+            </td>
+            <td>
+                @Model.DrawingsDate.Value.ToString("dd MMMM yyyy")
+            </td>        
+            <td>
+                @Model.Number
+            </td>
+            <td>
+                @Model.EstimateDate.Value.ToString("dd MMMM yyyy")
+            </td>          
+            <td>
+                @Model.ContractsCost.Value.ToString("N2")
+            </td>
+            <td>
+                @Model.LaborCost.Value.ToString("N2")
+            </td>
+            <td>
+                @Model.DoneSmrCost.Value.ToString("N2")
+            </td>
+            <td>
+                @Model.PercentOfContrPrice.Value.ToString("N2")
+            </td>
+            <td>
+                @Model.RemainsSmrCost.Value.ToString("N2")
+            </td>
+            <td>
+                @Model.SubContractor
+            </td>
+        </tr>
+    </tbody>
+</table>

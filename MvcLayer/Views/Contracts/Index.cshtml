@@ -141,11 +141,9 @@
             {
                 @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
                 {
-                    <div class="form_agreement">
-                        <form method="get">
+                    <div class="form_agreement">                        
                             @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                        </form>
+                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>                        
                         @if (permissions is not null && permissions.IsCreator)
                         {
                             <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
@@ -359,9 +357,9 @@
                                 @*Действия с договором*@
                                 <td>
                                     <span class="table_span-action-main">
-                                       @*  <div class="icon view" title="Сметы">
+                                        <div class="icon view" title="Сметы">
                                             <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
-                                        </div> *@
+                                        </div>
 
 
                                         <div class="icon view" title="Просмотр детальной информации по договору">
