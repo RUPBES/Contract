@@ -111,8 +111,8 @@ public partial class ContractsContext : DbContext
             //var connectionString = configuration.GetConnectionString("Data");
             //optionsBuilder.UseSqlServer(connectionString);
 
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
 
         }
     }
@@ -432,6 +432,7 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.IsClient).HasDefaultValueSql("0").HasComment("Заказчик?");
 
             entity.Property(e => e.IsGenContractor).HasDefaultValueSql("0").HasComment("ген.подрядчик?");
+            entity.Property(e => e.IsResponsibleForWork).HasDefaultValueSql("0").HasComment("ответственный за производство работ?");
 
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.ContractOrganizations)

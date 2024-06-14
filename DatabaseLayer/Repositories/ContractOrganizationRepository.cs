@@ -78,6 +78,7 @@ namespace DatabaseLayer.Repositories
                     contractOrg.ContractId = entity.ContractId;
                     contractOrg.IsClient = entity.IsClient;
                     contractOrg.IsGenContractor = entity.IsGenContractor;
+                    contractOrg.IsResponsibleForWork = entity.IsResponsibleForWork;
 
                     _context.ContractOrganizations.Update(contractOrg);
                 }

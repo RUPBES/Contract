@@ -2,22 +2,81 @@
     $(firstId).change(function () {
         let firstValue = $(firstId).find(":selected").val();
         let secondValue = $(secondId).find(":selected").val();
-        
+
         if (firstValue === secondValue) {
             let button = $(buttonId);
             button.attr("type", "button");
-            $(areaId).attr("style", valueStyle);          
+            $(areaId).attr("style", valueStyle);
         }
         else {
             let button = $(buttonId);
             button.attr("type", "submit");
-            $(areaId).removeAttr("style", valueStyle);            
+            $(areaId).removeAttr("style", valueStyle);
         }
 
     });
 }
 
-function changeButtonType(buttonId, NumDCId) { 
+function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, buttonId, styleName = 'same_value_chosen') {
+   
+    $(firstId).change(function () {
+        changeStatusSelectValue(firstId, secondId, thirdId, buttonId, styleName);
+    });
+    $(secondId).change(function () {
+        changeStatusSelectValue(firstId, secondId, thirdId, buttonId, styleName);
+    });
+    $(thirdId).change(function () {
+        changeStatusSelectValue(firstId, secondId, thirdId, buttonId, styleName);
+    });
+}
+
+function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleName) {
+    const button = $(buttonId);
+    
+    const selectObjOne = $(`${selectId}_chosen`);
+    const selectObjTwo = $(`${secondId}_chosen`);
+    const selectObjThree = $(`${thirdId}_chosen`);
+
+    let valueObjOne = $(selectId).find(":selected").val();
+    let valueObjTwo = $(secondId).find(":selected").val();
+    let valueObjThree = $(thirdId).find(":selected").val();
+
+    if (valueObjOne === valueObjTwo) {
+        selectObjOne.addClass(styleName);
+        selectObjTwo.addClass(styleName);
+        $(buttonId).attr("type", "button");
+    }
+    if (valueObjOne === valueObjThree) {
+        selectObjOne.addClass(styleName);
+        selectObjThree.addClass(styleName);
+        $(buttonId).attr("type", "button");
+    }
+    if (valueObjTwo === valueObjThree) {
+
+        selectObjTwo.addClass('same_value_chosen');
+        selectObjThree.addClass('same_value_chosen');
+        $(buttonId).attr("type", "button");
+    }
+
+    if (valueObjOne !== valueObjTwo && valueObjOne !== valueObjThree) {
+        selectObjOne.removeClass(styleName);
+    }
+    if (valueObjTwo !== valueObjOne && valueObjTwo !== valueObjThree) {
+        selectObjTwo.removeClass(styleName);
+    }
+    if (valueObjThree !== valueObjTwo && valueObjThree !== valueObjOne) {
+        selectObjThree.removeClass(styleName);
+    }
+
+    if (document.querySelectorAll(`.${styleName}`).length < 1) {
+        document.querySelectorAll(`.${styleName}`).forEach((elem) => {
+            elem.classList.remove(styleName);
+        });
+        button.attr("type", "submit");
+    }
+}
+
+function changeButtonType(buttonId, NumDCId) {
     let button = $(buttonId);
     let input = $(NumDCId);
     button.attr("type", "submit");
@@ -32,7 +91,7 @@ $(document).ready(function () {
 });
 
 function paginationFunc(page_number, total_page) {
-    
+
     let prev_pag_btn = document.querySelector(".previous_btn");
     let next_pag_btn = document.querySelector(".next_btn");
     let active_btn = document.querySelectorAll("a.page-link");

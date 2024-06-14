@@ -8,6 +8,7 @@
 @{
     ViewData["Title"] = "Редактирование договора";
     var d = Model;
+    var organizations = Organization.GetAll();
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = Model.Id;
@@ -16,8 +17,12 @@
 <style>
     .dm-modal {
         background-color: white;
+    }
+
+    .form_container {
         overflow: auto;
         max-height: 700px;
+        max-width: 750px;
     }
 
     .close-btn {
@@ -68,83 +73,91 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Edit" asp-controller="Contracts" asp-route-returnContractId="@ViewBag.returnContractId" class="row" style="max-width:700px;">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="SubContractId" />
-                    <input type="hidden" asp-for="AgreementContractId" />
-                    <input type="hidden" asp-for="IsAgreementContract" />
-                    <input type="hidden" asp-for="IsEngineering" />
-                    <input type="hidden" asp-for="IsSubContract" />
-                    <input type="hidden" asp-for="Author" />
-                    <input type="hidden" asp-for="Owner" />
-                    <input type="hidden" asp-for="IsClosed" />
-                    <input type="hidden" asp-for="IsExpired" />
-                    <input type="hidden" asp-for="IsMultiple" />
-                    <input type="hidden" asp-for="IsOneOfMultiple" />
-                    <div class="row">
-                        <div class="col-4">
-                            <label asp-for="Number" class="control-label"></label>
-                            <input asp-for="Number" class="form-control" />
-                            <span asp-validation-for="Number" class="text-danger"></span>
-                        </div>
-                        <div class="col-4">
-                            <label asp-for="ContractPrice" class="control-label"></label>
-                            <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
-                            <span asp-validation-for="ContractPrice" class="text-danger"></span>
-                        </div>
-                        @if (ViewBag.IsEngin != null)
-                        {
+                <form asp-action="Edit" asp-controller="Contracts" asp-route-returnContractId="@ViewBag?.returnContractId" class="row" style="max-width:700px;">
+                    <div class="row form_container">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="SubContractId" />
+                        <input type="hidden" asp-for="AgreementContractId" />
+                        <input type="hidden" asp-for="IsAgreementContract" />
+                        <input type="hidden" asp-for="IsEngineering" />
+                        <input type="hidden" asp-for="IsSubContract" />
+                        <input type="hidden" asp-for="Author" />
+                        <input type="hidden" asp-for="Owner" />
+                        <input type="hidden" asp-for="IsClosed" />
+                        <input type="hidden" asp-for="IsExpired" />
+                        <input type="hidden" asp-for="IsMultiple" />
+                        <input type="hidden" asp-for="IsOneOfMultiple" />
+                        <div class="row">
+                            @* Номер !*@
                             <div class="col-4">
-                                <label asp-for="PaymentСonditionsPrice" class="control-label">Условия дог. цены, %</label>
-                                <input id="PaymentСonditionsPrice" type="text" name="PaymentСonditionsPrice" value="@Model.PaymentСonditionsPrice" class="form-control cost" />
-                                <span asp-validation-for="PaymentСonditionsPrice" class="text-danger"></span>
+                                <label asp-for="Number" class="control-label"></label>
+                                <input asp-for="Number" class="form-control" />
+                                <span asp-validation-for="Number" class="text-danger"></span>
                             </div>
-                        }
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="NameObject" class="control-label"></label>
-                        <input asp-for="NameObject" class="form-control" />
-                        <span asp-validation-for="NameObject" class="text-danger"></span>
-                    </div>
-                    <div class="row">
-                        <div class="col-4">
-                            <label asp-for="Date" class="control-label" for="DateDC">Дата заключения</label>
-                            <div class="input-group">
-                                <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                                <input asp-for="Date" value="@Model.Date?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateDC">
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <label class="control-label" asp-for="DateBeginWork"></label>
-                            <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
-                            <label class="form-label" id="labelBeginWork" style="display:none"></label>
-                        </div>
-                        <div class="col-4">
-                            <label class="control-label" asp-for="DateEndWork"></label>
-                            <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
-                            <label class="form-label" id="labelEndWork" style="display:none"></label>
-                        </div>
-                    </div>
-                    <div class="row">
-                        @if (ViewBag.IsEngin == null)
-                        {
+                            @* Цены !*@
                             <div class="col-4">
-                                <label class="control-label" asp-for="EnteringTerm"></label>
-                                <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
-                                <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
+                                <label asp-for="ContractPrice" class="control-label"></label>
+                                <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
+                                <span asp-validation-for="ContractPrice" class="text-danger"></span>
+                            </div>
+                            @if (ViewBag.IsEngin != null)
+                            {
+                                <div class="col-4">
+                                    <label asp-for="PaymentСonditionsPrice" class="control-label">Условия дог. цены, %</label>
+                                    <input id="PaymentСonditionsPrice" type="text" name="PaymentСonditionsPrice" value="@Model.PaymentСonditionsPrice" class="form-control cost" />
+                                    <span asp-validation-for="PaymentСonditionsPrice" class="text-danger"></span>
+                                </div>
+                            }
+                        </div>
+                        @* Объект !*@
+                        <div class="form-group">
+                            <label asp-for="NameObject" class="control-label"></label>
+                            <input asp-for="NameObject" class="form-control" />
+                            <span asp-validation-for="NameObject" class="text-danger"></span>
+                        </div>
+                        @* Сроки !*@
+                        <div class="row">
+                            <div class="col-4">
+                                <label asp-for="Date" class="control-label" for="DateDC">Дата заключения</label>
+                                <div class="input-group">
+                                    <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
+                                    <input asp-for="Date" value="@Model.Date?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateDC">
+                                </div>
                             </div>
                             <div class="col-4">
-                                <label class="control-label" asp-for="ContractTerm"></label>
-                                <input asp-for="ContractTerm" value="@Model.ContractTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="ContractTerm">
-                                <label class="form-label" id="labelContractTerm" style="display:none"></label>
+                                <label class="control-label" asp-for="DateBeginWork"></label>
+                                <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
+                                <label class="form-label" id="labelBeginWork" style="display:none"></label>
                             </div>
-                        }
-                    </div>                    
-                    @foreach (var contrOrg in Model.ContractOrganizations)
-                    {
-                        if (Model.IsSubContract == true || Model.IsAgreementContract == true)
+                            <div class="col-4">
+                                <label class="control-label" asp-for="DateEndWork"></label>
+                                <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
+                                <label class="form-label" id="labelEndWork" style="display:none"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @if (ViewBag.IsEngin == null)
+                            {
+                                <div class="col-4">
+                                    <label class="control-label" asp-for="EnteringTerm"></label>
+                                    <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
+                                    <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
+                                </div>
+                                <div class="col-4">
+                                    <label class="control-label" asp-for="ContractTerm"></label>
+                                    <input asp-for="ContractTerm" value="@Model.ContractTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="ContractTerm">
+                                    <label class="form-label" id="labelContractTerm" style="display:none"></label>
+                                </div>
+                            }
+                        </div>
+
+                        @* Организации !*@
+
+                        @if (Model.IsSubContract == true || Model.IsAgreementContract == true
+                        || Model.IsEngineering == true)
                         {
+                            var orgId = Model.ContractOrganizations?.FirstOrDefault()?.OrganizationId ?? 0;
                             <div class="col-6">
                                 @if (Model.IsSubContract == true)
                                 {
@@ -154,14 +167,20 @@
                                 {
                                     <label>Филиал</label>
                                 }
+                                @if (Model.IsEngineering == true)
+                                {
+                                    <label>Заказчик</label>
+                                    <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
+                                }
+
                                 <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
                                 <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
-                                    @if (contrOrg.OrganizationId != 0)
+                                    @if (orgId != 0)
                                     {
-                                        var item = Organization.GetById((int)contrOrg?.OrganizationId);
+                                        var item = Organization.GetById(orgId);
                                         <option disabled selected value="@item?.Id">@item?.Name</option>
                                     }
-                                    @if (contrOrg.OrganizationId == 0)
+                                    @if (orgId == 0)
                                     {
                                         <option selected>Выберите организацию</option>
                                     }
@@ -173,47 +192,76 @@
                                 </select>
                             </div>
                         }
-                        else
-                            if (contrOrg.IsGenContractor == true)
+                        @if (Model.IsSubContract != true && Model.IsAgreementContract != true && Model.IsEngineering != true)
                         {
-                            <div class="col-6">
-                                <label>Генподрядчик</label>
-                                <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
-                                <input name="ContractOrganizations[1].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
-                                <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization">
-                                    @if (contrOrg.OrganizationId != 0)
-                                    {
-                                        var item = Organization.GetById((int)contrOrg?.OrganizationId);
-                                        <option disabled selected value="@item?.Id">@item?.Name</option>
-                                    }
-                                    @if (contrOrg.OrganizationId == 0)
-                                    {
-                                        <option selected>Выберите организацию</option>
-                                    }
-                                    @foreach (var item in Organization.GetAll())
-                                    {
-                                        <option value="@item.Id">@item.Name</option>
-                                    }
-                                </select>
-                            </div>
-                            if (contrOrg.IsClient == true)
+                            if (Model?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true) is not null)
                             {
+                                var orgId = Model.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.OrganizationId ?? 0;
+                                <div class="col-6">
+                                    <label>Генподрядчик</label>
+                                    <input name="ContractOrganizations[0].IsGenContractor" type="checkbox" value="true" checked selected hidden>
+                                    <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                    <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen  slt-add-organization" id="selectOrgOne">
+                                        @if (orgId != 0)
+                                        {
+                                            var item = Organization.GetById(orgId);
+                                            <option selected value="@item?.Id">@item?.Name</option>
+                                        }
+                                        @if (orgId == 0)
+                                        {
+                                            <option>Выберите организацию</option>
+                                        }
+                                        @foreach (var item in organizations)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            if (Model?.ContractOrganizations?.FirstOrDefault(x => x.IsClient == true) is not null)
+                            {
+                                var orgId = Model.ContractOrganizations?.FirstOrDefault(x => x.IsClient == true)?.OrganizationId ?? 0;
                                 <div class="col-6">
                                     <label>Заказчик</label>
-                                    <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
-                                    <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
-                                    <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
-                                        @if (contrOrg.OrganizationId != 0)
+                                    <input name="ContractOrganizations[1].IsClient" type="checkbox" value="true" checked selected hidden>
+                                    <input name="ContractOrganizations[1].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                    <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgTwo">
+                                        @if (orgId != 0)
                                         {
-                                            var item = Organization.GetById((int)contrOrg?.OrganizationId);
-                                            <option disabled selected value="@item?.Id">@item?.Name</option>
+                                            var item = Organization.GetById(orgId);
+                                            <option selected value="@item?.Id">@item?.Name</option>
                                         }
-                                        @if (contrOrg.OrganizationId == 0)
+                                        @if (orgId == 0)
                                         {
-                                            <option selected>Выберите организацию</option>
+                                            <option>Выберите организацию</option>
                                         }
+                                        @foreach (var item in organizations)
+                                        {
+                                            <option value="@item.Id">@item.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
 
-                                        @foreach (var item in Organization.GetAll())
+                            if (Model?.ContractOrganizations?.FirstOrDefault(x => x.IsResponsibleForWork == true) is not null)
+                            {
+                                var orgId = Model.ContractOrganizations?.FirstOrDefault(x => x.IsResponsibleForWork == true)?.OrganizationId ?? 0;
+                                <div class="col-6">
+                                    <label>Ответственный за проведение работ</label>
+                                    <input name="ContractOrganizations[2].IsResponsibleForWork" type="checkbox" value="true" checked selected hidden>
+                                    <input name="ContractOrganizations[2].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                    <select name="ContractOrganizations[2].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgThree">
+                                        @if (orgId != 0)
+                                        {
+                                            var item = Organization.GetById(orgId);
+                                            <option selected value="@item?.Id">@item?.Name</option>
+                                        }
+                                        @if (orgId == 0)
+                                        {
+                                            <option>Выберите организацию</option>
+                                        }
+                                        @foreach (var item in organizations)
                                         {
                                             <option value="@item.Id">@item.Name</option>
                                         }
@@ -221,57 +269,57 @@
                                 </div>
                             }
                         }
-                        else if (contrOrg.IsClient == true)
-                        {
-                            <div class="col-6">
-                                <label>Заказчик</label>
-                                <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
-                                <input name="ContractOrganizations[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
-                                <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen slt-add-organization">
-                                    @if (contrOrg.OrganizationId != 0)
-                                    {
-                                        var item = Organization.GetById((int)contrOrg?.OrganizationId);
-                                        <option disabled selected value="@item?.Id">@item?.Name</option>
-                                    }
-                                    @if (contrOrg.OrganizationId == 0)
-                                    {
-                                        <option selected>Выберите организацию</option>
-                                    }
 
-                                    @foreach (var item in Organization.GetAll())
-                                    {
-                                        <option value="@item.Id">@item.Name</option>
-                                    }
-                                </select>
-                            </div>
-                        }
-                    }
-
-                    @foreach (var empContract in Model.EmployeeContracts)
-                    {
-                        if (empContract.IsResponsible == true)
+                        @foreach (var empContract in Model.EmployeeContracts)
                         {
-                            <div class="col-6">
-                                <label>Ответственный за ведение договора</label>
-                                <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
-                                <input name="EmployeeContracts[1].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
-                                <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
-                                    @if (empContract.EmployeeId != 0)
-                                    {
-                                        var item = Employee.GetById(empContract.EmployeeId);
-                                        <option disabled selected value="@item?.Id">@item?.FullName</option>
-                                    }
-                                    @if (empContract.EmployeeId == 0)
-                                    {
-                                        <option selected>Выберите сотрудника</option>
-                                    }
-                                    @foreach (var item in Employee.GetAll())
-                                    {
-                                        <option value="@item.Id">@item.FullName</option>
-                                    }
-                                </select>
-                            </div>
-                            if (empContract.IsSignatory == true)
+                            if (empContract.IsResponsible == true)
+                            {
+                                <div class="col-6">
+                                    <label>Ответственный за ведение договора</label>
+                                    <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
+                                    <input name="EmployeeContracts[1].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                    <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
+                                        @if (empContract.EmployeeId != 0)
+                                        {
+                                            var item = Employee.GetById(empContract.EmployeeId);
+                                            <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                        }
+                                        @if (empContract.EmployeeId == 0)
+                                        {
+                                            <option selected>Выберите сотрудника</option>
+                                        }
+                                        @foreach (var item in Employee.GetAll())
+                                        {
+                                            <option value="@item.Id">@item.FullName</option>
+                                        }
+                                    </select>
+                                </div>
+                                if (empContract.IsSignatory == true)
+                                {
+                                    <div class="col-6">
+                                        <label>Подписант договора</label>
+                                        <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
+                                        <input name="EmployeeContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                                        <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
+                                            @if (empContract.EmployeeId != 0)
+                                            {
+                                                var item = Employee.GetById(empContract.EmployeeId);
+                                                <option disabled selected value="@item?.Id">@item?.FullName</option>
+                                            }
+                                            @if (empContract.EmployeeId == 0)
+                                            {
+                                                <option selected>Выберите сотрудника</option>
+                                            }
+
+                                            @foreach (var item in Employee.GetAll())
+                                            {
+                                                <option value="@item.Id">@item.FullName</option>
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                            }
+                            else
                             {
                                 <div class="col-6">
                                     <label>Подписант договора</label>
@@ -296,160 +344,135 @@
                                 </div>
                             }
                         }
-                        else
-                        {
-                            <div class="col-6">
-                                <label>Подписант договора</label>
-                                <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
-                                <input name="EmployeeContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
-                                <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
-                                    @if (empContract.EmployeeId != 0)
-                                    {
-                                        var item = Employee.GetById(empContract.EmployeeId);
-                                        <option disabled selected value="@item?.Id">@item?.FullName</option>
-                                    }
-                                    @if (empContract.EmployeeId == 0)
-                                    {
-                                        <option selected>Выберите сотрудника</option>
-                                    }
-
-                                    @foreach (var item in Employee.GetAll())
-                                    {
-                                        <option value="@item.Id">@item.FullName</option>
-                                    }
-                                </select>
-                            </div>
-                        }
-                    }
-                    <div class="col-6">
-                        <label>Вид работ</label>
-                        <input name="TypeWorkContracts[0].TypeWork" hidden />
-                        <input name="TypeWorkContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
-                        <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
-                            @if (Model?.TypeWorkContracts[0].TypeWorkId != 0)
-                            {
-                                var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
-                                <option disabled selected value="@item?.Id">@item?.Name</option>
-                            }
-                            @if (Model?.TypeWorkContracts[0].TypeWorkId == 0)
-                            {
-                                <option selected>Выберите вид работ</option>
-                            }
-
-                            @foreach (var item in TypeWork.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-3">
-                        <label asp-for="Сurrency" class="control-label"></label>
-                        <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                            <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
-                            @foreach (var item in Enum.GetValues<CurrencyEnum>())
-                            {
-                                <option value="@item">@item</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="row">
-
-                        <fieldset class="border rounded-1 p-3 col">
-                            <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                            @foreach (var item in Enum.GetValues<FundingSourceEnum>())
-                            {
-                                var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
-                                var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
-
-                                <div>
-                                    <div class="input-group mb-2">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" style="display: block;">
-                                                @if (valueArray is not null)
-                                                {
-                                                    <input type="checkbox" name="FundingFS" value="@value" checked>
-                                                }
-                                                @if (valueArray is null)
-                                                {
-                                                    <input type="checkbox" name="FundingFS" value="@value">
-                                                }
-                                            </div>
-                                        </div>
-                                        <input type="text" class="form-control" value="@value" disabled>
-                                    </div>
-                                </div>
-                            }
-                        </fieldset>
-                        <fieldset class="border rounded-1 p-3 col k-ml-5">
-                            <legend class="float-none w-auto px-3">Условия авансирования</legend>
-                            @{
-                                int numberCheckbox = 0;
-                            }
-                            @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
-                            {
-                                var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
-                                var valueArray = Model?.PaymentСonditionsAvans;
-                                if (valueArray == null) { valueArray = ""; }
-                                string idCh = "check" + @numberCheckbox;
-                                <div>
-                                    <div class="input-group mb-2">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" style="display: block;">
-                                                @if (valueArray.Contains(value))
-                                                {
-                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
-                                                }
-                                                else
-                                                {
-                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
-                                                }
-                                            </div>
-                                        </div>
-                                        <input type="text" class="form-control" value="@value" disabled>
-
-                                    </div>
-                                </div>
-                                numberCheckbox++;
-                            }
-                        </fieldset>
-                    </div>
-                    <fieldset class="border rounded-1 p-3">
-                        <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
-                        @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
-                        {
-                            var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
-                            var sub = name.Split(" ");
-                            var subName = $"{sub[0]} {sub[1]}";
-                            bool? isValueValid = Model?.PaymentСonditionsRaschet?.Contains(subName, StringComparison.OrdinalIgnoreCase);
-                            bool isDayValid = isValueValid == true ? true : false;
-                            var number = Contract.GetDayOfRaschet(Model.Id);
-                            ViewBag.Days = number;
-                            <div class="input-group mb-2">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text" style="display: block;">
-                                        @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
-                                        {
-                                            <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
-                                        }
-                                        @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
-                                        {
-                                            <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name">
-                                        }
-
-                                    </div>
-                                </div>
-                                @if (number.HasValue == true && isValueValid == true)
+                        <div class="col-6">
+                            <label>Вид работ</label>
+                            <input name="TypeWorkContracts[0].TypeWork" hidden />
+                            <input name="TypeWorkContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
+                            <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
+                                @if (Model?.TypeWorkContracts[0].TypeWorkId != 0)
                                 {
-                                    <div class="col-1"><input id="dayInput" type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@number" min="1"></div>
+                                    var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
+                                    <option disabled selected value="@item?.Id">@item?.Name</option>
                                 }
-                                <div class="col-9">
-                                    <input type="text" class="form-control" value="@name" disabled>
+                                @if (Model?.TypeWorkContracts[0].TypeWorkId == 0)
+                                {
+                                    <option selected>Выберите вид работ</option>
+                                }
+
+                                @foreach (var item in TypeWork.GetAll())
+                                {
+                                    <option value="@item.Id">@item.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-3">
+                            <label asp-for="Сurrency" class="control-label"></label>
+                            <select name="Сurrency" class="form-control js-chosen" id="CurDC">
+                                <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
+                                @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="row">
+                            <fieldset class="border rounded-1 p-3 col">
+                                <legend class="float-none w-auto px-3">Источник финансирования</legend>
+                                @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                                {
+                                    var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
+                                    var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
+
+                                    <div>
+                                        <div class="input-group mb-2">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text" style="display: block;">
+                                                    @if (valueArray is not null)
+                                                    {
+                                                        <input type="checkbox" name="FundingFS" value="@value" checked>
+                                                    }
+                                                    @if (valueArray is null)
+                                                    {
+                                                        <input type="checkbox" name="FundingFS" value="@value">
+                                                    }
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-control" value="@value" disabled>
+                                        </div>
+                                    </div>
+                                }
+                            </fieldset>
+                            <fieldset class="border rounded-1 p-3 col k-ml-5">
+                                <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                                @{
+                                    int numberCheckbox = 0;
+                                }
+                                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                                {
+                                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                    var valueArray = Model?.PaymentСonditionsAvans;
+                                    if (valueArray == null) { valueArray = ""; }
+                                    string idCh = "check" + @numberCheckbox;
+                                    <div>
+                                        <div class="input-group mb-2">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text" style="display: block;">
+                                                    @if (valueArray.Contains(value))
+                                                    {
+                                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                                    }
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-control" value="@value" disabled>
+
+                                        </div>
+                                    </div>
+                                    numberCheckbox++;
+                                }
+                            </fieldset>
+                        </div>
+                        <fieldset class="border rounded-1 p-3">
+                            <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
+                            @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
+                            {
+                                var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
+                                var sub = name.Split(" ");
+                                var subName = $"{sub[0]} {sub[1]}";
+                                bool? isValueValid = Model?.PaymentСonditionsRaschet?.Contains(subName, StringComparison.OrdinalIgnoreCase);
+                                bool isDayValid = isValueValid == true ? true : false;
+                                var number = Contract.GetDayOfRaschet(Model.Id);
+                                ViewBag.Days = number;
+                                <div class="input-group mb-2">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text" style="display: block;">
+                                            @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
+                                            {
+                                                <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
+                                            }
+                                            @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
+                                            {
+                                                <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name">
+                                            }
+
+                                        </div>
+                                    </div>
+                                    @if (number.HasValue == true && isValueValid == true)
+                                    {
+                                        <div class="col-2"><input id="dayInput" type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@number" min="1"></div>
+                                    }
+                                    <div class="col-9">
+                                        <input type="text" class="form-control" value="@name" disabled>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                    </fieldset>
+                            }
+                        </fieldset>
+                    </div>
                     <div class="form-group mt-3 btn_position">
-                        <input type="submit" value="Редактировать" class="btn btn-primary" />
+                        <input type="submit" id="subBtn" value="Редактировать" class="btn btn-primary" />
                     </div>
                 </form>
             </div>
@@ -457,8 +480,8 @@
     </div>
 </div>
 
-@section Scripts{   
-    <script>        
+@section Scripts {
+    <script>
         $(function ($) {
             var allCost = $(".cost")
             for (let el of allCost) {
@@ -468,6 +491,7 @@
                 digits_float(this);
             });
         });
+
 
         ////    проверка вводимых дат ////
         //dateContract(a) - Дата контракта
@@ -487,11 +511,11 @@
         let endWorkVal = endWork.value;
         let enteringTmVal
         let contractTmVal
-        if (enteringTm != null && contractTm != null) { 
+        if (enteringTm != null && contractTm != null) {
             enteringTmVal = enteringTm.value;
             contractTmVal = contractTm.value;
         }
-        
+
         $("#DateDC").datepicker({
             format: "d MM yyyy",
             language: "ru",
@@ -549,7 +573,7 @@
                 changeContractTm()
             });
         }
-        
+
         $("#DateDC").datepicker('setDate', new Date(dateContractVal));
         $("#DateBeginWork").datepicker('setDate', new Date(beginWorkVal));
         $("#DateEndWork").datepicker('setDate', new Date(endWorkVal));
@@ -631,7 +655,7 @@
             let dateTerm = $("#ContractTerm").datepicker('getDate');
             let datePlusOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), 1);
             if (dateEnter != null) {
-               
+
                 let dateDecOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), -1);
 
                 if (dateEnter && (!date || dateEnter <= date)) { $("#DateDC").datepicker('update', dateDecOne); }
@@ -723,11 +747,11 @@
                 changeContractTm();
             });
         }
-        
+
         function addDays(date, countDays) {
             let newDateOfyear = date.getFullYear() + ""; // год
             let day = date.getDate() + countDays; // текущий день
-            let month = date.getMonth() + 1; //текущий месяц          
+            let month = date.getMonth() + 1; //текущий месяц
             let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
             if (day > maxDateToday) {
                 month = month + 1;
@@ -808,19 +832,21 @@
             }
         });
 
-        let styleName = "border:solid red 4px;";
 
-        checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#subBtn", styleName);
-        checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#subBtn", styleName);
 
         // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
         $(".checkChoise").click(function (e) {
-            let elemNumber = $("#dayInput");            
+            let elemNumber = $("#dayInput");
             if (elemNumber !== null || elemNumber !== undefined) {
                 //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                 $("#dayInput").parent().remove();
             }
-            $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' value='' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+            $(this).parent().parent().last().after(`<div class='col-2'><input class='form-control' id="dayInput" type='number' value='' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
         });
+  
+        $(document).ready(function () {
+            checkThreeSelectValuesWithChosenStyle("#selectOrgOne", "#selectOrgTwo", "#selectOrgThree", "#subBtn", 'same_value_chosen');
+        });
+
     </script>
 }

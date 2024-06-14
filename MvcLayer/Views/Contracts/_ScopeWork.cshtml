@@ -92,7 +92,6 @@
                 <a id="buttonTableType" onclick="funcCloseByTableType()" class="close-btn"> </a>
             </div>
             <hr class="modal-line" />
-
             <div class="full-width" style="width: 100%">
                 <table class="PartialTable table table-striped table-hover">
                     <thead class="Partialtable-sticky-top">
@@ -120,14 +119,15 @@
                         </tr>
                     </thead>
                     <tbody class="tbodyPartialTableModal">
-                        <tr id="all" @*Объем работ - План*@>
+                        @*Объем работ - План*@
+                        <tr id="all" >
                             @if (ViewData["Main"] != null)
                             {
-                                <th class="first-col" rowspan="4"><span>Объем работ</span></th>
+                                <th class="first-col" rowspan="4"><span>Стоимость работ по договору</span></th>
                             }
                             else
                             {
-                                <th class="first-col" rowspan="2"><span>Объем работ</span></th>
+                                <th class="first-col" rowspan="2"><span>Стоимость работ по договору</span></th>
                             }
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col" rowspan="2"><span>@Model.contractPrice.TotalCost?.ToString("N2")</span></td>
@@ -160,7 +160,8 @@
                                 }
                             }
                         </tr>
-                        <tr @*Объем работ - Факт*@>
+                        @*Объем работ - Факт*@
+                        <tr >
                             <th class="second-col"><span>Факт</span></th>
                             @for (var iterator = Model.scopes.FirstOrDefault().Period;
                             Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
@@ -190,7 +191,8 @@
                         </tr>
                         @if (ViewData["Main"] != null)
                         {
-                            <tr @*Объем работ - План(свои)*@>
+                            @*Объем работ - План(свои)*@
+                            <tr >
                                 <th class="second-col"><span>План своими силами</span></th>
                                 <td class="third-col" rowspan="2"><span>@((Model.contractPrice.TotalCost - Model.contractPriceOwn?.TotalCost)?.ToString("N2"))</span></td>
                                 <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.TotalCost - Model.workTodayYearOwn?.TotalCost)?.ToString("N2"))</span></td>
@@ -223,7 +225,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Объем работ - Факт(свои)*@>
+                            @*Объем работ - Факт(свои)*@
+                            <tr >
                                 <th class="second-col"><span> Факт своими силами</span></th>
                                 @for (var iterator = Model.scopes.FirstOrDefault().Period;
                                Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
@@ -252,14 +255,16 @@
                                 }
                             </tr>
                         }
-                        <tr id="smr" @*СМР - План*@>
+
+                        @*СМР - План*@
+                        <tr id="smr" >
                             @if (ViewData["Main"] != null)
                             {
-                                <th class="first-col" rowspan="4"><span>СМР</span></th>
+                                <th class="first-col" rowspan="4"><span>Неизменная цена СМР</span></th>
                             }
                             else
                             {
-                                <th class="first-col" rowspan="2"><span>СМР</span></th>
+                                <th class="first-col" rowspan="2"><span>Неизменная цена СМР</span></th>
                             }
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col" rowspan="2"><span>@Model.contractPrice.SmrCost?.ToString("N2")</span></td>
@@ -293,7 +298,8 @@
                                 }
                             }
                         </tr>
-                        <tr @*СМР - Факт*@>
+                        @*СМР - Факт*@
+                        <tr >
                             <th class="second-col"><span>Факт</span></th>
                             @*Стоимость СМР*@
                             @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -324,7 +330,8 @@
                         </tr>
                         @if (ViewData["Main"] != null)
                         {
-                            <tr @*СМР - План(свои)*@>
+                            @*СМР - План(свои)*@
+                            <tr>
                                 <th class="second-col"><span>План своими силами</span></th>
                                 <td class="third-col" rowspan="2"><span>@((Model.contractPrice.SmrCost - Model.contractPriceOwn?.SmrCost)?.ToString("N2"))</span></td>
                                 <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.SmrCost - Model.workTodayYearOwn?.SmrCost)?.ToString("N2"))</span></td>
@@ -358,7 +365,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*СМР - Факт(свои)*@>
+                            @*СМР - Факт(свои)*@
+                            <tr>
                                 <th class="second-col"><span> Факт своими силами</span></th>
                                 @*Стоимость СМР*@
                                 @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -389,7 +397,8 @@
                             </tr>
                         }
 
-                        <tr id="pnr" @*ПМР - План*@>
+                        @*ПНР - План*@
+                        <tr id="pnr" >
                             @if (ViewData["Main"] != null)
                             {
                                 <th class="first-col" rowspan="4"><span>ПНР</span></th>
@@ -430,7 +439,8 @@
                                 }
                             }
                         </tr>
-                        <tr @*ПМР - Факт*@>
+                        @*ПНР - Факт*@
+                        <tr >
                             <th class="second-col"><span>Факт</span></th>
                             @*Стоимость ПНР*@
                             @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -461,7 +471,8 @@
                         </tr>
                         @if (ViewData["Main"] != null)
                         {
-                            <tr @*ПМР - План(свои)*@>
+                            @*ПНР - План(свои)*@
+                            <tr >
                                 <th class="second-col"><span>План своими силами</span></th>
                                 <td class="third-col" rowspan="2"><span>@((Model.contractPrice.PnrCost - Model.contractPriceOwn?.PnrCost)?.ToString("N2"))</span></td>
                                 <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.PnrCost - Model.workTodayYearOwn?.PnrCost)?.ToString("N2"))</span></td>
@@ -494,7 +505,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*ПМР - Факт(свои)*@>
+                            @*ПНР - Факт(свои)*@
+                            <tr >
                                 <th class="second-col"><span> Факт своими силами</span></th>
                                 @*Стоимость ПНР*@
                                 @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -525,413 +537,8 @@
                             </tr>
                         }
 
-                        <tr id="equip" @*Оборудование - План*@>
-                            @if (ViewData["Main"] != null)
-                            {
-                                <th class="first-col" rowspan="4"><span>Оборудование</span></th>
-                            }
-                            else
-                            {
-                                <th class="first-col" rowspan="2"><span>Оборудование</span></th>
-                            }
-                            <th class="second-col"><span>План</span></th>
-                            <td class="third-col" rowspan="2"><span>@Model.contractPrice.EquipmentCost?.ToString("N2")</span></td>
-                            <td class="fourth-col" rowspan="2"><span>@Model.workTodayYear.EquipmentCost?.ToString("N2")</span></td>
-                            <td class="fifth-col" rowspan="2"><span>@Model.remainingScope.EquipmentCost?.ToString("N2")</span></td>
-                            <td class="sixth-col" rowspan="2"><span>@Model.todayScope.EquipmentCost?.ToString("N2")</span></td>
-                            @*Стоимость Оборудование*@
-                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                            iterator = iterator.Value.AddMonths(1))
-                            {
-                                var obj = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                decimal? sum;
-                                if (obj != null)
-                                {
-                                    sum = obj.EquipmentCost;
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@sum?.ToString("N2")</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
-                                }
-                                else
-                                {
-                                    <td></td>
-                                }
-                            }
-                        </tr>
-                        <tr @*Оборудование - Факт*@>
-                            <th class="second-col"><span>Факт</span></th>
-                            @*Стоимость Оборудование*@
-                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                            iterator = iterator.Value.AddMonths(1))
-                            {
-                                var obj = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                decimal? sum;
-                                if (obj != null)
-                                {
-                                    sum = obj.EquipmentCost;
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@sum?.ToString("N2")</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
-                                }
-                                else
-                                {
-                                    <td> </td>
-                                }
-                            }
-                        </tr>
-                        @if (ViewData["Main"] != null)
-                        {
-                            <tr @*Оборудование - План(свои)*@>
-                                <th class="second-col"><span>План своими силами</span></th>
-                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.EquipmentCost - Model.contractPriceOwn?.EquipmentCost)?.ToString("N2"))</span></td>
-                                <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.EquipmentCost - Model.workTodayYearOwn?.EquipmentCost)?.ToString("N2"))</span></td>
-                                <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.EquipmentCost - Model.remainingScopeOwn?.EquipmentCost)?.ToString("N2"))</span></td>
-                                <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.EquipmentCost - Model.todayScopeOwn?.EquipmentCost)?.ToString("N2"))</span></td>
-                                @*Стоимость Оборудование*@
-                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                               iterator = iterator.Value.AddMonths(1))
-                                {
-                                    var sumFirst = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                    var obj = Model.scopesOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
-                                    decimal? sum = 0;
-                                    foreach (var ob in obj)
-                                    {
-                                        if (obj != null)
-                                        {
-                                            sum += ob.EquipmentCost;
-                                        }
-                                    }
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@((sumFirst?.EquipmentCost - sum)?.ToString("N2"))</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td>@sumFirst?.EquipmentCost?.ToString("N2")</td>
-                                    }
-                                }
-                            </tr>
-                            <tr @*Оборудование - Факт(свои)*@>
-                                <th class="second-col"><span> Факт своими силами</span></th>
-                                @*Стоимость Оборудование*@
-                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                               iterator = iterator.Value.AddMonths(1))
-                                {
-                                    var sumFirst = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                    var obj = Model.factsOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
-                                    decimal? sum = 0;
-                                    foreach (var ob in obj)
-                                    {
-                                        if (obj != null)
-                                        {
-                                            sum += ob.EquipmentCost;
-                                        }
-                                    }
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@((sumFirst?.EquipmentCost - sum)?.ToString("N2"))</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td>@sumFirst?.EquipmentCost?.ToString("N2")</td>
-                                    }
-                                }
-                            </tr>
-                        }
-
-                        <tr id="other" @*Другие работы - План*@>
-                            @if (ViewData["Main"] != null)
-                            {
-                                <th class="first-col" rowspan="4"><span>Другие работы</span></th>
-                            }
-                            else
-                            {
-                                <th class="first-col" rowspan="2"><span>Другие работы</span></th>
-                            }
-                            <th class="second-col"><span>План</span></th>
-                            <td class="third-col" rowspan="2"><span>@Model.contractPrice.OtherExpensesCost?.ToString("N2")</span></td>
-                            <td class="fourth-col" rowspan="2"><span>@Model.workTodayYear.OtherExpensesCost?.ToString("N2")</span></td>
-                            <td class="fifth-col" rowspan="2"><span>@Model.remainingScope.OtherExpensesCost?.ToString("N2")</span></td>
-                            <td class="sixth-col" rowspan="2"><span>@Model.todayScope.OtherExpensesCost?.ToString("N2")</span></td>
-                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                            iterator = iterator.Value.AddMonths(1))
-                            {
-                                var obj = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                decimal? sum;
-                                if (obj != null)
-                                {
-                                    sum = obj.OtherExpensesCost;
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@sum?.ToString("N2")</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
-                                }
-                                else
-                                {
-                                    <td></td>
-                                }
-                            }
-                        </tr>
-                        <tr @*Другие работы - Факт*@>
-                            <th class="second-col"><span>Факт</span></th>
-                            @*Стоимость ?*@
-                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                            iterator = iterator.Value.AddMonths(1))
-                            {
-                                var obj = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                decimal? sum;
-                                if (obj != null)
-                                {
-                                    sum = obj.OtherExpensesCost;
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@sum?.ToString("N2")</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
-                                }
-                                else
-                                {
-                                    <td></td>
-                                }
-                            }
-                        </tr>
-                        @if (ViewData["Main"] != null)
-                        {
-                            <tr @*Другие работы - План(свои)*@>
-                                <th class="second-col"><span>План своими силами</span></th>
-                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.OtherExpensesCost - Model.contractPriceOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
-                                <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.OtherExpensesCost - Model.workTodayYearOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
-                                <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.OtherExpensesCost - Model.remainingScopeOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
-                                <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.OtherExpensesCost - Model.todayScopeOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
-                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                               iterator = iterator.Value.AddMonths(1))
-                                {
-                                    var sumFirst = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                    var obj = Model.scopesOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
-                                    decimal? sum = 0;
-                                    foreach (var ob in obj)
-                                    {
-                                        if (obj != null)
-                                        {
-                                            sum += ob.OtherExpensesCost;
-                                        }
-                                    }
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@((sumFirst?.OtherExpensesCost - sum)?.ToString("N2"))</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td>@sumFirst?.OtherExpensesCost?.ToString("N2")</td>
-                                    }
-                                }
-                            </tr>
-                            <tr @*Другие работы - Факт(свои)*@>
-                                <th class="second-col"><span> Факт своими силами</span></th>
-                                @*Стоимость ?*@
-                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                               iterator = iterator.Value.AddMonths(1))
-                                {
-                                    var sumFirst = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                    var obj = Model.factsOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
-                                    decimal? sum = 0;
-                                    foreach (var ob in obj)
-                                    {
-                                        if (obj != null)
-                                        {
-                                            sum += ob.OtherExpensesCost;
-                                        }
-                                    }
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@((sumFirst?.OtherExpensesCost - sum)?.ToString("N2"))</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td>@sumFirst?.OtherExpensesCost?.ToString("N2")</td>
-                                    }
-                                }
-                            </tr>
-                        }
-
-                        <tr id="allWithoutNDS" @*Всего, без НДС - План*@>
-                            @if (ViewData["Main"] != null)
-                            {
-                                <th class="first-col" rowspan="4"><span>Всего, без НДС</span></th>
-                            }
-                            else
-                            {
-                                <th class="first-col" rowspan="2"><span>Всего, без НДС</span></th>
-                            }
-                            <th class="second-col"><span>План</span></th>
-                            <td class="third-col" rowspan="2"><span>@Model.contractPrice.TotalWithoutNds?.ToString("N2")</span></td>
-                            <td class="fourth-col" rowspan="2"><span>@Model.workTodayYear.TotalWithoutNds?.ToString("N2")</span></td>
-                            <td class="fifth-col" rowspan="2"><span>@Model.remainingScope.TotalWithoutNds?.ToString("N2")</span></td>
-                            <td class="sixth-col" rowspan="2"><span>@Model.todayScope.TotalWithoutNds?.ToString("N2")</span></td>
-                            @*Стоимость ?*@
-                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                            iterator = iterator.Value.AddMonths(1))
-                            {
-                                var obj = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                decimal? sum;
-                                if (obj != null)
-                                {
-                                    sum = obj.TotalWithoutNds;
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@sum?.ToString("N2")</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
-                                }
-                                else
-                                {
-                                    <td></td>
-                                }
-                            }
-                        </tr>
-                        <tr @*Всего, без НДС - Факт*@>
-                            <th class="second-col"><span>Факт</span></th>
-                            @*Стоимость ?*@
-                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                            iterator = iterator.Value.AddMonths(1))
-                            {
-                                var obj = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                decimal? sum;
-                                if (obj != null)
-                                {
-                                    sum = obj.TotalWithoutNds;
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@sum?.ToString("N2")</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td></td>
-                                    }
-                                }
-                                else
-                                {
-                                    <td></td>
-                                }
-                            }
-                        </tr>
-                        @if (ViewData["Main"] != null)
-                        {
-                            <tr @*Всего, без НДС - План(свои)*@>
-                                <th class="second-col"><span>План своими силами</span></th>
-                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.TotalWithoutNds - Model.contractPriceOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
-                                <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.TotalWithoutNds - Model.workTodayYearOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
-                                <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.TotalWithoutNds - Model.remainingScopeOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
-                                <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.TotalWithoutNds - Model.todayScopeOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
-                                @*Стоимость ?*@
-                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                               iterator = iterator.Value.AddMonths(1))
-                                {
-                                    var sumFirst = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                    var obj = Model.scopesOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
-                                    decimal? sum = 0;
-                                    foreach (var ob in obj)
-                                    {
-                                        if (obj != null)
-                                        {
-                                            sum += ob.TotalWithoutNds;
-                                        }
-                                    }
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@((sumFirst?.TotalWithoutNds - sum)?.ToString("N2"))</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td>@sumFirst?.TotalWithoutNds?.ToString("N2")</td>
-                                    }
-                                }
-                            </tr>
-                            <tr @*Всего, без НДС - Факт(свои)*@>
-                                <th class="second-col"><span> Факт своими силами</span></th>
-                                @*Стоимость ?*@
-                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
-                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
-                               iterator = iterator.Value.AddMonths(1))
-                                {
-                                    var sumFirst = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
-                                    var obj = Model.factsOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
-                                    decimal? sum = 0;
-                                    foreach (var ob in obj)
-                                    {
-                                        if (obj != null)
-                                        {
-                                            sum += ob.TotalWithoutNds;
-                                        }
-                                    }
-                                    if (sum != 0)
-                                    {
-                                        <td>
-                                            <span>@((sumFirst?.TotalWithoutNds - sum)?.ToString("N2"))</span>
-                                        </td>
-                                    }
-                                    else
-                                    {
-                                        <td>@sumFirst?.TotalWithoutNds?.ToString("N2")</td>
-                                    }
-                                }
-                            </tr>
-                        }
-
-                        <tr id="optionnaly" @*Доп. работы - План*@>
+                        @*Доп. работы - План*@
+                        <tr id="optionnaly">
                             @if (ViewData["Main"] != null)
                             {
                                 <th class="first-col" rowspan="4"><span>Доп. работы</span></th>
@@ -972,7 +579,8 @@
                                 }
                             }
                         </tr>
-                        <tr @*Доп. работы - Факт*@>
+                        @*Доп. работы - Факт*@
+                        <tr>
                             <th class="second-col"><span>Факт</span></th>
                             @*Стоимость Доп. работы*@
                             @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -1003,9 +611,10 @@
                         </tr>
                         @if (ViewData["Main"] != null)
                         {
-                            <tr @*Доп. работы - План(свои)*@>
+                            @*Доп. работы - План(свои)*@
+                            <tr>
                                 <th class="second-col"><span>План своими силами</span></th>
-                                 <td class="third-col" rowspan="2"><span>@((Model.contractPrice.AdditionalCost - Model.contractPriceOwn?.AdditionalCost)?.ToString("N2"))</span></td>
+                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.AdditionalCost - Model.contractPriceOwn?.AdditionalCost)?.ToString("N2"))</span></td>
                                 <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.AdditionalCost - Model.workTodayYearOwn?.AdditionalCost)?.ToString("N2"))</span></td>
                                 <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.AdditionalCost - Model.remainingScopeOwn?.AdditionalCost)?.ToString("N2"))</span></td>
                                 <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.AdditionalCost - Model.todayScopeOwn?.AdditionalCost)?.ToString("N2"))</span></td>
@@ -1036,7 +645,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Доп. работы - Факт(свои)*@>
+                            @*Доп. работы - Факт(свои)*@
+                            <tr>
                                 <th class="second-col"><span> Факт своими силами</span></th>
                                 @*Стоимость Доп. работы*@
                                 @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -1067,14 +677,435 @@
                             </tr>
                         }
 
-                        <tr id="material" @*Материалы - План*@>
+
+                        @*Оборудование - План*@
+                        <tr id="equip" >
                             @if (ViewData["Main"] != null)
                             {
-                                <th class="first-col" rowspan="4"><span>Материалы заказчика (справочно)</span></th>
+                                <th class="first-col" rowspan="4"><span>Оборудование генподрядчика</span></th>
                             }
                             else
                             {
-                                <th class="first-col" rowspan="2"><span>Материалы заказчика (справочно)</span></th>
+                                <th class="first-col" rowspan="2"><span>Оборудование генподрядчика</span></th>
+                            }
+                            <th class="second-col"><span>План</span></th>
+                            <td class="third-col" rowspan="2"><span>@Model.contractPrice.EquipmentCost?.ToString("N2")</span></td>
+                            <td class="fourth-col" rowspan="2"><span>@Model.workTodayYear.EquipmentCost?.ToString("N2")</span></td>
+                            <td class="fifth-col" rowspan="2"><span>@Model.remainingScope.EquipmentCost?.ToString("N2")</span></td>
+                            <td class="sixth-col" rowspan="2"><span>@Model.todayScope.EquipmentCost?.ToString("N2")</span></td>
+                            @*Стоимость Оборудование*@
+                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                            iterator = iterator.Value.AddMonths(1))
+                            {
+                                var obj = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                decimal? sum;
+                                if (obj != null)
+                                {
+                                    sum = obj.EquipmentCost;
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@sum?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                        @*Оборудование - Факт*@
+                        <tr >
+                            <th class="second-col"><span>Факт</span></th>
+                            @*Стоимость Оборудование*@
+                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                            iterator = iterator.Value.AddMonths(1))
+                            {
+                                var obj = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                decimal? sum;
+                                if (obj != null)
+                                {
+                                    sum = obj.EquipmentCost;
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@sum?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td> </td>
+                                }
+                            }
+                        </tr>
+                        @if (ViewData["Main"] != null)
+                        {
+                            @*Оборудование - План(свои)*@
+                            <tr >
+                                <th class="second-col"><span>План своими силами</span></th>
+                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.EquipmentCost - Model.contractPriceOwn?.EquipmentCost)?.ToString("N2"))</span></td>
+                                <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.EquipmentCost - Model.workTodayYearOwn?.EquipmentCost)?.ToString("N2"))</span></td>
+                                <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.EquipmentCost - Model.remainingScopeOwn?.EquipmentCost)?.ToString("N2"))</span></td>
+                                <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.EquipmentCost - Model.todayScopeOwn?.EquipmentCost)?.ToString("N2"))</span></td>
+                                @*Стоимость Оборудование*@
+                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                               iterator = iterator.Value.AddMonths(1))
+                                {
+                                    var sumFirst = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    var obj = Model.scopesOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
+                                    decimal? sum = 0;
+                                    foreach (var ob in obj)
+                                    {
+                                        if (obj != null)
+                                        {
+                                            sum += ob.EquipmentCost;
+                                        }
+                                    }
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@((sumFirst?.EquipmentCost - sum)?.ToString("N2"))</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@sumFirst?.EquipmentCost?.ToString("N2")</td>
+                                    }
+                                }
+                            </tr>
+                            @*Оборудование - Факт(свои)*@
+                            <tr >
+                                <th class="second-col"><span> Факт своими силами</span></th>
+                                @*Стоимость Оборудование*@
+                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                               iterator = iterator.Value.AddMonths(1))
+                                {
+                                    var sumFirst = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    var obj = Model.factsOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
+                                    decimal? sum = 0;
+                                    foreach (var ob in obj)
+                                    {
+                                        if (obj != null)
+                                        {
+                                            sum += ob.EquipmentCost;
+                                        }
+                                    }
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@((sumFirst?.EquipmentCost - sum)?.ToString("N2"))</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@sumFirst?.EquipmentCost?.ToString("N2")</td>
+                                    }
+                                }
+                            </tr>
+                        }
+
+                        @*Прочие работы и услуги - План*@
+                        <tr id="other" >
+                            @if (ViewData["Main"] != null)
+                            {
+                                <th class="first-col" rowspan="4"><span>Прочие работы и услуги</span></th>
+                            }
+                            else
+                            {
+                                <th class="first-col" rowspan="2"><span>Прочие работы и услуги</span></th>
+                            }
+                            <th class="second-col"><span>План</span></th>
+                            <td class="third-col" rowspan="2"><span>@Model.contractPrice.OtherExpensesCost?.ToString("N2")</span></td>
+                            <td class="fourth-col" rowspan="2"><span>@Model.workTodayYear.OtherExpensesCost?.ToString("N2")</span></td>
+                            <td class="fifth-col" rowspan="2"><span>@Model.remainingScope.OtherExpensesCost?.ToString("N2")</span></td>
+                            <td class="sixth-col" rowspan="2"><span>@Model.todayScope.OtherExpensesCost?.ToString("N2")</span></td>
+                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                            iterator = iterator.Value.AddMonths(1))
+                            {
+                                var obj = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                decimal? sum;
+                                if (obj != null)
+                                {
+                                    sum = obj.OtherExpensesCost;
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@sum?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                        @*Прочие работы и услуги - Факт*@
+                        <tr >
+                            <th class="second-col"><span>Факт</span></th>
+                            @*Стоимость ?*@
+                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                            iterator = iterator.Value.AddMonths(1))
+                            {
+                                var obj = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                decimal? sum;
+                                if (obj != null)
+                                {
+                                    sum = obj.OtherExpensesCost;
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@sum?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                        @if (ViewData["Main"] != null)
+                        {
+                            @*Прочие работы и услуги - План(свои)*@
+                            <tr >
+                                <th class="second-col"><span>План своими силами</span></th>
+                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.OtherExpensesCost - Model.contractPriceOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
+                                <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.OtherExpensesCost - Model.workTodayYearOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
+                                <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.OtherExpensesCost - Model.remainingScopeOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
+                                <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.OtherExpensesCost - Model.todayScopeOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
+                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                               iterator = iterator.Value.AddMonths(1))
+                                {
+                                    var sumFirst = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    var obj = Model.scopesOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
+                                    decimal? sum = 0;
+                                    foreach (var ob in obj)
+                                    {
+                                        if (obj != null)
+                                        {
+                                            sum += ob.OtherExpensesCost;
+                                        }
+                                    }
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@((sumFirst?.OtherExpensesCost - sum)?.ToString("N2"))</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@sumFirst?.OtherExpensesCost?.ToString("N2")</td>
+                                    }
+                                }
+                            </tr>
+                            @*Прочие работы и услуги - Факт(свои)*@
+                            <tr >
+                                <th class="second-col"><span> Факт своими силами</span></th>
+                                @*Стоимость ?*@
+                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                               iterator = iterator.Value.AddMonths(1))
+                                {
+                                    var sumFirst = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    var obj = Model.factsOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
+                                    decimal? sum = 0;
+                                    foreach (var ob in obj)
+                                    {
+                                        if (obj != null)
+                                        {
+                                            sum += ob.OtherExpensesCost;
+                                        }
+                                    }
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@((sumFirst?.OtherExpensesCost - sum)?.ToString("N2"))</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@sumFirst?.OtherExpensesCost?.ToString("N2")</td>
+                                    }
+                                }
+                            </tr>
+                        }
+
+                        @*Всего, без НДС - План*@
+                        <tr id="allWithoutNDS" >
+                            @if (ViewData["Main"] != null)
+                            {
+                                <th class="first-col" rowspan="4"><span>Всего по договору без НДС (справочно)</span></th>
+                            }
+                            else
+                            {
+                                <th class="first-col" rowspan="2"><span>Всего по договору без НДС (справочно)</span></th>
+                            }
+                            <th class="second-col"><span>План</span></th>
+                            <td class="third-col" rowspan="2"><span>@Model.contractPrice.TotalWithoutNds?.ToString("N2")</span></td>
+                            <td class="fourth-col" rowspan="2"><span>@Model.workTodayYear.TotalWithoutNds?.ToString("N2")</span></td>
+                            <td class="fifth-col" rowspan="2"><span>@Model.remainingScope.TotalWithoutNds?.ToString("N2")</span></td>
+                            <td class="sixth-col" rowspan="2"><span>@Model.todayScope.TotalWithoutNds?.ToString("N2")</span></td>
+                            @*Стоимость ?*@
+                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                            iterator = iterator.Value.AddMonths(1))
+                            {
+                                var obj = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                decimal? sum;
+                                if (obj != null)
+                                {
+                                    sum = obj.TotalWithoutNds;
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@sum?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                        @*Всего, без НДС - Факт*@
+                        <tr >
+                            <th class="second-col"><span>Факт</span></th>
+                            @*Стоимость ?*@
+                            @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                            Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                            iterator = iterator.Value.AddMonths(1))
+                            {
+                                var obj = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                decimal? sum;
+                                if (obj != null)
+                                {
+                                    sum = obj.TotalWithoutNds;
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@sum?.ToString("N2")</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td></td>
+                                    }
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                        @if (ViewData["Main"] != null)
+                        {
+                            @*Всего, без НДС - План(свои)*@
+                            <tr >
+                                <th class="second-col"><span>План своими силами</span></th>
+                                <td class="third-col" rowspan="2"><span>@((Model.contractPrice.TotalWithoutNds - Model.contractPriceOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
+                                <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.TotalWithoutNds - Model.workTodayYearOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
+                                <td class="fifth-col" rowspan="2"><span>@((Model.remainingScope.TotalWithoutNds - Model.remainingScopeOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
+                                <td class="sixth-col" rowspan="2"><span>@((Model.todayScope.TotalWithoutNds - Model.todayScopeOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
+                                @*Стоимость ?*@
+                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                               iterator = iterator.Value.AddMonths(1))
+                                {
+                                    var sumFirst = Model.scopes.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    var obj = Model.scopesOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
+                                    decimal? sum = 0;
+                                    foreach (var ob in obj)
+                                    {
+                                        if (obj != null)
+                                        {
+                                            sum += ob.TotalWithoutNds;
+                                        }
+                                    }
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@((sumFirst?.TotalWithoutNds - sum)?.ToString("N2"))</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@sumFirst?.TotalWithoutNds?.ToString("N2")</td>
+                                    }
+                                }
+                            </tr>
+                            @*Всего, без НДС - Факт(свои)*@
+                            <tr >
+                                <th class="second-col"><span> Факт своими силами</span></th>
+                                @*Стоимость ?*@
+                                @for (var iterator = Model.scopes.FirstOrDefault().Period;
+                               Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
+                               iterator = iterator.Value.AddMonths(1))
+                                {
+                                    var sumFirst = Model.facts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).FirstOrDefault();
+                                    var obj = Model.factsOwn.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)iterator)).ToList();
+                                    decimal? sum = 0;
+                                    foreach (var ob in obj)
+                                    {
+                                        if (obj != null)
+                                        {
+                                            sum += ob.TotalWithoutNds;
+                                        }
+                                    }
+                                    if (sum != 0)
+                                    {
+                                        <td>
+                                            <span>@((sumFirst?.TotalWithoutNds - sum)?.ToString("N2"))</span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>@sumFirst?.TotalWithoutNds?.ToString("N2")</td>
+                                    }
+                                }
+                            </tr>
+                        }
+
+                       
+                        @*Материалы - План*@
+                        <tr id="material" >
+                            @if (ViewData["Main"] != null)
+                            {
+                                <th class="first-col" rowspan="4"><span>Материалы генподрядчика</span></th>
+                            }
+                            else
+                            {
+                                <th class="first-col" rowspan="2"><span>Материалы генподрядчика</span></th>
                             }
                             <th class="second-col"><span>План</span></th>
                             <td class="third-col" rowspan="2"><span>@Model.contractPrice.MaterialCost?.ToString("N2")</span></td>
@@ -1108,7 +1139,8 @@
                                 }
                             }
                         </tr>
-                        <tr @*Материалы - Факт*@>
+                        @*Материалы - Факт*@
+                        <tr >
                             <th class="second-col"><span>Факт</span></th>
                             @*Стоимость Материалы*@
                             @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -1139,7 +1171,8 @@
                         </tr>
                         @if (ViewData["Main"] != null)
                         {
-                            <tr @*Материалы - План(свои)*@>
+                            @*Материалы - План(свои)*@
+                            <tr >
                                 <th class="second-col"><span>План своими силами</span></th>
                                 <td class="third-col" rowspan="2"><span>@((Model.contractPrice.MaterialCost - Model.contractPriceOwn?.MaterialCost)?.ToString("N2"))</span></td>
                                 <td class="fourth-col" rowspan="2"><span>@((Model.workTodayYear.MaterialCost - Model.workTodayYearOwn?.MaterialCost)?.ToString("N2"))</span></td>
@@ -1172,7 +1205,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Материалы - Факт(свои)*@>
+                            @*Материалы - Факт(свои)*@
+                            <tr >
                                 <th class="second-col"><span> Факт своими силами</span></th>
                                 @*Стоимость Материалы*@
                                 @for (var iterator = Model.scopes.FirstOrDefault().Period;
@@ -1250,9 +1284,10 @@
                     <tbody class="tbodyPartialTableModal">
                         @if (ViewData["Engin"] == null)
                         {
-                            <tr id="plan" @*Объем работ - План*@>
+                            @*Объем работ - План*@
+                            <tr id="plan" >
                                 <th class="first-col" rowspan="8"><span>План</span></th>
-                                <th class="second-col"><span>Объем работ</span></th>
+                                <th class="second-col"><span>Стоимость работ по договору</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.TotalCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.TotalCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.TotalCost?.ToString("N2")</span></td>
@@ -1284,8 +1319,9 @@
                                     }
                                 }
                             </tr>
-                            <tr @*СМР - План*@>
-                                <th class="second-col"><span>СМР</span></th>
+                            @*СМР - План*@
+                            <tr >
+                                <th class="second-col"><span>Неизменная цена СМР</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.SmrCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.SmrCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.SmrCost?.ToString("N2")</span></td>
@@ -1317,7 +1353,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*ПНР - План*@>
+                            @*ПНР - План*@
+                            <tr >
                                 <th class="second-col"><span>ПНР</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.PnrCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.PnrCost?.ToString("N2")</span></td>
@@ -1350,8 +1387,9 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Оборудование - План*@>
-                                <th class="second-col"><span>Оборудование</span></th>
+                            @*Оборудование - План*@
+                            <tr >
+                                <th class="second-col"><span>Оборудование генподрядчика</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.EquipmentCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.EquipmentCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.EquipmentCost?.ToString("N2")</span></td>
@@ -1383,7 +1421,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Прочие работы и услуги - План*@>
+                            @*Прочие работы и услуги - План*@
+                            <tr >
                                 <th class="second-col"><span>Прочие работы и услуги</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.OtherExpensesCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.OtherExpensesCost?.ToString("N2")</span></td>
@@ -1415,7 +1454,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Всего, без НДС - План*@>
+                            @*Всего, без НДС - План*@
+                            <tr >
                                 <th class="second-col"><span>Всего по договору, без НДС</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.TotalWithoutNds?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.TotalWithoutNds?.ToString("N2")</span></td>
@@ -1448,7 +1488,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Доп. работы - План*@>
+                            @*Доп. работы - План*@
+                            <tr >
                                 <th class="second-col"><span>Доп. работы</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.AdditionalCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.AdditionalCost?.ToString("N2")</span></td>
@@ -1481,8 +1522,9 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Материалы - План*@>
-                                <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            @*Материалы - План*@
+                            <tr >
+                                <th class="second-col"><span>Материалы генподрядчика</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.MaterialCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.MaterialCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.MaterialCost?.ToString("N2")</span></td>
@@ -1515,9 +1557,10 @@
                                 }
                             </tr>
 
-                            <tr id="fact" @*Объем работ - Факт*@>
+                            @*Стоимость работ по договору - Факт*@
+                            <tr id="fact" >
                                 <th rowspan="8" class="first-col"><span>Факт</span></th>
-                                <th class="second-col"><span>Объем работ</span></th>
+                                <th class="second-col"><span>Стоимость работ</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.TotalCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.TotalCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.TotalCost?.ToString("N2")</span></td>
@@ -1549,8 +1592,9 @@
                                     }
                                 }
                             </tr>
-                            <tr @*СМР - Факт*@>
-                                <th class="second-col"><span>СМР</span></th>
+                            @*СМР - Факт*@
+                            <tr >
+                                <th class="second-col"><span>Неизменная цена СМР</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.SmrCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.SmrCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.SmrCost?.ToString("N2")</span></td>
@@ -1582,7 +1626,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*ПНР - Факт*@>
+                            @*ПНР - Факт*@
+                            <tr >
                                 <th class="second-col"><span>ПНР</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.PnrCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.PnrCost?.ToString("N2")</span></td>
@@ -1615,8 +1660,9 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Оборудование - Факт*@>
-                                <th class="second-col"><span>Оборудование</span></th>
+                            @*Оборудование - Факт*@
+                            <tr >
+                                <th class="second-col"><span>Оборудование генподрядчика</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.EquipmentCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.EquipmentCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.EquipmentCost?.ToString("N2")</span></td>
@@ -1648,7 +1694,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Прочие работы - Факт*@>
+                            @*Прочие работы - Факт*@
+                            <tr >
                                 <th class="second-col"><span>Прочие работы и услуги</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.OtherExpensesCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.OtherExpensesCost?.ToString("N2")</span></td>
@@ -1681,7 +1728,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Всего, без НДС - Факт*@>
+                            @*Всего, без НДС - Факт*@
+                            <tr >
                                 <th class="second-col"><span>Всего по договору, без НДС</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.TotalWithoutNds?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.TotalWithoutNds?.ToString("N2")</span></td>
@@ -1714,7 +1762,8 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Доп. работы - Факт*@>
+                            @*Доп. работы - Факт*@
+                            <tr >
                                 <th class="second-col"><span>Доп. работы</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.AdditionalCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.AdditionalCost?.ToString("N2")</span></td>
@@ -1747,8 +1796,9 @@
                                     }
                                 }
                             </tr>
-                            <tr @*Материалы - Факт*@>
-                                <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                            @*Материалы - Факт*@
+                            <tr >
+                                <th class="second-col"><span>Материалы генподрядчика</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.MaterialCost?.ToString("N2")</span></td>
                                 <td class="fourth-col"><span>@Model.workTodayYear.MaterialCost?.ToString("N2")</span></td>
                                 <td class="fifth-col"><span>@Model.remainingScope.MaterialCost?.ToString("N2")</span></td>
@@ -1783,13 +1833,14 @@
 
                             @if (ViewData["Main"] != null)
                             {
-                                <tr id="planOur" @*Объем работ - План своими силами*@>
+                                @*Объем работ - План своими силами*@
+                                <tr id="planOur" >
                                     <th rowspan="8" class="first-col"><span>План cвоими силами</span></th>
-                                    <th class="second-col"><span>Объем работ</span></th>
+                                    <th class="second-col"><span>Стоимость работ</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.TotalCost - Model.contractPriceOwn?.TotalCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.TotalCost - Model.workTodayYearOwn?.TotalCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.TotalCost - Model.remainingScopeOwn?.TotalCost)?.ToString("N2"))</span></td>
-                                    <td class="sixth-col"><span>@((Model.todayScope.TotalCost - Model.todayScopeOwn?.TotalCost)?.ToString("N2"))</span></td>                                    
+                                    <td class="sixth-col"><span>@((Model.todayScope.TotalCost - Model.todayScopeOwn?.TotalCost)?.ToString("N2"))</span></td>
                                     @*Стоимость ?*@
                                     @for (var iterator = Model.scopes.FirstOrDefault().Period;
                                    Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)Model.scopes.LastOrDefault().Period);
@@ -1817,8 +1868,9 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*СМР - План своими силами*@>
-                                    <th class="second-col"><span>СМР</span></th>
+                                @*СМР - План своими силами*@
+                                <tr >
+                                    <th class="second-col"><span>Неизменная цена СМР</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.SmrCost - Model.contractPriceOwn?.SmrCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.SmrCost - Model.workTodayYearOwn?.SmrCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.SmrCost - Model.remainingScopeOwn?.SmrCost)?.ToString("N2"))</span></td>
@@ -1850,7 +1902,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*ПНР - План своими силами*@>
+                                @*ПНР - План своими силами*@
+                                <tr >
                                     <th class="second-col"><span>ПНР</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.PnrCost - Model.contractPriceOwn?.PnrCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.PnrCost - Model.workTodayYearOwn?.PnrCost)?.ToString("N2"))</span></td>
@@ -1883,8 +1936,9 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Оборудование - План своими силами*@>
-                                    <th class="second-col"><span>Оборудование</span></th>
+                                @*Оборудование - План своими силами*@
+                                <tr >
+                                    <th class="second-col"><span>Оборудование генподрядчика</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.EquipmentCost - Model.contractPriceOwn?.EquipmentCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.EquipmentCost - Model.workTodayYearOwn?.EquipmentCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.EquipmentCost - Model.remainingScopeOwn?.EquipmentCost)?.ToString("N2"))</span></td>
@@ -1916,7 +1970,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Прочие работы - План своими силами*@>
+                                @*Прочие работы - План своими силами*@
+                                <tr >
                                     <th class="second-col"><span>Прочие работы и услуги</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.OtherExpensesCost - Model.contractPriceOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.OtherExpensesCost - Model.workTodayYearOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
@@ -1948,7 +2003,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Всего, без НДС - План своими силами*@>
+                                @*Всего, без НДС - План своими силами*@
+                                <tr >
                                     <th class="second-col"><span>Всего по договору, без НДС</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.TotalWithoutNds - Model.contractPriceOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.TotalWithoutNds - Model.workTodayYearOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
@@ -1981,7 +2037,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Доп. работы - План своими силами*@>
+                                @*Доп. работы - План своими силами*@
+                                <tr >
                                     <th class="second-col"><span>Доп. работы</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.AdditionalCost - Model.contractPriceOwn?.AdditionalCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.AdditionalCost - Model.workTodayYearOwn?.AdditionalCost)?.ToString("N2"))</span></td>
@@ -2014,8 +2071,9 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Материалы - План своими силами*@>
-                                    <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                                @*Материалы - План своими силами*@
+                                <tr >
+                                    <th class="second-col"><span>Материалы генподрядчика</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.MaterialCost - Model.contractPriceOwn?.MaterialCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.MaterialCost - Model.workTodayYearOwn?.MaterialCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.MaterialCost - Model.remainingScopeOwn?.MaterialCost)?.ToString("N2"))</span></td>
@@ -2048,9 +2106,10 @@
                                     }
                                 </tr>
 
-                                <tr id="factOur" @*Объем работ - Факт своими силами*@>
+                                @*Объем работ - Факт своими силами*@
+                                <tr id="factOur" >
                                     <th class="first-col" rowspan="8"><span>Факт своими силами</span></th>
-                                    <th class="second-col"><span>Объем работ</span></th>
+                                    <th class="second-col"><span>Стоимость работ</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.TotalCost - Model.contractPriceOwn?.TotalCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.TotalCost - Model.workTodayYearOwn?.TotalCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.TotalCost - Model.remainingScopeOwn?.TotalCost)?.ToString("N2"))</span></td>
@@ -2082,8 +2141,9 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*СМР - Факт своими силами*@>
-                                    <th class="second-col"><span>СМР</span></th>
+                                @*СМР - Факт своими силами*@
+                                <tr >
+                                    <th class="second-col"><span>Неизменная цена СМР</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.SmrCost - Model.contractPriceOwn?.SmrCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.SmrCost - Model.workTodayYearOwn?.SmrCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.SmrCost - Model.remainingScopeOwn?.SmrCost)?.ToString("N2"))</span></td>
@@ -2115,7 +2175,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*ПНР - Факт своими силами*@>
+                                @*ПНР - Факт своими силами*@
+                                <tr >
                                     <th class="second-col"><span>ПНР</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.PnrCost - Model.contractPriceOwn?.PnrCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.PnrCost - Model.workTodayYearOwn?.PnrCost)?.ToString("N2"))</span></td>
@@ -2148,8 +2209,9 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Оборудование - Факт своими силами*@>
-                                    <th class="second-col"><span>Оборудование</span></th>
+                                @*Оборудование - Факт своими силами*@
+                                <tr >
+                                    <th class="second-col"><span>Оборудование генподрядчика</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.EquipmentCost - Model.contractPriceOwn?.EquipmentCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.EquipmentCost - Model.workTodayYearOwn?.EquipmentCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.EquipmentCost - Model.remainingScopeOwn?.EquipmentCost)?.ToString("N2"))</span></td>
@@ -2181,7 +2243,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Прочие работы - Факт своими силами*@>
+                                @*Прочие работы - Факт своими силами*@
+                                <tr >
                                     <th class="second-col"><span>Прочие работы и услуги</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.OtherExpensesCost - Model.contractPriceOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.OtherExpensesCost - Model.workTodayYearOwn?.OtherExpensesCost)?.ToString("N2"))</span></td>
@@ -2214,7 +2277,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Всего, без НДС - Факт своими силами*@>
+                                @*Всего, без НДС - Факт своими силами*@
+                                <tr >
                                     <th class="second-col"><span>Всего по договору, без НДС</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.TotalWithoutNds - Model.contractPriceOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.TotalWithoutNds - Model.workTodayYearOwn?.TotalWithoutNds)?.ToString("N2"))</span></td>
@@ -2247,7 +2311,8 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Доп. работы - Факт своими силами*@>
+                                @*Доп. работы - Факт своими силами*@
+                                <tr >
                                     <th class="second-col"><span>Доп. работы</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.AdditionalCost - Model.contractPriceOwn?.AdditionalCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.AdditionalCost - Model.workTodayYearOwn?.AdditionalCost)?.ToString("N2"))</span></td>
@@ -2280,8 +2345,9 @@
                                         }
                                     }
                                 </tr>
-                                <tr @*Материалы - Факт своими силами*@>
-                                    <th class="second-col"><span>Материалы заказчика (справочно)</span></th>
+                                @*Материалы - Факт своими силами*@
+                                <tr >
+                                    <th class="second-col"><span>Материалы генподрядчика</span></th>
                                     <td class="third-col"><span>@((Model.contractPrice.MaterialCost - Model.contractPriceOwn?.MaterialCost)?.ToString("N2"))</span></td>
                                     <td class="fourth-col"><span>@((Model.workTodayYear.MaterialCost - Model.workTodayYearOwn?.MaterialCost)?.ToString("N2"))</span></td>
                                     <td class="fifth-col"><span>@((Model.remainingScope.MaterialCost - Model.remainingScopeOwn?.MaterialCost)?.ToString("N2"))</span></td>
@@ -2317,7 +2383,8 @@
                         }
                         else
                         {
-                            <tr id="plan" @*Объем услуг - План*@>
+                            @*Объем услуг - План*@
+                            <tr id="plan" >
                                 <th class="first-col"><span>План</span></th>
                                 <th class="second-col"><span>Объем услуг</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.SmrCost?.ToString("N2")</span></td>
@@ -2351,7 +2418,8 @@
                                     }
                                 }
                             </tr>
-                            <tr id="fact" @*Объем услуг - Факт*@>
+                            @*Объем услуг - Факт*@
+                            <tr id="fact" >
                                 <th class="first-col"><span>Факт</span></th>
                                 <th class="second-col"><span>Объем услуг</span></th>
                                 <td class="third-col"><span>@Model.contractPrice.SmrCost?.ToString("N2")</span></td>
@@ -2385,7 +2453,8 @@
                                     }
                                 }
                             </tr>
-                            <tr id="planOur" @*Объем услуг - План своими силами*@>
+                            @*Объем услуг - План своими силами*@
+                            <tr id="planOur" >
                                 <th class="first-col"><span>План cвоими силами</span></th>
                                 <th class="second-col"><span>Объем услуг</span></th>
                                 <td class="third-col"><span>@((Model.contractPrice.SmrCost - Model.contractPriceOwn?.SmrCost)?.ToString("N2"))</span></td>
@@ -2419,7 +2488,8 @@
                                     }
                                 }
                             </tr>
-                            <tr id="factOur" @*Объем услуг - Факт своими силами*@>
+                            @*Объем услуг - Факт своими силами*@
+                            <tr id="factOur" >
                                 <th class="first-col"><span>Факт своими силами</span></th>
                                 <th class="second-col"><span>Объем услуг</span></th>
                                 <td class="third-col"><span>@((Model.contractPrice.SmrCost - Model.contractPriceOwn?.SmrCost)?.ToString("N2"))</span></td>

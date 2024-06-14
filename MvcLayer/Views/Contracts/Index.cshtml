@@ -18,7 +18,6 @@
     var permissions = HttpHelper.GetPermissionForUser(http);
 
     var isEngineering = (bool)ViewData["IsEngineering"];
-    bool isAdmin = true;
     string redirectAction = "Index";
     string redirectController = "Contracts";
     var actionMethod = isEngineering is true ? "Engineerings" : "Index";
@@ -255,9 +254,22 @@
                                 @if (isEngineering != true)
                                 {
                                     <td>
-                                        <span class="table_span-contractor">
-                                            @item.GenContractor
-                                        </span>
+                                        <div>
+                                            <span class="table_span-contractor">
+                                                @item.GenContractor
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span class="table_span-contractor">
+                                                @if (item.ResponsibleForWork is not null)
+                                                {
+                                                    <hr />
+                                                    <span>Ответственный за производство работ:</span>
+                                                    <br />
+                                                }
+                                                @item.ResponsibleForWork
+                                            </span>
+                                        </div>
                                     </td>
                                 }
                                 @*Сроки: выполнения работ - ввода *@
@@ -434,13 +446,26 @@
                                         @item.Client
                                     </span>
                                 </td>
-                                @*Генподрядчик*@
+                                @*Генподрядчик*@                             
                                 @if (isEngineering != true)
                                 {
                                     <td>
+                                        <div>
+                                            <span class="table_span-contractor">
+                                                @item.GenContractor
+                                            </span>
+                                        </div>
+                                        <div>
                                         <span class="table_span-contractor">
-                                            @item.GenContractor
-                                        </span>
+                                            @if (item.ResponsibleForWork is not null)
+                                            {
+                                                <hr />
+                                                <span>Ответственный за производство работ:</span>
+                                                 <br />                                               
+                                            }
+                                            @item.ResponsibleForWork
+                                            </span>
+                                        </div>
                                     </td>
                                 }
                                 @*Сроки: выполнения работ - ввода *@

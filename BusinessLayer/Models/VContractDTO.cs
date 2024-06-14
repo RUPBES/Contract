@@ -20,6 +20,7 @@ namespace BusinessLayer.Models
 
         public string? GenContractor { get; set; }
 
+        public string? ResponsibleForWork { get; set; }
         public string? Client { get; set; }
         public bool IsEngineering { get; set; }
 

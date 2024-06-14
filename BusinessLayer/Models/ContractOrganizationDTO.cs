@@ -13,6 +13,7 @@ namespace BusinessLayer.Models
         public int ContractId { get; set; }
         public bool? IsGenContractor { get; set; }
         public bool? IsClient { get; set; }
+        public bool? IsResponsibleForWork { get; set; }
 
         public virtual ContractDTO Contract { get; set; }
         public virtual OrganizationDTO Organization { get; set; }

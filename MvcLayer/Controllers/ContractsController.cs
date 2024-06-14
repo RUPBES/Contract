@@ -212,8 +212,13 @@ namespace MvcLayer.Controllers
 
             for (int i = 0; i < 3; i++)
             {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                //contract.ContractOrganizations.Add(new ContractOrganizationDTO());
                 contract.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                //contract.EmployeeContracts.Add(new EmployeeContractDTO());
             }
 
             contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
@@ -233,8 +238,13 @@ namespace MvcLayer.Controllers
 
             for (int i = 0; i < 3; i++)
             {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                //contract.ContractOrganizations.Add(new ContractOrganizationDTO());
                 contract.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                //contract.EmployeeContracts.Add(new EmployeeContractDTO());
             }
 
             contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
@@ -264,8 +274,13 @@ namespace MvcLayer.Controllers
 
             for (int i = 0; i < 3; i++)
             {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                //contract.ContractOrganizations.Add(new ContractOrganizationDTO());
                 contract.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
+                //contract.EmployeeContracts.Add(new EmployeeContractDTO());
             }
 
             contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
@@ -325,13 +340,22 @@ namespace MvcLayer.Controllers
                 {
                     IsClient = contract.ContractOrganizations[0].IsClient,
                     IsGenContractor = contract.ContractOrganizations[0].IsGenContractor,
+                    IsResponsibleForWork = contract.ContractOrganizations[0].IsResponsibleForWork,
                     OrganizationId = contract.ContractOrganizations[0].OrganizationId,
                 };
                 var orgContract2 = new ContractOrganizationDTO
                 {
                     IsClient = contract.ContractOrganizations[1].IsClient,
                     IsGenContractor = contract.ContractOrganizations[1].IsGenContractor,
+                    IsResponsibleForWork = contract.ContractOrganizations[1].IsResponsibleForWork,
                     OrganizationId = contract.ContractOrganizations[1].OrganizationId,
+                };
+                var orgContract3 = new ContractOrganizationDTO
+                {
+                    IsClient = contract.ContractOrganizations[2].IsClient,
+                    IsGenContractor = contract.ContractOrganizations[2].IsGenContractor,
+                    IsResponsibleForWork = contract.ContractOrganizations[2].IsResponsibleForWork,
+                    OrganizationId = contract.ContractOrganizations[2].OrganizationId,
                 };
                 var empContract1 = new EmployeeContractDTO
                 {
@@ -361,6 +385,10 @@ namespace MvcLayer.Controllers
                 if (orgContract2.OrganizationId != 0)
                 {
                     contract.ContractOrganizations.Add(orgContract2);
+                }
+                if (orgContract3.OrganizationId != 0)
+                {
+                    contract.ContractOrganizations.Add(orgContract3);
                 }
 
                 if (empContract1.EmployeeId != 0)
@@ -403,11 +431,7 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
         {
-            ViewData["returnContractId"] = returnContractId;
-            if (id == null || _contractService.GetAll() == null)
-            {
-                return NotFound();
-            }
+            ViewData["returnContractId"] = returnContractId;            
 
             var contract = _contractService.GetById((int)id);
             if (contract == null)
@@ -415,25 +439,21 @@ namespace MvcLayer.Controllers
                 return NotFound();
             }
 
-            if ((contract.IsSubContract == null || contract.IsSubContract == false) &&
-                (contract.IsAgreementContract == null || contract.IsAgreementContract == false))
+            if (contract.IsSubContract != true && contract.IsAgreementContract != true)
             {
-                if (contract.ContractOrganizations.Count < 1)
+                if (contract.ContractOrganizations.FirstOrDefault(x => x.IsClient == true) is null)
                 {
                     contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsClient = true });
+                }
+
+                if (contract.ContractOrganizations.FirstOrDefault(x => x.IsGenContractor == true) is null)
+                {
                     contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsGenContractor = true });
                 }
-                else if (contract.ContractOrganizations.Count < 2)
+
+                if (contract.ContractOrganizations.FirstOrDefault(x => x.IsResponsibleForWork == true) is null)
                 {
-                    if (contract.ContractOrganizations[0].IsGenContractor != true || contract.ContractOrganizations[0].IsClient != true)
-                    {
-                        contract.ContractOrganizations.Add(new ContractOrganizationDTO
-                        {
-                            ContractId = (int)id,
-                            IsGenContractor = contract.ContractOrganizations[0].IsGenContractor == true ? false : true,
-                            IsClient = contract.ContractOrganizations[0].IsGenContractor == true ? true : false
-                        });
-                    }
+                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsResponsibleForWork = true });
                 }
             }
             else
@@ -469,8 +489,8 @@ namespace MvcLayer.Controllers
             if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
 
-            ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
-            ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
+            //ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
+            //ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
 
             var viewContract = _mapper.Map<ContractViewModel>(contract);
             if (contract?.FundingSource is not null)
@@ -527,16 +547,12 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
         {
-            if (contract.IsSubContract != true && contract.IsAgreementContract != true)
+            for (int index = 0; index < contract.ContractOrganizations.Count; index++)
             {
-                if (contract.ContractOrganizations[1].OrganizationId == 0)
+                if (contract.ContractOrganizations[index].OrganizationId == 0)
                 {
-                    contract.ContractOrganizations.Remove(contract.ContractOrganizations[1]);
+                    contract.ContractOrganizations.Remove(contract.ContractOrganizations[index]);
                 }
-            }
-            if (contract.ContractOrganizations[0].OrganizationId == 0)
-            {
-                contract.ContractOrganizations.Remove(contract.ContractOrganizations[0]);
             }
 
             if (contract.EmployeeContracts[1].EmployeeId == 0)
@@ -699,9 +715,9 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "CreatePolicy")]
         public ActionResult AddNewOrganization(ContractViewModel organization)
         {
-            if (organization is not null && organization.ContractOrganizations[2].Organization is not null)
+            if (organization is not null && organization.ContractOrganizations[3].Organization is not null)
             {
-                _organization.Create(organization.ContractOrganizations[2].Organization);
+                _organization.Create(organization.ContractOrganizations[3].Organization);
 
                 if (organization.IsSubContract == true)
                 {
@@ -715,7 +731,7 @@ namespace MvcLayer.Controllers
                 {
                     return View("CreateEngin", organization);
                 }
-
+                ViewBag.Price = organization.ContractPrice;
                 return View("Create", organization);
             }
             return BadRequest();
@@ -740,7 +756,7 @@ namespace MvcLayer.Controllers
                 {
                     return View("CreateEngin", organization);
                 }
-
+                ViewBag.Price = organization.ContractPrice;
                 return View("Create", organization);
             }
             return BadRequest();
@@ -765,7 +781,7 @@ namespace MvcLayer.Controllers
                 {
                     return View("CreateEngin", organization);
                 }
-
+                ViewBag.Price = organization.ContractPrice;
                 return View("Create", organization);
             }
             return BadRequest();

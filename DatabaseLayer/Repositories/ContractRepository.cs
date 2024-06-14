@@ -41,6 +41,8 @@ namespace DatabaseLayer.Repositories
             return _context.Contracts
                  .Include(c => c.AgreementContract)
                 .Include(c => c.SubContract)
+                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
+                .Include(c => c.TypeWorkContracts).ThenInclude(o => o.TypeWork)
                 .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
                 .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(p => p.Payments).
@@ -50,6 +52,8 @@ namespace DatabaseLayer.Repositories
         public IEnumerable<Contract> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
         {
             return _context.Contracts
+                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
+                .Include(c => c.TypeWorkContracts).ThenInclude(o => o.TypeWork)
                 .Where(where).Select(select).ToList();
         }
 
@@ -99,6 +103,8 @@ namespace DatabaseLayer.Repositories
 
                 if (contract is not null)
                 {
+                    #region props
+
                     contract.Number = entity.Number;
                     contract.SubContractId = entity.SubContractId;
                     contract.AgreementContractId = entity.AgreementContractId;
@@ -129,61 +135,61 @@ namespace DatabaseLayer.Repositories
                     contract.Author = entity.Author;
                     contract.Owner = entity.Owner;
 
+                    #endregion
+
                     foreach (var item in entity.ContractOrganizations)
                     {
-                        var target = item.IsGenContractor != null ? "Gen" : "Client";
-                        var sameObject = _context.ContractOrganizations.Where(x =>
-                        x.ContractId == item.ContractId &&
-                        x.OrganizationId == item.OrganizationId).FirstOrDefault();
-                        ContractOrganization? objectWithSameContractandType = new ContractOrganization();
-                        objectWithSameContractandType = item.IsGenContractor != null ?
-                            _context.ContractOrganizations.Where(x =>
-                            x.ContractId == item.ContractId &&
-                            x.IsGenContractor == item.IsGenContractor).
-                            FirstOrDefault()
-                            :
-                            _context.ContractOrganizations.Where(x =>
-                            x.ContractId == item.ContractId &&
-                            x.IsClient == item.IsClient).
-                            FirstOrDefault();
-                        if (sameObject != null)
+                        //запись в БД существующая (по контракту и атрибутам)
+                        var contractOrg = _context.ContractOrganizations
+                            .Where(x => x.ContractId == item.ContractId && x.IsClient == (item.IsClient ?? false) &&
+                            x.IsGenContractor == (item.IsGenContractor ?? false) && x.IsResponsibleForWork == (item.IsResponsibleForWork ?? false))
+                            .FirstOrDefault();
+
+                        if (contractOrg is null)
                         {
-                            if (objectWithSameContractandType != null)
+                            contractOrg = _context.ContractOrganizations
+                            .Where(x => x.ContractId == item.ContractId && x.OrganizationId == item.OrganizationId)
+                            .FirstOrDefault();
+                            if (contractOrg is not null)
                             {
-                                _context.ContractOrganizations.Remove(objectWithSameContractandType);
+                                _context.ContractOrganizations.Remove(contractOrg);
                             }
-                            switch (target)
-                            {
-                                case "Gen":
-                                    sameObject.IsGenContractor = true; break;
-                                case "Client":
-                                    sameObject.IsClient = true; break;
-                            }
-                            _context.ContractOrganizations.Update(sameObject);
+                            _context.ContractOrganizations.Add(item);
                         }
-                        else if (objectWithSameContractandType != null)
+
+                        //поменять местами две организации (например, генподряд и заказчик),
+                        //необходимо из базы старые записи удалить, далее новые создаем
+                        else if (contractOrg is not null && contractOrg.OrganizationId != item.OrganizationId)
                         {
-                            if (objectWithSameContractandType.IsClient == true && objectWithSameContractandType.IsGenContractor == true)
+                            //запись в БД удаляем, с атрибутами, по которым будет
+                            //создана новая запись с другой организацией
+                            _context.ContractOrganizations.Remove(contractOrg);
+                            _context.SaveChanges();
+
+                            // в БД удаляем запись, с организацией, которая                            
+                            // будет создана с другими атрибутами
+
+                            var oldEntity = _context.ContractOrganizations
+                                .Where(x=>x.ContractId == item.ContractId && x.OrganizationId  == item.OrganizationId)
+                                .FirstOrDefault();
+                           
+                            if (oldEntity is not null)
                             {
-                                switch (target)
-                                {
-                                    case "Gen":
-                                        objectWithSameContractandType.IsGenContractor = false; break;
-                                    case "Client":
-                                        objectWithSameContractandType.IsClient = false; break;
-                                }
-                                _context.ContractOrganizations.Update(objectWithSameContractandType);
-                                _context.ContractOrganizations.Add(item);
-                            }
-                            else
-                            {
-                                _context.ContractOrganizations.Remove(objectWithSameContractandType);
+                                _context.ContractOrganizations.Remove(oldEntity);
                                 _context.SaveChanges();
-                                objectWithSameContractandType.OrganizationId = item.OrganizationId;
-                                _context.ContractOrganizations.Add(objectWithSameContractandType);
                             }
+                            _context.ContractOrganizations.Add(item);
                         }
-                        else { _context.ContractOrganizations.Add(item); }
+                        else
+                        {
+                            contractOrg.ContractId = item.ContractId;
+                            contractOrg.OrganizationId = item.OrganizationId;
+                            contractOrg.IsGenContractor = (item.IsGenContractor ?? false);
+                            contractOrg.IsClient = (item.IsClient ?? false);
+                            contractOrg.IsResponsibleForWork = (item.IsResponsibleForWork ?? false);
+
+                            _context.ContractOrganizations.Update(contractOrg);
+                        }
                         _context.SaveChanges();
                     }
 
@@ -262,6 +268,7 @@ namespace DatabaseLayer.Repositories
                             _context.TypeWorkContracts.Add(item);
                         }
                     }
+
                     _context.Contracts.Update(contract);
                 }
             }

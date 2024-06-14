@@ -8,6 +8,7 @@
 
         public string? ProcedureName { get; set; }
 
+        //public string? ResponsibleForWork { get; set; }
         public string? GenContractor { get; set; }
 
         public string? Client { get; set; }

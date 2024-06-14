@@ -16,6 +16,7 @@ public partial class VContract
     public string? ResponsibleEmp { get; set; }
 
     public string? GenContractor { get; set; }
+    public string? ResponsibleForWork { get; set; }
 
     public string? Client { get; set; }
 

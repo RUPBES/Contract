@@ -23,6 +23,11 @@
         public int? ContractId { get; set; }
         public string OrganizationName { get; set; }
 
+        public decimal? SmrNDS { get; set; }
+        public decimal? AdditionalNDS { get; set; }
+        public decimal? MaterialClientCost { get; set; }
+        public decimal? PaymentsToConstructionIndustry { get; set; }
+
         public virtual ContractDTO Contract { get; set; }
     }
 }

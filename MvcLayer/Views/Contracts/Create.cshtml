@@ -134,7 +134,26 @@
                                             }
                                         </select>
                                     </div>
-                                    <input name="ContractOrganizations[2].Organization" hidden />
+                                    <div class="col-12">
+                                        <label>Ответственный за производство работ</label>
+                                        <input name="ContractOrganizations[2].IsResponsibleForWork" type="checkbox" value="true" checked selected hidden>
+                                        <select name="ContractOrganizations[2].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgTwo">
+                                            @if (Model?.ContractOrganizations[2] is not null)
+                                            {
+                                                var item = Organization.GetById((int)Model?.ContractOrganizations[2]?.OrganizationId);
+                                                <option selected value="@item?.Id">@item?.Name</option>
+                                            }
+                                            @if (Model?.ContractOrganizations[2] is null)
+                                            {
+                                                <option selected>Выберите организацию</option>
+                                            }
+                                            @foreach (var item in Organization.GetAll())
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <input name="ContractOrganizations[3].Organization" hidden />
                                 </fieldset>
                             </div>
                             @*Сотрудники *********@
@@ -235,7 +254,7 @@
                             <label asp-for="ContractPrice" for="CDC"></label>
                             <div class="input-group">
                                 <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                                <input name="ContractPrice" type="text" class="form-control cost" id="CDC">
+                                <input name="ContractPrice" type="text" value="@ViewBag?.Price" class="form-control cost" id="CDC">
                             </div>
                         </div>
                         <div class="col-12">
