@@ -124,17 +124,23 @@ namespace MvcLayer.Controllers
         }
 
         public async Task<IActionResult> Details(int? id)
-        {           
+        {
+            Stopwatch stopWath = new Stopwatch();
+            stopWath.Start();
+            Debug.WriteLine(stopWath.ElapsedMilliseconds);
             var contract = _contractService.GetById((int)id);
             if (contract == null)
             {
                 return NotFound();
             }
+            Debug.WriteLine("amendment -" + stopWath.ElapsedMilliseconds);
             var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).LastOrDefault();
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
-            }          
+            }
+            Debug.WriteLine("stop -" + stopWath.ElapsedMilliseconds);
+            stopWath.Stop();
             return View(_mapper.Map<ContractViewModel>(contract));            
         }
 

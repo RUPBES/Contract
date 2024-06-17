@@ -25,6 +25,7 @@ namespace DatabaseLayer.Interfaces
 
         IRepository<ContractFile> ContractFiles { get; }
         IRepository<Contract> Contracts { get; }
+        IRepository<EmployeeContract> EmployeeContracts { get; }
         IRepository<ContractOrganization> ContractOrganizations { get; }
         IRepository<DepartmentEmployee> DepartmentEmployees { get; }
         IRepository<CommissionAct> CommissionActs { get; }

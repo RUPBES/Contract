@@ -2,6 +2,7 @@
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace DatabaseLayer.Repositories
 {
@@ -38,21 +39,24 @@ namespace DatabaseLayer.Repositories
 
         public IEnumerable<Contract> Find(Func<Contract, bool> predicate)
         {
-            return _context.Contracts
+            //Stopwatch stopWath = new Stopwatch();
+            //stopWath.Start();
+            //Debug.WriteLine("repository start requst -" + stopWath.ElapsedMilliseconds);
+            var d = _context.Contracts
                  .Include(c => c.AgreementContract)
                 .Include(c => c.SubContract)
-                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
-                .Include(c => c.TypeWorkContracts).ThenInclude(o => o.TypeWork)
-                .Include(c => c.ContractOrganizations).ThenInclude(o => o.Organization)
                 .Include(c => c.ScopeWorks).ThenInclude(o => o.SWCosts)
                 .Include(p => p.Payments).
                 Include(c => c.MaterialGcs).ThenInclude(c => c.MaterialCosts).Where(predicate).ToList();
+            //Debug.WriteLine("repository end requst -" + stopWath.ElapsedMilliseconds);
+            //stopWath.Stop();
+            return d;
         }
 
         public IEnumerable<Contract> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
         {
             return _context.Contracts
-                .Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee).ThenInclude(x => x.Phones)
+                //.Include(c => c.EmployeeContracts).ThenInclude(o => o.Employee)//.ThenInclude(x => x.Phones)
                 .Include(c => c.TypeWorkContracts).ThenInclude(o => o.TypeWork)
                 .Where(where).Select(select).ToList();
         }

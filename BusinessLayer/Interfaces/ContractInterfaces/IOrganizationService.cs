@@ -10,5 +10,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         public IndexViewModel GetPage(int pageSize, int pageNum);
         OrganizationDTO GetByEmployeeId(int employeeId);
         string? GetNameByContractId(int contrId);
+        OrganizationDTO FindByContractOrganization(Func<ContractOrganization, bool> predicate);
     }
 }

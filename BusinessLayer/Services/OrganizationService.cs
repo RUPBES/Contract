@@ -158,7 +158,7 @@ namespace BusinessLayer.Services
         }
         public OrganizationDTO GetByEmployeeId(int employeeId)
         {
-            var empDepartments = _database.DepartmentEmployees?.Find(x=>x.EmployeeId == employeeId)?.FirstOrDefault()?.Department?.Organization;
+            var empDepartments = _database.DepartmentEmployees?.Find(x => x.EmployeeId == employeeId)?.FirstOrDefault()?.Department?.Organization;
 
             return _mapper.Map<OrganizationDTO>(empDepartments);
         }
@@ -167,7 +167,7 @@ namespace BusinessLayer.Services
         {
             int count = _database.Organizations.Count();
             int skipEntities = (pageNum - 1) * pageSize;
-            var items = _database.Organizations.GetEntitySkipTake(skipEntities, pageSize).OrderBy(x=>x.Name);
+            var items = _database.Organizations.GetEntitySkipTake(skipEntities, pageSize).OrderBy(x => x.Name);
             var t = _mapper.Map<IEnumerable<OrganizationDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -181,11 +181,11 @@ namespace BusinessLayer.Services
         }
 
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder)
-        {            
+        {
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Organization> items;
             if (!String.IsNullOrEmpty(request))
-            { items = _database.Organizations.FindLike("Name",request); }
+            { items = _database.Organizations.FindLike("Name", request); }
             else { items = _database.Organizations.GetAll(); }
             int count = items.Count();
 
@@ -208,7 +208,7 @@ namespace BusinessLayer.Services
                     break;
                 case "unpDesc":
                     items = items.OrderByDescending(s => s.Unp);
-                    break;                
+                    break;
                 default:
                     items = items.OrderBy(s => s.Id);
                     break;
@@ -224,6 +224,20 @@ namespace BusinessLayer.Services
             };
 
             return viewModel;
+        }
+
+
+        public OrganizationDTO FindByContractOrganization(Func<ContractOrganization, bool> predicate)
+        {
+            var orgId = _database.ContractOrganizations?.Find(predicate)?.FirstOrDefault()?.OrganizationId;
+            if (orgId is not null)
+            {
+                return _mapper.Map<OrganizationDTO>(_database.Organizations.GetById((int)orgId));
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

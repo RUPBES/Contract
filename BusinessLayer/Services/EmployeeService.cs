@@ -237,5 +237,18 @@ namespace BusinessLayer.Services
 
             return viewModel;
         }
+
+        public EmployeeDTO FindByContractEmployee(Func<EmployeeContract, bool> predicate)
+        {
+            var emplId = _database.EmployeeContracts?.Find(predicate)?.FirstOrDefault()?.EmployeeId;
+            if (emplId is not null)
+            {
+                return _mapper.Map<EmployeeDTO>(_database.Employees.GetById((int)emplId));
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

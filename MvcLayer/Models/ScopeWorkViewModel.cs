@@ -10,28 +10,28 @@ namespace MvcLayer.Models
         [DisplayName("Период отчета")]
         public DateTime? Period { get; set; }
 
-        [DisplayName("Cтоимость работ без НДС")]
+        [DisplayName("Всего по договору без НДС (справочно)")]
         public decimal? CostNoNds { get; set; }
 
-        [DisplayName("Cтоимость работ с НДС")]
+        [DisplayName("Всего по договору с НДС")]
         public decimal? CostNds { get; set; }
 
-        [DisplayName("Стоимость СМР")]
+        [DisplayName("Неизменная цена СМР")]
         public decimal? SmrCost { get; set; }
 
-        [DisplayName("Cтоимость ПНР")]
+        [DisplayName("ПНР")]
         public decimal? PnrCost { get; set; }
 
-        [DisplayName("Cтоимость оборудования")]
+        [DisplayName("Оборудование генподрядчика")]
         public decimal? EquipmentCost { get; set; }
 
-        [DisplayName("Cтоимость остальных работ")]
+        [DisplayName("Прочие работы и услуги")]
         public decimal? OtherExpensesCost { get; set; }
 
-        [DisplayName("Cтоимость доп. работ")]
+        [DisplayName("Доп. работы")]
         public decimal? AdditionalCost { get; set; }
 
-        [DisplayName("Cтоимость материалов")]
+        [DisplayName("Материалы генподрядчика")]
         public decimal? MaterialCost { get; set; }
 
         [DisplayName("Сумма услуг генподрядчика")]

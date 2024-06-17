@@ -1,25 +1,39 @@
 ﻿@using BusinessLayer.Enums;
+@using System.Diagnostics
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
+@inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISelectionProcedureService SelectionProcedure
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
 
 @{
+    // Stopwatch stopWath = new Stopwatch();
+    // stopWath.Start();
+    // Debug.WriteLine(stopWath.ElapsedMilliseconds);
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
-
+    // Debug.WriteLine("permissions -" + stopWath.ElapsedMilliseconds);
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
+    // Debug.WriteLine("branchAgreement -" + stopWath.ElapsedMilliseconds);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
+    // Debug.WriteLine("subcontract -" + stopWath.ElapsedMilliseconds);
     var subObjectsOfContract = Contracts.Find(x => x.MultipleContractId == Model?.Id && x.IsOneOfMultiple == true);
+    // Debug.WriteLine("subObjcontract -" + stopWath.ElapsedMilliseconds);
     var isEngineering = Model.IsEngineering == true ? true : false;
     var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple != true ? true : false;
+    // Debug.WriteLine("scopes of DB -" + stopWath.ElapsedMilliseconds);
     string redirectAction = "Details";
     string redirectController = "Contracts";
 
     var status = Model.IsClosed is true ? "closed" : "expired";
     var titleScope = "Объем ";
     var titleSub = "";
+    // Debug.WriteLine("stop -" + stopWath.ElapsedMilliseconds);
+    // stopWath.Stop();
 }
 
 @section Table {
@@ -272,9 +286,19 @@
                             var empSign = @Model?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == Model?.Id && x.IsSignatory == true)?.Employee;
                             var empRespon = @Model?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == Model?.Id && x.IsResponsible == true)?.Employee;
                         }
-                        Подписант - @empSign?.Position @empSign?.Fio
+                        @if (@empSign?.Fio is not null)
+                        {
+                            <span>
+                                Подписант - @empSign?.Position @empSign?.Fio
+                            </span>
+                        }
                         <br><br>
-                        Лицо ответственное за ведение договора - @empRespon?.Fio, тел.@empRespon?.Phones?.FirstOrDefault()?.Number
+                        @if (@empRespon?.Fio is not null)
+                        {
+                            <span>
+                                Лицо ответственное за ведение договора - @empRespon?.Fio, тел.@empRespon?.Phones?.FirstOrDefault()?.Number
+                            </span>
+                        }
                     </span>
                 </td>
                 <td>
@@ -284,9 +308,10 @@
                         @Model?.Date?.ToShortDateString()
                     </span>
                 </td>
+                @*  Наименование объекта - *@
                 <td>
                     <span class="table_span-nameobject">
-                        @*  Наименование объекта - *@
+
                         @Model?.NameObject
                     </span>
                 </td>
@@ -295,9 +320,10 @@
                         @Model?.FundingSource
                     </span>
                 </td>
+                @* Заказчик *@
                 <td>
                     <span class="table_span-customer">
-                        @* Заказчик *@
+
                         @Model.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsClient == true)?.Organization?.Name
                     </span>
                 </td>
@@ -364,7 +390,8 @@
                 @* Вид работ- *@
                 <td>
                     <span class="table_span-work">
-                        @Model?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
+                        @TypeWork?.GetByContractId(Model.Id)?.Name
+                        @* @Model?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name *@
                     </span>
                 </td>
                 <td class="text-end">
@@ -625,18 +652,28 @@
                     </td>
                     <td>
                         <span>
-                            <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">@contractBranch?.SelectionProcedures?.FirstOrDefault(x => x.ContractId == contractBranch?.Id)?.TypeProcedure</a>
+                            <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">@SelectionProcedure?.Find(x => x.ContractId == contractBranch?.Id)?.FirstOrDefault()?.TypeProcedure</a>
                         </span>
                     </td>
                     <td>
                         <span class="table_span-signer">
                             @{
-                                var empSignBr = contractBranch?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsSignatory == true)?.Employee;
-                                var empResponBr = contractBranch?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsResponsible == true)?.Employee;
+                                var empSignBr = Employee.FindByContractEmployee(x => x.ContractId == contractBranch?.Id && x.IsSignatory == true);
+                                //contractBranch?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsSignatory == true)?.Employee;
+                                var empResponBr = Employee.FindByContractEmployee(x => x.ContractId == contractBranch?.Id && x.IsResponsible == true);
+                                //contractBranch?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsResponsible == true)?.Employee;
                             }
-                            Подписант - @empSignBr?.Position @empSignBr?.Fio
+                            @if (@empSignBr?.Fio is not null)
+                            {
+                                <span>Подписант - @empSignBr?.Position @empSignBr?.Fio</span>
+                            }
                             <br><br>
-                            Лицо ответственное за ведение договора - @empResponBr?.Fio, тел.@empResponBr?.Phones?.FirstOrDefault()?.Number
+                            @if (@empResponBr?.Fio is not null)
+                            {
+                                <span>
+                                    Лицо ответственное за ведение договора - @empResponBr?.Fio, тел.@empResponBr?.Phones?.FirstOrDefault()?.Number
+                                </span>
+                            }
                         </span>
                     </td>
                     <td>
@@ -650,25 +687,29 @@
                             @contractBranch?.NameObject
                         </span>
                     </td>
+                    @*Источник финансирования*@
                     <td>
-                        @*Источник финансирования*@
+
                         <span class="table_span-fin-source">
                             @contractBranch?.FundingSource
                         </span>
                     </td>
+                    @*Заказчик*@
                     <td>
-                        @*Заказчик*@
+
                         <span class="table_span-customer">
                         </span>
                     </td>
+                    @*Генподрядчик*@
                     <td>
-                        @*Генподрядчик*@
+
                         <span class="table_span-contractor">
                         </span>
                     </td>
                     <td>
                         <span class="table_span-subcontractor">
-                            @contractBranch?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsGenContractor == false && x.IsClient == false)?.Organization?.Name
+                            @Organization?.FindByContractOrganization(x => x.ContractId == contractBranch?.Id)?.Name
+                            @* @contractBranch?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == contractBranch?.Id && x.IsGenContractor == false && x.IsClient == false)?.Organization?.Name *@
                         </span>
                     </td>
                     <td>
@@ -684,7 +725,6 @@
                             @if (@contractBranch?.EnteringTerm?.ToShortDateString() is not null)
                             {
                                 <b>ввода:</b>
-
                                 <br>
                                 <span>@contractBranch?.EnteringTerm?.ToShortDateString()</span>
                                 <br>
@@ -692,16 +732,16 @@
                             @if (@contractBranch?.ContractTerm?.ToShortDateString() is not null)
                             {
                                 <b>действия договора по взаиморасчетам:</b>
-
                                 <br>
                                 <span> @contractBranch?.ContractTerm?.ToShortDateString()</span>
                                 <br>
                             }
                         </span>
                     </td>
+                    @* Условия оплаты - *@
                     <td>
                         <span class="table_span-conditions">
-                            @* Условия оплаты - *@
+
                             <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">
                                 @contractBranch?.PaymentСonditionsAvans
                             </a>
@@ -714,12 +754,14 @@
                     @* Вид работ- *@
                     <td>
                         <span class="table_span-work">
-                            @contractBranch?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
+                            @TypeWork.GetByContractId(@contractBranch.Id).Name
+                            @* @contractBranch?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name *@
                         </span>
                     </td>
+                    @* ЦЕна - *@
                     <td class="text-end">
                         <span class="table_span-contractprice">
-                            @* ЦЕна - *@
+
                             @contractBranch?.ContractPrice?.ToString("N2")
                         </span>
                     </td>
@@ -735,6 +777,7 @@
             {
                 <tr><td class="text-center text-uppercase" colspan="15">Договоры субподряда</td></tr>
             }
+
             @foreach (var contractSub in subContract)
             {
                 var dropdownid3 = "Dropdown" + contractSub.Id;
@@ -837,18 +880,31 @@
                     </td>
                     <td>
                         <span>
-                            <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractSub.Id" asp-route-returnContractId="@Model.Id">@contractSub?.SelectionProcedures?.FirstOrDefault(x => x.ContractId == contractSub?.Id)?.TypeProcedure</a>
+                            <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@contractSub.Id" asp-route-returnContractId="@Model.Id">@SelectionProcedure?.Find(x => x.ContractId == contractSub?.Id)?.FirstOrDefault()?.TypeProcedure</a>
                         </span>
                     </td>
                     <td>
                         <span class="table_span-signer">
                             @{
-                                var empSignSub = contractSub?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractSub?.Id && x.IsSignatory == true)?.Employee;
-                                var empResponSub = contractSub?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractSub?.Id && x.IsResponsible == true)?.Employee;
+                                var empSignSub = Employee.FindByContractEmployee(x => x.ContractId == contractSub?.Id && x.IsSignatory == true);
+                                var empResponSub = Employee.FindByContractEmployee(x => x.ContractId == contractSub?.Id && x.IsResponsible == true);
+
+                                // var empSignSub = contractSub?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractSub?.Id && x.IsSignatory == true)?.Employee;
+                                // var empResponSub = contractSub?.EmployeeContracts?.FirstOrDefault(x => x.ContractId == contractSub?.Id && x.IsResponsible == true)?.Employee;
                             }
-                            Подписант - @empSignSub?.Position @empSignSub?.Fio
+                            @if (@empSignSub?.Fio is not null)
+                            {
+                                <span>
+                                    Подписант - @empSignSub?.Position @empSignSub?.Fio
+                                </span>
+                            }
                             <br><br>
-                            Лицо ответственное за ведение договора - @empResponSub?.Fio, тел.@empResponSub?.Phones?.FirstOrDefault()?.Number
+                            @if (@empResponSub?.Fio is not null)
+                            {
+                                <span>
+                                    Лицо ответственное за ведение договора - @empResponSub?.Fio, тел.@empResponSub?.Phones?.FirstOrDefault()?.Number
+                                </span>
+                            }
                         </span>
                     </td>
                     <td>
@@ -867,20 +923,24 @@
                             @contractSub?.FundingSource
                         </span>
                     </td>
+                    @*Заказчик*@
                     <td>
-                        @*Заказчик*@
+
                         <span class="table_span-customer">
                         </span>
                     </td>
+                    @*Генподрядчик*@
                     <td>
-                        @*Генподрядчик*@
+
                         <span class="table_span-contractor">
                         </span>
                     </td>
+                    @*Субподрядчик*@
                     <td>
-                        @*Субподрядчик*@
+
                         <span class="table_span-subcontractor">
-                            @contractSub?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == contractSub?.Id && x.IsGenContractor == false && x.IsClient == false)?.Organization?.Name
+                            @Organization?.FindByContractOrganization(x => x.ContractId == contractSub?.Id)?.Name
+                            @* @contractSub?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == contractSub?.Id && x.IsGenContractor == false && x.IsClient == false)?.Organization?.Name *@
                         </span>
                     </td>
                     <td>
@@ -928,12 +988,14 @@
                     @* Вид работ- *@
                     <td>
                         <span class="table_span-work">
-                            @contractSub?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name
+                            @TypeWork.GetByContractId(@contractSub.Id).Name
+                            @* @contractSub?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name *@
                         </span>
                     </td>
+                    @* ЦЕна - *@
                     <td class="text-end">
                         <span class="table_span-contractprice">
-                            @* ЦЕна - *@
+
                             @contractSub?.ContractPrice?.ToString("N2")
                         </span>
                     </td>

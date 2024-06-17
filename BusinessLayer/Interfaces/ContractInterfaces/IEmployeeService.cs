@@ -8,5 +8,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     {
         public IndexViewModel GetPage(int pageSize, int pageNum, string org);
         public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org);
+        EmployeeDTO FindByContractEmployee(Func<EmployeeContract, bool> predicate);
     }
 }

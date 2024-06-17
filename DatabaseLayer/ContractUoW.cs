@@ -8,7 +8,7 @@ using DatabaseLayer.Repositories.ViewRepo;
 
 namespace DatabaseLayer
 {
-    public class ContractUoW:IContractUoW
+    public class ContractUoW : IContractUoW
     {
         #region valueRepo
         private readonly ContractsContext _context;
@@ -23,12 +23,12 @@ namespace DatabaseLayer
         private ContractOrganizationRepository contractOrganizationRepository;
         private ContractRepository contractRepository;
         private ContractFileRepository contractFileRepository;
-        private DepartmentRepository departmentRepository; 
+        private DepartmentRepository departmentRepository;
         private DepartmentEmployeeRepository departmentEmployeeRepository;
         private EmployeeRepository employeeRepository;
         private OrganizationRepository organizationRepository;
         private PhoneRepository phoneRepository;
-       
+
 
         private PrepaymentPlanRepository prepaymentPlanRepository;
         private PrepaymentFactRepository prepaymentFactRepository;
@@ -39,16 +39,16 @@ namespace DatabaseLayer
         private SelectionProcedureRepository selectionProcedureRepository;
         private CommissionActRepository commissionActRepository;
         private CommissionActFileRepository commissionActFileRepository;
-        private CorrespondenceRepository correspondenceRepository;      
+        private CorrespondenceRepository correspondenceRepository;
 
         private CorrespondenceFileRepository correspondenceFileRepository;
         private EstimateDocFileRepository estimateDocFileRepository;
         private EstimateDocRepository estimateDocRepository;
         private FileRepository fileRepository;
-       
+
         private MaterialAmendmentRepository materialAmendmentRepository;
         private FormFileRepository formFileRepository;
-
+        private EmployeeContractRepository employeeContractRepository;
         private MaterialCostRepository materialCostRepository;
         private MaterialRepository materialRepository;
         private ServiceAmendmentRepository serviceAmendmentRepository;
@@ -274,8 +274,8 @@ namespace DatabaseLayer
                 return amendmentRepository;
             }
         }
-        public IRepository<MaterialAmendment> MaterialAmendments 
-        { 
+        public IRepository<MaterialAmendment> MaterialAmendments
+        {
             get
             {
                 if (materialAmendmentRepository is null)
@@ -350,7 +350,7 @@ namespace DatabaseLayer
                 }
                 return prepaymentAmendmentRepository;
             }
-        }  
+        }
 
         public IRepository<CommissionAct> CommissionActs
         {
@@ -407,7 +407,7 @@ namespace DatabaseLayer
                 return correspondenceFileRepository;
             }
         }
-        public IRepository<EstimateDoc> EstimateDocs 
+        public IRepository<EstimateDoc> EstimateDocs
         {
             get
             {
@@ -462,7 +462,7 @@ namespace DatabaseLayer
                 return paymentRepository;
             }
         }
-        public IRepository<FormC3a> Forms 
+        public IRepository<FormC3a> Forms
         {
             get
             {
@@ -473,7 +473,7 @@ namespace DatabaseLayer
                 return formC3Repository;
             }
         }
-        public IRepository<SelectionProcedure> SelectionProcedures 
+        public IRepository<SelectionProcedure> SelectionProcedures
         {
             get
             {
@@ -504,6 +504,18 @@ namespace DatabaseLayer
                     addressRepository = new AddressRepository(_context);
                 }
                 return addressRepository;
+            }
+        }
+
+        public IRepository<EmployeeContract> EmployeeContracts
+        {
+            get
+            {
+                if (employeeContractRepository is null)
+                {
+                    employeeContractRepository = new EmployeeContractRepository(_context);
+                }
+                return employeeContractRepository;
             }
         }
         public IRepository<ContractOrganization> ContractOrganizations
@@ -612,7 +624,7 @@ namespace DatabaseLayer
         #endregion
 
         public void Dispose()
-        {            
+        {
         }
         public void Save()
         {
