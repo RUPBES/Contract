@@ -6,6 +6,7 @@ using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using BusinessLayer.Services;
 using DatabaseLayer.Models.PRO;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -67,7 +68,7 @@ namespace MvcLayer.Controllers.PRO
                 EstimateViewModelItem estimateViewItem;
 
                 var estimateViewDrawning = new EstimateViewModelDrawning();
-                estimateViewDrawning.Number = item.Number ?? "-";
+                estimateViewDrawning.Number = item.Number;
                 estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice ?? 0M;
                 estimateViewDrawning.EstimateDate = item.EstimateDate ?? new DateTime(1,1,1);
                 estimateViewDrawning.DrawingsDate = item.DrawingsDate;
@@ -262,6 +263,26 @@ namespace MvcLayer.Controllers.PRO
                 }
                 throw new Exception(ex.Message);
             }
+        }
+
+        public ActionResult AddCopyEstimate(int EstimateId, string DrawningKit)
+        {
+            var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
+            if (estimate != null)
+            {
+                var estimateNew = new EstimateDTO();
+                estimateNew.BuildingCode = estimate.BuildingCode;
+                estimateNew.BuildingName = estimate.BuildingName;
+                estimateNew.DrawingsKit = DrawningKit;
+                estimateNew.SubContractor = estimate.SubContractor;
+                estimateNew.DrawingsName = estimate.DrawingsName;
+                estimateNew.KindOfWorkId = estimate.KindOfWorkId;
+                estimateNew.ContractId = estimate.ContractId;
+                estimateNew.Owner = estimate.Owner;
+                var id = _estimateService.Create(estimateNew);                
+                return Content(id.ToString());
+            }
+            else throw new Exception("Не найдена смета.");
         }
 
         public ActionResult GetDrawingsFiles(int EstimateId)

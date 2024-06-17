@@ -1,5 +1,8 @@
 ﻿@using BusinessLayer.Models.PRO
 @model EstimateDTO
+@{
+    string val;
+}
 
 <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
     <thead>
@@ -60,28 +63,55 @@
                 @Model.DrawingsName
             </td>
             <td>
-                @Model.DrawingsDate.Value.ToString("dd MMMM yyyy")
+                @{
+                    val = Model.DrawingsDate?.ToString("dd MMMM yyyy");
+                    if (Model.DrawingsDate > new DateTime(1, 1, 1))
+                    {
+                        @val
+                    }
+                }                
             </td>        
             <td>
                 @Model.Number
             </td>
             <td>
-                @Model.EstimateDate.Value.ToString("dd MMMM yyyy")
+                @{
+                    val = Model.EstimateDate?.ToString("dd MMMM yyyy");
+                    if (Model.EstimateDate > new DateTime(1, 1, 1))
+                    {
+                        @val
+                    }
+                }                
             </td>          
             <td>
-                @Model.ContractsCost.Value.ToString("N2")
+               @if (Model.Number is not null)
+                {
+                    @Model.ContractsCost.Value.ToString("N2")
+                }              
             </td>
             <td>
-                @Model.LaborCost.Value.ToString("N2")
+                @if (Model.Number is not null)
+                {
+                    @Model.LaborCost.Value.ToString("N2")
+                }                
             </td>
             <td>
-                @Model.DoneSmrCost.Value.ToString("N2")
+                @if (Model.Number is not null)
+                {
+                    @Model.DoneSmrCost.Value.ToString("N2")
+                }                
             </td>
             <td>
-                @Model.PercentOfContrPrice.Value.ToString("N2")
+                @if (Model.Number is not null)
+                {
+                    @Model.PercentOfContrPrice.Value.ToString("N2")
+                }                
             </td>
             <td>
-                @Model.RemainsSmrCost.Value.ToString("N2")
+                @if (Model.Number is not null)
+                {
+                    @Model.RemainsSmrCost.Value.ToString("N2")
+                }                
             </td>
             <td>
                 @Model.SubContractor

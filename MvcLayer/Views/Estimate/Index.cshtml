@@ -13,6 +13,7 @@
     var isWrite = false;
     var total = new Dictionary<string, EstimateViewResultBuilding>();
     var totalResult = new EstimateViewResultBuilding();
+    string? val;
 }
 
 @section Table {
@@ -76,8 +77,8 @@
 
         h1 {
             /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-                                                                                                                                                                                                                                color: #004d8e;
-                                                                                                                                                                                                                                transition: all 1s; */
+                                                                                                                                                                                                                                                color: #004d8e;
+                                                                                                                                                                                                                                                transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
@@ -442,6 +443,7 @@
                     {
                         indexObject += detail.EstimateViewModelDrawnings.Count;
                     }
+                    @*Первый чертеж по объекту*@
                     <tr>
                         <td rowspan="@indexObject">
                             @item.BuildingCode
@@ -456,37 +458,88 @@
                             @item.DetailsView.First().DrawingsName
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
+                            @*В первой строке дата принятия, дальше изменения*@
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().Number
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().Number;
+                                if (val is not null)
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate > new DateTime(1, 1, 1))
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
+                            @*Дата изменения только при последующих*@
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost?.ToString("N2")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
-                            @item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2")
+                            @{
+                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
+                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                {
+                                    @val
+                                }
+                            }
                         </td>
                         <td>
                             @item.DetailsView.First().EstimateViewModelDrawnings.First().SubContractor
                         </td>
                     </tr>
+                    @*Цикл прохождения по строкам первого чертежа*@
                     @foreach (var draw in item.DetailsView.First().EstimateViewModelDrawnings.Skip(1))
                     {
                         <tr>
@@ -494,40 +547,92 @@
                                 @draw.DrawingsKit
                             </td>
                             <td>
+                                @*Только в первой записи дата яполучения, дальше изменения*@
                             </td>
                             <td>
-                                @draw.DrawingsDate?.ToString("dd MMMM yyyy")
+                                @{
+                                    val = draw.DrawingsDate?.ToString("dd MMMM yyyy");
+                                    if (draw.DrawingsDate > new DateTime(1,1,1))
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                @draw.Number
+                                @{
+                                    val = draw.Number;
+                                    if (val is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
                             </td>
                             <td>
-                                @draw.EstimateDate?.ToString("dd MMMM yyyy")
+                                @{
+                                    val = draw.EstimateDate?.ToString("dd MMMM yyyy");
+                                    if (draw.Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
-                                @draw.ContractsCost?.ToString("N2")
+                                @{
+                                    val = draw.ContractsCost?.ToString("N2");
+                                    if (draw.Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
-                                @draw.LaborCost?.ToString("N2")
+                                @{
+                                    val = draw.LaborCost?.ToString("N2");
+                                    if (draw.Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
-                                @draw.DoneSmrCost?.ToString("N2")
+                                @{
+                                    val = draw.DoneSmrCost?.ToString("N2");
+                                    if (draw.Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
-                                @draw.PercentOfContrPrice?.ToString("N2")
+                                @{
+                                    val = draw.PercentOfContrPrice?.ToString("N2");
+                                    if (draw.Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
-                                @draw.RemainsSmrCost?.ToString("N2")
+                                @{
+                                    val = draw.RemainsSmrCost?.ToString("N2");
+                                    if (draw.Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
+
                             </td>
                             <td>
                                 @draw.SubContractor
                             </td>
                         </tr>
-                    }                   
+                    }
+                    @*Цикл прохождения по чертежам*@
                     @foreach (var detail in item.DetailsView.Skip(1))
                     {
+                        @*Первый чертеж по объекту*@
                         <tr>
                             <td>
                                 @detail.EstimateViewModelDrawnings.First().DrawingsKit
@@ -536,39 +641,88 @@
                                 @detail.DrawingsName
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy");
+                                    if (detail.EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                -
+                                @*Изменения со второй записи*@
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().Number
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().Number;
+                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy");
+                                    if (detail.EstimateViewModelDrawnings.First().EstimateDate > new DateTime(1, 1, 1))
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                -
+                                @*Изменения со второй записи*@
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2");
+                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().LaborCost?.ToString("N2")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
+                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
+                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }                                
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2");
+                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
-                                @detail.EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2")
+                                @{
+                                    val = detail.EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
+                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
+                                }
                             </td>
                             <td>
                                 @detail.EstimateViewModelDrawnings.First().SubContractor
                             </td>
                         </tr>
+                        @*Цикл прохождения по строкам чертежа*@
                         @foreach (var draw in detail.EstimateViewModelDrawnings.Skip(1))
                         {
                             <tr>
@@ -576,32 +730,82 @@
                                     @draw.DrawingsKit
                                 </td>
                                 <td>
+                                @*Только в первой строке*@
                                 </td>
                                 <td>
-                                    @draw.DrawingsDate?.ToString("dd MMMM yyyy")
+                                    @{
+                                        val = draw.DrawingsDate?.ToString("dd MMMM yyyy");
+                                        if (draw.DrawingsDate > new DateTime(1, 1, 1))
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
-                                    @draw.Number
+                                    @{
+                                        val = draw.Number;
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
+                                    @*Только в первой строке*@
                                 </td>
                                 <td>
-                                    @draw.EstimateDate?.ToString("dd MMMM yyyy")
+                                    @{
+                                        val = draw.EstimateDate?.ToString("dd MMMM yyyy");
+                                        if (draw.EstimateDate > new DateTime(1, 1, 1))
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
-                                    @draw.ContractsCost?.ToString("N2")
+                                    @{
+                                        val = draw.ContractsCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
-                                    @draw.LaborCost?.ToString("N2")
+                                    @{
+                                        val = draw.LaborCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
-                                    @draw.DoneSmrCost?.ToString("N2")
+                                    @{
+                                        val = draw.DoneSmrCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
-                                    @draw.PercentOfContrPrice?.ToString("N2")
+                                    @{
+                                        val = draw.PercentOfContrPrice?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
-                                    @draw.RemainsSmrCost?.ToString("N2")
+                                    @{
+                                        val = draw.RemainsSmrCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
+                                    }                                    
                                 </td>
                                 <td>
                                     @draw.SubContractor
@@ -662,8 +866,8 @@
                         <td class="text-end" colspan="9">
                             в том числе:
                         </td>
-                        <td colspan="6">                            
-                        </td>                        
+                        <td colspan="6">
+                        </td>
                     </tr>
                     foreach (var result in item.report)
                     {
@@ -686,12 +890,12 @@
                             <td>
                                 @result.Value.RemainsSmrCost?.ToString("N2")
                             </td>
-                            <td>                                
+                            <td>
                             </td>
                         </tr>
                     }
                 }
-                @foreach(var item in total)
+                @foreach (var item in total)
                 {
                     totalResult.PercentOfContrPrice += item.Value.PercentOfContrPrice;
                     totalResult.LaborCost += item.Value.LaborCost;

@@ -58,7 +58,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:600px;">
+            <div class="dm-modal" style="max-width:80vw; min-height: 30vh">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     <label id="HeaderLabel" class="my-modal-title">Этап 1: Выбор сметы</label>
@@ -73,9 +73,10 @@
                 </div>
                 <hr class="modal-line">
                 <div id="divForm" class="divForm_modal">
-                    <button>Редактриовать готовую смету</button>
-                    <button>Добавить к готовой смете измененные чертежи</button>
-                    <div class="input-group estimate__group-container">
+                    <button onclick="ChangeView(1)">Добавить смету</button>
+                    <button onclick="ChangeView(2)">Редактирование</button>
+                    <button onclick="ChangeView(3)">Добавить измененный чертеж к смете</button>
+                    <div id="Edit" class="input-group estimate__group-container hidden" hidden>
                         <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
                         <select id="NumberEstimate" class="js-chosen form-control">
                             <option selected disabled>Выберите смету для изменения</option>
@@ -85,15 +86,20 @@
                             }
                         </select>
                     </div>
-                    <div class="input-group estimate__group-container">
+                    <div id="AddToEstimate" class="input-group estimate__group-container" hidden>
+                        <div class="demo-section input-group mb-2 mt-2">
+                            <label class="input-group-text">Комплект чертежей</label>
+                            <input class="form-control" id="drawKit" />
+                        </div>
                         <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
-                        <select id="NumberEstimate" class="js-chosen form-control">
-                            <option selected disabled>Выберите смету для изменения</option>
+                        <select id="NumberEstimateAdd" class="js-chosen form-control">
+                            <option selected disabled>Выберите смету для добавления</option>
                             @foreach (var item in Model)
                             {
                                 <option value="@item.Id">@item.BuildingName/@item.DrawingsName/@item.DrawingsKit/@item.Number</option>
                             }
                         </select>
+                        <button onclick="AddCopyEstimate()">Добавить</button>
                     </div>
                     <form id="files" method="post" enctype="multipart/form-data">
                         <div id="example" style="min-width:400px; max-width: 800px;">
@@ -158,6 +164,66 @@
             });
         });
 
+        function AddCopyEstimate() {
+            var drawKit = $("#drawKit").val();
+            if (drawKit == "") {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ShowError", "Parse")',
+                    data: { message: "Введите наименование комплекта чертежей." },
+                    dataType: 'html',
+                    success: function (data) {
+                        $("#result").html(data)
+                    }
+                });
+            }
+            else {
+                var number = $('#NumberEstimateAdd').val();
+                console.log(number)
+                $.ajax({
+                    type: 'POST',
+                    data: { EstimateId: number, DrawningKit: drawKit },
+                    url: '@Url.Action("AddCopyEstimate", "Estimate")',
+                    success: function (estimateNumber) {
+                        $("#EstimateId").val(estimateNumber);
+                        $.ajax({
+                            type: 'POST',
+                            data: { EstimateId: estimateNumber },
+                            url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+                            success: function (viewData) {
+                                $("#divForm").html(viewData)
+                                $("#ListOfSheet").html("")
+                                $("#HeaderLabel").text("Этап 2: Загрузка чертежей")
+                            },
+                            error: function (error) {
+                                var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("ShowError", "Parse")',
+                                    data: { message: errorMes },
+                                    dataType: 'html',
+                                    success: function (data) {
+                                        $("#result").html(data)
+                                    }
+                                });
+                            }
+                        });
+                    },
+                    error: function (error) {
+                        var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("ShowError", "Parse")',
+                            data: { message: errorMes },
+                            dataType: 'html',
+                            success: function (data) {
+                                $("#result").html(data)
+                            }
+                        });
+                    }
+                });
+            }
+        }
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
             let dateEstimate = $("#dateEstimateId").val();
@@ -271,5 +337,24 @@
             });
             return false;
         });
+
+        function ChangeView(flag) {
+            if (flag === 1) {
+                document.getElementById('files').removeAttribute("hidden");
+                document.getElementById('Edit').setAttribute("hidden", true);
+                document.getElementById('AddToEstimate').setAttribute("hidden", true);
+            }
+            else if (flag === 2) {
+                document.getElementById('Edit').removeAttribute("hidden");
+                document.getElementById('files').setAttribute("hidden", true);
+                document.getElementById('AddToEstimate').setAttribute("hidden", true);
+            }
+            else if (flag === 3) {
+                document.getElementById('AddToEstimate').removeAttribute("hidden");
+                document.getElementById('files').setAttribute("hidden", true);
+                document.getElementById('Edit').setAttribute("hidden", true);
+
+            }
+        }
     </script>
 }
