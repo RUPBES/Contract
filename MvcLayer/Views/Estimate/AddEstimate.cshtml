@@ -36,10 +36,6 @@
             font-weight: bold;
         }
 
-    .divForm_modal {
-        overflow: auto;
-    }
-
     .chosen-container-single .chosen-single {
         margin-left: 0% !important;
     }
@@ -52,6 +48,11 @@
         padding: 0rem .75rem !important;
     }
 
+    .btn-primary:focus {
+        color: #000 !important;
+        background-color: #ffc107 !important;
+        border-color: #ffc107 !important;
+    }
 </style>
 <input id="contractId" value="@ViewData["contractId"]" hidden />
 <input id="EstimateId" hidden />
@@ -73,9 +74,11 @@
                 </div>
                 <hr class="modal-line">
                 <div id="divForm" class="divForm_modal">
-                    <button onclick="ChangeView(1)">Добавить смету</button>
-                    <button onclick="ChangeView(2)">Редактирование</button>
-                    <button onclick="ChangeView(3)">Добавить измененный чертеж к смете</button>
+                 <div style="display:flex; justify-content: space-evenly;" class="mb-3">
+                        <button onclick="ChangeView(1)" class="btn btn-primary">Добавить смету</button>
+                        <button onclick="ChangeView(2)" class="btn btn-primary">Редактирование</button>
+                        <button onclick="ChangeView(3)" class="btn btn-primary">Добавить измененный чертеж к смете</button>
+                 </div>
                     <div id="Edit" class="input-group estimate__group-container hidden" hidden>
                         <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
                         <select id="NumberEstimate" class="js-chosen form-control">
@@ -86,12 +89,13 @@
                             }
                         </select>
                     </div>
-                    <div id="AddToEstimate" class="input-group estimate__group-container" hidden>
+                    <div id="AddToEstimate" class="input-group" hidden>
                         <div class="demo-section input-group mb-2 mt-2">
                             <label class="input-group-text">Комплект чертежей</label>
                             <input class="form-control" id="drawKit" />
                         </div>
-                        <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
+                        <div class="input-group estimate__group-container hidden mb-2">
+                            <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
                         <select id="NumberEstimateAdd" class="js-chosen form-control">
                             <option selected disabled>Выберите смету для добавления</option>
                             @foreach (var item in Model)
@@ -99,7 +103,8 @@
                                 <option value="@item.Id">@item.BuildingName/@item.DrawingsName/@item.DrawingsKit/@item.Number</option>
                             }
                         </select>
-                        <button onclick="AddCopyEstimate()">Добавить</button>
+                        </div>
+                        <button onclick="AddCopyEstimate()" class="btn btn-primary" style="margin-left: 85%">Добавить</button>
                     </div>
                     <form id="files" method="post" enctype="multipart/form-data">
                         <div id="example" style="min-width:400px; max-width: 800px;">
