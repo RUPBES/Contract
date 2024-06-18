@@ -48,11 +48,15 @@
         padding: 0rem .75rem !important;
     }
 
-    .btn-primary:focus {
+    .focus {
+
+         
         color: #000 !important;
         background-color: #ffc107 !important;
         border-color: #ffc107 !important;
+    
     }
+    
 </style>
 <input id="contractId" value="@ViewData["contractId"]" hidden />
 <input id="EstimateId" hidden />
@@ -75,9 +79,9 @@
                 <hr class="modal-line">
                 <div id="divForm" class="divForm_modal">
                  <div style="display:flex; justify-content: space-evenly;" class="mb-3">
-                        <button onclick="ChangeView(1)" class="btn btn-primary">Добавить смету</button>
-                        <button onclick="ChangeView(2)" class="btn btn-primary">Редактирование</button>
-                        <button onclick="ChangeView(3)" class="btn btn-primary">Добавить измененный чертеж к смете</button>
+                        <button onclick="ChangeView(1)" class="btn btn-primary" id="ChangeView1">Добавить смету</button>
+                        <button onclick="ChangeView(2)" class="btn btn-primary" id="ChangeView2">Редактирование</button>
+                        <button onclick="ChangeView(3)" class="btn btn-primary" id="ChangeView3">Добавить измененный чертеж к смете</button>
                  </div>
                     <div id="Edit" class="input-group estimate__group-container hidden" hidden>
                         <label class="input-group-text input_estimate" for="NumberEstimate">№ Сметы</label>
@@ -132,6 +136,22 @@
 </div>
 @section Scripts {
     <script>
+        $("#ChangeView1").bind('click', function() {
+            $("#ChangeView2").removeClass("focus")
+            $("#ChangeView3").removeClass("focus")
+
+                    $(this).addClass("focus");
+        })
+        $("#ChangeView2").bind('click', function () {
+            $("#ChangeView1").removeClass("focus")
+            $("#ChangeView3").removeClass("focus")
+            $(this).addClass("focus");
+        })
+        $("#ChangeView3").bind('click', function () {
+            $("#ChangeView1").removeClass("focus")
+            $("#ChangeView2").removeClass("focus")
+            $(this).addClass("focus");
+        })
         $("#dateEstimateId").datepicker({
             format: "d MM yyyy",
             language: "ru",
