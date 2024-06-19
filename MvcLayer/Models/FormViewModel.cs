@@ -62,6 +62,23 @@ namespace MvcLayer.Models
 
         public string? OrganizationName { get; set; }
 
+        [DisplayName("Освобожден от уплаты ндс?")]
+        public bool? IsExemptFromVAT { get; set; } //освобожден от уплаты ндс?
+        [DisplayName("Стоимость материалов (заказчика)")]
+        public decimal? MaterialClientCost { get; set; } //стоимость материалов (заказчика)
+        [DisplayName("Стоимость оборудования заказчика (справочно)")]
+        public decimal? EquipmentClientCost { get; set; } //стоимость оборудования заказчика (справочно)
+        [DisplayName("Отчисления в фонд строительной отрасли")]
+        public decimal? CostToConstructionIndustryFund { get; set; } //отчисления в фонд строительной отрасли
+        [DisplayName("Стоимость работ для статистической отчетности подрядчика (слравочно)")]
+        public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)
+        [DisplayName("Сумма НДС для СМР")]
+        public decimal? SmrNdsCost { get; set; }
+        [DisplayName("Сумма НДС для дополнительных работ")]
+        public decimal? AdditionalNdsCost { get; set; }
+
+
+
         public IFormFileCollection FilesEntity { get; set; }
 
         [DisplayName("Договор")]

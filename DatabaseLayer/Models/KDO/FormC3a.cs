@@ -27,6 +27,14 @@ namespace DatabaseLayer.Models.KDO
         public bool? IsFinal { get; set; }
         public int? ContractId { get; set; }
 
+        public bool? IsExemptFromVAT { get; set; } //освобожден от уплаты ндс?
+        public decimal? MaterialClientCost { get; set; } //стоимость материалов (заказчика)
+        public decimal? EquipmentClientCost { get; set; } //стоимость оборудования заказчика (справочно)
+        public decimal? CostToConstructionIndustryFund { get; set; } //отчисления в фонд строительной отрасли
+        public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)
+        public decimal? AdditionalNdsCost { get; set; }
+        public decimal? SmrNdsCost { get; set; }
+
         public virtual Contract Contract { get; set; }
         public virtual ICollection<FormFile> FormFiles { get; set; }
     }

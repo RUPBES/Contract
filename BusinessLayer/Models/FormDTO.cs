@@ -23,10 +23,13 @@
         public int? ContractId { get; set; }
         public string OrganizationName { get; set; }
 
-        public decimal? SmrNDS { get; set; }
-        public decimal? AdditionalNDS { get; set; }
-        public decimal? MaterialClientCost { get; set; }
-        public decimal? PaymentsToConstructionIndustry { get; set; }
+        public bool? IsExemptFromVAT { get; set; } //освобожден от уплаты ндс?
+        public decimal? MaterialClientCost { get; set; } //стоимость материалов (заказчика)
+        public decimal? EquipmentClientCost { get; set; } //стоимость оборудования заказчика (справочно)
+        public decimal? CostToConstructionIndustryFund { get; set; } //отчисления в фонд строительной отрасли
+        public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)
+        public decimal? SmrNdsCost { get; set; }
+        public decimal? AdditionalNdsCost { get; set; }
 
         public virtual ContractDTO Contract { get; set; }
     }

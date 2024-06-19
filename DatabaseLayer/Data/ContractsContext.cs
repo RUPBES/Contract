@@ -11,8 +11,7 @@ public partial class ContractsContext : DbContext
     {
     }
 
-    public ContractsContext(DbContextOptions<ContractsContext> options)
-        : base(options)
+    public ContractsContext(DbContextOptions<ContractsContext> options): base(options)
     {
     }
 
@@ -101,19 +100,10 @@ public partial class ContractsContext : DbContext
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-
         if (!optionsBuilder.IsConfigured)
         {
-            //IConfigurationRoot configuration = new ConfigurationBuilder()
-            //   .SetBasePath(Directory.GetCurrentDirectory())
-            //   .AddJsonFile("appsettings.json")
-            //   .Build();
-            //var connectionString = configuration.GetConnectionString("Data");
-            //optionsBuilder.UseSqlServer(connectionString);
-
             optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
             //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-
         }
     }
 

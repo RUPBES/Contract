@@ -81,6 +81,14 @@ namespace DatabaseLayer.Repositories
                     form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment??0;
                     form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment??0;
 
+                    form.IsExemptFromVAT = entity.IsExemptFromVAT ?? false;
+                    form.MaterialClientCost = entity.MaterialClientCost ?? 0;
+                    form.EquipmentClientCost = entity.EquipmentClientCost;
+                    form.CostToConstructionIndustryFund = entity.CostToConstructionIndustryFund;
+                    form.СostStatisticReportOfContractor = entity.СostStatisticReportOfContractor ?? 0;
+                    form.SmrNdsCost = entity.SmrNdsCost ?? 0;
+                    form.AdditionalNdsCost = entity.AdditionalNdsCost ?? 0;
+
                     _context.FormC3as.Update(form);
                 }
             }
