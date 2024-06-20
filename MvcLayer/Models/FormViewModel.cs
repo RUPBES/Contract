@@ -23,8 +23,11 @@ namespace MvcLayer.Models
         [DisplayName("Неизменная договорная цена")]
         public decimal? FixedContractPrice { get; set; }
 
-        [DisplayName("Стоимость ПНР")]
+        [DisplayName("Договорная цена")]
         public decimal? PnrCost { get; set; }
+
+        [DisplayName("Стоимость ПНР")]
+        public decimal? PnrCostTotal { get; set; }
 
         [DisplayName("Стоимость оборудования")]
         public decimal? EquipmentCost { get; set; }
@@ -49,18 +52,13 @@ namespace MvcLayer.Models
         [DisplayName("К оплате")]
         public decimal? TotalCostToBePaid { get; set; }
 
-        [DisplayName("Номер")]
-        public string Number { get; set; }
-
         [DisplayName("Собственными силами?")]
         public bool? IsOwnForces { get; set; }
 
         [DisplayName("Утвержденный вариант")]
         public bool? IsFinal { get; set; }
 
-        public int? ContractId { get; set; }
-
-        public string? OrganizationName { get; set; }
+        public int? ContractId { get; set; }    
 
         [DisplayName("Освобожден от уплаты ндс?")]
         public bool? IsExemptFromVAT { get; set; } //освобожден от уплаты ндс?
@@ -72,16 +70,15 @@ namespace MvcLayer.Models
         public decimal? CostToConstructionIndustryFund { get; set; } //отчисления в фонд строительной отрасли
         [DisplayName("Стоимость работ для статистической отчетности подрядчика (слравочно)")]
         public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)
-        [DisplayName("Сумма НДС для СМР")]
+        [DisplayName("Сумма НДС для договорной цены")]
         public decimal? SmrNdsCost { get; set; }
         [DisplayName("Сумма НДС для дополнительных работ")]
         public decimal? AdditionalNdsCost { get; set; }
-
-
+        [DisplayName("Сумма НДС ПНР")]
+        public decimal? PnrNdsCost { get; set; }
+        [DisplayName("Сумма НДС для оборудования")]
+        public decimal? EquipmentNdsCost { get; set; }
 
         public IFormFileCollection FilesEntity { get; set; }
-
-        [DisplayName("Договор")]
-        public virtual ContractDTO Contract { get; set; }
     }
 }

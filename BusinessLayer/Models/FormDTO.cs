@@ -30,6 +30,8 @@
         public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)
         public decimal? SmrNdsCost { get; set; }
         public decimal? AdditionalNdsCost { get; set; }
+        public decimal? PnrNdsCost { get; set; }
+        public decimal? EquipmentNdsCost { get; set; }
 
         public virtual ContractDTO Contract { get; set; }
     }

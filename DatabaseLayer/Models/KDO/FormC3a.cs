@@ -34,6 +34,8 @@ namespace DatabaseLayer.Models.KDO
         public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)
         public decimal? AdditionalNdsCost { get; set; }
         public decimal? SmrNdsCost { get; set; }
+        public decimal? PnrNdsCost { get; set; }
+        public decimal? EquipmentNdsCost { get; set; }
 
         public virtual Contract Contract { get; set; }
         public virtual ICollection<FormFile> FormFiles { get; set; }
