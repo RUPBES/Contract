@@ -27,6 +27,7 @@
         public decimal? AdditionalNdsCost { get; set; }
 
         public decimal? OtherExpensesCost { get; set; }
+        public decimal? OtherExpensesNdsCost { get; set; }
 
         public decimal? MaterialCost { get; set; }
         public decimal? MaterialClientCost { get; set; } //стоимость материалов (заказчика)

@@ -59,11 +59,13 @@ namespace MvcLayer.Models
         public decimal? EquipmentClientCost { get; set; } //стоимость оборудования заказчика (справочно)
 
         [DisplayName("Стоимость прочих работ")]
-        public decimal? OtherExpensesCost { get; set; }        
+        public decimal? OtherExpensesCost { get; set; }
+        [DisplayName("Сумма НДС прочих работ")]
+        public decimal? OtherExpensesNdsCost { get; set; }
 
         [DisplayName("Материалы генподрядчика")]
         public decimal? MaterialCost { get; set; }
-        [DisplayName("Стоимость материалов (заказчика)")]
+        [DisplayName("Стоимость материалов заказчика (справочно)")]
         public decimal? MaterialClientCost { get; set; } //стоимость материалов (заказчика)
 
         [DisplayName("Стоимость ген.услуг")]
@@ -76,7 +78,7 @@ namespace MvcLayer.Models
      
         [DisplayName("Отчисления в фонд строительной отрасли")]
         public decimal? CostToConstructionIndustryFund { get; set; } //отчисления в фонд строительной отрасли
-        [DisplayName("Стоимость работ для статистической отчетности подрядчика (слравочно)")]
-        public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)  
+        [DisplayName("Стоимость работ для статистической отчетности подрядчика (справочно)")]
+        public decimal? CostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)  
     }
 }

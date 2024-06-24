@@ -106,6 +106,10 @@ namespace BusinessLayer.ServicesCOM
                 },
                 new List<string>
                 {
+                    "НДС"
+                },
+                new List<string>
+                {
                     "стоимость пусконаладочных работ"
                 },
                 new List<string>
@@ -128,7 +132,7 @@ namespace BusinessLayer.ServicesCOM
                 },
                 new List<string>
                 {
-                    "стоимость оборудования заказчик"
+                    "оборудован заказчик"
                 },
                 new List<string>
                 {
@@ -140,11 +144,11 @@ namespace BusinessLayer.ServicesCOM
                 },
                 new List<string>
                 {
-                    "материалы подрядчик"
+                    "материал подрядчик"
                 },
                 new List<string>
                 {
-                    "материалы заказчик"
+                    "материал заказчик"
                 },
                 new List<string>
                 {
@@ -158,6 +162,15 @@ namespace BusinessLayer.ServicesCOM
                 new List<string>
                 {
                     "средств фонд"
+                },
+                new List<string>
+                {
+                    "стоимость работ отчет",
+                    "стоимость работ отчёт"
+                },
+                new List<string>
+                {
+                    "сумм учитыв расчет вып раб"
                 }
             };
             var c3A = new FormDTO
@@ -175,6 +188,7 @@ namespace BusinessLayer.ServicesCOM
                 OffsetCurrentPrepayment = 0,
                 OffsetTargetPrepayment = 0,
                 OtherExpensesCost = 0,
+                OtherExpensesNdsCost = 0,
                 PnrCost = 0,
                 PnrContractCost = 0,
                 PnrNdsCost = 0,
@@ -196,6 +210,7 @@ namespace BusinessLayer.ServicesCOM
                     (string, int) ob;
                     ob.Item1 = excel.Cells[item.Item1, item.Item2].Value.ToString();
                     ob.Item2 = item.Item1;
+                    if (!listString.Contains(ob))
                     listString.Add(ob);
                 }
             }
@@ -208,13 +223,23 @@ namespace BusinessLayer.ServicesCOM
 
             var pnrCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость пусконаладочных работ")).FirstOrDefault();
 
-            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс")).FirstOrDefault();
+            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс")).FirstOrDefault();            
             var equipmentTransportCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс транспорт")).FirstOrDefault();
+            var equipmentClientCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "оборудован заказчик")).FirstOrDefault();
+
+            var sumWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумм учитыв расчет вып раб")).FirstOrDefault();
+
+            var statistic  = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость работ отчет", "стоимость работ отчёт")).FirstOrDefault();
 
             var NdsPrice = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумма НДС")).ToList();
+            var Nds = listString.Where(x => _excelReader.FindByWords(x.Item1, "НДС")).ToList();
 
             c3A.AdditionalContractCost += (decimal)_excelReader.GetValueDouble(excel, additionalWorkCoordates.Item2, col.Item2);
             c3A.AdditionalNdsCost += (decimal)_excelReader.GetValueDouble(excel, additionalNDSWorkCoordates.Item2, col.Item2);
+            if (statistic.Item1 != null)
+            {
+                c3A.СostStatisticReportOfContractor = (decimal)_excelReader.GetValueDouble(excel, statistic.Item2, col.Item2);
+            }
 
             foreach (var item in SmrPnrContractCoordates)
             {
@@ -222,25 +247,25 @@ namespace BusinessLayer.ServicesCOM
                 {
                     c3A.PnrContractCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                 }
-                else
+                else if (item.Item2 != additionalWorkCoordates.Item2)
                 {
                     c3A.SmrContractCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                 }
-
             }
 
             foreach (var item in NdsPrice)
             {
                 if (pnrCoordates.Item1 != null)
                 {
-                    if (item.Item2 < pnrCoordates.Item2)
+                    if (item.Item2 < pnrCoordates.Item2 && item.Item2 != additionalNDSWorkCoordates.Item2)
                         c3A.SmrNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                     else
                     if (item.Item2 > pnrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2)
                     {
                         c3A.PnrNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                     }
-                    else
+                    else 
+                    if (item.Item2 < sumWorkCoordates.Item2)
                     {
                         c3A.EquipmentNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                     }
@@ -258,23 +283,33 @@ namespace BusinessLayer.ServicesCOM
                 }
             }
 
+            foreach (var item in Nds)
+            {
+                if (item.Item2 > sumWorkCoordates.Item2)
+                {
+                    c3A.OtherExpensesNdsCost += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
+                }
+                
+            }
+
             if (equipmentTransportCoordates.Item1 != null)
             {
-                c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel, equipmentTransportCoordates.Item2, col.Item2);
+                c3A.EquipmentContractCost = (decimal)_excelReader.GetValueDouble(excel, equipmentTransportCoordates.Item2, col.Item2);
             }
             else
             {
-                c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel, equipmentCoordates.Item2, col.Item2);
+                c3A.EquipmentContractCost = (decimal)_excelReader.GetValueDouble(excel, equipmentCoordates.Item2, col.Item2);
             }
-            
+
+            c3A.EquipmentClientCost = (decimal)_excelReader.GetValueDouble(excel, equipmentClientCoordates.Item2, col.Item2);
             c3A.OffsetTargetPrepayment = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "зачет целевого аванса")).FirstOrDefault().Item2, col.Item2);
             c3A.OffsetCurrentPrepayment = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "зачет текущего аванса")).FirstOrDefault().Item2, col.Item2);
             c3A.MaterialCost = (decimal)_excelReader.GetValueDouble(excel,
-                listString.Where(x => _excelReader.FindByWords(x.Item1, "материалы подрядчик")).FirstOrDefault().Item2, col.Item2);
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "материал подрядчик")).FirstOrDefault().Item2, col.Item2);
             c3A.MaterialClientCost = (decimal)_excelReader.GetValueDouble(excel,
-                listString.Where(x => _excelReader.FindByWords(x.Item1, "материалы заказчик")).FirstOrDefault().Item2, col.Item2);
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "материал заказчик")).FirstOrDefault().Item2, col.Item2);
             c3A.GenServiceCost = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "другие генуслуги")).FirstOrDefault().Item2, col.Item2);
             c3A.CostToConstructionIndustryFund = (decimal)_excelReader.GetValueDouble(excel,

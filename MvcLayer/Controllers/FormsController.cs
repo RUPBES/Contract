@@ -424,6 +424,7 @@ namespace MvcLayer.Controllers
                 EquipmentNdsCost = form.EquipmentNdsCost,
                 EquipmentClientCost = form.EquipmentClientCost,
                 OtherExpensesCost = form.OtherExpensesCost,
+                OtherExpensesNdsCost = form.OtherExpensesNdsCost,
                 AdditionalCost = form.AdditionalContractCost + form.AdditionalNdsCost,
                 AdditionalContractCost = form.AdditionalContractCost,
                 AdditionalNdsCost = form.AdditionalNdsCost,
@@ -433,6 +434,10 @@ namespace MvcLayer.Controllers
                 GenServiceCost = form.GenServiceCost,
                 OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
                 OffsetTargetPrepayment = form.OffsetTargetPrepayment,
+                CostStatisticReportOfContractor = form.СostStatisticReportOfContractor,
+                TotalCostToBePaid = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost+
+                form.PnrContractCost + form.PnrNdsCost + form.EquipmentContractCost + form.EquipmentNdsCost + form.OtherExpensesCost+
+                form.MaterialCost + form.GenServiceCost - form.OffsetCurrentPrepayment - form.OffsetTargetPrepayment,
                 Period = ChoosePeriod,
                 ContractId = contractId
             };
