@@ -64,10 +64,9 @@ namespace DatabaseLayer.Repositories
                 var form = _context.FormC3as.Find(entity.Id);
 
                 if (form is not null)
-                {
-                    form.Period = entity.Period;
+                {                    
                     form.DateSigning = entity.DateSigning;
-                    form.FixedContractPrice = entity.FixedContractPrice?? 0;
+                    form.SmrContractCost = entity.SmrContractCost ?? 0;
                     form.SmrCost = entity.SmrCost ?? 0;
                     form.PnrCost = entity.PnrCost ?? 0;
                     form.EquipmentCost = entity.EquipmentCost ?? 0;
@@ -75,9 +74,7 @@ namespace DatabaseLayer.Repositories
                     form.AdditionalCost = entity.AdditionalCost ?? 0;
                     form.MaterialCost = entity.MaterialCost??0;
                     form.GenServiceCost = entity.GenServiceCost ?? 0;
-                    //form.Number = entity.Number;
-                    form.IsOwnForces = entity.IsOwnForces;
-                    form.ContractId = entity.ContractId ?? 0;
+                    
                     form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment??0;
                     form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment??0;
 

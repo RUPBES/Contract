@@ -19,8 +19,8 @@ namespace BusinessLayer.ServicesCOM
         private readonly IHttpContextAccessor _http;
         private readonly ITextSearcher _textSearcher;
         private readonly IEstimateService _estimateService;
-        public ParseService(IExcelReader excelReader, IConverter converter, ILoggerContract logger, IHttpContextAccessor http, 
-            ITextSearcher textSearcher,IEstimateService estimateService)
+        public ParseService(IExcelReader excelReader, IConverter converter, ILoggerContract logger, IHttpContextAccessor http,
+            ITextSearcher textSearcher, IEstimateService estimateService)
         {
             _excelReader = excelReader;
             _converter = converter;
@@ -98,6 +98,14 @@ namespace BusinessLayer.ServicesCOM
                 },
                 new List<string>
                 {
+                    "договор цен НДС"
+                },
+                new List<string>
+                {
+                    "сумма НДС"
+                },
+                new List<string>
+                {
                     "стоимость пусконаладочных работ"
                 },
                 new List<string>
@@ -112,7 +120,15 @@ namespace BusinessLayer.ServicesCOM
                 },
                 new List<string>
                 {
-                    "стоимость оборудования"
+                    "стоимость оборудования ндс"
+                },
+                new List<string>
+                {
+                    "стоимость оборудования ндс транспорт"
+                },
+                new List<string>
+                {
+                    "стоимость оборудования заказчик"
                 },
                 new List<string>
                 {
@@ -124,7 +140,11 @@ namespace BusinessLayer.ServicesCOM
                 },
                 new List<string>
                 {
-                    "материалы"
+                    "материалы подрядчик"
+                },
+                new List<string>
+                {
+                    "материалы заказчик"
                 },
                 new List<string>
                 {
@@ -134,19 +154,35 @@ namespace BusinessLayer.ServicesCOM
                 new List<string>
                 {
                     "другие"
+                },
+                new List<string>
+                {
+                    "средств фонд"
                 }
             };
             var c3A = new FormDTO
             {
                 AdditionalCost = 0,
+                AdditionalContractCost = 0,
+                AdditionalNdsCost = 0,
                 EquipmentCost = 0,
+                EquipmentClientCost = 0,
+                EquipmentContractCost = 0,
+                EquipmentNdsCost = 0,
                 GenServiceCost = 0,
                 MaterialCost = 0,
+                MaterialClientCost = 0,
                 OffsetCurrentPrepayment = 0,
                 OffsetTargetPrepayment = 0,
                 OtherExpensesCost = 0,
                 PnrCost = 0,
-                SmrCost = 0
+                PnrContractCost = 0,
+                PnrNdsCost = 0,
+                SmrCost = 0,
+                SmrContractCost = 0,
+                SmrNdsCost = 0,
+                CostToConstructionIndustryFund = 0,
+                СostStatisticReportOfContractor = 0
             };
 
             var col = _excelReader.FindCellByQuery(excel, "за отчетный период").FirstOrDefault();
@@ -164,73 +200,85 @@ namespace BusinessLayer.ServicesCOM
                 }
             }
 
-            var additionalWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость дополнительн работ", "стоимость доп работ")).ToList();
-            var additionalNDSWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумма НДС дополнительн работ", "сумма НДС доп работ")).ToList();
-            var smrCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость выполненных строительно монтажных работ")).FirstOrDefault();
+            var additionalWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость дополнительн работ", "стоимость доп работ")).FirstOrDefault();
+            var additionalNDSWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумма НДС дополнительн работ", "сумма НДС доп работ")).FirstOrDefault();
+
+            var smrAllCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость выполненных строительно монтажных работ")).FirstOrDefault();
+            var SmrPnrContractCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "договор цен НДС")).ToList();
+
             var pnrCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость пусконаладочных работ")).FirstOrDefault();
-            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault();
 
-            if (smrCoordates.Item1 != null)
+            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс")).FirstOrDefault();
+            var equipmentTransportCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс транспорт")).FirstOrDefault();
+
+            var NdsPrice = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумма НДС")).ToList();
+
+            c3A.AdditionalContractCost += (decimal)_excelReader.GetValueDouble(excel, additionalWorkCoordates.Item2, col.Item2);
+            c3A.AdditionalNdsCost += (decimal)_excelReader.GetValueDouble(excel, additionalNDSWorkCoordates.Item2, col.Item2);
+
+            foreach (var item in SmrPnrContractCoordates)
             {
-                var additionalWork = 0M;
-                foreach (var item in additionalWorkCoordates)
+                if (pnrCoordates.Item1 != null && item.Item2 > pnrCoordates.Item2)
                 {
-                    if (item.Item2 > smrCoordates.Item2 && item.Item2 < pnrCoordates.Item2 ||
-                        item.Item2 > smrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2 && pnrCoordates.Item2 == null)
-                    {
-                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
-                        break;
-                    }
+                    c3A.PnrContractCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                 }
-                foreach (var item in additionalNDSWorkCoordates)
+                else
                 {
-                    if (item.Item2 > smrCoordates.Item2 && item.Item2 < pnrCoordates.Item2 ||
-                        item.Item2 > smrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2 && pnrCoordates.Item2 == null)
-                    {
-                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
-                        break;
-                    }
+                    c3A.SmrContractCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                 }
 
-                var smrCost = (decimal)_excelReader.GetValueDouble(excel, smrCoordates.Item2, col.Item2);
-                smrCost -= additionalWork;
-                c3A.AdditionalCost += additionalWork;
-                c3A.FixedContractPrice = smrCost;
             }
-            if (pnrCoordates.Item1 != null)
+
+            foreach (var item in NdsPrice)
             {
-                var additionalWork = 0M;
-                foreach (var item in additionalWorkCoordates)
+                if (pnrCoordates.Item1 != null)
                 {
+                    if (item.Item2 < pnrCoordates.Item2)
+                        c3A.SmrNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
+                    else
                     if (item.Item2 > pnrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2)
                     {
-                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
-                        break;
+                        c3A.PnrNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                     }
-                }
-                foreach (var item in additionalNDSWorkCoordates)
-                {
-                    if (item.Item2 > pnrCoordates.Item2 && item.Item2 < equipmentCoordates.Item2)
+                    else
                     {
-                        additionalWork += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
-                        break;
+                        c3A.EquipmentNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                     }
                 }
-                var pnrCost = (decimal)_excelReader.GetValueDouble(excel, pnrCoordates.Item2, col.Item2);
-                pnrCost -= additionalWork;
-                c3A.AdditionalCost += additionalWork;
-                c3A.PnrCost = pnrCost;
+                else
+                {
+                    if (item.Item2 < equipmentCoordates.Item2)
+                    {
+                        c3A.SmrNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
+                    }
+                    else
+                    {
+                        c3A.EquipmentNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
+                    }
+                }
             }
-            c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel,
-                listString.Where(x => _excelReader.FindByWords(x.Item1, "Стоимость оборудования")).FirstOrDefault().Item2, col.Item2);
+
+            if (equipmentTransportCoordates.Item1 != null)
+            {
+                c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel, equipmentTransportCoordates.Item2, col.Item2);
+            }
+            else
+            {
+                c3A.EquipmentCost = (decimal)_excelReader.GetValueDouble(excel, equipmentCoordates.Item2, col.Item2);
+            }
+            
             c3A.OffsetTargetPrepayment = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "зачет целевого аванса")).FirstOrDefault().Item2, col.Item2);
             c3A.OffsetCurrentPrepayment = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "зачет текущего аванса")).FirstOrDefault().Item2, col.Item2);
             c3A.MaterialCost = (decimal)_excelReader.GetValueDouble(excel,
-                listString.Where(x => _excelReader.FindByWords(x.Item1, "материалы")).FirstOrDefault().Item2, col.Item2);
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "материалы подрядчик")).FirstOrDefault().Item2, col.Item2);
+            c3A.MaterialClientCost = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "материалы заказчик")).FirstOrDefault().Item2, col.Item2);
             c3A.GenServiceCost = (decimal)_excelReader.GetValueDouble(excel,
                 listString.Where(x => _excelReader.FindByWords(x.Item1, "другие генуслуги")).FirstOrDefault().Item2, col.Item2);
+            c3A.CostToConstructionIndustryFund = (decimal)_excelReader.GetValueDouble(excel,
+                listString.Where(x => _excelReader.FindByWords(x.Item1, "средств фонд")).FirstOrDefault().Item2, col.Item2);
             c3A.OtherExpensesCost = 0;
             foreach (var item in listString.Where(x => _excelReader.FindByWords(x.Item1, "другие", "возмещение стоимости", "возврат стоимости")))
             {
@@ -260,10 +308,10 @@ namespace BusinessLayer.ServicesCOM
                 }
                 estimate.BuildingName = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
                 estimate.BuildingCode = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
-                estimate.DrawingsKit = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");                
+                estimate.DrawingsKit = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
                 var Number = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
 
-                estimate.Number = _textSearcher?.FindEstimateNumber(Number) ?? "";                
+                estimate.Number = _textSearcher?.FindEstimateNumber(Number) ?? "";
 
                 var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Составлена в ценах на", "Составлена в", "СОСТАВЛЕНА В");
                 int rowNameEstimate = cellAboveDates5.FirstOrDefault().Item1 - 1;
@@ -303,7 +351,7 @@ namespace BusinessLayer.ServicesCOM
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
             var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-            
+
             var estimate = _estimateService.GetById(estimateId);
 
             var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
@@ -317,7 +365,7 @@ namespace BusinessLayer.ServicesCOM
                 var nameColumnLabor = _excelReader.FindCellByQuery(excel, "трудозатраты", "трудозатрат", "трудозатраты чел.час.", "ТРУДОЗАТРАТ");
                 var OneofNumber = _excelReader.FindCellByQuery(excel, estimate.DrawingsName).FirstOrDefault();
                 var num = excel.Cells[OneofNumber.Item1, OneofNumber.Item2].Value?.ToString() ?? "";
-                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0))-1).Trim();
+                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0)) - 1).Trim();
                 if (num.Last() == '.') num = num.Substring(0, num.Count() - 1);
                 var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {num}", $"ИТОГО по смете {num}", $"Итого по смете {num}");
                 var col = nameColumnLabor.FirstOrDefault().Item2;
@@ -329,7 +377,7 @@ namespace BusinessLayer.ServicesCOM
                 return true;
             }
             catch (Exception e)
-            { 
+            {
                 _logger.WriteLog(
                                logLevel: LogLevel.Warning,
                                message: e.Message,
@@ -338,7 +386,7 @@ namespace BusinessLayer.ServicesCOM
                                userName: user
                                );
                 return false;
-            }           
+            }
         }
 
         public bool ParseAndReturnContractCosts(string path, int page, int estimateId)
@@ -346,7 +394,7 @@ namespace BusinessLayer.ServicesCOM
             var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
             var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-            
+
             var estimate = _estimateService.GetById(estimateId);
 
             var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
@@ -367,7 +415,7 @@ namespace BusinessLayer.ServicesCOM
                 var row = nameRowEstimate.FirstOrDefault().Item1;
                 var result = excel.Cells[row, col].Value ?? 0M;
 
-                estimate.ContractsCost = decimal.Parse(result.ToString().Replace('.',','));
+                estimate.ContractsCost = decimal.Parse(result.ToString().Replace('.', ','));
                 _estimateService.Update(estimate);
                 return true;
             }
@@ -390,7 +438,7 @@ namespace BusinessLayer.ServicesCOM
             var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
             var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
 
-            var estimate = _estimateService.GetById(estimateId);            
+            var estimate = _estimateService.GetById(estimateId);
             try
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
@@ -398,9 +446,9 @@ namespace BusinessLayer.ServicesCOM
                 {
                     throw new Exception("Файл не является справкой С-2б");
                 }
-                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "с начала строительства");              
+                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "с начала строительства");
                 var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"в с е г о по смете №{estimate.Number}", $"всего по смете №{estimate.Number}");
-                var col = nameColumnLabor.FirstOrDefault().Item2+1;
+                var col = nameColumnLabor.FirstOrDefault().Item2 + 1;
                 var row = nameRowEstimate.FirstOrDefault().Item1;
                 var result = excel.Cells[row, col].Value ?? 0;
 
