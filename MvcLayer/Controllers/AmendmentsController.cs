@@ -40,8 +40,22 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id)));
         }
 
+        [HttpGet]
+        public ActionResult GetType(int id, int returnContractId = 0)
+        {
+            ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult GetType(string typeName, int id, int returnContractId = 0)
+        {
+           return RedirectToAction(nameof(Create), new { typeName = typeName, contractId = id, returnContractId = returnContractId});
+        }
+
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult Create(int contractId, int returnContractId = 0, bool isScope = false, bool isPrepament = false)
+        public ActionResult Create(int contractId, string typeName, int returnContractId = 0, bool isScope = false, bool isPrepament = false)
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
@@ -64,6 +78,7 @@ namespace MvcLayer.Controllers
                 model.DateEndWork = prevAmend.DateEndWork;
                 model.DateEntryObject = prevAmend.DateEntryObject;
             }
+            model.Type = typeName;
             return View(model);
         }
 
@@ -74,6 +89,15 @@ namespace MvcLayer.Controllers
         {
             try
             {
+                if (isScope)
+                {
+                    amendment.Type = "scope";
+                }
+                if (isPrepament)
+                {
+                    amendment.Type = "prepayment";
+                }
+
                 int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
                 int fileId = (int)_fileService.Create(amendment.FilesEntity, FolderEnum.Amendment, amendId);
 

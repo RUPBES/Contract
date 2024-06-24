@@ -45,6 +45,9 @@ namespace MvcLayer.Models
         [DisplayName("ID Договора")]
         public int? ContractId { get; set; }
 
+        [DisplayName("Тип доп.соглашения")]
+        public string? Type { get; set; }
+
         public ContractDTO Contract { get; set; }
         [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }

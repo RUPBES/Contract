@@ -18,6 +18,7 @@ namespace DatabaseLayer.Models.KDO
         public string ContractChanges { get; set; }
         public string Comment { get; set; }
         public int? ContractId { get; set; }
+        public string? Type { get; set; }
 
         public virtual Contract Contract { get; set; }
         public virtual List<AmendmentFile> AmendmentFiles { get; set; }

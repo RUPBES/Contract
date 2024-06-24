@@ -71,6 +71,19 @@ namespace BusinessLayer.Helpers
         };
 
         /// <summary>
+        /// Получить по номеру ENUM тип доп.соглашения
+        /// </summary>
+        /// <param name="number">значение ENUM</param>
+        /// <returns>строка с названием типа доп.соглашения</returns>
+        public string? GetTypeOfAmendment(int number) => number switch
+        {
+            //0 => "Не определено",
+            1 => "Объем работ",
+            2 => "Авансы",            
+            _ => null
+        };
+
+        /// <summary>
         /// Получить по тип файла и вернуть название класса
         /// </summary>
         /// <param name="type">Тип</param>

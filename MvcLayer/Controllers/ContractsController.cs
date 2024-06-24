@@ -854,6 +854,7 @@ namespace MvcLayer.Controllers
         {
             var doc = _contractService.Find(x => x.Id == id).Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering }).FirstOrDefault();
             var viewModel = new ScopeWorkContractViewModel();
+            var amendmentId = _amendmentService?.Find(x=>x.ContractId ==  id)?.LastOrDefault()?.Id;
             var lastScope = _scopeWorkService.GetLastScope(id);
             var subDoc = _contractService.Find(x => x.SubContractId == id || x.AgreementContractId == id || x.MultipleContractId == id).Select(x => x.Id).ToList();
             #region Заполнение данными из объема работ(План)

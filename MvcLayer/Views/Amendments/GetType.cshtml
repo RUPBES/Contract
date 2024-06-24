@@ -1,0 +1,32 @@
+﻿@using BusinessLayer.Enums
+@model string
+
+<style>
+    .form_select {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btn {
+        margin-left: 72%;
+    }
+</style>
+
+<form asp-action="GetType">
+    <div>
+        <input name="contractId" value="@ViewBag.contractId" hidden />
+        <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+        <label class="control-label">Дополнительное соглашение для:</label>
+        <select name="typeName" class="form-select">
+            @foreach (var item in Enum.GetValues<AmendmentType>())
+            {
+                <option value="@item.ToString()" selected>
+                    <span>
+                        @item.ToString()
+                    </span>
+                </option>
+            }
+        </select>
+    </div>
+    <button class="mt-3 btn btn-primary" type="submit">Выбрать</button>
+</form>

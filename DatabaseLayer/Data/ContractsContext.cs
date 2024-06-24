@@ -641,11 +641,11 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money")
                 .HasComment("стоимость оборудования");
 
-            entity.Property(e => e.GenServiceCost)
+            entity.Property(e => e.GenServiceCost).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("стоимость ген.услуг");
 
-            entity.Property(e => e.FixedContractPrice)
+            entity.Property(e => e.FixedContractPrice).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("Неизменная договорная цена");
 
@@ -656,9 +656,9 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money")
                 .HasComment("стоимость материалов (заказчика)");
 
-            entity.Property(e => e.Number).HasMaxLength(50);
+            //entity.Property(e => e.Number).HasMaxLength(50);
 
-            entity.Property(e => e.OtherExpensesCost)
+            entity.Property(e => e.OtherExpensesCost).HasDefaultValueSql("0")
                 .HasColumnType("money")
                 .HasComment("стоимость остальных работ");
 
@@ -1188,7 +1188,7 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<CommissionAct>(entity =>
         {
-            entity.ToTable("СommissionAct");
+            entity.ToTable("CommissionAct");
 
             entity.HasComment("акт ввода");
 
@@ -1208,7 +1208,7 @@ public partial class ContractsContext : DbContext
         {
             entity.HasKey(e => new { e.СommissionActId, e.FileId });
 
-            entity.ToTable("СommissionActFile");
+            entity.ToTable("CommissionActFile");
 
             entity.HasComment("акт ввода - файлы");
 

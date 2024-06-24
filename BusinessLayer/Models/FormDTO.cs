@@ -17,7 +17,7 @@
         public decimal? OffsetTargetPrepayment { get; set; }
         public decimal? OffsetCurrentPrepayment { get; set; }
         public decimal? TotalCostToBePaid { get; set; }
-        public string Number { get; set; }
+        //public string Number { get; set; }
         public bool? IsOwnForces { get; set; }
         public bool? IsFinal { get; set; }
         public int? ContractId { get; set; }

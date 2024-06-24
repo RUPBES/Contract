@@ -75,7 +75,7 @@ namespace DatabaseLayer.Repositories
                     amendment.ContractChanges = entity.ContractChanges;
                     amendment.Comment = entity.Comment;
                     amendment.ContractId = entity.ContractId;
-
+                    amendment.Type = entity.Type;
 
                     _context.Amendments.Update(amendment);
                 }
