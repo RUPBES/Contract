@@ -88,16 +88,16 @@
                                         В том числе
                                     </legend>
                                     <div class="form-group">
-                                        <label asp-for="FixedContractPrice" class="control-label"></label>
-                                        @if (Model.FixedContractPrice != null)
+                                        <label asp-for="SmrContractCost" class="control-label"></label>
+                                        @if (Model.SmrContractCost != null)
                                         {
-                                            <input name="FixedContractPrice" type="text" value="@Model.FixedContractPrice" class="form-control cost" />
+                                            <input name="FixedContractPrice" type="text" value="@Model.SmrContractCost" class="form-control cost" />
                                         }
                                         else
                                         {
                                             <input name="FixedContractPrice" type="text" class="form-control cost" />
                                         }
-                                        <span asp-validation-for="FixedContractPrice" class="text-danger"></span>
+                                        <span asp-validation-for="SmrContractCost" class="text-danger"></span>
                                     </div>
                                     <div class="form-group">
                                         <label asp-for="SmrNdsCost" class="control-label"></label>
@@ -136,21 +136,33 @@
                                         <span asp-validation-for="AdditionalNdsCost" class="text-danger"></span>
                                     </div>
                                 </fieldset>
+                                <div class="form-group">
+                                    <label asp-for="PnrCost" class="control-label"></label>
+                                    @if (Model.PnrCost != null)
+                                    {
+                                        <input name="PnrCost" type="text" value="@Model.PnrCost" class="form-control cost" />
+                                    }
+                                    else
+                                    {
+                                        <input name="PnrCost" type="text" class="form-control cost" />
+                                    }
+                                    <span asp-validation-for="PnrCost" class="text-danger"></span>
+                                </div>
                                 <fieldset class="border rounded-1 p-3">
                                     <legend class="float-none w-auto px-3">
                                         В том числе
                                     </legend>
                                     <div class="form-group">
-                                        <label asp-for="PnrCost" class="control-label"></label>
-                                        @if (Model.PnrCost != null)
+                                        <label asp-for="PnrContractCost" class="control-label"></label>
+                                        @if (Model.PnrContractCost != null)
                                         {
-                                            <input name="PnrCost" type="text" value="@Model.PnrCost" class="form-control cost" />
+                                            <input name="PnrContractCost" type="text" value="@Model.PnrContractCost" class="form-control cost" />
                                         }
                                         else
                                         {
-                                            <input name="PnrCost" type="text" class="form-control cost" />
+                                            <input name="PnrContractCost" type="text" class="form-control cost" />
                                         }
-                                        <span asp-validation-for="PnrCost" class="text-danger"></span>
+                                        <span asp-validation-for="PnrContractCost" class="text-danger"></span>
                                     </div>
                                     <div class="form-group">
                                         <label asp-for="PnrNdsCost" class="control-label"></label>
@@ -167,18 +179,6 @@
                                     </fieldset>
                                 
                                 
-                                <div class="form-group">
-                                    <label asp-for="EquipmentCost" class="control-label"></label>
-                                    @if (Model.EquipmentCost != null)
-                                    {
-                                        <input name="EquipmentCost" type="text" value="@Model.EquipmentCost" class="form-control cost" />
-                                    }
-                                    else
-                                    {
-                                        <input name="EquipmentCost" type="text" class="form-control cost" />
-                                    }
-                                    <span asp-validation-for="EquipmentCost" class="text-danger"></span>
-                                </div>
                                 <div class="form-group">
                                     <label asp-for="FilesEntity" class="control-label">Файл</label>
                                     <input asp-for="FilesEntity" data-val-required="Загрузите файл справки" type="file" class="form-control" />
@@ -204,6 +204,60 @@
                     </div>
                     <div class="col">
                         <fieldset class="border rounded-1 p-3">
+
+                            <div class="form-group">
+                                <label asp-for="EquipmentCost" class="control-label"></label>
+                                @if (Model.EquipmentCost != null)
+                                {
+                                    <input name="EquipmentCost" type="text" value="@Model.EquipmentCost" class="form-control cost" />
+                                }
+                                else
+                                {
+                                    <input name="EquipmentCost" type="text" class="form-control cost" />
+                                }
+                                <span asp-validation-for="EquipmentCost" class="text-danger"></span>
+                            </div>
+                            <fieldset class="border rounded-1 p-3">
+                                <legend class="float-none w-auto px-3">
+                                    В том числе
+                                </legend>
+                                <div class="form-group">
+                                    <label asp-for="EquipmentContractCost" class="control-label"></label>
+                                    @if (Model.EquipmentContractCost != null)
+                                    {
+                                        <input name="EquipmentContractCost" type="text" value="@Model.EquipmentContractCost" class="form-control cost" />
+                                    }
+                                    else
+                                    {
+                                        <input name="EquipmentContractCost" type="text" class="form-control cost" />
+                                    }
+                                    <span asp-validation-for="EquipmentContractCost" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="EquipmentNdsCost" class="control-label"></label>
+                                    @if (Model.EquipmentNdsCost != null)
+                                    {
+                                        <input name="PnrCost" type="text" value="@Model.EquipmentNdsCost" class="form-control cost" />
+                                    }
+                                    else
+                                    {
+                                        <input name="EquipmentNdsCost" type="text" class="form-control cost" />
+                                    }
+                                    <span asp-validation-for="EquipmentNdsCost" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="EquipmentClientCost" class="control-label"></label>
+                                    @if (Model.EquipmentClientCost != null)
+                                    {
+                                        <input name="PnrCost" type="text" value="@Model.EquipmentClientCost" class="form-control cost" />
+                                    }
+                                    else
+                                    {
+                                        <input name="EquipmentClientCost" type="text" class="form-control cost" />
+                                    }
+                                    <span asp-validation-for="EquipmentClientCost" class="text-danger"></span>
+                                </div>
+                            </fieldset>
                             @if (ViewBag.Current != null)
                             {
                                 <div class="form-group">
@@ -259,6 +313,18 @@
                                 <span asp-validation-for="MaterialCost" class="text-danger"></span>
                             </div>
                             <div class="form-group">
+                                <label asp-for="MaterialClientCost" class="control-label"></label>
+                                @if (Model.MaterialClientCost != null)
+                                {
+                                    <input name="MaterialClientCost" type="text" value="@Model.MaterialClientCost" class="form-control cost" />
+                                }
+                                else
+                                {
+                                    <input name="MaterialClientCost" type="text" class="form-control cost" />
+                                }
+                                <span asp-validation-for="MaterialClientCost" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
                                 <label asp-for="GenServiceCost" class="control-label"></label>
                                 @if (Model.GenServiceCost != null)
                                 {
@@ -269,6 +335,18 @@
                                     <input name="GenServiceCost" type="text" class="form-control cost" />
                                 }
                                 <span asp-validation-for="GenServiceCost" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="CostToConstructionIndustryFund" class="control-label"></label>
+                                @if (Model.CostToConstructionIndustryFund != null)
+                                {
+                                    <input name="CostToConstructionIndustryFund" type="text" value="@Model.CostToConstructionIndustryFund" class="form-control cost" />
+                                }
+                                else
+                                {
+                                    <input name="CostToConstructionIndustryFund" type="text" class="form-control cost" />
+                                }
+                                <span asp-validation-for="CostToConstructionIndustryFund" class="text-danger"></span>
                             </div>
                         </fieldset>
                     </div>

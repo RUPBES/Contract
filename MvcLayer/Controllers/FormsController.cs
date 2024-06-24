@@ -162,8 +162,8 @@ namespace MvcLayer.Controllers
                 int mainContrId;
 
                 formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;                
-                formViewModel.FixedContractPrice = formViewModel.FixedContractPrice ?? 0;
-                formViewModel.SmrCost = formViewModel.AdditionalCost + formViewModel.FixedContractPrice;
+                formViewModel.SmrContractCost = formViewModel.SmrContractCost ?? 0;
+                formViewModel.SmrCost = formViewModel.AdditionalCost + formViewModel.SmrContractCost;
                 formViewModel.PnrCost = formViewModel.PnrCost ?? 0;
                 formViewModel.EquipmentCost = formViewModel.EquipmentCost ?? 0;
                 formViewModel.OtherExpensesCost = formViewModel.OtherExpensesCost ?? 0;
@@ -276,7 +276,7 @@ namespace MvcLayer.Controllers
                     bool isNotGenContract = _contractService.IsNotGenContract(form.ContractId, out mainContrId);
                     var contract = form.ContractId.HasValue ? _contractService.GetById((int)form.ContractId) : null;
                     bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
-                    formViewModel.SmrCost = formViewModel.FixedContractPrice + formViewModel.AdditionalCost;
+                    formViewModel.SmrCost = formViewModel.SmrContractCost + formViewModel.AdditionalCost;
 
                     if (isNotGenContract && !isOneMultipleContract)
                     {
@@ -413,12 +413,23 @@ namespace MvcLayer.Controllers
 
             var viewForm = new FormViewModel
             {
-                FixedContractPrice = form.FixedContractPrice,
-                PnrCost = form.PnrCost,
-                EquipmentCost = form.EquipmentCost,
+                SmrCost = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost,
+                SmrContractCost = form.SmrContractCost,
+                SmrNdsCost = form.SmrNdsCost,
+                PnrCost = form.PnrContractCost + form.PnrNdsCost,
+                PnrContractCost = form.PnrContractCost,
+                PnrNdsCost = form.PnrNdsCost,
+                EquipmentCost = form.EquipmentContractCost + form.EquipmentNdsCost,
+                EquipmentContractCost = form.EquipmentContractCost,
+                EquipmentNdsCost = form.EquipmentNdsCost,
+                EquipmentClientCost = form.EquipmentClientCost,
                 OtherExpensesCost = form.OtherExpensesCost,
-                AdditionalCost = form.AdditionalCost,
+                AdditionalCost = form.AdditionalContractCost + form.AdditionalNdsCost,
+                AdditionalContractCost = form.AdditionalContractCost,
+                AdditionalNdsCost = form.AdditionalNdsCost,
                 MaterialCost = form.MaterialCost,
+                MaterialClientCost = form.MaterialClientCost,
+                CostToConstructionIndustryFund = form.CostToConstructionIndustryFund,                
                 GenServiceCost = form.GenServiceCost,
                 OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
                 OffsetTargetPrepayment = form.OffsetTargetPrepayment,

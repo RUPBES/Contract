@@ -11,7 +11,7 @@ public partial class ContractsContext : DbContext
     {
     }
 
-    public ContractsContext(DbContextOptions<ContractsContext> options): base(options)
+    public ContractsContext(DbContextOptions<ContractsContext> options) : base(options)
     {
     }
 
@@ -624,70 +624,115 @@ public partial class ContractsContext : DbContext
         modelBuilder.Entity<FormC3a>(entity =>
         {
             entity.ToTable("FormC3A");
-
             entity.HasComment("справки о стоимости выполненных  работ (С-3а)");
 
-            entity.Property(e => e.AdditionalCost)
-                .HasColumnType("money")
-                .HasComment("стоимость доп. работ");
+            entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
+
+            entity.Property(e => e.IsExemptFromVAT).HasDefaultValueSql("0").HasComment("освобожден от уплаты ндс?");
 
             entity.Property(e => e.ContractId).HasComment("Ссылка на договор");
 
             entity.Property(e => e.DateSigning)
                 .HasColumnType("datetime")
-                .HasComment("Дата документа");
-
-            entity.Property(e => e.EquipmentCost)
-                .HasColumnType("money")
-                .HasComment("стоимость оборудования");
-
-            entity.Property(e => e.GenServiceCost)
-                .HasColumnType("money")
-                .HasComment("стоимость ген.услуг");
-
-            entity.Property(e => e.FixedContractPrice)
-                .HasColumnType("money")
-                .HasComment("Неизменная договорная цена");
-
-            entity.Property(e => e.IsOwnForces).HasDefaultValueSql("0").HasComment("работы проводятся собственными силами?");
-            entity.Property(e => e.IsFinal).HasDefaultValueSql("0");
-
-            entity.Property(e => e.MaterialCost)
-                .HasColumnType("money")
-                .HasComment("стоимость материалов (заказчика)");
-
-            entity.Property(e => e.Number).HasMaxLength(50);
-
-            entity.Property(e => e.OtherExpensesCost)
-                .HasColumnType("money")
-                .HasComment("стоимость остальных работ");
+                .HasComment("Дата подписания");
 
             entity.Property(e => e.Period)
-                .HasColumnType("datetime")
-                .HasComment("За какой месяц выполнены работы");
-
-            entity.Property(e => e.PnrCost)
-                .HasColumnType("money")
-                .HasComment("стоимость  ПНР");
-
-            entity.Property(e => e.SmrCost)
-                .HasColumnType("money")
-                .HasComment("стоимость СМР");
+         .HasColumnType("datetime")
+         .HasComment("За какой месяц выполнены работы");
 
             entity.Property(e => e.TotalCost)
             .HasComputedColumnSql()
-                .HasColumnType("money")
-                .HasComment("Общая стоимость выполненных работ");
+            .HasColumnType("money")
+            .HasComment("Общая стоимость выполненных работ");
 
             entity.Property(e => e.TotalCostToBePaid)
             .HasComputedColumnSql()
                 .HasColumnType("money")
                 .HasComment("К оплате");
 
-            entity.HasOne(d => d.Contract)
-                .WithMany(p => p.FormC3as)
-                .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK_FormC3A_Contract_Id");
+            entity.Property(e => e.SmrCost)
+             .HasColumnType("money")
+             .HasComment("стоимость СМР");
+
+            entity.Property(e => e.SmrContractCost)
+                .HasColumnType("money")
+                .HasComment("Неизменная договорная цена");
+
+            entity.Property(e => e.SmrNdsCost)
+          .HasColumnType("money")
+          .HasComment("Сумма НДС по СМР");
+
+            entity.Property(e => e.AdditionalCost)
+                .HasColumnType("money")
+                .HasComment("стоимость доп. работ");
+
+            entity.Property(e => e.AdditionalContractCost)
+            .HasColumnType("money")
+            .HasComment("Контрактная цена(без НДС) по дополнительным работам");
+
+            entity.Property(e => e.AdditionalNdsCost)
+           .HasColumnType("money")
+           .HasComment("Сумма НДС по дополнительным работам");
+
+            entity.Property(e => e.PnrCost)
+                .HasColumnType("money")
+                .HasComment("стоимость  ПНР");
+
+            entity.Property(e => e.PnrContractCost)
+            .HasColumnType("money")
+            .HasComment("Контрактная цена(без НДС) по ПНР");
+
+            entity.Property(e => e.PnrNdsCost)
+           .HasColumnType("money")
+           .HasComment("Сумма НДС по ПНР");
+
+            entity.Property(e => e.EquipmentCost)
+                .HasColumnType("money")
+                .HasComment("стоимость оборудования");
+
+            entity.Property(e => e.EquipmentContractCost)
+            .HasColumnType("money")
+            .HasComment("Контрактная цена(без НДС) по оборудованию");
+
+            entity.Property(e => e.EquipmentNdsCost)
+           .HasColumnType("money")
+           .HasComment("Сумма НДС по оборудовании");
+
+            entity.Property(e => e.EquipmentClientCost)
+           .HasColumnType("money")
+           .HasComment("стоимость оборудования заказчика (справочно)");
+
+            entity.Property(e => e.GenServiceCost)
+                .HasColumnType("money")
+                .HasComment("стоимость ген.услуг");  
+
+            entity.Property(e => e.MaterialCost)
+                .HasColumnType("money")
+                .HasComment("стоимость материалов (генподрядчика)");
+
+            entity.Property(e => e.MaterialClientCost)
+            .HasColumnType("money")
+            .HasComment("стоимость материалов (заказчика)");
+
+            entity.Property(e => e.OtherExpensesCost)
+                .HasColumnType("money")
+                .HasComment("стоимость остальных работ");  
+
+            entity.Property(e => e.OffsetTargetPrepayment)
+               .HasColumnType("money")
+               .HasComment("Зачет целевого аванса");
+
+            entity.Property(e => e.OffsetCurrentPrepayment)
+              .HasColumnType("money")
+              .HasComment("Зачет текущего аванса");                   
+
+            entity.Property(e => e.CostToConstructionIndustryFund)
+           .HasColumnType("money")
+           .HasComment("отчисления в фонд строительной отрасли");
+
+            entity.Property(e => e.СostStatisticReportOfContractor)
+           .HasColumnType("money")
+           .HasComment("стоимость работ для статистической отчетности подрядчика (справочно)");            
         });
 
         modelBuilder.Entity<FormFile>(entity =>
@@ -1188,7 +1233,7 @@ public partial class ContractsContext : DbContext
 
         modelBuilder.Entity<CommissionAct>(entity =>
         {
-            entity.ToTable("СommissionAct");
+            entity.ToTable("CommissionAct");
 
             entity.HasComment("акт ввода");
 
@@ -1208,7 +1253,7 @@ public partial class ContractsContext : DbContext
         {
             entity.HasKey(e => new { e.СommissionActId, e.FileId });
 
-            entity.ToTable("СommissionActFile");
+            entity.ToTable("CommissionActFile");
 
             entity.HasComment("акт ввода - файлы");
 
@@ -1233,7 +1278,7 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("Вид работ");
 
-            entity.Property(e => e.name)                
+            entity.Property(e => e.name)
                 .HasComment("Наименование");
         });
 
