@@ -51,6 +51,9 @@
             <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
         </div>
     </div>
+    <div class="alert alert-success" role="alert" id="HeaderLabel">
+    </div>
+    </div>
 </form>
 <script>
     $("#dateDrawingId").datepicker({
@@ -72,7 +75,7 @@
             data: { EstimateId: estimateId},
             success: function (viewData) {
                 $("#divForm").html(viewData)
-                $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
+                $("#HeaderLabel").append("<span>Этап 3: Загрузка расчета стоимости</span>")
             },
             error: function (error) {
                 var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
@@ -121,7 +124,7 @@
                     data: { EstimateId: estimateId },
                     success: function (viewData) {
                         $("#divForm").html(viewData)
-                        $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
+                        $("#HeaderLabel").html("Этап 3: Загрузка расчета стоимости")
                     },
                     error: function (error) {
                         var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
