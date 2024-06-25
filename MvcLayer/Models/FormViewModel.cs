@@ -18,7 +18,8 @@ namespace MvcLayer.Models
 
         [DisplayName("Период составления справки")]
         public DateTime? Period { get; set; }
-
+                
+        [Required(ErrorMessage = "Выберите дату подписания справки")]
         [DisplayName("Дата подписания")]
         public DateTime? DateSigning { get; set; }
 

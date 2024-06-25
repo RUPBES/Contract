@@ -420,13 +420,26 @@ namespace BusinessLayer.Services
         private FormC3a SubstractCosts(FormC3a oldForm, FormC3a newForm, int opr)
         {
             oldForm.PnrCost = (oldForm.PnrCost ?? 0) + (opr * (newForm?.PnrCost ?? 0));
+            oldForm.PnrContractCost = (oldForm.PnrContractCost ?? 0) + (opr * (newForm?.PnrContractCost ?? 0));
+            oldForm.PnrNdsCost = (oldForm.PnrNdsCost ?? 0) + (opr * (newForm?.PnrNdsCost ?? 0));
             oldForm.SmrCost = (oldForm.SmrCost ?? 0) + (opr * (newForm?.SmrCost ?? 0));
             oldForm.SmrContractCost = (oldForm.SmrContractCost ?? 0) + (opr * (newForm?.SmrContractCost ?? 0));
+            oldForm.SmrNdsCost = (oldForm.SmrNdsCost ?? 0) + (opr * (newForm?.SmrNdsCost ?? 0));
             oldForm.EquipmentCost = (oldForm.EquipmentCost ?? 0) + (opr * (newForm?.EquipmentCost ?? 0));
+            oldForm.EquipmentContractCost = (oldForm.EquipmentContractCost ?? 0) + (opr * (newForm?.EquipmentContractCost ?? 0));
+            oldForm.EquipmentNdsCost = (oldForm.EquipmentNdsCost ?? 0) + (opr * (newForm?.EquipmentNdsCost ?? 0));
+            oldForm.EquipmentClientCost = (oldForm.EquipmentClientCost ?? 0) + (opr * (newForm?.EquipmentClientCost ?? 0));
             oldForm.OtherExpensesCost = (oldForm.OtherExpensesCost ?? 0) + (opr * (newForm?.OtherExpensesCost ?? 0));
+            oldForm.OtherExpensesNdsCost = (oldForm.OtherExpensesNdsCost ?? 0) + (opr * (newForm?.OtherExpensesNdsCost ?? 0));
             oldForm.AdditionalCost = (oldForm.AdditionalCost ?? 0) + (opr * (newForm?.AdditionalCost ?? 0));
+            oldForm.AdditionalContractCost = (oldForm.AdditionalContractCost ?? 0) + (opr * (newForm?.AdditionalContractCost ?? 0));
+            oldForm.AdditionalNdsCost = (oldForm.AdditionalNdsCost ?? 0) + (opr * (newForm?.AdditionalNdsCost ?? 0));
             oldForm.GenServiceCost = (oldForm.GenServiceCost ?? 0) + (opr * (newForm?.GenServiceCost ?? 0));
             oldForm.MaterialCost = (oldForm.MaterialCost ?? 0) + (opr * (newForm?.MaterialCost ?? 0));
+            oldForm.MaterialClientCost = (oldForm.MaterialClientCost ?? 0) + (opr * (newForm?.MaterialClientCost ?? 0));
+
+            oldForm.CostToConstructionIndustryFund = (oldForm.CostToConstructionIndustryFund ?? 0) + (opr * (newForm?.CostToConstructionIndustryFund ?? 0));
+            oldForm.СostStatisticReportOfContractor = (oldForm.СostStatisticReportOfContractor ?? 0) + (opr * (newForm?.СostStatisticReportOfContractor ?? 0));
 
             oldForm.OffsetCurrentPrepayment = (oldForm.OffsetCurrentPrepayment ?? 0) + (opr * (newForm?.OffsetCurrentPrepayment ?? 0));
             oldForm.OffsetTargetPrepayment = (oldForm.OffsetTargetPrepayment ?? 0) + (opr * (newForm?.OffsetTargetPrepayment ?? 0));
@@ -437,16 +450,29 @@ namespace BusinessLayer.Services
         private FormC3a SubstractCosts(FormC3a formMain, FormC3a oldFormCost, FormC3a formNew, int opr)
         {
             formMain.PnrCost = (formMain.PnrCost ?? 0) + (opr * ((formNew?.PnrCost ?? 0) - (oldFormCost?.PnrCost ?? 0)));
+            formMain.PnrContractCost = (formMain.PnrContractCost ?? 0) + (opr * ((formNew?.PnrContractCost ?? 0) - (oldFormCost?.PnrContractCost ?? 0)));
+            formMain.PnrNdsCost = (formMain.PnrNdsCost ?? 0) + (opr * ((formNew?.PnrNdsCost ?? 0) - (oldFormCost?.PnrNdsCost ?? 0)));
             formMain.SmrCost = (formMain.SmrCost ?? 0) + opr * ((formNew?.SmrCost ?? 0) - (oldFormCost?.SmrCost ?? 0));
             formMain.SmrContractCost = (formMain.SmrContractCost ?? 0) + opr * ((formNew?.SmrContractCost ?? 0) - (oldFormCost?.SmrContractCost ?? 0));
+            formMain.SmrNdsCost = (formMain.SmrNdsCost ?? 0) + opr * ((formNew?.SmrNdsCost ?? 0) - (oldFormCost?.SmrNdsCost ?? 0));
             formMain.EquipmentCost = (formMain.EquipmentCost ?? 0) + opr * ((formNew?.EquipmentCost ?? 0) - (oldFormCost?.EquipmentCost ?? 0));
+            formMain.EquipmentContractCost = (formMain.EquipmentContractCost ?? 0) + opr * ((formNew?.EquipmentContractCost ?? 0) - (oldFormCost?.EquipmentContractCost ?? 0));
+            formMain.EquipmentNdsCost = (formMain.EquipmentNdsCost ?? 0) + opr * ((formNew?.EquipmentNdsCost ?? 0) - (oldFormCost?.EquipmentNdsCost ?? 0));
+            formMain.EquipmentClientCost = (formMain.EquipmentClientCost ?? 0) + opr * ((formNew?.EquipmentClientCost ?? 0) - (oldFormCost?.EquipmentClientCost ?? 0));
             formMain.OtherExpensesCost = (formMain.OtherExpensesCost ?? 0) + opr * ((formNew?.OtherExpensesCost ?? 0) - (oldFormCost?.OtherExpensesCost ?? 0));
+            formMain.OtherExpensesNdsCost = (formMain.OtherExpensesNdsCost ?? 0) + opr * ((formNew?.OtherExpensesNdsCost ?? 0) - (oldFormCost?.OtherExpensesNdsCost ?? 0));
             formMain.AdditionalCost = (formMain.AdditionalCost ?? 0) + opr * ((formNew?.AdditionalCost ?? 0) - (oldFormCost?.AdditionalCost ?? 0));
+            formMain.AdditionalContractCost = (formMain.AdditionalContractCost ?? 0) + opr * ((formNew?.AdditionalContractCost ?? 0) - (oldFormCost?.AdditionalContractCost ?? 0));
+            formMain.AdditionalNdsCost = (formMain.AdditionalNdsCost ?? 0) + opr * ((formNew?.AdditionalNdsCost ?? 0) - (oldFormCost?.AdditionalNdsCost ?? 0));
             formMain.GenServiceCost = (formMain.GenServiceCost ?? 0) + opr * ((formNew?.GenServiceCost ?? 0) - (oldFormCost?.GenServiceCost ?? 0));
             formMain.MaterialCost = (formMain.MaterialCost ?? 0) + opr * ((formNew?.MaterialCost ?? 0) - (oldFormCost?.MaterialCost ?? 0));
+            formMain.MaterialClientCost = (formMain.MaterialClientCost ?? 0) + opr * ((formNew?.MaterialClientCost ?? 0) - (oldFormCost?.MaterialClientCost ?? 0));
 
             formMain.OffsetCurrentPrepayment = (formMain.OffsetCurrentPrepayment ?? 0) + (opr * (formNew?.OffsetCurrentPrepayment ?? 0) - (oldFormCost?.OffsetCurrentPrepayment ?? 0));
             formMain.OffsetTargetPrepayment = (formMain.OffsetTargetPrepayment ?? 0) + (opr * (formNew?.OffsetTargetPrepayment ?? 0) - (oldFormCost?.OffsetTargetPrepayment ?? 0));
+
+            formMain.CostToConstructionIndustryFund = (formMain.CostToConstructionIndustryFund ?? 0) + opr * ((formNew?.CostToConstructionIndustryFund ?? 0) - (oldFormCost?.CostToConstructionIndustryFund ?? 0));
+            formMain.СostStatisticReportOfContractor = (formMain.СostStatisticReportOfContractor ?? 0) + opr * ((formNew?.СostStatisticReportOfContractor ?? 0) - (oldFormCost?.СostStatisticReportOfContractor ?? 0));
             return formMain;
         }
 
