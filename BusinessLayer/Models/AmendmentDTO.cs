@@ -15,7 +15,7 @@ namespace BusinessLayer.Models
         public string ContractChanges { get; set; }
         public string Comment { get; set; }
         public int? ContractId { get; set; }
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         public ContractDTO Contract { get; set; }
         public List<AmendmentFileDTO> AmendmentFiles { get; set; }
