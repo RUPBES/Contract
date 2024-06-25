@@ -51,8 +51,7 @@
             <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
         </div>
     </div>
-    <div class="alert alert-success" role="alert" id="HeaderLabel">
-    </div>
+
     </div>
 </form>
 <script>
@@ -67,7 +66,7 @@
     });
 
     $("#NextStep").on('click', function (e) {
-        $("#result").html("2 Этап пропущен.")
+        $("#result").html(`<div class="alert alert-success" role="alert"><span>2 Этап пропущен.</span></div>`)
         var estimateId = $("#EstimateId").val();
         $.ajax({
             type: 'GET',
@@ -75,7 +74,7 @@
             data: { EstimateId: estimateId},
             success: function (viewData) {
                 $("#divForm").html(viewData)
-                $("#HeaderLabel").append("<span>Этап 3: Загрузка расчета стоимости</span>")
+                $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
             },
             error: function (error) {
                 var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
@@ -85,7 +84,7 @@
                     data: { message: errorMes },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(data)
+                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                     }
                 });
             }
@@ -117,14 +116,14 @@
             url: '@Url.Action("DownloadDrawingOfEstimate", "Parse")',
             data: formData,
             success: function (data) {
-                $("#result").html(data)
+                $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                 $.ajax({
                     type: 'GET',
                     url: '@Url.Action("GetEstimateLaborCost", "Estimate")',
                     data: { EstimateId: estimateId },
                     success: function (viewData) {
                         $("#divForm").html(viewData)
-                        $("#HeaderLabel").html("Этап 3: Загрузка расчета стоимости")
+                        $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
                     },
                     error: function (error) {
                         var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
@@ -147,7 +146,8 @@
                     data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(data)
+                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+
                     }
                 });
             },
