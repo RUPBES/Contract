@@ -48,8 +48,7 @@ namespace DatabaseLayer.Models.KDO
         public virtual List<ContractOrganization> ContractOrganizations { get; set; } = new List<ContractOrganization>();
         public virtual List<Correspondence> Correspondences { get; set; } = new List<Correspondence>();
         public virtual List<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
-        public virtual List<EstimateDoc> EstimateDocs { get; set; } = new List<EstimateDoc>();
-        public virtual List<FormC3a> FormC3as { get; set; } = new List<FormC3a>();
+        public virtual List<EstimateDoc> EstimateDocs { get; set; } = new List<EstimateDoc>();        
         public virtual List<Contract> InverseAgreementContract { get; set; } = new List<Contract>();
         public virtual List<Contract> InverseSubContract { get; set; } = new List<Contract>();
         public virtual List<Contract> InverseMultipleContract { get; set; } = new List<Contract>();

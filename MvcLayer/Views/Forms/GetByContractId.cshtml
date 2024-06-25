@@ -237,7 +237,7 @@
                                                 @total?.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">                                                
-                                                @item.FixedContractPrice?.ToString("N2")
+                                                @item.SmrContractCost?.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
                                                 @item.PnrCost?.ToString("N2")
@@ -371,7 +371,7 @@
                                         @foreach (var sub in formNested)
                                         {
                                             totalSum += sub?.SmrCost + sub?.PnrCost ?? 0;
-                                            fixedContractSum += sub?.FixedContractPrice ?? 0;
+                                            fixedContractSum += sub?.SmrContractCost + sub?.SmrNdsCost ?? 0;
                                             pnrSum += sub?.PnrCost ?? 0;
                                             addSum += sub?.AdditionalCost ?? 0;
                                             eqpSum += sub?.EquipmentCost ?? 0;
@@ -401,7 +401,7 @@
                                                     @total?.ToString("N2")
                                                 </td>
                                                 <td class="text-end col-tog">
-                                                    @sub?.FixedContractPrice?.ToString("N2")
+                                                    @sub?.SmrCost?.ToString("N2")
                                                 </td>
                                                 <td class="text-end col-tog">
                                                     @sub?.PnrCost?.ToString("N2")
