@@ -54,33 +54,12 @@ namespace MvcLayer.Models.Reports
     public class ScopeWorkForReport             
     {
         public DateTime? Period { get; set; }
-        public decimal? SmrCost { get; set; }
-        public decimal? PnrCost { get; set; }
-        public decimal? EquipmentCost { get; set; }
-        public decimal? OtherExpensesCost { get; set; }
-        public decimal? AdditionalCost { get; set; }
-        public decimal? MaterialCost { get; set; }
-
-        public ScopeWorkForReport(DateTime? period, decimal? smrCost, decimal? pnrCost, decimal? equipmentCost, decimal? otherExpensesCost, decimal? additionalCost, decimal? materialCost)
-        {
-            Period = period;
-            SmrCost = smrCost;
-            PnrCost = pnrCost;
-            EquipmentCost = equipmentCost;
-            OtherExpensesCost = otherExpensesCost;
-            AdditionalCost = additionalCost;
-            MaterialCost = materialCost;
-        }
-
-        public ScopeWorkForReport()
-        {            
-            SmrCost = 0;
-            PnrCost = 0;
-            EquipmentCost = 0;
-            OtherExpensesCost = 0;
-            AdditionalCost = 0;
-            MaterialCost = 0;
-        }
+        public decimal? SmrCost { get; set; } = 0;
+        public decimal? PnrCost { get; set; } = 0;
+        public decimal? EquipmentCost { get; set; } = 0;
+        public decimal? OtherExpensesCost { get; set; } = 0;
+        public decimal? AdditionalCost { get; set; } = 0;
+        public decimal? MaterialCost { get; set; } = 0;
     }
 
 }

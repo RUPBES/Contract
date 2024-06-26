@@ -34,18 +34,9 @@
 
     public class ItemScopeWorkContract : ScopeWorkForReport
     {
-        public ItemScopeWorkContract(DateTime? period, decimal? smrCost, decimal? pnrCost, decimal? equipmentCost, decimal? otherExpensesCost, decimal? additionalCost, decimal? materialCost) : base(period, smrCost, pnrCost, equipmentCost, otherExpensesCost, additionalCost, materialCost)
-        {
-        }
-
-        public ItemScopeWorkContract(): base()
-        {
-            TotalCost = 0;
-            TotalWithoutNds = 0;            
-        }
-
-        public decimal? TotalCost { get; set; }
-        public decimal? TotalWithoutNds { get; set; }
+        public decimal? EquipmentClientCost { get; set; } = 0;
+        public decimal? TotalCost { get; set; } = 0;
+        public decimal? TotalWithoutNds { get; set; } = 0;
 
     }
 }
