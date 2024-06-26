@@ -1048,7 +1048,7 @@ namespace MvcLayer.Controllers
             {
                 ViewData["main"] = true; 
             }
-            }
+            
             if (doc.IsEngineering == true)
             {
                 ViewData["Engin"] = true;
