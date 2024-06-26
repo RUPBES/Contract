@@ -57,9 +57,7 @@
         }
 
         h1 {
-            /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-                                                                    color: #004d8e;
-                                                                    transition: all 1s; */
+            transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
@@ -186,15 +184,8 @@
                         {
                             <th>
                                 <span class="table_span-contractor">
-
                                     <span>Генподрядчик</span>
                                     @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayGeneralContractor", @class = "up" })
-
-
-                                    @*  @if (isEngineering == true)
-                            {
-                            <span>Исполнитель</span>
-                            } *@
                                 </span>
                             </th>
                         }
@@ -374,22 +365,18 @@
                                                 <a asp-action="Edit" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-
                                         @if (permissions is not null && permissions.IsDeleter)
                                         {
                                             <div class="icon delete" title="Удалить договор">
                                                 <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-
-
                                         @if (ViewBag?.IsMajorOrganization)
                                         {
                                             <div class="icon transfer" title="Передать договор филиалу">
                                                 <a asp-action="ChangeOwner" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-
                                         @if (!item.IsArchive)
                                         {
                                             <div class="icon archive" title="Переместить в архив">
@@ -567,14 +554,12 @@
                                                 <a asp-action="Edit" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-
                                         @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                         {
                                             <div class="icon delete" title="Удалить договор">
                                                 <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-
                                         @if (ViewBag?.IsMajorOrganization)
                                         {
                                             @if (permissions is not null && permissions.IsAdmin)

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
@@ -8,7 +7,6 @@ using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Helpers;
-using System.Diagnostics;
 
 namespace MvcLayer.Controllers
 {
@@ -854,6 +852,7 @@ namespace MvcLayer.Controllers
         {
             var doc = _contractService.Find(x => x.Id == id).Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering }).FirstOrDefault();
             var viewModel = new ScopeWorkContractViewModel();
+            viewModel.AmendmentInfo = _amendmentService.IsThereScopeWorkWitnLastAmendmentByContractId(id) == false ? Constats.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : String.Empty;
             var amendmentId = _amendmentService?.Find(x=>x.ContractId ==  id)?.LastOrDefault()?.Id;
             var lastScope = _scopeWorkService.GetLastScope(id);
             var subDoc = _contractService.Find(x => x.SubContractId == id || x.AgreementContractId == id || x.MultipleContractId == id).Select(x => x.Id).ToList();
@@ -1046,9 +1045,14 @@ namespace MvcLayer.Controllers
             viewModel.remainingScopeOwn.TotalWithoutNds = viewModel.contractPriceOwn.TotalWithoutNds - viewModel.remainingScopeOwn.TotalWithoutNds;
             #endregion
             if (doc.IsSubContract != true && doc.IsAgreementContract != true && doc.IsOneOfMultiple != true)
-                ViewData["main"] = true;
+            {
+                ViewData["main"] = true; 
+            }
             if (doc.IsEngineering == true)
+            {
                 ViewData["Engin"] = true;
+            }
+
             return PartialView("_ScopeWork", viewModel);
         }
 

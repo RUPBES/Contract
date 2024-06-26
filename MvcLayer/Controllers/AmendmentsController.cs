@@ -2,11 +2,9 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
-using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -14,16 +12,19 @@ namespace MvcLayer.Controllers
     public class AmendmentsController : Controller
     {
         private readonly IAmendmentService _amendment;
+        private readonly IScopeWorkService _scopeWork;
         private readonly IContractService _contract;
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public AmendmentsController(IAmendmentService amendment, IMapper mapper, IFileService fileService, IContractService contract)
+        public AmendmentsController(IAmendmentService amendment, IMapper mapper, 
+            IFileService fileService, IContractService contract, IScopeWorkService scopeWork)
         {
             _amendment = amendment;
             _mapper = mapper;
             _fileService = fileService;
             _contract = contract;
+            _scopeWork = scopeWork;
         }
 
         [HttpGet]
@@ -96,11 +97,28 @@ namespace MvcLayer.Controllers
                 int fileId = (int)_fileService.Create(amendment.FilesEntity, FolderEnum.Amendment, amendId);
 
                 _amendment.AddFile(amendId, fileId);
+                
                 if (isScope || amendment.Type == "scope")
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = amendment.ContractId, returnContractId = returnContractId });
-                if (isPrepament || amendment.Type == "prepayment")
-                    return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                {
+                    var scopes = _scopeWork.Find(x => x.ContractId == amendment.ContractId)?.LastOrDefault();
 
+                    var scopeWork = new PeriodChooseViewModel
+                    {
+                        ContractId = amendment.ContractId,
+                        AmendmentId = amendId,
+                        PeriodStart = amendment?.DateBeginWork?? default,
+                        PeriodEnd = amendment?.DateEndWork?? default,
+                        ChangeScopeWorkId = scopes?.Id
+                    };
+
+                    return RedirectToAction("CreatePeriods", "ScopeWorks", scopeWork);
+                    //return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                }
+
+                if (isPrepament || amendment.Type == "prepayment")
+                {
+                    return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                }
                 return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
             }
             catch

@@ -5,6 +5,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISelectionProcedureService SelectionProcedure
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
@@ -16,6 +17,9 @@
     // Debug.WriteLine(stopWath.ElapsedMilliseconds);
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
+
+    // var isThereLastAmendmentInScopeWork = Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)Model?.Id);
+
     // Debug.WriteLine("permissions -" + stopWath.ElapsedMilliseconds);
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
     // Debug.WriteLine("branchAgreement -" + stopWath.ElapsedMilliseconds);
@@ -329,17 +333,18 @@
                 </td>
                 @if (!isEngineering)
                 {
+                    @*  Генподрядчик *@
                     <td>
                         <span class="table_span-contractor">
-                            @*  Генподрядчик -
-                    Model.GenContractor *@
+
                             @Model.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsGenContractor == true)?.Organization?.Name
 
                         </span>
                     </td>
+                    @* Субподрядчик - *@
                     <td>
                         <span class="table_span-subcontractor">
-                            @* Субподрядчик - *@
+
                         </span>
                     </td>
                 }
@@ -372,9 +377,10 @@
 
                     </span>
                 </td>
+                @* Условия оплаты - *@
                 <td>
                     <span class="table_span-conditions">
-                        @* Условия оплаты - *@
+
                         <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">
                             @Model?.PaymentСonditionsAvans
                         </a>
@@ -398,6 +404,11 @@
                     <span class="table_span-contractprice">
                         @* ЦЕна - *@
                         @Model?.ContractPrice?.ToString("N2")
+                        @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)Model?.Id) == false)
+                        {
+                            <br />
+                            <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
+                        }
                     </span>
                 </td>
                 <td>
@@ -555,6 +566,11 @@
                         <span class="table_span-contractprice">
                             @* ЦЕна - *@
                             @contractBranch?.ContractPrice?.ToString("N2")
+                            @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)contractBranch?.Id) == false)
+                            {
+                                <br />
+                                <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
+                            }
                         </span>
                     </td>
                     <td>
@@ -754,7 +770,7 @@
                     @* Вид работ- *@
                     <td>
                         <span class="table_span-work">
-                             @TypeWork.GetByContractId((int)@contractBranch?.Id)?.Name
+                            @TypeWork.GetByContractId((int)@contractBranch?.Id)?.Name
                             @* @contractBranch?.TypeWorkContracts?.FirstOrDefault()?.TypeWork?.Name *@
                         </span>
                     </td>
@@ -763,6 +779,11 @@
                         <span class="table_span-contractprice">
 
                             @contractBranch?.ContractPrice?.ToString("N2")
+                            @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)contractBranch?.Id) == false)
+                            {
+                                <br />
+                                <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
+                            }
                         </span>
                     </td>
                     <td>
@@ -994,6 +1015,11 @@
                         <span class="table_span-contractprice">
 
                             @contractSub?.ContractPrice?.ToString("N2")
+                            @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)contractSub?.Id) == false)
+                            {
+                                <br />
+                                <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
+                            }
                         </span>
                     </td>
                     <td>

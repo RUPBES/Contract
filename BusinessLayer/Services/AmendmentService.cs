@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    public class AmendmentService: IAmendmentService
+    public class AmendmentService : IAmendmentService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
@@ -109,7 +109,6 @@ namespace BusinessLayer.Services
             }
         }
 
-
         public IEnumerable<AmendmentDTO> GetAll()
         {
             return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.GetAll());
@@ -177,7 +176,7 @@ namespace BusinessLayer.Services
             if (fileId > 0 && amendId > 0)
             {
                 if (_database.AmendmentFiles.GetById(amendId, fileId) is null)
-                {                    
+                {
                     _database.AmendmentFiles.Create(new AmendmentFile
                     {
                         AmendmentId = amendId,
@@ -218,6 +217,18 @@ namespace BusinessLayer.Services
                 return null;
             }
             return range;
-        }        
+        }
+
+        public bool? IsThereScopeWorkWitnLastAmendmentByContractId(int contractId)
+        {
+            var amendmentId = _database.Amendments.Find(x => x.ContractId == contractId && x.Type == "scope")?.LastOrDefault()?.Id;
+            
+            if (amendmentId is null)
+            {
+                return null;
+            }
+            
+            return _database.ScopeWorkAmendments?.Find(p => p.AmendmentId == amendmentId)?.FirstOrDefault() is not null? true : false;
+        }
     }
 }

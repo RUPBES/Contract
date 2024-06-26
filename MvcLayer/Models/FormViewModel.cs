@@ -32,21 +32,21 @@ namespace MvcLayer.Models
         public decimal? SmrCost { get; set; }
         [DisplayName("Неизменная договорная цена")]
         public decimal? SmrContractCost { get; set; }
-        [DisplayName("Сумма НДС для договорной цены")]
+        [DisplayName("Сумма НДС договорной цены")]
         public decimal? SmrNdsCost { get; set; }
 
         [DisplayName("Стоимость доп. работ")]
         public decimal? AdditionalCost { get; set; }
         [DisplayName("Контрактная цена(без НДС) по дополнительным работам")]
         public decimal? AdditionalContractCost { get; set; }
-        [DisplayName("Сумма НДС для дополнительных работ")]
+        [DisplayName("Сумма НДС доп. работ")]
         public decimal? AdditionalNdsCost { get; set; }
 
         [DisplayName("Стоимость ПНР")]
         public decimal? PnrCost { get; set; }
-        [DisplayName("Контрактная цена(без НДС) по ПНР")]
+        [DisplayName("Контрактная цена(без НДС)")]
         public decimal? PnrContractCost { get; set; }
-        [DisplayName("Сумма НДС по ПНР")]
+        [DisplayName("Сумма НДС")]
         public decimal? PnrNdsCost { get; set; }
 
         [DisplayName("Стоимость оборудования")]
@@ -61,9 +61,9 @@ namespace MvcLayer.Models
         [DisplayName("Стоимость прочих работ")]
         public decimal? OtherExpensesCost { get; set; }        
 
-        [DisplayName("Материалы генподрядчика")]
+        [DisplayName("Стоимость материалов генподрядчика")]
         public decimal? MaterialCost { get; set; }
-        [DisplayName("Стоимость материалов (заказчика)")]
+        [DisplayName("Стоимость материалов заказчика (справочно)")]
         public decimal? MaterialClientCost { get; set; } //стоимость материалов (заказчика)
 
         [DisplayName("Стоимость ген.услуг")]

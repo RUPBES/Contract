@@ -5,11 +5,15 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
-
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
+    {
         backId = (int)ViewData["contractId"];
-    else backId = (int)ViewData["returnContractId"];
+    }
+    else
+    {
+        backId = (int)ViewData["returnContractId"];
+    }
     bool hasScope = false;
     // ищем есть ли изменения, выбираем последние. если изменения есть то ID последнего помечаем что изменяем
     var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
@@ -87,7 +91,7 @@
     .btn-block {
         display: flex;
         justify-content: space-between;
-    } 
+    }
 
     .label_period {
         font-weight: 600;
@@ -111,11 +115,11 @@
             font-weight: bold;
         }
 
-        .img_newAgr {
+    .img_newAgr {
         width: 24px;
         height: 24px;
         margin-right: 3px;
-        }
+    }
 </style>
 
 <div class="dm-overlay">
@@ -155,7 +159,7 @@
                                 <div class="title-warning"><span>Объем работ для данного договора заполнен</span></div>
                             }
                         </div>
-                        <div id="chooseAmendment" class="row" >
+                        <div id="chooseAmendment" class="row">
                             <div class="form-group">
                                 <label class="control-label label_period">Выбрать доп.соглашение:</label>
                                 <select name="AmendmentId" id="AmendId" class="form-control select">

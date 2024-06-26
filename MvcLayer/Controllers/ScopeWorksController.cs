@@ -70,6 +70,7 @@ namespace MvcLayer.Controllers
                     ContractId = contractId
                 };
                 var isScope = _scopeWork.Find(x => x.ContractId == contractId).FirstOrDefault();
+                
                 if (isScope != null)
                 {
                     return View(periodChoose);
@@ -178,8 +179,10 @@ namespace MvcLayer.Controllers
                 {
                     returnContractId = (int)TempData["returnContractId"];
                 }
+
                 ScopeWorkViewModel scope = new ScopeWorkViewModel();
                 List<SWCostDTO> costs = new List<SWCostDTO>();
+                
                 if (scopeWork.AmendmentId > 0)
                 {
                     scope.IsChange = true;

@@ -8,5 +8,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     {
         void AddFile(int amendId, int fileId);
         IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select);
+        bool? IsThereScopeWorkWitnLastAmendmentByContractId(int contractId);
     }
 }

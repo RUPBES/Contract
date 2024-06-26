@@ -14,6 +14,8 @@
         public List<ItemScopeWorkContract>? facts;
         public List<ItemScopeWorkContract>? scopesOwn;
         public List<ItemScopeWorkContract>? factsOwn;
+        public string? AmendmentInfo { get; set; } = null;
+
 
         public ScopeWorkContractViewModel()
         {
