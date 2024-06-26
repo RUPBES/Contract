@@ -23,7 +23,7 @@
 
 <script>
     $("#NextStep").on('click', function (e) {
-        $("#result").html("")
+        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
         var estimateId = $("#EstimateId").val();    
         $.ajax({
             type: 'GET',
@@ -42,7 +42,7 @@
                     data: { message: errorMes },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(data)
+                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                     }
                 });
             }
@@ -89,7 +89,7 @@
                                 data: { path: path, estimateId: estimateId, page: ex },
                                 success: function (data) {
                                     $("#ListOfSheet").html("")
-                                    $("#result").html("<h3>Данные из акта формы С-2б загружены.</h3>")     
+                                    $("#result").html(`<div class="alert alert-success" role="alert"><span><h3>Данные из акта формы С-2б загружены.</h3></span></div>`)
                                     $.ajax({
                                         type: 'GET',
                                         url: '@Url.Action("GetEstimateResult", "Estimate")',
@@ -107,7 +107,7 @@
                                                 data: { message: errorMes },
                                                 dataType: 'html',
                                                 success: function (data) {
-                                                    $("#result").html(data)
+                                                    $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                                                 }
                                             });
                                         }
@@ -121,7 +121,7 @@
                                         data: { message: errorMes },
                                         dataType: 'html',
                                         success: function (data) {
-                                            $("#result").html(data)
+                                            $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                                         }
                                     });
                                 }
@@ -136,7 +136,7 @@
                             data: { message: errorMes },
                             dataType: 'html',
                             success: function (data) {
-                                $("#result").html(data)
+                                $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                             }
                         });
                     }
@@ -150,7 +150,7 @@
                     data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(data)
+                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                         $("#container_progress").attr('style', `display:none`);
                     }
                 });

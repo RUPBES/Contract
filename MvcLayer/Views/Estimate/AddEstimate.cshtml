@@ -181,7 +181,7 @@
                         data: { message: errorMes },
                         dataType: 'html',
                         success: function (data) {
-                            $("#result").html(data)
+                            $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                         }
                     });
                 }
@@ -197,7 +197,7 @@
                     data: { message: "Введите наименование комплекта чертежей." },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(data)
+                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                     }
                 });
             }
@@ -227,7 +227,7 @@
                                     data: { message: errorMes },
                                     dataType: 'html',
                                     success: function (data) {
-                                        $("#result").html(data)
+                                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                                     }
                                 });
                             }
@@ -241,7 +241,7 @@
                             data: { message: errorMes },
                             dataType: 'html',
                             success: function (data) {
-                                $("#result").html(data)
+                                $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                             }
                         });
                     }
@@ -291,7 +291,7 @@
                                     data: { path: path, contractId: contractId, page: ex, date: dateEstimate },
                                     success: function (data) {
                                         $("#EstimateId").val(data)
-                                        $("#result").html("<h3>Данные из локальной сметы загружены.</h3>")
+                                        $("#result").html(`<div class="alert alert-success" role="alert"><span><h3>Данные из локальной сметы загружены.</h3></span></div>`)
                                         $.ajax({
                                             type: 'POST',
                                             url: '@Url.Action("GetDrawingsFiles", "Estimate")',
@@ -309,8 +309,7 @@
                                                     data: { message: errorMes },
                                                     dataType: 'html',
                                                     success: function (data) {
-                                                        console.log(data)
-                                                        $("#result").html(data)
+                                                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                                                     }
                                                 });
                                             }
@@ -324,9 +323,7 @@
                                             data: { message: errorMes },
                                             dataType: 'html',
                                             success: function (data) {
-                                                console.log(data)
-
-                                                $("#result").html(data)
+                                                $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                                             }
                                         });
                                     }
@@ -341,9 +338,7 @@
                                 data: { message: errorMes },
                                 dataType: 'html',
                                 success: function (data) {
-                                    console.log(data)
-
-                                    $("#result").html(data)
+                                    $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
                                 }
                             });
                         }
@@ -358,8 +353,6 @@
                         dataType: 'html',
                         success: function (data) {
                             $("#result").html(data)
-                            console.log(data)
-
                             $("#container_progress").attr('style', `display:none`);
                         }
                     });
