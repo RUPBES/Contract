@@ -18,7 +18,8 @@ namespace MvcLayer.Models
 
         [DisplayName("Период составления справки")]
         public DateTime? Period { get; set; }
-
+                
+        [Required(ErrorMessage = "Выберите дату подписания справки")]
         [DisplayName("Дата подписания")]
         public DateTime? DateSigning { get; set; }
 
@@ -59,7 +60,9 @@ namespace MvcLayer.Models
         public decimal? EquipmentClientCost { get; set; } //стоимость оборудования заказчика (справочно)
 
         [DisplayName("Стоимость прочих работ")]
-        public decimal? OtherExpensesCost { get; set; }        
+        public decimal? OtherExpensesCost { get; set; }
+        [DisplayName("Сумма НДС прочих работ")]
+        public decimal? OtherExpensesNdsCost { get; set; }
 
         [DisplayName("Стоимость материалов генподрядчика")]
         public decimal? MaterialCost { get; set; }
@@ -76,7 +79,7 @@ namespace MvcLayer.Models
      
         [DisplayName("Отчисления в фонд строительной отрасли")]
         public decimal? CostToConstructionIndustryFund { get; set; } //отчисления в фонд строительной отрасли
-        [DisplayName("Стоимость работ для статистической отчетности подрядчика (слравочно)")]
-        public decimal? СostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)  
+        [DisplayName("Стоимость работ для статистической отчетности подрядчика (справочно)")]
+        public decimal? CostStatisticReportOfContractor { get; set; } //стоимость работ для статистической отчетности подрядчика (слравочно)  
     }
 }

@@ -236,10 +236,10 @@
                                                 }
                                                 @total?.ToString("N2")
                                             </td>
-                                            <td class="text-end col-tog">                                                
-                                                @item.SmrContractCost?.ToString("N2")
-                                            </td>
                                             <td class="text-end col-tog">
+                                                @((item.SmrContractCost+item.SmrNdsCost)?.ToString("N2"))
+                                            </td>
+                                            <td class="text-end col-tog">                                                
                                                 @item.PnrCost?.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
@@ -322,9 +322,8 @@
                                                 @item.DateSigning?.ToShortDateString()
                                             </td>
                                             <td></td>
-                                            <td class="text-end">
-                                                @*смр и есть обая стоимость*@
-                                                @item.SmrCost?.ToString("N2")
+                                            <td class="text-end">                                                
+                                                @((item.SmrContractCost + item.SmrNdsCost)?.ToString("N2"))
                                             </td>
                                             <td class="text-end">
                                                 @item.TotalCostToBePaid?.ToString("N2")
@@ -401,7 +400,7 @@
                                                     @total?.ToString("N2")
                                                 </td>
                                                 <td class="text-end col-tog">
-                                                    @sub?.SmrCost?.ToString("N2")
+                                                    @((item.SmrContractCost + item.SmrNdsCost)?.ToString("N2"))
                                                 </td>
                                                 <td class="text-end col-tog">
                                                     @sub?.PnrCost?.ToString("N2")

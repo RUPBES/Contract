@@ -139,7 +139,7 @@ namespace MvcLayer.Controllers
             }
             //Debug.WriteLine("stop -" + stopWath.ElapsedMilliseconds);
             //stopWath.Stop();
-            return View(_mapper.Map<ContractViewModel>(contract));            
+            return View(_mapper.Map<ContractViewModel>(contract));
         }
 
         [Authorize(Policy = "CreatePolicy")]
@@ -184,7 +184,7 @@ namespace MvcLayer.Controllers
                 viewModel.IsOneOfMultiple = true;
                 viewModel.Author = organizationName;
                 viewModel.Owner = organizationName;
-                
+
                 if (viewModel.ContractPrice is null)
                 {
                     viewModel.ContractPrice = 0;
@@ -330,9 +330,9 @@ namespace MvcLayer.Controllers
             if (contract is not null)
             {
                 contract.FundingSource = string.Join(", ", contract.FundingFS);
-                if (contract.PaymentCA.Count == 0) 
-                { 
-                    contract.PaymentCA.Add("Без авансов"); 
+                if (contract.PaymentCA.Count == 0)
+                {
+                    contract.PaymentCA.Add("Без авансов");
                 }
 
                 contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
@@ -421,13 +421,13 @@ namespace MvcLayer.Controllers
                 }
                 if (ViewData["returnContractId"] != null)
                 {
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });                    
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });
                 }
                 if (contract.IsEngineering == true)
                 {
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });                    
+                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
                 }
-                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });                
+                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
             }
 
             return View(contract);
@@ -436,7 +436,7 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
         {
-            ViewData["returnContractId"] = returnContractId;            
+            ViewData["returnContractId"] = returnContractId;
 
             var contract = _contractService.GetById((int)id);
             if (contract == null)
@@ -866,33 +866,30 @@ namespace MvcLayer.Controllers
                     ob.PnrCost = item.PnrCost;
                     ob.SmrCost = item.SmrCost;
                     ob.EquipmentCost = item.EquipmentCost;
-                    ob.OtherExpensesCost = item.OtherExpensesCost;
+                    ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
                     ob.AdditionalCost = item.AdditionalCost;
-                    ob.MaterialCost = item.MaterialCost;
                     ob.Period = item.Period;
                     ob.TotalCost = item.CostNds;
                     ob.TotalWithoutNds = item.CostNoNds;
                     viewModel.scopes.Add(ob);
 
-                    viewModel.contractPrice.SmrCost += item.SmrCost;
-                    viewModel.contractPrice.PnrCost += item.PnrCost;
-                    viewModel.contractPrice.EquipmentCost += item.EquipmentCost;
-                    viewModel.contractPrice.OtherExpensesCost += item.OtherExpensesCost;
-                    viewModel.contractPrice.AdditionalCost += item.AdditionalCost;
-                    viewModel.contractPrice.MaterialCost += item.MaterialCost;
-                    viewModel.contractPrice.TotalCost += item.CostNds;
-                    viewModel.contractPrice.TotalWithoutNds += item.CostNoNds;
+                    viewModel.contractPrice.SmrCost += ob.SmrCost;
+                    viewModel.contractPrice.PnrCost += ob.PnrCost;
+                    viewModel.contractPrice.EquipmentCost += ob.EquipmentCost;
+                    viewModel.contractPrice.OtherExpensesCost += ob.OtherExpensesCost;
+                    viewModel.contractPrice.AdditionalCost += ob.AdditionalCost;
+                    viewModel.contractPrice.TotalCost += ob.TotalCost;
+                    viewModel.contractPrice.TotalWithoutNds += ob.TotalWithoutNds;
                     if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
                         Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
                     {
-                        viewModel.todayScope.SmrCost += item.SmrCost;
-                        viewModel.todayScope.PnrCost += item.PnrCost;
-                        viewModel.todayScope.EquipmentCost += item.EquipmentCost;
-                        viewModel.todayScope.OtherExpensesCost += item.OtherExpensesCost;
-                        viewModel.todayScope.AdditionalCost += item.AdditionalCost;
-                        viewModel.todayScope.MaterialCost += item.MaterialCost;
-                        viewModel.todayScope.TotalCost += item.CostNds;
-                        viewModel.todayScope.TotalWithoutNds += item.CostNoNds;
+                        viewModel.todayScope.SmrCost += ob.SmrCost;
+                        viewModel.todayScope.PnrCost += ob.PnrCost;
+                        viewModel.todayScope.EquipmentCost += ob.EquipmentCost;
+                        viewModel.todayScope.OtherExpensesCost += ob.OtherExpensesCost;
+                        viewModel.todayScope.AdditionalCost += ob.AdditionalCost;
+                        viewModel.todayScope.TotalCost += ob.TotalCost;
+                        viewModel.todayScope.TotalWithoutNds += ob.TotalWithoutNds;
                     }
                 }
             }
@@ -914,9 +911,8 @@ namespace MvcLayer.Controllers
                         ob.PnrCost = item.PnrCost;
                         ob.SmrCost = item.SmrCost;
                         ob.EquipmentCost = item.EquipmentCost;
-                        ob.OtherExpensesCost = item.OtherExpensesCost;
+                        ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
                         ob.AdditionalCost = item.AdditionalCost;
-                        ob.MaterialCost = item.MaterialCost;
                         ob.Period = item.Period;
                         ob.TotalCost = item.CostNds;
                         ob.TotalWithoutNds = item.CostNoNds;
@@ -925,9 +921,8 @@ namespace MvcLayer.Controllers
                         viewModel.contractPriceOwn.SmrCost += item.SmrCost;
                         viewModel.contractPriceOwn.PnrCost += item.PnrCost;
                         viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
-                        viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost;
+                        viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
                         viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
-                        viewModel.contractPriceOwn.MaterialCost += item.MaterialCost;
                         viewModel.contractPriceOwn.TotalCost += item.CostNds;
                         viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
                         if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
@@ -936,9 +931,8 @@ namespace MvcLayer.Controllers
                             viewModel.todayScopeOwn.SmrCost += item.SmrCost;
                             viewModel.todayScopeOwn.PnrCost += item.PnrCost;
                             viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
-                            viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost;
+                            viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
                             viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
-                            viewModel.todayScopeOwn.MaterialCost += item.MaterialCost;
                             viewModel.todayScopeOwn.TotalCost += item.CostNds;
                             viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
                         }
@@ -952,35 +946,38 @@ namespace MvcLayer.Controllers
             {
                 var ob = new ItemScopeWorkContract();
                 ob.PnrCost = item.PnrCost;
-                ob.SmrCost = item.SmrCost;
+                ob.SmrCost = item.SmrContractCost + item.SmrNdsCost;
                 ob.EquipmentCost = item.EquipmentCost;
-                ob.OtherExpensesCost = item.OtherExpensesCost;
+                ob.EquipmentClientCost = item.EquipmentClientCost;
+                ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
                 ob.AdditionalCost = item.AdditionalCost;
-                ob.MaterialCost = item.MaterialCost;
+                ob.MaterialCost = item.MaterialClientCost;
                 ob.Period = item.Period;
-                ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost;
-                ob.TotalWithoutNds = ob.TotalCost / (decimal)1.2;
+                ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost + item.MaterialCost;
+                ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.OtherExpensesCost + item.MaterialCost + item.AdditionalContractCost - item.OtherExpensesNdsCost;
                 viewModel.facts.Add(ob);
 
-                viewModel.remainingScope.SmrCost += item.SmrCost;
-                viewModel.remainingScope.PnrCost += item.PnrCost;
-                viewModel.remainingScope.EquipmentCost += item.EquipmentCost;
-                viewModel.remainingScope.OtherExpensesCost += item.OtherExpensesCost;
-                viewModel.remainingScope.AdditionalCost += item.AdditionalCost;
-                viewModel.remainingScope.MaterialCost += item.MaterialCost;
+                viewModel.remainingScope.SmrCost += ob.SmrCost;
+                viewModel.remainingScope.PnrCost += ob.PnrCost;
+                viewModel.remainingScope.EquipmentCost += ob.EquipmentCost;
+                viewModel.remainingScope.EquipmentClientCost = ob.EquipmentClientCost;
+                viewModel.remainingScope.OtherExpensesCost += ob.OtherExpensesCost;
+                viewModel.remainingScope.AdditionalCost += ob.AdditionalCost;
+                viewModel.remainingScope.MaterialCost += ob.MaterialCost;
                 viewModel.remainingScope.TotalCost += ob.TotalCost;
                 viewModel.remainingScope.TotalWithoutNds += ob.TotalWithoutNds;
 
                 if (Checker.LessFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 1, 1)))
                 {
-                    viewModel.workTodayYear.SmrCost += item.SmrCost;
-                    viewModel.workTodayYear.PnrCost += item.PnrCost;
-                    viewModel.workTodayYear.EquipmentCost += item.EquipmentCost;
-                    viewModel.workTodayYear.OtherExpensesCost += item.OtherExpensesCost;
-                    viewModel.workTodayYear.AdditionalCost += item.AdditionalCost;
-                    viewModel.workTodayYear.MaterialCost += item.MaterialCost;
-                    viewModel.workTodayYear.TotalCost += item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost;
-                    viewModel.workTodayYear.TotalWithoutNds += ob.TotalCost / (decimal)1.2;
+                    viewModel.workTodayYear.SmrCost += ob.SmrCost;
+                    viewModel.workTodayYear.PnrCost += ob.PnrCost;
+                    viewModel.workTodayYear.EquipmentCost += ob.EquipmentCost;
+                    viewModel.workTodayYear.EquipmentClientCost = ob.EquipmentClientCost;
+                    viewModel.workTodayYear.OtherExpensesCost += ob.OtherExpensesCost;
+                    viewModel.workTodayYear.AdditionalCost += ob.AdditionalCost;
+                    viewModel.workTodayYear.MaterialCost += ob.MaterialCost;
+                    viewModel.workTodayYear.TotalCost += ob.TotalCost;
+                    viewModel.workTodayYear.TotalWithoutNds += ob.TotalWithoutNds;
                 }
             }
             #endregion
@@ -992,35 +989,38 @@ namespace MvcLayer.Controllers
                 {
                     var ob = new ItemScopeWorkContract();
                     ob.PnrCost = item.PnrCost;
-                    ob.SmrCost = item.SmrCost;
+                    ob.SmrCost = item.SmrContractCost + item.SmrNdsCost;
                     ob.EquipmentCost = item.EquipmentCost;
-                    ob.OtherExpensesCost = item.OtherExpensesCost;
+                    ob.EquipmentClientCost = item.EquipmentClientCost;
+                    ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
                     ob.AdditionalCost = item.AdditionalCost;
-                    ob.MaterialCost = item.MaterialCost;
+                    ob.MaterialCost = item.MaterialClientCost;
                     ob.Period = item.Period;
-                    ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost;
-                    ob.TotalWithoutNds = ob.TotalCost / (decimal)1.2;
+                    ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost + item.MaterialCost;
+                    ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.OtherExpensesCost + item.MaterialCost + item.AdditionalContractCost - item.OtherExpensesNdsCost;
                     viewModel.factsOwn.Add(ob);
 
-                    viewModel.remainingScopeOwn.SmrCost += item.SmrCost;
-                    viewModel.remainingScopeOwn.PnrCost += item.PnrCost;
-                    viewModel.remainingScopeOwn.EquipmentCost += item.EquipmentCost;
-                    viewModel.remainingScopeOwn.OtherExpensesCost += item.OtherExpensesCost;
-                    viewModel.remainingScopeOwn.AdditionalCost += item.AdditionalCost;
-                    viewModel.remainingScopeOwn.MaterialCost += item.MaterialCost;
+                    viewModel.remainingScopeOwn.SmrCost += ob.SmrCost;
+                    viewModel.remainingScopeOwn.PnrCost += ob.PnrCost;
+                    viewModel.remainingScopeOwn.EquipmentCost += ob.EquipmentCost;
+                    viewModel.remainingScopeOwn.EquipmentClientCost += ob.EquipmentClientCost;
+                    viewModel.remainingScopeOwn.OtherExpensesCost += ob.OtherExpensesCost;
+                    viewModel.remainingScopeOwn.AdditionalCost += ob.AdditionalCost;
+                    viewModel.remainingScopeOwn.MaterialCost += ob.MaterialCost;
                     viewModel.remainingScopeOwn.TotalCost += ob.TotalCost;
                     viewModel.remainingScopeOwn.TotalWithoutNds += ob.TotalWithoutNds;
 
                     if (Checker.LessFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 1, 1)))
                     {
-                        viewModel.workTodayYearOwn.SmrCost += item.SmrCost;
-                        viewModel.workTodayYearOwn.PnrCost += item.PnrCost;
-                        viewModel.workTodayYearOwn.EquipmentCost += item.EquipmentCost;
-                        viewModel.workTodayYearOwn.OtherExpensesCost += item.OtherExpensesCost;
-                        viewModel.workTodayYearOwn.AdditionalCost += item.AdditionalCost;
-                        viewModel.workTodayYearOwn.MaterialCost += item.MaterialCost;
-                        viewModel.workTodayYearOwn.TotalCost += item.TotalCost;
-                        viewModel.workTodayYearOwn.TotalWithoutNds += item.TotalCost / (decimal)1.2;
+                        viewModel.workTodayYearOwn.SmrCost += ob.SmrCost;
+                        viewModel.workTodayYearOwn.PnrCost += ob.PnrCost;
+                        viewModel.workTodayYearOwn.EquipmentCost += ob.EquipmentCost;
+                        viewModel.workTodayYearOwn.EquipmentClientCost += ob.EquipmentClientCost;
+                        viewModel.workTodayYearOwn.OtherExpensesCost += ob.OtherExpensesCost;
+                        viewModel.workTodayYearOwn.AdditionalCost += ob.AdditionalCost;
+                        viewModel.workTodayYearOwn.MaterialCost += ob.MaterialCost;
+                        viewModel.workTodayYearOwn.TotalCost += ob.TotalCost;
+                        viewModel.workTodayYearOwn.TotalWithoutNds += ob.TotalWithoutNds;
                     }
                 }
             }
@@ -1047,6 +1047,7 @@ namespace MvcLayer.Controllers
             if (doc.IsSubContract != true && doc.IsAgreementContract != true && doc.IsOneOfMultiple != true)
             {
                 ViewData["main"] = true; 
+            }
             }
             if (doc.IsEngineering == true)
             {

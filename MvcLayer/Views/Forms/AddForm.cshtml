@@ -421,5 +421,63 @@
             toggleActive: true,
             todayHighlight: true
         });
+
+        $('.smr-index').on("change", function (e) {
+            var smr = $('.smr-index')
+            var sum = 0;
+            for (var item of smr) {
+                sum = sum + (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            $('#SmrCost').val(sum.toString().replace('.', ','))
+            digits_float($('#SmrCost'));
+        });
+
+        $('.pnr-index').on("change", function (e) {
+            var pnr = $('.pnr-index')
+            var sum = 0;
+            for (var item of pnr) {
+                sum = sum + (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            $('#PnrCost').val(sum.toString().replace('.', ','))
+            digits_float($('#PnrCost'));
+        });
+
+        $('.equipment-index').on("change", function (e) {
+            var equip = $('.equipment-index')
+            var sum = 0;
+            for (var item of equip) {
+                sum = sum + (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            $('#EquipmentCost').val(sum.toString().replace('.', ','))
+            digits_float($('#EquipmentCost'));
+        });
+
+        $('.total-index').on("change", function (e) {
+            var sum = 0;
+            var total = $('.total-index')
+            for (var item of total) {
+                sum = sum + (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            var totalDec = $('.totalDec-index')
+            for (var item of totalDec) {
+                sum = sum - (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            $('#Total').val(sum.toString().replace('.', ','))
+            digits_float($('#Total'));
+        });
+
+        $('.totalDec-index').on("change", function (e) {
+            var sum = 0;
+            var total = $('.total-index')
+            for (var item of total) {
+                sum = sum + (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            var totalDec = $('.totalDec-index')
+            for (var item of totalDec) {
+                sum = sum - (+item.value.replace(/\s/g, "").replace(/,/g, '.'))
+            }
+            $('#Total').val(sum.toString().replace('.', ','))
+            digits_float($('#Total'));
+        });
     </script>
 }
