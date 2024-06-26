@@ -66,7 +66,6 @@
     });
 
     $("#NextStep").on('click', function (e) {
-        $("#result").html(`<div class="alert alert-success" role="alert"><span>2 Этап пропущен.</span></div>`)
         var estimateId = $("#EstimateId").val();
         $.ajax({
             type: 'GET',
@@ -75,6 +74,8 @@
             success: function (viewData) {
                 $("#divForm").html(viewData)
                 $("#HeaderLabel").text("Этап 3: Загрузка расчета стоимости")
+                $("#result").html(`<div class="alert alert-success" role="alert"><span>2 Этап пропущен.</span></div>`)
+
             },
             error: function (error) {
                 var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
@@ -133,7 +134,7 @@
                             data: { message: errorMes },
                             dataType: 'html',
                             success: function (data) {
-                                $("#result").html(data)
+                                $("#result").html(`<div class="alert alert-success" role="alert"><span>data</span></div>`)
                             }
                         });
                     }
