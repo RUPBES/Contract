@@ -35,7 +35,7 @@ namespace MvcLayer.Controllers
         {
             var path = _env.WebRootPath + "\\Temp\\";
             if (collection.Files.Count < 1)
-                throw new Exception();
+                throw new Exception("Выберите файл");
             bool exists = System.IO.Directory.Exists(path);
             if (!exists)
                 System.IO.Directory.CreateDirectory(path);

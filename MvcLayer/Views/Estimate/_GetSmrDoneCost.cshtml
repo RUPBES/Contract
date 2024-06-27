@@ -22,8 +22,7 @@
 </form>
 
 <script>
-    $("#NextStep").on('click', function (e) {
-        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+    $("#NextStep").on('click', function (e) {        
         var estimateId = $("#EstimateId").val();    
         $.ajax({
             type: 'GET',
@@ -33,6 +32,7 @@
                 $("#divForm").html(viewData)
                 $("#ListOfSheet").html("")
                 $("#HeaderLabel").text("Результат загрузки")
+                $("#result").html(``)
             },
             error: function (error) {
                 var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
