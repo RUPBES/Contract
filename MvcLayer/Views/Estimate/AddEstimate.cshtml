@@ -282,6 +282,7 @@
                         data: { path: path },
                         dataType: 'html',
                         success: function (data) {
+                            $("#result").html('')
                             $("#ListOfSheet").html(data)
                             $('#GetDataFromFile').click(function () {
                                 let ex = $("#ex").val();
@@ -301,7 +302,7 @@
                                                 $("#ListOfSheet").html("")
                                                 $("#HeaderLabel").text("Этап 2: Загрузка чертежей")
                                             },
-                                            error: function (error) {
+                                            error: function (error) { 
                                                 var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
                                                 $.ajax({
                                                     type: 'POST',
@@ -309,7 +310,7 @@
                                                     data: { message: errorMes },
                                                     dataType: 'html',
                                                     success: function (data) {
-                                                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                                                        $("#result").html(data)
                                                     }
                                                 });
                                             }
@@ -323,7 +324,7 @@
                                             data: { message: errorMes },
                                             dataType: 'html',
                                             success: function (data) {
-                                                $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                                                $("#result").html(data)
                                             }
                                         });
                                     }
@@ -338,18 +339,21 @@
                                 data: { message: errorMes },
                                 dataType: 'html',
                                 success: function (data) {
-                                    $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                                    $("#result").html(data)
                                 }
                             });
                         }
                     });
                     $("#container_progress").attr('style', `display:none`);
                 },
-                error: function (result) {
+                error: function (errorFile) {
+                    console.log('ошибка')
+                    var errorMes = errorFile.responseText.substring(18, errorFile.responseText.indexOf("\r"));
+                    console.log(errorMes)
                     $.ajax({
-                        type: 'POST',
+                        type: 'GET',
                         url: '@Url.Action("ShowError", "Parse")',
-                        data: { message: result },
+                        data: { message: errorMes },
                         dataType: 'html',
                         success: function (data) {
                             $("#result").html(data)
@@ -359,8 +363,7 @@
                 },
                 contentType: false,
                 processData: false
-            });
-            return false;
+            });            
         });
 
         function ChangeView(flag) {
