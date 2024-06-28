@@ -123,22 +123,21 @@ namespace MvcLayer.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            //Stopwatch stopWath = new Stopwatch();
-            //stopWath.Start();
-            //Debug.WriteLine(stopWath.ElapsedMilliseconds);
             var contract = _contractService.GetById((int)id);
             if (contract == null)
             {
                 return NotFound();
-            }
-            //Debug.WriteLine("amendment -" + stopWath.ElapsedMilliseconds);
-            var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).LastOrDefault();
+            }         
+            var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).
+                Select(x => new AmendmentDTO {ContractPrice = x.ContractPrice, DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork,
+                DateEntryObject = x.DateEntryObject}).LastOrDefault();
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
-            }
-            //Debug.WriteLine("stop -" + stopWath.ElapsedMilliseconds);
-            //stopWath.Stop();
+                contract.DateBeginWork = amendment.DateBeginWork;
+                contract.DateEndWork = amendment.DateEndWork;
+                contract.EnteringTerm = amendment.DateEntryObject;
+            }            
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -502,7 +501,10 @@ namespace MvcLayer.Controllers
             {
                 viewContract.FundingFS.AddRange(contract?.FundingSource?.Split(", "));
             }
-
+            if (_amendmentService.Find(x => x.ContractId == contract.Id).Select(x => x.Id).FirstOrDefault() != 0)
+            {
+                ViewData["IsAmendment"] = true;
+            }
             return View(viewContract);
         }
 

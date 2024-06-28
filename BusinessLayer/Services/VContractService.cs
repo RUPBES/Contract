@@ -58,6 +58,17 @@ namespace BusinessLayer.Services
             var items = _database.vContracts.GetEntitySkipTake(skipEntities, pageSize, org);
             
             int count = items.Count();
+            foreach (var item in items)
+            {
+                var amend = _database.Amendments.Find(x => x.ContractId == item.Id).OrderBy(x => x.Date).
+                    Select(x => new Amendment {DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork, DateEntryObject = x.DateEntryObject }).LastOrDefault();
+                if (amend is not null)
+                {
+                    item.DateBeginWork = amend.DateBeginWork;
+                    item.DateEndWork = amend.DateEndWork;
+                    item.EnteringTerm = amend.DateEntryObject;
+                }
+            }
             var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -123,7 +134,18 @@ namespace BusinessLayer.Services
             }
 
             items = items.Skip(skipEntities).Take(pageSize);
-            var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
+            foreach (var item in items)
+            {
+                var amend = _database.Amendments.Find(x => x.ContractId == item.Id).OrderBy(x => x.Date).
+                    Select(x => new Amendment { DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork, DateEntryObject = x.DateEntryObject }).LastOrDefault();
+                if (amend is not null)
+                {
+                    item.DateBeginWork = amend.DateBeginWork;
+                    item.DateEndWork = amend.DateEndWork;
+                    item.EnteringTerm = amend.DateEntryObject;
+                }
+            }
+                var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
             IndexViewModel viewModel = new IndexViewModel
