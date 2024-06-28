@@ -65,7 +65,7 @@ namespace DatabaseLayer.Repositories
 
                 if (form is not null)
                 {                    
-                    form.DateSigning = entity.DateSigning;
+                    //form.DateSigning = entity.DateSigning;
                     form.SmrContractCost = entity.SmrContractCost ?? 0;
                     form.SmrCost = entity.SmrCost ?? 0;
                     form.PnrCost = entity.PnrCost ?? 0;
@@ -80,9 +80,9 @@ namespace DatabaseLayer.Repositories
 
                     form.IsExemptFromVAT = entity.IsExemptFromVAT ?? false;
                     form.MaterialClientCost = entity.MaterialClientCost ?? 0;
-                    form.EquipmentClientCost = entity.EquipmentClientCost;
-                    form.CostToConstructionIndustryFund = entity.CostToConstructionIndustryFund;
-                    form.СostStatisticReportOfContractor = entity.СostStatisticReportOfContractor ?? 0;
+                    form.EquipmentClientCost = entity.EquipmentClientCost??0;
+                    form.CostToConstructionIndustryFund = entity.CostToConstructionIndustryFund ?? 0;
+                    form.CostStatisticReportOfContractor = entity.CostStatisticReportOfContractor ?? 0;
                     form.SmrNdsCost = entity.SmrNdsCost ?? 0;
                     form.AdditionalNdsCost = entity.AdditionalNdsCost ?? 0;
 

@@ -196,7 +196,7 @@ namespace BusinessLayer.ServicesCOM
                 SmrContractCost = 0,
                 SmrNdsCost = 0,
                 CostToConstructionIndustryFund = 0,
-                СostStatisticReportOfContractor = 0
+                CostStatisticReportOfContractor = 0
             };
 
             var col = _excelReader.FindCellByQuery(excel, "за отчетный период").FirstOrDefault();
@@ -238,7 +238,7 @@ namespace BusinessLayer.ServicesCOM
             c3A.AdditionalNdsCost += (decimal)_excelReader.GetValueDouble(excel, additionalNDSWorkCoordates.Item2, col.Item2);
             if (statistic.Item1 != null)
             {
-                c3A.СostStatisticReportOfContractor = (decimal)_excelReader.GetValueDouble(excel, statistic.Item2, col.Item2);
+                c3A.CostStatisticReportOfContractor = (decimal)_excelReader.GetValueDouble(excel, statistic.Item2, col.Item2);
             }
 
             foreach (var item in SmrPnrContractCoordates)

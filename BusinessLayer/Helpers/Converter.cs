@@ -77,9 +77,12 @@ namespace BusinessLayer.Helpers
         /// <returns>строка с названием типа доп.соглашения</returns>
         public string? GetTypeOfAmendment(int number) => number switch
         {
-            //0 => "Не определено",
+            //0 => "Нет в списке",
             1 => "Объем работ",
-            2 => "Авансы",            
+            2 => "Авансы",
+            3 => "Сроки выполнения работ",
+            4 => "Договорная цена",
+            5 => "Другое",
             _ => null
         };
 

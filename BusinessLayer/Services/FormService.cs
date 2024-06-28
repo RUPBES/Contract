@@ -439,7 +439,7 @@ namespace BusinessLayer.Services
             oldForm.MaterialClientCost = (oldForm.MaterialClientCost ?? 0) + (opr * (newForm?.MaterialClientCost ?? 0));
 
             oldForm.CostToConstructionIndustryFund = (oldForm.CostToConstructionIndustryFund ?? 0) + (opr * (newForm?.CostToConstructionIndustryFund ?? 0));
-            oldForm.СostStatisticReportOfContractor = (oldForm.СostStatisticReportOfContractor ?? 0) + (opr * (newForm?.СostStatisticReportOfContractor ?? 0));
+            oldForm.CostStatisticReportOfContractor = (oldForm.CostStatisticReportOfContractor ?? 0) + (opr * (newForm?.CostStatisticReportOfContractor ?? 0));
 
             oldForm.OffsetCurrentPrepayment = (oldForm.OffsetCurrentPrepayment ?? 0) + (opr * (newForm?.OffsetCurrentPrepayment ?? 0));
             oldForm.OffsetTargetPrepayment = (oldForm.OffsetTargetPrepayment ?? 0) + (opr * (newForm?.OffsetTargetPrepayment ?? 0));
@@ -472,7 +472,7 @@ namespace BusinessLayer.Services
             formMain.OffsetTargetPrepayment = (formMain.OffsetTargetPrepayment ?? 0) + (opr * (formNew?.OffsetTargetPrepayment ?? 0) - (oldFormCost?.OffsetTargetPrepayment ?? 0));
 
             formMain.CostToConstructionIndustryFund = (formMain.CostToConstructionIndustryFund ?? 0) + opr * ((formNew?.CostToConstructionIndustryFund ?? 0) - (oldFormCost?.CostToConstructionIndustryFund ?? 0));
-            formMain.СostStatisticReportOfContractor = (formMain.СostStatisticReportOfContractor ?? 0) + opr * ((formNew?.СostStatisticReportOfContractor ?? 0) - (oldFormCost?.СostStatisticReportOfContractor ?? 0));
+            formMain.CostStatisticReportOfContractor = (formMain.CostStatisticReportOfContractor ?? 0) + opr * ((formNew?.CostStatisticReportOfContractor ?? 0) - (oldFormCost?.CostStatisticReportOfContractor ?? 0));
             return formMain;
         }
 

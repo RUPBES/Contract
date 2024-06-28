@@ -4,6 +4,9 @@
     {
         //none,
         scope = 1,
-        prepayment
+        prepayment,
+        period,
+        price,
+        other
     }
 }

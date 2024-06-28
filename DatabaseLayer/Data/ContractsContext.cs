@@ -102,8 +102,8 @@ public partial class ContractsContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
         }
     }
 
@@ -730,7 +730,7 @@ public partial class ContractsContext : DbContext
            .HasColumnType("money")
            .HasComment("отчисления в фонд строительной отрасли");
 
-            entity.Property(e => e.СostStatisticReportOfContractor)
+            entity.Property(e => e.CostStatisticReportOfContractor)
            .HasColumnType("money")
            .HasComment("стоимость работ для статистической отчетности подрядчика (справочно)");            
         });

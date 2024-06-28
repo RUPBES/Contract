@@ -161,7 +161,7 @@ namespace MvcLayer.Controllers
             {
                 int mainContrId;
 
-                formViewModel.AdditionalCost = formViewModel.AdditionalCost ?? 0;
+                formViewModel.AdditionalCost = (formViewModel.AdditionalContractCost ?? 0) + (formViewModel.AdditionalNdsCost ?? 0);
                 formViewModel.AdditionalContractCost = formViewModel.AdditionalContractCost ?? 0;
                 formViewModel.AdditionalNdsCost = formViewModel.AdditionalNdsCost ?? 0;
                 formViewModel.SmrContractCost = formViewModel.SmrContractCost ?? 0;
@@ -185,7 +185,7 @@ namespace MvcLayer.Controllers
                 formViewModel.CostToConstructionIndustryFund = formViewModel.CostToConstructionIndustryFund ?? 0;
 
                 var formDTO = _mapper.Map<FormDTO>(formViewModel);
-                formDTO.СostStatisticReportOfContractor = formViewModel.CostStatisticReportOfContractor;
+                formDTO.CostStatisticReportOfContractor = formViewModel.CostStatisticReportOfContractor;
                 int formId = (int)_formService.Create(formDTO);
                 int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
                 _formService.AddFile(formId, fileId);
@@ -214,7 +214,7 @@ namespace MvcLayer.Controllers
                     }
                     else
                     {
-                        formViewModel.IsOwnForces = true;
+                        formDTO.IsOwnForces = true;
                         _formService.Create(formDTO);
                     }                    
                 }
@@ -274,7 +274,7 @@ namespace MvcLayer.Controllers
             ViewData["returnContractId"] = returnContractId;
             var answerDTO = _formService.GetById(id);
             var answer = _mapper.Map<FormViewModel>(_formService.GetById(id));
-            answer.CostStatisticReportOfContractor = answerDTO.СostStatisticReportOfContractor;
+            answer.CostStatisticReportOfContractor = answerDTO.CostStatisticReportOfContractor;
             return View(answer);
         }
 
@@ -292,8 +292,9 @@ namespace MvcLayer.Controllers
 
                     bool isNotGenContract = _contractService.IsNotGenContract(form.ContractId, out mainContrId);
                     var contract = form.ContractId.HasValue ? _contractService.GetById((int)form.ContractId) : null;
-                    bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;
-                    formViewModel.SmrCost = formViewModel.SmrContractCost + formViewModel.AdditionalCost;
+                    bool isOneMultipleContract = contract?.IsOneOfMultiple ?? false;                    
+                    formViewModel.AdditionalCost = formViewModel.AdditionalContractCost + formViewModel.AdditionalNdsCost;
+
 
                     if (isNotGenContract && !isOneMultipleContract)
                     {
@@ -451,7 +452,7 @@ namespace MvcLayer.Controllers
                 GenServiceCost = form.GenServiceCost,
                 OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
                 OffsetTargetPrepayment = form.OffsetTargetPrepayment,
-                CostStatisticReportOfContractor = form.СostStatisticReportOfContractor,
+                CostStatisticReportOfContractor = form.CostStatisticReportOfContractor,
                 TotalCostToBePaid = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost+
                 form.PnrContractCost + form.PnrNdsCost + form.EquipmentContractCost + form.EquipmentNdsCost + form.OtherExpensesCost+
                 form.MaterialCost + form.GenServiceCost - form.OffsetCurrentPrepayment - form.OffsetTargetPrepayment,
