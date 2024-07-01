@@ -106,7 +106,7 @@
                                             }
                                             @if (Model?.ContractOrganizations[0] is null)
                                             {
-                                                <option selected>Выберите организацию</option>
+                                                <option value="null" selected>Выберите организацию</option>
                                             }
 
                                             @foreach (var item in Organization.GetAll())
@@ -126,7 +126,7 @@
                                             }
                                             @if (Model?.ContractOrganizations[1] is null)
                                             {
-                                                <option selected>Выберите организацию</option>
+                                                <option value="null" selected>Выберите организацию</option>
                                             }
                                             @foreach (var item in Organization.GetAll())
                                             {
@@ -137,7 +137,7 @@
                                     <div class="col-12">
                                         <label>Ответственный за производство работ</label>
                                         <input name="ContractOrganizations[2].IsResponsibleForWork" type="checkbox" value="true" checked selected hidden>
-                                        <select name="ContractOrganizations[2].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgTwo">
+                                        <select name="ContractOrganizations[2].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgThree">
                                             @if (Model?.ContractOrganizations[2] is not null)
                                             {
                                                 var item = Organization.GetById((int)Model?.ContractOrganizations[2]?.OrganizationId);
@@ -145,7 +145,7 @@
                                             }
                                             @if (Model?.ContractOrganizations[2] is null)
                                             {
-                                                <option selected>Выберите организацию</option>
+                                                <option value="null" selected>Выберите организацию</option>
                                             }
                                             @foreach (var item in Organization.GetAll())
                                             {
@@ -196,7 +196,7 @@
                                             }
                                             @if (Model?.EmployeeContracts[1] is null)
                                             {
-                                                <option selected>Выберите сотрудника</option>
+                                                <option value="null" selected>Выберите сотрудника</option>
                                             }
                                             @foreach (var item in Employee.GetAll())
                                             {
@@ -802,8 +802,9 @@
             checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#EmployeeFieldSet", "#subBtn", styleName);
             checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#EmployeeFieldSet", "#subBtn", styleName);
 
-            checkTwoSelectValues("#selectOrgOne", "#selectOrgTwo", "#OrganizationFieldSet", "#subBtn", styleName);
-            checkTwoSelectValues("#selectOrgTwo", "#selectOrgOne", "#OrganizationFieldSet", "#subBtn", styleName);
+            checkThreeSelectValuesWithChosenStyle("#selectOrgOne", "#selectOrgTwo", "#selectOrgThree", "#subBtn");
+
+           
 
             // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
             $(".checkChoise").click(function (e) {

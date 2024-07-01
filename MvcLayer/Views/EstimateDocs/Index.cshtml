@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<MvcLayer.Models.EstimateDocViewModel>
 @using BusinessLayer.Enums;
+@using BusinessLayer.Helpers
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
@@ -11,7 +12,9 @@
     ViewData["Title"] = "Проектно-сметная документация";
     bool isAdmin = true;
     string redirectAction = "Index";
-    string redirectController = "EstimateDocs";
+    string redirectController = "EstimateDocs"; 
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -68,7 +71,7 @@
                     {
                         <div>
                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                             {
                                 @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                             }
@@ -76,7 +79,7 @@
                     }
                 </td>
                 <td>
-                    @if (permissions is not null && permissions.IsCreator)
+                    @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                     {
                         <a asp-action="AddFile" asp-controller="Files"
                            asp-route-entityId="@item.Id"
@@ -85,12 +88,12 @@
                            asp-route-redirectController=@redirectController>Добавить файл</a>
                         <span>|</span>
                     }
-                    @if (permissions is not null && permissions.IsEditor)
+                    @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                     {
                         <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a>
                         <span>|</span>
                     }
-                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                     {
                         <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>
                         <span>|</span>

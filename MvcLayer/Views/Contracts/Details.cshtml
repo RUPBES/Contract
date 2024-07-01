@@ -1,5 +1,6 @@
 ﻿@using BusinessLayer.Enums;
 @using System.Diagnostics
+@using BusinessLayer.Helpers
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
@@ -12,32 +13,21 @@
 
 
 @{
-    // Stopwatch stopWath = new Stopwatch();
-    // stopWath.Start();
-    // Debug.WriteLine(stopWath.ElapsedMilliseconds);
+
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
-
-    // var isThereLastAmendmentInScopeWork = Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)Model?.Id);
-
-    // Debug.WriteLine("permissions -" + stopWath.ElapsedMilliseconds);
     var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
-    // Debug.WriteLine("branchAgreement -" + stopWath.ElapsedMilliseconds);
     var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
-    // Debug.WriteLine("subcontract -" + stopWath.ElapsedMilliseconds);
     var subObjectsOfContract = Contracts.Find(x => x.MultipleContractId == Model?.Id && x.IsOneOfMultiple == true);
-    // Debug.WriteLine("subObjcontract -" + stopWath.ElapsedMilliseconds);
     var isEngineering = Model.IsEngineering == true ? true : false;
     var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple != true ? true : false;
-    // Debug.WriteLine("scopes of DB -" + stopWath.ElapsedMilliseconds);
     string redirectAction = "Details";
     string redirectController = "Contracts";
 
     var status = Model.IsClosed is true ? "closed" : "expired";
     var titleScope = "Объем ";
     var titleSub = "";
-    // Debug.WriteLine("stop -" + stopWath.ElapsedMilliseconds);
-    // stopWath.Stop();
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
 }
 
 @section Table {
@@ -162,7 +152,10 @@
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id" asp-route-isEngineering="true">Oбъем услуг</a>
                                     <a class="dropdown-item" asp-action="GetPeriod" asp-controller="Forms" asp-route-id="@Model?.Id" asp-route-isEngineering="true">Акты оказанных услуг</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id" asp-route-isEngineering="true">Авансы</a>
-                                    <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Редактирование авансов(план)</a>
+                                    @if (isGRP_Contract)
+                                    {
+                                        <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Редактирование авансов(план)</a>
+                                    }
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id" asp-route-isEngineering="true">Акты ввода</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@Model?.Id" asp-route-isEngineering="true">Переписка с заказчиком</a>
@@ -174,7 +167,10 @@
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@Model?.Id">Oбъем работ</a>
                                     <a class="dropdown-item" asp-action="GetPeriod" asp-controller="Forms" asp-route-id="@Model?.Id">Формы С-3а</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Авансы</a>
-                                    <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Редактирование авансов(план)</a>
+                                    @if (isGRP_Contract)
+                                    {
+                                        <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Редактирование авансов(план)</a>
+                                    }
                                     <a class="dropdown-item" asp-action="GetPrepaymentsTakes" asp-controller="Prepayments" asp-route-contractId="@Model?.Id">Полученные авансы</a>
                                     @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ServiceGC" asp-route-contractId="@Model?.Id">Услуги генподряда</a> *@
                                     @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@Model?.Id">Стоимость материалов</a> *@
@@ -190,7 +186,8 @@
 
                             </div>
                         </div>
-                        @if (permissions is not null && permissions.IsCreator)
+
+                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                         {
                             <div class="dropdown" title="Добавление информации">
                                 <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
@@ -434,7 +431,10 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Oбъем услуг</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Акты оказанных услуг</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Авансы</a>
-                                        <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                        @if (isGRP_Contract)
+                                        {
+                                            <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                        }
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Акты ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractBranch?.Id" asp-route-isEngineering="true" asp-route-returnContractId="@Model.Id">Переписка с заказчиком</a>
@@ -446,7 +446,10 @@
 
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Oбъем работ</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Авансы</a>
-                                        <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                        @if (isGRP_Contract)
+                                        {
+                                            <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                        }
                                         <a class="dropdown-item" asp-action="GetPrepaymentsTakes" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Полученные авансы</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Формы С-3а</a>
                                         @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Стоимость материалов</a> *@
@@ -463,7 +466,7 @@
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@Model?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
                                 </div>
                             </div>
-                            @if (permissions is not null && permissions.IsCreator)
+                            @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                             {
                                 <div class="dropdown" title="Добавление информации">
                                     <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
@@ -516,13 +519,13 @@
                         <div class="icon scope_work" title="Объем работ">
                             <a id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)"></a>
                         </div>
-                        @if (permissions is not null && permissions.IsEditor)
+                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                         {
                             <div class="icon edit" title="Редактировать">
                                 <a asp-action="EditSubObj" asp-route-id="@contractBranch.Id" asp-route-returnContractId="@Model.Id"></a>
                             </div>
                         }
-                        @if (permissions is not null && permissions.IsDeleter)
+                        @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
                         {
                             <div class="icon delete" title="Удалить">
                                 <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
@@ -599,8 +602,10 @@
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Oбъем работ</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Форма С-3а</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Авансы</a>
-                                    <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
-                                    <a class="dropdown-item" asp-action="GetPrepaymentsTakes" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Полученные авансы</a>
+                                    @if (isGRP_Contract)
+                                    {
+                                        <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                    }                                    <a class="dropdown-item" asp-action="GetPrepaymentsTakes" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Полученные авансы</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Стоимость материалов</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Оплату договора</a>
@@ -613,7 +618,7 @@
 
                                 </div>
                             </div>
-                            @if (permissions is not null && permissions.IsCreator)
+                            @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                             {
                                 <div class="dropdown" title="Добавление информации">
                                     <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
@@ -652,13 +657,13 @@
                                 </div>
                             }
 
-                            @if (permissions is not null && permissions.IsEditor)
+                            @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                             {
                                 <div class="icon edit" title="Редактировать">
                                     <a asp-action="Edit" asp-route-id="@contractBranch.Id" asp-route-returnContractId="@Model.Id"></a>
                                 </div>
                             }
-                            @if (permissions is not null && permissions.IsDeleter)
+                            @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
                             {
                                 <div class="icon delete" title="Удалить">
                                     <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
@@ -823,7 +828,10 @@
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="ScopeWorks" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">@titleSub</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Forms" asp-route-id="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Форма С-3а</a>
                                     <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Авансы</a>
-                                    <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                    @if (isGRP_Contract)
+                                    {
+                                        <a class="dropdown-item" asp-action="FormEditPrepaymentPlan" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Редактирование авансов(план)</a>
+                                    }
                                     <a class="dropdown-item" asp-action="GetPrepaymentsTakes" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Полученные авансы</a>
                                     @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Material" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Стоимость материалов</a> *@
                                     <div class="dropdown-divider"></div>
@@ -837,7 +845,7 @@
 
                                 </div>
                             </div>
-                            @if (permissions is not null && permissions.IsCreator)
+                            @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                             {
                                 <div class="dropdown" title="Добавление информации">
                                     <span class="icon view_to_add_pages dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
@@ -885,13 +893,13 @@
                                 <a id="SMR-detail" onclick="ShowModalScopeWork(@contractSub?.Id)"></a>
                             </div>
 
-                            @if (permissions is not null && permissions.IsEditor)
+                            @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                             {
                                 <div class="icon edit" title="Редактировать">
                                     <a asp-action="Edit" asp-route-id="@contractSub.Id" asp-route-returnContractId="@Model.Id"></a>
                                 </div>
                             }
-                            @if (permissions is not null && permissions.IsDeleter)
+                            @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
                             {
                                 <div class="icon delete" title="Удалить">
                                     <a asp-action="Delete" asp-route-id="@contractSub.Id"></a>

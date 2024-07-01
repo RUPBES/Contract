@@ -1,4 +1,5 @@
 ﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Helpers
 @using BusinessLayer.Models;
 @using System.Diagnostics;
 
@@ -21,6 +22,7 @@
     string redirectAction = "Index";
     string redirectController = "Contracts";
     var actionMethod = isEngineering is true ? "Engineerings" : "Index";
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
 }
 
 
@@ -132,7 +134,7 @@
                             @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
                             <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
                         </form>
-                        @if (permissions is not null && permissions.IsCreator)
+                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                         {
                             <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
                         }
@@ -147,7 +149,7 @@
                     <div class="form_agreement">
                         @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
                         <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                        @if (permissions is not null && permissions.IsCreator)
+                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                         {
                             <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
                         }
@@ -359,43 +361,43 @@
                                         <div class="icon estimate" title="Сметы">
                                             <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
                                         </div>
-                                        @if (permissions is not null && permissions.IsEditor)
+                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                         {
                                             <div class="icon edit" title="Редактировать договор">
                                                 <a asp-action="Edit" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-                                        @if (permissions is not null && permissions.IsDeleter)
+                                        @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
                                         {
                                             <div class="icon delete" title="Удалить договор">
                                                 <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-                                        @if (ViewBag?.IsMajorOrganization)
+                                        @if (ViewBag?.IsMajorOrganization && isGRP_Contract)
                                         {
                                             <div class="icon transfer" title="Передать договор филиалу">
                                                 <a asp-action="ChangeOwner" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-                                        @if (!item.IsArchive)
+                                        @if (!item.IsArchive && isGRP_Contract)
                                         {
                                             <div class="icon archive" title="Переместить в архив">
                                                 <a asp-action="ChangeStatus" asp-route-status="archive" asp-route-contrId="@item.Id"></a>
                                             </div>
                                         }
-                                        @if (item.IsExpired)
+                                        @if (item.IsExpired && isGRP_Contract)
                                         {
                                             <div class="icon expired" title="Договор просрочен">
                                                 <div></div>
                                             </div>
                                         }
-                                        @if (item.IsClosed)
+                                        @if (item.IsClosed && isGRP_Contract)
                                         {
                                             <div class="icon closed" title="Договор закрыт, ожидается акта ввода">
                                                 <div></div>
                                             </div>
                                         }
-                                        @if (!item.IsExpired && !item.IsClosed)
+                                        @if (!item.IsExpired && !item.IsClosed && isGRP_Contract)
                                         {
                                             <div class="icon expired warning_icon" title="Договор просрочен">
                                                 <a asp-action="ChangeStatus" asp-route-status="expired" asp-route-contrId="@item.Id"></a>
@@ -548,19 +550,19 @@
                                         <div class="icon estimate" title="Сметы">
                                             <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
                                         </div>
-                                        @if (permissions is not null && permissions.IsEditor)
+                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                         {
                                             <div class="icon edit" title="Редактировать договор">
                                                 <a asp-action="Edit" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                         {
                                             <div class="icon delete" title="Удалить договор">
                                                 <a asp-action="Delete" asp-route-id="@item.Id"></a>
                                             </div>
                                         }
-                                        @if (ViewBag?.IsMajorOrganization)
+                                        @if (ViewBag?.IsMajorOrganization && isGRP_Contract)
                                         {
                                             @if (permissions is not null && permissions.IsAdmin)
                                             {

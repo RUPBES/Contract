@@ -1,4 +1,5 @@
-﻿@using MvcLayer.Models;
+﻿@using BusinessLayer.Helpers
+@using MvcLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
 
@@ -9,6 +10,8 @@
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = "Список объемов работ";
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+
 }
 
 <style>
@@ -130,7 +133,7 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                     {
                                         <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                                     }

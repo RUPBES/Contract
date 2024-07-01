@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<MvcLayer.Models.EstimateDocViewModel>
 @using BusinessLayer.Enums;
+@using BusinessLayer.Helpers
 @using BusinessLayer.Models;
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
@@ -18,6 +19,8 @@
     string redirectAction = "GetByContractId";
     string redirectController = "EstimateDocs";
     var contract = Contract.GetById((int)ViewBag.contractId);
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+
 }
 <style>
     .dm-modal {
@@ -111,7 +114,7 @@
                                         {
                                             <div>
                                                 <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                 {
                                                     @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                 }
@@ -119,19 +122,19 @@
                                         }
                                     </td>
                                     <td>
-                                        @if (permissions is not null && permissions.IsCreator)
+                                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                                         {
                                             <span class="icon file-add" title="Добавить файл к письму">
                                                 <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.EstimateDocumentations" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                             </span>
                                         }
-                                        @if (permissions is not null && permissions.IsEditor)
+                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                         {
                                             <span class="icon edit" title="Редактировать письмо">
                                                 <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                             </span>
                                         }
-                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                         {
                                             <span class="icon delete" title="Удалить письмо">
                                                 <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>

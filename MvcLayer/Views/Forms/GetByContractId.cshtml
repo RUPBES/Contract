@@ -1,4 +1,5 @@
 ﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Helpers
 @using BusinessLayer.Models;
 @model IEnumerable<MvcLayer.Models.FormViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
@@ -11,6 +12,8 @@
 @{
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+
     ViewData["Title"] = string.Empty;
     var id = ViewBag.contractId;
     int backId = 0;
@@ -132,7 +135,7 @@
                                             Дата оплаты по договору
                                         </th>
                                         <th>
-                                            Общая стоимость                                            
+                                            Общая стоимость
                                             <button id="btn_svg" class="totalW btn">
                                                 <svg id="svg_plus" class="svg-circleplus" viewBox="0 0 100 100">
                                                     <circle cx="50" cy="50" r="45" fill="none" stroke-width="7.5"></circle>
@@ -140,7 +143,7 @@
                                                     <line x1="50" y1="32.5" x2="50" y2="67.5" stroke-width="5"></line>
                                                 </svg>
                                             </button>
-                                        </th>                                        
+                                        </th>
                                         <th class="col-tog">
                                             Неизменная договорная цена
                                         </th>
@@ -152,7 +155,7 @@
                                         </th>
                                         <th>
                                             @Html.DisplayNameFor(model => model.EquipmentCost)
-                                        </th>                                        
+                                        </th>
                                         <th>
                                             Удержания
                                             <button id="btn_svg_A" class="totalA btn">
@@ -237,9 +240,9 @@
                                                 @total?.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
-                                                @((item.SmrContractCost+item.SmrNdsCost)?.ToString("N2"))
+                                                @((item.SmrContractCost + item.SmrNdsCost)?.ToString("N2"))
                                             </td>
-                                            <td class="text-end col-tog">                                                
+                                            <td class="text-end col-tog">
                                                 @item.PnrCost?.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
@@ -282,7 +285,7 @@
                                                     {
                                                         <div>
                                                             <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                             {
                                                                 @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                             }
@@ -292,23 +295,23 @@
 
                                             </td>
                                             <td class="act-btns">
-                                                @if (permissions is not null && permissions.IsCreator)
+                                                @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                                                 {
                                                     <span class="icon file-add" title="Добавить файл к форме">
                                                         <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                                     </span>
                                                 }
-                                                @if (permissions is not null && permissions.IsEditor)
+                                                @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                                 {
                                                     <span class="icon edit" title="Редактировать форму">
                                                         <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                                     </span>
                                                 }
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                 {
                                                     <span class="icon delete" title="Удалить форму">
                                                         <a onclick="confirmI(@item.Id)"></a>
-                                                </span>
+                                                    </span>
                                                 }
 
                                             </td>
@@ -322,7 +325,7 @@
                                                 @item.DateSigning?.ToShortDateString()
                                             </td>
                                             <td></td>
-                                            <td class="text-end">                                                
+                                            <td class="text-end">
                                                 @((item.SmrContractCost + item.SmrNdsCost)?.ToString("N2"))
                                             </td>
                                             <td class="text-end">
@@ -333,7 +336,7 @@
                                                 {
                                                     <div>
                                                         <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                         {
                                                             @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                         }
@@ -341,19 +344,19 @@
                                                 }
                                             </td>
                                             <td>
-                                                @if (permissions is not null && permissions.IsCreator)
+                                                @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                                                 {
                                                     <span class="icon file-add" title="Добавить файл к форме">
                                                         <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Form3C" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                                     </span>
                                                 }
-                                                @if (permissions is not null && permissions.IsEditor)
+                                                @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                                 {
                                                     <span class="icon edit" title="Редактировать форму">
                                                         <a asp-action="ChooseMethodEdit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                                     </span>
                                                 }
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                 {
                                                     <span class="icon delete" title="Удалить форму">
                                                         <a onclick="confirmI(@item.Id)"></a>
@@ -445,7 +448,7 @@
                                                         {
                                                             <div>
                                                                 <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                                 {
                                                                     @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                                                 }
@@ -462,9 +465,9 @@
                                             @* <td></td> *@
                                             <td></td>
                                             <td class="text-end">
-                                                @totalSum.ToString("N2")                                               
+                                                @totalSum.ToString("N2")
                                             </td>
-                                            <td class="text-end col-tog">                                                
+                                            <td class="text-end col-tog">
                                                 @fixedContractSum.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
@@ -499,7 +502,7 @@
                                                 @genSerSum.ToString("N2")
                                             </td>
                                             <td class="text-end">
-                                                <div>                                                   
+                                                <div>
                                                     @{
                                                         var totalSubCostToBePaid1 = fixedContractSum + pnrSum + addSum +
                                                         eqpSum - offsetCPrepSum - offsetTPrepSum - mtrlSum - otherSum - genSerSum;
@@ -512,13 +515,13 @@
                                         </tr>
                                         @*строка "собственные силы" -- сумма объема по субподрядным организаций и филиалов*@
                                         <tr style="background-color:#92b0b1; color:black;font-weight:600; font-size:0.95rem">
-                                            <td colspan="2">собственные силы</td>                                            
+                                            <td colspan="2">собственные силы</td>
                                             <td></td>
                                             <td class="text-end">
-                                                 @{
+                                                @{
                                                     var totOwnSmrSum = (item?.SmrCost + item?.PnrCost ?? 0) - totalSum;
                                                 }
-                                                @totOwnSmrSum.ToString("N2")                                                
+                                                @totOwnSmrSum.ToString("N2")
                                             </td>
                                             <td class="text-end col-tog">
                                                 @{
@@ -586,9 +589,9 @@
                                             </td>
                                             <td class="">
                                                 <div class="text-end">
-                                                    @{   
+                                                    @{
                                                         var totalOwnSubCostToBePaid = (item.TotalCostToBePaid ?? 0) - (fixedContractSum + pnrSum + addSum +
-                                                        eqpSum - offsetCPrepSum - offsetTPrepSum - mtrlSum- otherSum);
+                                                        eqpSum - offsetCPrepSum - offsetTPrepSum - mtrlSum - otherSum);
                                                     }
                                                     @totalOwnSubCostToBePaid.ToString("N2")
                                                 </div>

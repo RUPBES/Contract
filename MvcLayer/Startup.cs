@@ -1,4 +1,5 @@
-﻿using BusinessLayer.IoC;
+﻿using BusinessLayer.Helpers;
+using BusinessLayer.IoC;
 using DatabaseLayer.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -87,23 +88,27 @@ namespace MvcLayer
                 o.Scope.Add("profile");
                 o.Scope.Add("subject");
                 o.Scope.Add("email");
+                o.Scope.Add("offline_access");
 
-                o.Scope.Add("ContrView");
-                o.Scope.Add("ContrEdit");
-                o.Scope.Add("ContrAdmin");
-                o.Scope.Add("ContrDelete");
-                o.Scope.Add("ContrCreate");
+                o.Scope.Add(ConstantsApp.ROLE_READ);
+                o.Scope.Add(ConstantsApp.ROLE_EDIT);
+                o.Scope.Add(ConstantsApp.ROLE_ADMIN);
+                o.Scope.Add(ConstantsApp.ROLE_DELETE);
+                o.Scope.Add(ConstantsApp.ROLE_CREATE);
 
-                o.Scope.Add("ContrOrgBes");
-                o.Scope.Add("ContrOrgTec2");
-                o.Scope.Add("ContrOrgTec5");
-                o.Scope.Add("ContrOrgBesm");
-                o.Scope.Add("ContrOrgBetss");
-                o.Scope.Add("ContrOrgGes");
-                o.Scope.Add("ContrOrgMajor");
+                o.Scope.Add(ConstantsApp.ORG_BES);
+                o.Scope.Add(ConstantsApp.ORG_TEC_2);
+                o.Scope.Add(ConstantsApp.ORG_TEC_5);
+                o.Scope.Add(ConstantsApp.ORG_BESM);
+                o.Scope.Add(ConstantsApp.ORG_BETSS);
+                o.Scope.Add(ConstantsApp.ORG_GES);
+                o.Scope.Add(ConstantsApp.ORG_MAJOR);
 
-                // requests a refresh token
-                o.Scope.Add("offline_access");               
+                o.Scope.Add(ConstantsApp.GRP_CONTRACT);
+                o.Scope.Add(ConstantsApp.GRP_ESTIMATE);
+                o.Scope.Add(ConstantsApp.GRP_FINANCE);
+
+                // requests a refresh token                          
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = "name",
@@ -126,7 +131,11 @@ namespace MvcLayer
                                 {
                                     identity.AddClaim(new Claim("org", scope));
                                 }
-                                
+                                if (scope.Contains("GRP_"))
+                                {
+                                    identity.AddClaim(new Claim("grp", scope));
+                                }
+
                                 identity.AddClaim(new Claim("scope", scope));
                             }
                         }

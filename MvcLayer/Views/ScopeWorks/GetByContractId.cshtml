@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
+﻿@using BusinessLayer.Helpers
+@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
@@ -7,6 +8,8 @@
 @{
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+
     if (ViewBag.IsEngin != null)
     {
         ViewData["Title"] = "Объем услуг";
@@ -181,7 +184,7 @@
                                                 </td>
                                             }
                                             <td>
-                                                @if (permissions is not null && permissions.IsEditor)
+                                                @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                                 {
                                                     <div class="icon edit" title="Редактировать">
                                                         <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
@@ -189,7 +192,7 @@
                                                 }
                                             </td>
                                             <td>
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                 {
                                                     <a class="icon delete" onclick="confirm(@item.Id)"></a>
                                                 }

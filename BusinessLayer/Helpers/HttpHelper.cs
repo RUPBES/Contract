@@ -14,10 +14,11 @@ namespace BusinessLayer.Helpers
         /// <returns>Объект с разрешениями на удаление, создание и т.д.</returns>
         public Permission? GetPermissionForUser(HttpContextAccessor http)
         {
-            var listClaims = http?.HttpContext?.User?.Claims?
-                .Where(x => x.Type != "org"
-                            && !x.Value.StartsWith("ContrOrg")
-                            && x.Value.StartsWith("Contr"))?
+            var listClaims = http?
+                .HttpContext?
+                .User?
+                .Claims?
+                .Where(x => (x.Type != "org" && !x.Value.StartsWith("ContrOrg") && x.Value.StartsWith("Contr")) || x.Type == "grp")?
                 .ToList();
 
             if (listClaims is not null)
@@ -29,6 +30,12 @@ namespace BusinessLayer.Helpers
                 permissions.IsReader = listClaims.FirstOrDefault(x => x.Value == "ContrView") is not null ? true : false;
                 permissions.IsEditor = listClaims.FirstOrDefault(x => x.Value == "ContrEdit") is not null ? true : false;
                 permissions.IsDeleter = listClaims.FirstOrDefault(x => x.Value == "ContrDelete") is not null ? true : false;
+
+                var listGRP = listClaims.Where(x => x.Type == "grp")?.Select(x=>x.Value)?.ToList();
+                if (listGRP is not null && listGRP.Count() > 0)
+                {
+                    permissions.GroupeName.AddRange(listGRP);
+                }
 
                 return permissions;
             }

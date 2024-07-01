@@ -37,21 +37,21 @@ function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleNam
     const selectObjTwo = $(`${secondId}_chosen`);
     const selectObjThree = $(`${thirdId}_chosen`);
 
-    let valueObjOne = $(selectId).find(":selected").val();
-    let valueObjTwo = $(secondId).find(":selected").val();
-    let valueObjThree = $(thirdId).find(":selected").val();
+    let valueObjOne = +($(selectId).find(":selected").val());
+    let valueObjTwo = +($(secondId).find(":selected").val());
+    let valueObjThree = +($(thirdId).find(":selected").val());
 
-    if (valueObjOne === valueObjTwo) {
+    if ((valueObjOne === valueObjTwo) && (typeof (valueObjOne) === "number" && typeof (valueObjTwo) === "number")) {
         selectObjOne.addClass(styleName);
         selectObjTwo.addClass(styleName);
         $(buttonId).attr("type", "button");
     }
-    if (valueObjOne === valueObjThree) {
+    if ((valueObjOne === valueObjThree) && (typeof (valueObjOne) === "number" && typeof (valueObjThree) === "number")) {
         selectObjOne.addClass(styleName);
         selectObjThree.addClass(styleName);
         $(buttonId).attr("type", "button");
     }
-    if (valueObjTwo === valueObjThree) {
+    if ((valueObjTwo === valueObjThree) && (typeof (valueObjTwo) === "number" && typeof (valueObjThree) === "number")) {
 
         selectObjTwo.addClass('same_value_chosen');
         selectObjThree.addClass('same_value_chosen');

@@ -1,4 +1,5 @@
-﻿@model IEnumerable<MvcLayer.Models.SelectionProcedureViewModel>
+﻿@using BusinessLayer.Helpers
+@model IEnumerable<MvcLayer.Models.SelectionProcedureViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
@@ -6,6 +7,8 @@
 @{
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
+    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+
     var contract = Model?.FirstOrDefault()?.ContractId is not null && Model?.FirstOrDefault()?.ContractId > 0 ? Contract.GetById((int)Model?.FirstOrDefault()?.ContractId) : null;
     ViewData["Title"] = "Процедура выбора";
     bool isAdmin = true;
@@ -121,13 +124,13 @@
                                     @item.DateAcceptance?.ToShortDateString()
                                 </td>
                                 <td>
-                                    @if (permissions is not null && permissions.IsEditor)
+                                    @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                                     {
                                         <span class="icon edit" title="Редактировать процедуру закупки">
                                             <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
                                         </span>
                                     }
-                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
+                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                     {
                                         <span class="icon delete" title="Удалить процедуру закупки">
                                             <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
