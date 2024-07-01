@@ -47,6 +47,7 @@
     label {
         font-size: 1.1em;
     }
+
     .text_input {
         text-align: right;
     }
@@ -76,13 +77,9 @@
                     <input type="hidden" asp-for="Id" />
                     <input type="hidden" asp-for="IsOneOfMultiple" />
                     <input type="hidden" asp-for="MultipleContractId" />
-                    <div class="form-group">
-                        <label asp-for="NameObject" class="control-label"></label>
-                        <input asp-for="NameObject" class="form-control" required/>
-                        <span asp-validation-for="NameObject" class="text-danger"></span>
-                    </div>
+
                     <div class="row">
-                        <div class="col-4">
+                        <div class="form-group col-9">
                             <label asp-for="ContractPrice"></label>
                             <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
                             <span asp-validation-for="ContractPrice" class="text-danger"></span>
@@ -97,22 +94,62 @@
                                 }
                             </select>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-4">
-                            <label class="control-label" asp-for="DateBeginWork"></label>
-                            <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
-                            <label class="form-label" id="labelBeginWork" style="display:none"></label>
+
+                        <div class="col-6">
+                            <fieldset class="border rounded-1 p-3 col k-ml-5">
+                                <legend class="float-none w-auto px-3">Условия авансирования</legend>
+                                @{
+                                    int numberCheckbox = 0;
+                                }
+                                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                                {
+                                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                    var valueArray = Model?.PaymentСonditionsAvans;
+                                    if (valueArray == null) { valueArray = ""; }
+                                    string idCh = "check" + @numberCheckbox;
+                                    <div>
+                                        <div class="input-group mb-2">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text" style="display: block;">
+                                                    @if (valueArray.Contains(value))
+                                                    {
+                                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
+                                                    }
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-control" value="@value" disabled>
+
+                                        </div>
+                                    </div>
+                                    numberCheckbox++;
+                                }
+                            </fieldset>
                         </div>
-                        <div class="col-4">
-                            <label class="control-label" asp-for="DateEndWork"></label>
-                            <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
-                            <label class="form-label" id="labelEndWork" style="display:none"></label>
+                        <div class="col-6">
+                            <div class="form-group mt-1">
+                                <label class="control-label" asp-for="DateBeginWork"></label>
+                                <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
+                                <label class="form-label" id="labelBeginWork" style="display:none"></label>
+                            </div>
+                            <div class="form-group mt-1">
+                                <label class="control-label" asp-for="DateEndWork"></label>
+                                <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
+                                <label class="form-label" id="labelEndWork" style="display:none"></label>
+                            </div>
+                            <div class="form-group mt-1">
+                                <label class="control-label" asp-for="EnteringTerm"></label>
+                                <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
+                                <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
+                            </div>
                         </div>
-                        <div class="col-4">
-                            <label class="control-label" asp-for="EnteringTerm"></label>
-                            <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
-                            <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
+                        <div class="col-12 mt-2">
+                            <label asp-for="NameObject" class="control-label"></label>
+                            <input asp-for="NameObject" class="form-control" rows="3" required />
+                            <span asp-validation-for="NameObject" class="text-danger"></span>
                         </div>
                     </div>
                     <div class="text_input form-group mt-3">
@@ -127,7 +164,7 @@
 <input id="EndMin" value="@contract.DateEndWork?.ToString("yyyy-MM-dd")" hidden />
 <input id="EnterMin" value="@contract.EnteringTerm?.ToString("yyyy-MM-dd")" hidden />
 
-@section Scripts{
+@section Scripts {
     <script>
         let minDate = $('#BeginMin').val();
         let endDate = $('#EndMin').val();

@@ -59,6 +59,7 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
+                    
                     @if ((int)ViewData["returnContractId"] != 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
@@ -70,6 +71,12 @@
                     else
                     {
                         <a asp-action="Index" class="close-btn"></a>
+                    }
+                </div>
+                <div>
+                    @if (ViewData["IsAmendment"] != null)
+                    {
+                        <div class="alert alert-warning">Изменение сроков работы в доп. соглашении</div>
                     }
                 </div>
                 <hr class="modal-line" />
@@ -127,12 +134,26 @@
                             </div>
                             <div class="col-4">
                                 <label class="control-label" asp-for="DateBeginWork"></label>
-                                <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
+                                @if (ViewData["IsAmendment"] == null)
+                                {
+                                    <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
+                                }
+                                else
+                                {
+                                    <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" readonly id="DateBeginWork">
+                                }
                                 <label class="form-label" id="labelBeginWork" style="display:none"></label>
                             </div>
                             <div class="col-4">
                                 <label class="control-label" asp-for="DateEndWork"></label>
-                                <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
+                                @if (ViewData["IsAmendment"] == null)
+                                {
+                                    <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
+                                }
+                                else
+                                {
+                                    <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" readonly id="DateEndWork">
+                                }                                
                                 <label class="form-label" id="labelEndWork" style="display:none"></label>
                             </div>
                         </div>
@@ -141,7 +162,14 @@
                             {
                                 <div class="col-4">
                                     <label class="control-label" asp-for="EnteringTerm"></label>
-                                    <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
+                                    @if (ViewData["IsAmendment"] == null)
+                                    {
+                                        <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
+                                    }
+                                    else
+                                    {
+                                        <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" readonly id="EnteringTerm">
+                                    }
                                     <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
                                 </div>
                                 <div class="col-4">
