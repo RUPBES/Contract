@@ -527,7 +527,8 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
-        {
+        {            
+            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);                  
             try
             {
                 _contractService.Update(_mapper.Map<ContractDTO>(contract));
