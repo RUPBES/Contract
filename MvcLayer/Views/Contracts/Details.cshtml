@@ -512,25 +512,26 @@
                                     </div>
                                 </div>
                             }
-                        </div>
-                        <div class="icon view" title="Просмотр детальной информации">
-                            <a asp-action="Details" asp-route-id="@contractBranch.Id"></a>
-                        </div>
-                        <div class="icon scope_work" title="Объем работ">
-                            <a id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)"></a>
-                        </div>
-                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                        {
-                            <div class="icon edit" title="Редактировать">
-                                <a asp-action="EditSubObj" asp-route-id="@contractBranch.Id" asp-route-returnContractId="@Model.Id"></a>
+
+                            <div class="icon view" title="Просмотр детальной информации">
+                                <a asp-action="Details" asp-route-id="@contractBranch.Id"></a>
                             </div>
-                        }
-                        @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
-                        {
-                            <div class="icon delete" title="Удалить">
-                                <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
+                            <div class="icon scope_work" title="Объем работ">
+                                <a id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)"></a>
                             </div>
-                        }
+                            @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
+                            {
+                                <div class="icon edit" title="Редактировать">
+                                    <a asp-action="EditSubObj" asp-route-id="@contractBranch.Id" asp-route-returnContractId="@Model.Id"></a>
+                                </div>
+                            }
+                            @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
+                            {
+                                <div class="icon delete" title="Удалить">
+                                    <a asp-action="Delete" asp-route-id="@contractBranch.Id"></a>
+                                </div>
+                            }
+                        </div>
                     </td>
                     <td colspan="3" class="text-center text-uppercase">Подобъект:</td>
                     <td>
