@@ -7,6 +7,7 @@
         prepayment,
         period,
         price,
+        price_period,
         other
     }
 }
