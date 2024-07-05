@@ -4,7 +4,7 @@ using BusinessLayer.Models;
 namespace MvcLayer.Models
 {
     public class EstimateViewModel
-    {
+    {        
         public string BuildingCode { get; set; }
         public string BuildingName { get; set; }
         public Dictionary<string, EstimateViewResultBuilding> report { get; set; } = new Dictionary<string, EstimateViewResultBuilding>();

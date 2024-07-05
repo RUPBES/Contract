@@ -90,7 +90,6 @@
             font-weight: bold;
         }
 
-
         .contracts-list {
             justify-content: space-between;
         }
@@ -157,10 +156,14 @@
             transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
             flex: 1 1 auto;
         }
+
+        .full-width{
+            max-height: 80vh;
+        }
     </style>
     <div class="contracts-list">
 
-        <h1 class="list_agreement">Смета</h1>
+        <h1 class="list_agreement">Смета по договору №@ViewData["contractNumber"]</h1>
 
         <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" style="display: flex;"
               asp-route-returnContractId="@ViewData["returnContractId"]">
@@ -419,7 +422,7 @@
                 </div>
             </div>
             <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="font-weight: bold; margin-top: 0.5%; margin-bottom: 0.5%;">
-                Поиск по параметрам
+                Поиск
             </button>
 
             <div class="form_agreement">
@@ -427,7 +430,7 @@
                 <a type="button" class="btn btn-success btn_agreement" asp-action="AddEstimate"
                    asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
                    asp-route-returnContractId="@ViewData["returnContractId"]">
-                    <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить смету
+                    <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить
                 </a>
             </div>
         </form>    
@@ -481,6 +484,9 @@
                     <th>
                         Подрядчик
                     </th>
+                    <th>
+                        Дейсвия
+                    </th>
                 </tr>
             </thead>
             <tbody class="table_tbody">
@@ -505,7 +511,7 @@
                         <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count">
                             @item.DetailsView.First().DrawingsName
                         </td>
-                        <td>
+                        <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count" style="vertical-align: middle; text-align: center;">
                             @{
                                 val = item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy");
                                 if (item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
@@ -586,6 +592,16 @@
                         <td>
                             @item.DetailsView.First().EstimateViewModelDrawnings.First().SubContractor
                         </td>
+                        <td>
+                            <div class="icon edit" title="Редактировать смету">
+                                <a asp-action="Edit" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                   asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                            </div>
+                            <div class="icon delete" title="Добавить смету с такими данными">
+                                <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                   asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                            </div>
+                        </td>
                     </tr>
                     @*Цикл прохождения по строкам первого чертежа*@
                     @foreach (var draw in item.DetailsView.First().EstimateViewModelDrawnings.Skip(1))
@@ -593,10 +609,7 @@
                         <tr>
                             <td>
                                 @draw.DrawingsKit
-                            </td>
-                            <td>
-                                @*Только в первой записи дата получения, дальше изменения*@
-                            </td>
+                            </td>                   
                             <td>
                                 @{
                                     val = draw.DrawingsDate?.ToString("dd MMMM yyyy");
@@ -616,6 +629,7 @@
                                 }
                             </td>
                             <td>
+
                             </td>
                             <td>
                                 @{
@@ -675,6 +689,12 @@
                             <td>
                                 @draw.SubContractor
                             </td>
+                            <td>
+                                <div class="icon edit" title="Редактировать смету">
+                                    <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]" 
+                                    asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                            </td>
                         </tr>
                     }
                     @*Цикл прохождения по чертежам*@
@@ -688,7 +708,7 @@
                             <td rowspan="@detail.EstimateViewModelDrawnings.Count">
                                 @detail.DrawingsName
                             </td>
-                            <td>
+                            <td rowspan="@detail.EstimateViewModelDrawnings.Count" style="vertical-align: middle; text-align: center;">
                                 @{
                                     val = detail.EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy");
                                     if (detail.EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
@@ -700,7 +720,7 @@
                             <td>
                                 @*Изменения со второй записи*@
                             </td>
-                            <td>
+                            <td >
                                 @{
                                     val = detail.EstimateViewModelDrawnings.First().Number;
                                     if (detail.EstimateViewModelDrawnings.First().Number is not null)
@@ -769,6 +789,16 @@
                             <td>
                                 @detail.EstimateViewModelDrawnings.First().SubContractor
                             </td>
+                            <td>
+                                <div class="icon edit" title="Редактировать смету">
+                                    <a asp-action="Edit" asp-route-id="@detail.EstimateViewModelDrawnings.First().Id"
+                                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                                <div class="icon delete" title="Добавить смету с такими данными">
+                                    <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                       asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                            </td>
                         </tr>
                         @*Цикл прохождения по строкам чертежа*@
                         @foreach (var draw in detail.EstimateViewModelDrawnings.Skip(1))
@@ -776,10 +806,7 @@
                             <tr>
                                 <td>
                                     @draw.DrawingsKit
-                                </td>
-                                <td>
-                                    @*Только в первой строке*@
-                                </td>
+                                </td>                             
                                 <td>
                                     @{
                                         val = draw.DrawingsDate?.ToString("dd MMMM yyyy");
@@ -858,6 +885,12 @@
                                 <td>
                                     @draw.SubContractor
                                 </td>
+                                <td>
+                                    <div class="icon edit" title="Редактировать смету">
+                                        <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]" 
+                                        asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     }
@@ -909,12 +942,14 @@
                         </td>
                         <td>
                         </td>
+                        <td>
+                        </td>
                     </tr>
                     <tr>
                         <td class="text-end" colspan="9">
                             в том числе:
                         </td>
-                        <td colspan="6">
+                        <td colspan="7">
                         </td>
                     </tr>
                     foreach (var result in item.report)
@@ -937,6 +972,8 @@
                             </td>
                             <td>
                                 @result.Value.RemainsSmrCost?.ToString("N2")
+                            </td>
+                            <td>
                             </td>
                             <td>
                             </td>
@@ -972,12 +1009,14 @@
                     </td>
                     <td>
                     </td>
+                    <td>
+                    </td>
                 </tr>
                 <tr>
                     <td class="text-end" colspan="9">
                         в том числе:
                     </td>
-                    <td colspan="6">
+                    <td colspan="7">
                     </td>
                 </tr>
                 @foreach (var item in total)
@@ -1000,6 +1039,8 @@
                         </td>
                         <td>
                             @item.Value.RemainsSmrCost?.ToString("N2")
+                        </td>
+                        <td>
                         </td>
                         <td>
                         </td>
