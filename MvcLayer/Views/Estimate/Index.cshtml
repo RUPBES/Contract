@@ -77,8 +77,8 @@
 
         h1 {
             /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-                                                                                                                                                                                                                                                        color: #004d8e;
-                                                                                                                                                                                                                                                        transition: all 1s; */
+                                                                                                                                                                                                                                                                                                        color: #004d8e;
+                                                                                                                                                                                                                                                                                                        transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
@@ -157,7 +157,7 @@
             flex: 1 1 auto;
         }
 
-        .full-width{
+        .full-width {
             max-height: 80vh;
         }
     </style>
@@ -433,7 +433,7 @@
                     <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить
                 </a>
             </div>
-        </form>    
+        </form>
     </div>
     <div class="full-width">
         <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
@@ -493,16 +493,17 @@
                 @foreach (EstimateViewModel item in Model.Objects)
                 {
                     var indexObject = 0;
+                    var indexNumber = 0;
                     foreach (var detail in item.DetailsView)
                     {
                         indexObject += detail.EstimateViewModelDrawnings.Count;
                     }
                     @*Первый чертеж по объекту*@
                     <tr>
-                        <td rowspan="@indexObject">
+                        <td rowspan="@indexObject" class="text-center align-middle">
                             @item.BuildingCode
                         </td>
-                        <td rowspan="@indexObject">
+                        <td rowspan="@indexObject" class="text-center align-middle">
                             @item.BuildingName
                         </td>
                         <td>
@@ -511,7 +512,7 @@
                         <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count">
                             @item.DetailsView.First().DrawingsName
                         </td>
-                        <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count" style="vertical-align: middle; text-align: center;">
+                        <td rowspan="@item.DetailsView.First().EstimateViewModelDrawnings.Count" class="text-center align-middle">
                             @{
                                 val = item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy");
                                 if (item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
@@ -523,73 +524,86 @@
                         <td>
                             @*В первой строке дата принятия, дальше изменения*@
                         </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().Number;
-                                if (val is not null)
-                                {
-                                    @val
+                        @if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number != null)
+                        {
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                                class="text-center align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().Number;
+                                    if (val is not null)
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy");
-                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate > new DateTime(1, 1, 1))
-                                {
-                                    @val
+                            </td>
+
+
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                                class="text-center align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy");
+                                    if (item.DetailsView.First().EstimateViewModelDrawnings.First().EstimateDate > new DateTime(1, 1, 1))
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
-                            @*Дата изменения только при последующих*@
-                        </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2");
-                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
-                                {
-                                    @val
+                            </td>
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]">
+                                @*Дата изменения только при последующих*@
+                            </td>
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                                class="text-end align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2");
+                                    if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
-                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
-                                {
-                                    @val
+                            </td>
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                            class="text-end align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
+                                    if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
-                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
-                                {
-                                    @val
+                            </td>
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                            class="text-end align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
+                                    if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2");
-                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
-                                {
-                                    @val
+                            </td>
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                                class="text-end align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2");
+                                    if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
-                            @{
-                                val = item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
-                                if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
-                                {
-                                    @val
+                            </td>
+                            <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
+                                 class="text-end align-middle">
+                                @{
+                                    val = item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
+                                    if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
+                                    {
+                                        @val
+                                    }
                                 }
-                            }
-                        </td>
-                        <td>
+                            </td>
+                            indexNumber = indexNumber + 1;
+                        }
+                        <td class="text-center align-middle">
                             @item.DetailsView.First().EstimateViewModelDrawnings.First().SubContractor
                         </td>
                         <td>
@@ -597,9 +611,12 @@
                                 <a asp-action="Edit" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
                                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                             </div>
-                            <div class="icon delete" title="Добавить смету с такими данными">
+                            <div class="icon file-add" title="Добавить смету с такими данными">
                                 <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
                                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                            </div>
+                            <div class="icon delete" title="Удалить запись">
+                                <a onclick="DeleteEstimate(@item.DetailsView.First().EstimateViewModelDrawnings.First().Id)"></a>
                             </div>
                         </td>
                     </tr>
@@ -609,8 +626,8 @@
                         <tr>
                             <td>
                                 @draw.DrawingsKit
-                            </td>                   
-                            <td>
+                            </td>
+                            <td class="text-center align-middle">
                                 @{
                                     val = draw.DrawingsDate?.ToString("dd MMMM yyyy");
                                     if (draw.DrawingsDate > new DateTime(1, 1, 1))
@@ -619,80 +636,83 @@
                                     }
                                 }
                             </td>
-                            <td>
-                                @{
-                                    val = draw.Number;
-                                    if (val is not null)
-                                    {
-                                        @val
+                            @if (draw.Number != null)
+                            {
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                    @{
+                                        val = draw.Number;
+                                        if (val is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-
-                            </td>
-                            <td>
-                                @{
-                                    val = draw.EstimateDate?.ToString("dd MMMM yyyy");
-                                    if (draw.Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                    @{
+                                        val = draw.EstimateDate?.ToString("dd MMMM yyyy");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = draw.ContractsCost?.ToString("N2");
-                                    if (draw.Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = draw.ContractsCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = draw.LaborCost?.ToString("N2");
-                                    if (draw.Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = draw.LaborCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = draw.DoneSmrCost?.ToString("N2");
-                                    if (draw.Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = draw.DoneSmrCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = draw.PercentOfContrPrice?.ToString("N2");
-                                    if (draw.Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = draw.PercentOfContrPrice?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = draw.RemainsSmrCost?.ToString("N2");
-                                    if (draw.Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = draw.RemainsSmrCost?.ToString("N2");
+                                        if (draw.Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-
-                            </td>
-                            <td>
+                                </td>
+                                indexNumber = indexNumber + 1;
+                            }
+                            <td class="text-center align-middle">
                                 @draw.SubContractor
                             </td>
                             <td>
                                 <div class="icon edit" title="Редактировать смету">
-                                    <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]" 
-                                    asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                    <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]"
+                                       asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                                <div class="icon delete" title="Удалить запись">
+                                    <a onclick="DeleteEstimate(@draw.Id)"></a>
                                 </div>
                             </td>
                         </tr>
@@ -700,6 +720,7 @@
                     @*Цикл прохождения по чертежам*@
                     @foreach (var detail in item.DetailsView.Skip(1))
                     {
+                        indexNumber = 0;
                         @*Первый чертеж по объекту*@
                         <tr>
                             <td>
@@ -708,7 +729,7 @@
                             <td rowspan="@detail.EstimateViewModelDrawnings.Count">
                                 @detail.DrawingsName
                             </td>
-                            <td rowspan="@detail.EstimateViewModelDrawnings.Count" style="vertical-align: middle; text-align: center;">
+                            <td rowspan="@detail.EstimateViewModelDrawnings.Count" class="text-center align-middle">
                                 @{
                                     val = detail.EstimateViewModelDrawnings.First().DrawingsDate?.ToString("dd MMMM yyyy");
                                     if (detail.EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
@@ -720,83 +741,91 @@
                             <td>
                                 @*Изменения со второй записи*@
                             </td>
-                            <td >
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().Number;
-                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
-                                    {
-                                        @val
+                            @if (detail.EstimateViewModelDrawnings.First().Number != null)
+                            {
+
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().Number;
+                                        if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy");
-                                    if (detail.EstimateViewModelDrawnings.First().EstimateDate > new DateTime(1, 1, 1))
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().EstimateDate?.ToString("dd MMMM yyyy");
+                                        if (detail.EstimateViewModelDrawnings.First().EstimateDate > new DateTime(1, 1, 1))
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @*Изменения со второй записи*@
-                            </td>
-                            <td>
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2");
-                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]">
+                                    @*Изменения со второй записи*@
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().ContractsCost?.ToString("N2");
+                                        if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
-                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
+                                        if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
-                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
+                                        if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2");
-                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().PercentOfContrPrice?.ToString("N2");
+                                        if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
-                                @{
-                                    val = detail.EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
-                                    if (detail.EstimateViewModelDrawnings.First().Number is not null)
-                                    {
-                                        @val
+                                </td>
+                                <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                    @{
+                                        val = detail.EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
+                                        if (detail.EstimateViewModelDrawnings.First().Number is not null)
+                                        {
+                                            @val
+                                        }
                                     }
-                                }
-                            </td>
-                            <td>
+                                </td>
+                                indexNumber = indexNumber + 1;
+                            }
+                            <td class="text-center align-middle">
                                 @detail.EstimateViewModelDrawnings.First().SubContractor
                             </td>
                             <td>
                                 <div class="icon edit" title="Редактировать смету">
                                     <a asp-action="Edit" asp-route-id="@detail.EstimateViewModelDrawnings.First().Id"
-                                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
-                                </div>
-                                <div class="icon delete" title="Добавить смету с такими данными">
-                                    <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
                                        asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                                <div class="icon file-add" title="Добавить смету с такими данными">
+                                    <a asp-action="CreateByEstimate" asp-route-id="@detail.EstimateViewModelDrawnings.First().Id"
+                                       asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                                <div class="icon delete" title="Удалить запись">
+                                    <a onclick="DeleteEstimate(@detail.EstimateViewModelDrawnings.First().Id)"></a>
                                 </div>
                             </td>
                         </tr>
@@ -806,8 +835,8 @@
                             <tr>
                                 <td>
                                     @draw.DrawingsKit
-                                </td>                             
-                                <td>
+                                </td>
+                                <td class="text-center align-middle">
                                     @{
                                         val = draw.DrawingsDate?.ToString("dd MMMM yyyy");
                                         if (draw.DrawingsDate > new DateTime(1, 1, 1))
@@ -816,79 +845,83 @@
                                         }
                                     }
                                 </td>
-                                <td>
-                                    @{
-                                        val = draw.Number;
-                                        if (draw.Number is not null)
-                                        {
-                                            @val
+                                @if (draw.Number != null)
+                                {
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                        @{
+                                            val = draw.Number;
+                                            if (draw.Number is not null)
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
-                                    @*Только в первой строке*@
-                                </td>
-                                <td>
-                                    @{
-                                        val = draw.EstimateDate?.ToString("dd MMMM yyyy");
-                                        if (draw.EstimateDate > new DateTime(1, 1, 1))
-                                        {
-                                            @val
+                                    </td>
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                        @{
+                                            val = draw.EstimateDate?.ToString("dd MMMM yyyy");
+                                            if (draw.EstimateDate > new DateTime(1, 1, 1))
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        val = draw.ContractsCost?.ToString("N2");
-                                        if (draw.Number is not null)
-                                        {
-                                            @val
+                                    </td>
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                        @{
+                                            val = draw.ContractsCost?.ToString("N2");
+                                            if (draw.Number is not null)
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        val = draw.LaborCost?.ToString("N2");
-                                        if (draw.Number is not null)
-                                        {
-                                            @val
+                                    </td>
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                        @{
+                                            val = draw.LaborCost?.ToString("N2");
+                                            if (draw.Number is not null)
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        val = draw.DoneSmrCost?.ToString("N2");
-                                        if (draw.Number is not null)
-                                        {
-                                            @val
+                                    </td>
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                        @{
+                                            val = draw.DoneSmrCost?.ToString("N2");
+                                            if (draw.Number is not null)
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        val = draw.PercentOfContrPrice?.ToString("N2");
-                                        if (draw.Number is not null)
-                                        {
-                                            @val
+                                    </td>
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                        @{
+                                            val = draw.PercentOfContrPrice?.ToString("N2");
+                                            if (draw.Number is not null)
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
-                                    @{
-                                        val = draw.RemainsSmrCost?.ToString("N2");
-                                        if (draw.Number is not null)
-                                        {
-                                            @val
+                                    </td>
+                                    <td rowspan="@detail.NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
+                                        @{
+                                            val = draw.RemainsSmrCost?.ToString("N2");
+                                            if (draw.Number is not null)
+                                            {
+                                                @val
+                                            }
                                         }
-                                    }
-                                </td>
-                                <td>
+                                    </td>
+                                    indexNumber = indexNumber + 1;
+                                }
+                                <td class="text-center align-middle">
                                     @draw.SubContractor
                                 </td>
                                 <td>
                                     <div class="icon edit" title="Редактировать смету">
-                                        <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]" 
-                                        asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                        <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]"
+                                           asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                    </div>
+                                    <div class="icon delete" title="Удалить запись">
+                                        <a onclick="DeleteEstimate(@draw.Id)"></a>
                                     </div>
                                 </td>
                             </tr>
@@ -925,25 +958,23 @@
                         <td class="text-end" colspan="9">
                             Итого по зданию, сооружению:
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @sumBuilding.ContractsCost?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @sumBuilding.LaborCost?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @sumBuilding.DoneSmrCost?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @sumBuilding.PercentOfContrPrice?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @sumBuilding.RemainsSmrCost?.ToString("N2")
                         </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
+                        <td colspan="2">
+                        </td>                        
                     </tr>
                     <tr>
                         <td class="text-end" colspan="9">
@@ -958,25 +989,23 @@
                             <td class="text-end" colspan="9">
                                 @result.Key
                             </td>
-                            <td>
+                            <td class="text-end align-middle">
                                 @result.Value.ContractsCost?.ToString("N2")
                             </td>
-                            <td>
+                            <td class="text-end align-middle">
                                 @result.Value.LaborCost?.ToString("N2")
                             </td>
-                            <td>
+                            <td class="text-end align-middle">
                                 @result.Value.DoneSmrCost?.ToString("N2")
                             </td>
-                            <td>
+                            <td class="text-end align-middle">
                                 @result.Value.PercentOfContrPrice?.ToString("N2")
                             </td>
-                            <td>
+                            <td class="text-end align-middle">
                                 @result.Value.RemainsSmrCost?.ToString("N2")
                             </td>
-                            <td>
-                            </td>
-                            <td>
-                            </td>
+                            <td colspan="2">
+                            </td>                            
                         </tr>
                     }
                 }
@@ -992,24 +1021,22 @@
                     <td class="text-end" colspan="9">
                         ВСЕГО по объекту:
                     </td>
-                    <td>
+                    <td class="text-end align-middle">
                         @totalResult.ContractsCost?.ToString("N2")
                     </td>
-                    <td>
+                    <td class="text-end align-middle">
                         @totalResult.LaborCost?.ToString("N2")
                     </td>
-                    <td>
+                    <td class="text-end align-middle">
                         @totalResult.DoneSmrCost?.ToString("N2")
                     </td>
-                    <td>
+                    <td class="text-end align-middle">
                         @totalResult.PercentOfContrPrice?.ToString("N2")
                     </td>
-                    <td>
+                    <td class="text-end align-middle">
                         @totalResult.RemainsSmrCost?.ToString("N2")
                     </td>
-                    <td>
-                    </td>
-                    <td>
+                    <td colspan="2">
                     </td>
                 </tr>
                 <tr>
@@ -1025,24 +1052,22 @@
                         <td class="text-end" colspan="9">
                             @item.Key
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @item.Value.ContractsCost?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @item.Value.LaborCost?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @item.Value.DoneSmrCost?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @item.Value.PercentOfContrPrice?.ToString("N2")
                         </td>
-                        <td>
+                        <td class="text-end align-middle">
                             @item.Value.RemainsSmrCost?.ToString("N2")
                         </td>
-                        <td>
-                        </td>
-                        <td>
+                        <td colspan="2">
                         </td>
                     </tr>
                 }
@@ -1090,8 +1115,7 @@
             toggleActive: true
         });
 
-        function ClearFind()
-        {
+        function ClearFind() {
             $('#inputGroupSearch01').val('');
             $('#inputGroupSearch02').val('');
             $('#inputGroupSearch03').val('');
@@ -1100,7 +1124,47 @@
             $('#StartPeriodEstimate').val('');
             $('#EndPeriodEstimate').val('');
             $('#letterIndex option').prop('selected', false).trigger('chosen:updated');
-            $('#kindOfWork option').prop('selected', false).trigger('chosen:updated');            
+            $('#kindOfWork option').prop('selected', false).trigger('chosen:updated');
+        }
+
+        function DeleteEstimate(val) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ShowDeleteMessage", "Home")',
+                contentType: "application/html; charset=utf-8",
+                dataType: 'html',
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('show');
+
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                    elementDeleteButton[0].addEventListener('click', () => {
+                        $.ajax({
+                            type: 'GET',
+                            url: '@Url.Action("Delete", "Estimate")',
+                            data: { id: val },
+                            success: function (result) {
+                                $('#dialogContent').html(result);
+                            },
+                            error: function (result) {
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("Message", "Home")',
+                                    dataType: 'html',
+                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
+                                    success: function (result) {
+                                        $('#dialogContent').html(result);
+                                    }
+                                });
+                            }
+                        });
+                    })
+                },
+                error: function (result) {
+                    alert("Ошибка отображения");
+                }
+            })
         }
     </script>
 }

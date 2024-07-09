@@ -485,8 +485,10 @@ namespace MvcLayer.Controllers.PRO
 
         // GET: EstimateController/Delete/5
         public ActionResult Delete(int id)
-        {
-            return View();
+        {            
+            _estimateService.Delete(id);
+            ViewData["reload"] = "Yes";
+            return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
         }
 
         // POST: EstimateController/Delete/5
