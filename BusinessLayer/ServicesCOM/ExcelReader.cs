@@ -44,8 +44,8 @@ namespace BusinessLayer.ServicesCOM
                     if (mas.Length == 0) { fl = false; break; }
                     foreach (var word in mas)
                     {
-                        word.ToLower();
-                        if (!target.Contains(word, StringComparison.OrdinalIgnoreCase))
+                        var minWord = word.ToLower();
+                        if (!target.Contains(minWord, StringComparison.OrdinalIgnoreCase))
                         { fl = false; break; }
                     }
                     if (fl)
@@ -55,6 +55,7 @@ namespace BusinessLayer.ServicesCOM
             }
             catch { return false; }
         }
+
         public IEnumerable<(int, int)> FindCellByQuery(ExcelWorksheet worksheet, params string[] query)
         {
             var start = worksheet.Dimension.Start;
