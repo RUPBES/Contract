@@ -337,21 +337,23 @@ namespace BusinessLayer.ServicesCOM
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
                 var ending = excel.Dimension.End.Column;
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "Локальный сметный расчет").Count() < 1)
+                var Number = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "Локальный сметный расчет");
+                if (Number == string.Empty)
                 {
                     throw new Exception("Файл не является локальной сметой");
                 }
-                estimate.BuildingName = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Наименование здания, сооружения", "НАИМЕНОВАНИЕ ЗДАНИЯ, СООРУЖЕНИЯ");
-                estimate.BuildingCode = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "Шифр здания, сооружения", "ШИФР ЗДАНИЯ, СООРУЖЕНИЯ");
-                estimate.DrawingsKit = GetCellValue(excel, shiftRow: 0, shiftCol: 1, "КОМПЛЕКТ ЧЕРТЕЖЕЙ", "Комплект чертежей");
-                var Number = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА", "Локальная смета (Локальный сметный расчет)");
+                var BuildingName = _excelReader.FindCellByQuery(excel,"Наименован здан", "Наименован сооружения");
+                estimate.BuildingName = GetValueInRow(excel, BuildingName.FirstOrDefault().Item1, BuildingName.FirstOrDefault().Item2);
+                var BuildingCode = _excelReader.FindCellByQuery(excel, "Шифр здан", "Шифр сооружен");
+                estimate.BuildingCode = GetValueInRow(excel, BuildingCode.FirstOrDefault().Item1, BuildingCode.FirstOrDefault().Item2);
+                var DrawingsKit = _excelReader.FindCellByQuery(excel, "Комплект чертежей");
+                estimate.DrawingsKit = GetValueInRow(excel, DrawingsKit.FirstOrDefault().Item1, DrawingsKit.FirstOrDefault().Item2);
 
                 estimate.Number = _textSearcher?.FindEstimateNumber(Number) ?? "";
 
-                var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Составлена в ценах на", "Составлена в", "СОСТАВЛЕНА В");
+                var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Составлена в ценах на", "Составлена в", "в тек цен");
                 int rowNameEstimate = cellAboveDates5.FirstOrDefault().Item1 - 1;
-                var drawingName = string.Empty;
-
+                var drawingName = string.Empty;                
                 for (int i = excel.Dimension.Start.Column; i <= excel.Dimension.End.Column; i++)
                 {
                     drawingName = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
@@ -393,7 +395,7 @@ namespace BusinessLayer.ServicesCOM
             try
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Расчет стоимости").Count() < 1)
+                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Расчет стоимости") == string.Empty)
                 {
                     throw new Exception("Файл не является расчетом стоимости");
                 }
@@ -436,7 +438,7 @@ namespace BusinessLayer.ServicesCOM
             try
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "График строительства").Count() < 1)
+                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "График строительства") == string.Empty)
                 {
                     throw new Exception("Файл не является графиком строительства");
                 }
@@ -477,7 +479,7 @@ namespace BusinessLayer.ServicesCOM
             try
             {
                 var excel = _excelReader.GetExcelWorksheet(path, page);
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "СДАЧИ - ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ").Count() < 1)
+                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "СДАЧИ - ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ") == string.Empty)
                 {
                     throw new Exception("Файл не является справкой С-2б");
                 }
@@ -508,9 +510,29 @@ namespace BusinessLayer.ServicesCOM
         {
             //вернет первое значение строку, второе - столбец
             var cell = _excelReader.FindCellByQuery(excel, names);
+            if (cell.Count() == 0)
+                return string.Empty;
             int rowDates = cell.FirstOrDefault().Item1 + shiftRow;
             int startColumnOfDates = cell.FirstOrDefault().Item2 + shiftCol;
-            return excel.Cells[rowDates, startColumnOfDates].Value?.ToString()?.Trim() ?? string.Empty;
+            return excel.Cells[rowDates, startColumnOfDates].Text?.Trim() ?? string.Empty;
+        }
+
+        private string GetValueInRow(ExcelWorksheet excel, int shiftRow, int shiftCol)
+        {
+            //вернет первое значение строку, второе - столбец            
+            var value = excel.Cells[shiftRow,shiftCol].Text?.Trim();
+            if (value.Contains(':'))
+            {
+               var mas = value.Split(':');
+                return mas[1].Trim();
+            }
+            for (int i = shiftCol+1; i <= excel.Dimension.End.Column; i++)
+            {
+                var valText = excel.Cells[shiftRow, i].Text?.Trim();
+                if (valText != string.Empty)
+                    return valText;
+            }
+            return string.Empty;
         }
     }
 }
