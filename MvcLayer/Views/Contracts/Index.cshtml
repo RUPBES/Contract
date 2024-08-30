@@ -23,6 +23,8 @@
     string redirectController = "Contracts";
     var actionMethod = isEngineering is true ? "Engineerings" : "Index";
     var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    if (ViewBag.CurrentType == null)
+        ViewBag.CurrentType = "none";
 }
 
 
@@ -47,20 +49,9 @@
             margin-bottom: 0.5%;
         }
 
-        .search_btn {
-            width: 2vh !important;
-            position: absolute;
-            padding: 0;
-            margin: 0 10px;
-            background-color: inherit;
-            border: none;
-            right: 210px;
-            top: 8px;
-        }
-
         h1 {
-            transition: all 1s; */
-            font-family: 'Ampersand', Montserrat, sans-serif;
+            transition: all 1s;
+            */ font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
 
@@ -114,49 +105,63 @@
             position: relative;
         }
 
-
         .search-choice-close::before {
             content: "х";
             text-decoration: none !important;
+        }
+
+        .th-item-search {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .search_btn {
+            cursor: pointer;
+        }
+
+        .table .thead-dark th > div > img {
+            filter: brightness(0) saturate(100%) invert(100%) sepia(11%) saturate(47%) hue-rotate(60deg) brightness(109%) contrast(90%);
+        }
+
+        .modal_form_searching {
+            display: flex;
+            position: absolute;
+            top: 25px;
+            right: -15px;
+            z-index: 100;
+        }
+
+        .form_search {
+            width: 175px;
+            background-color: black;
+            padding: 10px;
+            border-radius: 10px;
+            border: solid;
         }
     </style>
     <div>
         <div class="contracts-list">
             <h1 class="list_agreement">Список договоров</h1>
-
             @if (ViewBag.IsEngineering)
             {
-                @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
-                {
-                    <div class="form_agreement">
-
-                        <form method="get">
-                            @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                            <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                        </form>
-                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                        {
-                            <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
-                        }
-                    </div>
-
-                }
+                <div class="form_agreement">
+                    @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                    {
+                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
+                    }
+                </div>
             }
             @if (!ViewBag.IsEngineering)
             {
-                @using (Html.BeginForm(@actionMethod, "Contracts", FormMethod.Get))
-                {
-                    <div class="form_agreement">
-                        @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                        <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
-                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                        {
-                            <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
-                        }
-                    </div>
-                }
+                <div class="form_agreement">
+                    @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                    {
+                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
+                    }
+                </div>
             }
-
         </div>
 
         <div class="full-width">
@@ -166,20 +171,22 @@
                         <th>
                             <span class="table_span-numberanddate">
                                 Номер и дата договора
-                                @Html.ActionLink(" ", @actionMethod, new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayNumberanddate", @class = "up" })
+                                @Html.ActionLink(" ", @actionMethod, new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNumberanddate", @class = "up" })
+                                <img class="search_btn" src="~/icons/search.svg" data-content-search="number" title="Поиск организации" alt="Поиск организации" />
                             </span>
                         </th>
                         <th>
                             <span class="table_span-nameobject">
                                 Наименование объекта
-                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayNameObject", @class = "up" })
-
+                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNameObject", @class = "up" })
+                                <img class="search_btn" src="~/icons/search.svg" data-content-search="nameObject" title="Поиск организации" alt="Поиск организации" />
                             </span>
                         </th>
                         <th>
                             <span class="table_span-customer">
                                 Заказчик
-                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayCustomer", @class = "up" })
+                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayCustomer", @class = "up" })
+                                <img class="search_btn" src="~/icons/search.svg" data-content-search="client" title="Поиск организации" alt="Поиск организации" />
                             </span>
                         </th>
                         @if (isEngineering != true)
@@ -187,14 +194,15 @@
                             <th>
                                 <span class="table_span-contractor">
                                     <span>Генподрядчик</span>
-                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayGeneralContractor", @class = "up" })
+                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayGeneralContractor", @class = "up" })
+                                    <img class="search_btn" src="~/icons/search.svg" data-content-search="general" title="Поиск организации" alt="Поиск организации" />
                                 </span>
                             </th>
                         }
                         <th>
                             <span class="table_span-deadlines">
                                 Cроки
-                                @Html.ActionLink(" ", actionMethod, new { sortOrder = ViewData["EnterSortParm"], currentFilter = ViewData["CurrentFilter"] }, new { id = "arrayTerms", @class = "up" })
+                                @Html.ActionLink(" ", actionMethod, new { sortOrder = ViewData["EnterSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayTerms", @class = "up" })
                             </span>
                         </th>
                         <th><span class="table_span-conditions">    Условия оплаты              </span></th>
@@ -593,7 +601,8 @@
                         <a class="page-link" asp-action="Index"
                            asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                           asp-route-currentType="@ViewData["CurrentType"]">
                             &lt;
                         </a>
                     }
@@ -603,6 +612,7 @@
                            asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                           asp-route-currentType="@ViewData["CurrentType"]"
                            tabindex="-1" aria-disabled="true">
                             &lt;
                         </a>
@@ -637,7 +647,8 @@
                         <a class="page-link" asp-action="Index"
                            asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]">
+                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                           asp-route-currentType="@ViewData["CurrentType"]">
                             &gt;
                         </a>
                     }
@@ -647,6 +658,7 @@
                            asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                           asp-route-currentType="@ViewData["CurrentType"]"
                            aria-disabled="true">
                             &gt;
                         </a>
@@ -678,41 +690,41 @@
             let elementArrayGeneralContractor = document.getElementById("arrayGeneralContractor");
             let elementArrayTerms = document.getElementById("arrayTerms");
 
-            if (actualUrl.includes('numberDesc')) {
+            if (actualUrl.includes('sortOrder=numberDesc')) {
                 elementArrayNumberanddate.classList.remove("up")
                 elementArrayNumberanddate.classList.add("up-down-active")
                 elementArrayNumberanddate.classList.add('down')
-            } else if (actualUrl.includes('number')) {
+            } else if (actualUrl.includes('sortOrder=number')) {
                 elementArrayNumberanddate.classList.add("up-down-active")
             } else
-                if (actualUrl.includes('nameObjectDesc')) {
+                if (actualUrl.includes('sortOrder=nameObjectDesc')) {
                     elementArrayNameObject.classList.remove("up")
                     elementArrayNameObject.classList.add("up-down-active")
                     elementArrayNameObject.classList.add('down')
-                } else if (actualUrl.includes('nameObject')) {
+                } else if (actualUrl.includes('sortOrder=nameObject')) {
                     elementArrayNameObject.classList.add('up-down-active')
                 }
                 else
-                    if (actualUrl.includes('clientDesc')) {
+                    if (actualUrl.includes('sortOrder=clientDesc')) {
                         elementArrayCustomer.classList.remove("up")
                         elementArrayCustomer.classList.add("up-down-active")
                         elementArrayCustomer.classList.add('down')
-                    } else if (actualUrl.includes('client')) {
+                    } else if (actualUrl.includes('sortOrder=client')) {
                         elementArrayCustomer.classList.add('up-down-active')
                     }
                     else
-                        if (actualUrl.includes('genContractorDesc')) {
+                        if (actualUrl.includes('sortOrder=genContractorDesc')) {
                             elementArrayGeneralContractor.classList.remove("up")
                             elementArrayGeneralContractor.classList.add("up-down-active")
                             elementArrayGeneralContractor.classList.add('down')
-                        } else if (actualUrl.includes('genContractor')) {
+                        } else if (actualUrl.includes('sortOrder=genContractor')) {
                             elementArrayGeneralContractor.classList.add('up-down-active')
                         } else
-                            if (actualUrl.includes('dateEnterDesc')) {
+                            if (actualUrl.includes('sortOrder=dateEnterDesc')) {
                                 elementArrayTerms.classList.remove("up")
                                 elementArrayTerms.classList.add("up-down-active")
                                 elementArrayTerms.classList.add('down')
-                            } else if (actualUrl.includes('dateEnter')) {
+                            } else if (actualUrl.includes('sortOrder=dateEnter')) {
                                 elementArrayTerms.classList.add('up-down-active')
                             }
         };
@@ -768,5 +780,38 @@
             });
 
         });
+
+        $('.search_btn').click(function (elem) {
+            closeModalForms();
+            const parent = elem.target.parentElement;
+            const child = document.createElement('div');
+            const page = $('#pageNumber').val();
+            const type = elem.target.dataset.contentSearch;
+            var value = "";
+            var currentType = '@ViewBag.CurrentType';           
+            if (currentType != "none" && type == currentType)
+                value = "@ViewBag.CurrentFilter";
+            child.classList.add('modal_form_searching');
+            child.innerHTML = `<form asp-action="@actionMethod" asp-controller="Contracts" method="GET" class="form_search">
+                                                                          <input name="typeSearch" value="${type}"  hidden />
+                                                                          <input type="text" value="${value}" class="form-control" name="searchString" aria-describedby="button-addon2">
+                                                                  <div class="input-group">
+                                                                       <button class="col-5 btn btn-secondary" type="button" onclick="return removeParent('.modal_form_searching');" style="padding: 0;height: 30px;font-size: 0.9rem;font-weight: 600;">Закрыть</button>
+                                                                       <button class="col-7 btn btn-primary" type="submit" id="button-addon2" style="padding: 0;height: 30px;font-size: 0.9rem;font-weight: 600;">Поиск</button>
+                                                                  </div>
+                                                        </form>`;
+            parent.appendChild(child);
+        });
+        function removeParent(elem) {
+            const p = $(elem);
+            p.remove();
+        }
+        function closeModalForms() {
+            let modal = document.querySelectorAll('.modal_form_searching');
+            modal.forEach((e) => {
+
+                e.remove();
+            })
+        }
     </script>
 }
