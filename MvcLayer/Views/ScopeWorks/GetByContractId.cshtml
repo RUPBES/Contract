@@ -18,7 +18,7 @@
     {
         ViewData["Title"] = "Объем работ";
     }
-    var actionReturn = ViewBag.IsEngineering == true ? "Engineerings" : null;
+    var actionReturn = ViewBag.IsEngin != null ? "Engineerings" : null;
     var contractId = ViewBag.contractId;
     int backId = 0;
     if (ViewBag.returnContractId == 0)
@@ -55,7 +55,30 @@
         <div class="dm-cell">
             <div class="dm-modal">
                 <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <div>
+                        <label class="my-modal-title">@ViewData["Title"]</label>
+                        <select id="selectAmend" class="form-select" onchange="changeAmendment(this)">
+                            <option value="0" disabled selected>Выберите документ</option>
+                            @foreach (var scope in Model)
+                            {
+                                var amendment = ScopeWork.GetAmendmentByScopeId(scope.Id);
+                                if (amendment == null)
+                                {
+                                    <option value="@scope.Id">Контракт</option>
+                                }
+                                else
+                                {
+                                    <option value="@scope.Id">@amendment.Number</option>
+                                }
+                            }
+                        </select>
+                        <div id="DivEdit" class="icon edit" title="Редактировать" >
+                            <a onclick="Edit()"></a>
+                        </div>
+                        <div id="DivDelete" class="icon delete" title="Удалить" >
+                            <a onclick="confirm()"></a>
+                        </div>
+                    </div>
                     @if (backId != null && backId > 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
@@ -66,146 +89,13 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                @if (Model.Any())
-                {
+              
                     <div class="modal-overflow-70">
-                        <table class="table table-striped table-main table-hover ">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        @Html.DisplayNameFor(model => model.Period)
-                                    </th>
-                                    @if (ViewBag.IsEngin == null)
-                                    {
-                                       
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.CostNds)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.SmrCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.PnrCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.AdditionalCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.EquipmentCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.OtherExpensesCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.CostNoNds)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.MaterialCost)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.GenServiceCost)
-                                        </th>                                       
-                                    }
-                                    else
-                                    {
-                                        <th>
-                                            Объем услуг
-                                        </th>
-                                    }
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var scope in Model)
-                                {
-                                    if (scope.IsChange == true)
-                                    {
-                                        var amendment = ScopeWork.GetAmendmentByScopeId(scope.Id);
-                                        if (amendment != null)
-                                        {
-                                            <tr>
-                                                @if (ViewBag.IsEngin == null)
-                                                {
-                                                    <td colspan="12">
-                                                        <span style="font-weight:bold">@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
-                                                    </td>
-                                                }
-                                                else
-                                                {
-                                                    <td colspan="2">
-                                                        <span style="font-weight:bold">@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
-                                                    </td>
-                                                }
-                                            </tr>
-                                        }
-                                    }
-                                    @foreach (var item in SWCosts.Find(x => x.ScopeWorkId == scope.Id).OrderBy(x => x.Period))
-                                    {
-                                        <tr>
-                                            <td>
-                                                @item.Period?.ToString("MMMM yyyy")
-                                            </td>
-                                            @if (ViewBag.IsEngin == null)
-                                            {
-                                               
-                                                <td class="text-end">
-                                                    @item.CostNds?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.SmrCost?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.PnrCost?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.AdditionalCost?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.EquipmentCost?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.OtherExpensesCost?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.CostNoNds?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.MaterialCost?.ToString("N2")
-                                                </td>
-                                                <td class="text-end">
-                                                    @item.GenServiceCost?.ToString("N2")
-                                                </td>                                               
-                                            }
-                                            else
-                                            {
-                                                <td class="text-end">
-                                                    @item.SmrCost?.ToString("N2")
-                                                </td>
-                                            }
-                                            <td>
-                                                @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                                                {
-                                                    <div class="icon edit" title="Редактировать">
-                                                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@contractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                                    </div>
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
-                                                {
-                                                    <a class="icon delete" onclick="confirm(@item.Id)"></a>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                }
-                            </tbody>
-                        </table>
+                        
                     </div>
-                }
-                else
-                {
+                
+                
+                <div id="modalContent" class="modal-overflow-70">
                     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
                         <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
@@ -220,17 +110,54 @@
                     <div class="alert alert-warning d-flex align-items-center" role="alert">
                         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
                         <div>
-                            Отсутствуют данные
+                            Выберите документ
                         </div>
                     </div>
-                }
+                </div>
+                
             </div>
         </div>
     </div>
 </div>
 @section Scripts {
     <script>
-        function confirm(val) {
+        $('#DivEdit').hide();
+        $('#DivDelete').hide();
+        function changeAmendment(select) {            
+            $('#DivEdit').show();
+            var text = $("#selectAmend option:selected").text();
+            if (text === "Контракт") {
+                $('#DivDelete').hide();
+            }
+            else {
+                $('#DivDelete').show();
+            }
+            var value = select.value;
+            
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetSWCostByScopeWork", "ScopeWorks")',
+                // contentType: "application/html; charset=utf-8",
+                data: { ScopeWorkId: value },
+                // dataType: 'html',
+                success: function (result) {
+                    $('#modalContent').html(result);                           
+                },
+                error: function (result) {
+                    alert("Ошибка отображения");
+                }
+            })
+        }
+
+        function Edit() {
+            var id = $("#selectAmend option:selected").val();
+            var url = '@Url.Action("EditSWCostByScopeWorkId", "ScopeWorks", new { Id = "__id__", contractId = (int)@contractId, returnContractId = (int)@ViewBag.returnContractId })';
+            url = url.replace('__id__', id);
+            console.log(url);
+            window.location.href = url;
+        }
+
+        function confirm() {
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("ShowDelete", "ScopeWorks")',
@@ -242,12 +169,13 @@
                     $('#modDialog').modal('show');
 
                     let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                    var id = $("#selectAmend option:selected").val();
                     elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
                             type: 'POST',
                             url: '@Url.Action("ShowResultDelete", "ScopeWorks")',
                             dataType: 'html',
-                            data: { id: val },
+                            data: { id: id },
                             success: function (result) {
                                 let buttonElement = document.querySelectorAll('#dialogContent')
                                 $('#dialogContent').html(result);

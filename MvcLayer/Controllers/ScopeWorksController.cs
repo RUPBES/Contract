@@ -8,6 +8,9 @@ using MvcLayer.Models;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using DatabaseLayer.Models.KDO;
+using OfficeOpenXml.ConditionalFormatting;
+using System.Diagnostics.Contracts;
+using NuGet.Packaging;
 
 namespace MvcLayer.Controllers
 {
@@ -51,10 +54,16 @@ namespace MvcLayer.Controllers
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
             var obj = _contractService.GetById(contractId);
+            int? scopeId;
+            if (!_contractService.IsThereScopeWorks(obj.Id, out scopeId))
+            {
+                TempData["Message"] = "Не заполнены объемы работ!";
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+            }
             if (obj.IsEngineering == true)
                 ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
-            ViewBag.IsEngineering = isEngineering;
             ViewData["contractId"] = contractId;
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true)));
         }
@@ -70,7 +79,7 @@ namespace MvcLayer.Controllers
                     ContractId = contractId
                 };
                 var isScope = _scopeWork.Find(x => x.ContractId == contractId).FirstOrDefault();
-                
+
                 if (isScope != null)
                 {
                     return View(periodChoose);
@@ -182,7 +191,7 @@ namespace MvcLayer.Controllers
 
                 ScopeWorkViewModel scope = new ScopeWorkViewModel();
                 List<SWCostDTO> costs = new List<SWCostDTO>();
-                
+
                 if (scopeWork.AmendmentId > 0)
                 {
                     scope.IsChange = true;
@@ -317,21 +326,19 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> ShowResultDelete(int? id)
         {
-            var scpId = _swCostService.GetById((int)id).ScopeWorkId;
+            var scopeWork = _scopeWork.GetById((int)id);            
+            var contract =  _contractService.GetById((int)scopeWork.ContractId);
 
-            if (scpId.HasValue)
+            if (contract is not null)
             {
-                var contrId = _scopeWork.GetById((int)scpId).ContractId;
-                var contract = contrId.HasValue ? _contractService.GetById((int)contrId) : null;
+                int mainContractId = 0;
 
-                if (contract is not null)
+                if (_contractService.IsNotGenContract(contract.Id, out mainContractId))
                 {
-                    int mainContractId = 0;
-
-                    if (_contractService.IsNotGenContract(contrId, out mainContractId))
+                    foreach (var cost in scopeWork.SWCosts)
                     {
-                        int? mainContrScpId = 0;
-                        var costs = _swCostService.GetById((int)id);
+                        var costs = _mapper.Map<SWCostDTO>(cost);
+                        int ? mainContrScpId = 0;                        
                         if (contract?.IsOneOfMultiple ?? false)
                         {
 
@@ -350,21 +357,28 @@ namespace MvcLayer.Controllers
                             _scopeWork.AddOrSubstractCostsOwnForceMnContract(mainContractId, new List<SWCostDTO> { costs }, 1);
                         }
                     }
-                    else
+                }
+                else
+                {
+                    foreach (var cost in scopeWork.SWCosts)
                     {
-                        _scopeWork.RemoveExistOwnForce((int)scpId, (int)id);
+                        _scopeWork.RemoveExistOwnForce((int)scopeWork.Id, (int)cost.Id);
                     }
                 }
-
-
-                _swCostService.Delete((int)id);
-                var isLastSwCost = _swCostService.Find(x => x.ScopeWorkId == scpId).Count() > 0 ? false : true;
-                if (isLastSwCost)
-                {
-                    _scopeWork.DeleteAllScopeWorkContract((int)scpId);
-
-                }
             }
+
+
+            foreach (var cost in scopeWork.SWCosts)
+            {
+                _swCostService.Delete((int)cost.Id);
+            }            
+            var isLastSwCost = _swCostService.Find(x => x.ScopeWorkId == scopeWork.Id).Count() > 0 ? false : true;
+            if (isLastSwCost)
+            {
+                _scopeWork.DeleteAllScopeWorkContract((int)scopeWork.Id);
+
+            }
+
             ViewData["reload"] = "Yes";
             return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
         }
@@ -748,28 +762,32 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "EditPolicy")]
-        public IActionResult Edit(int id, int contractId, int returnContractId = 0, List<SWCostDTO> costs = null)
+        public IActionResult EditSWCostByScopeWorkId(int Id, int contractId, int returnContractId = 0)
         {
-            var ob = _contractService.GetById(contractId);
-            if (ob.IsEngineering == true)
+            var contract = _contractService.GetById(contractId);
+            if (contract.IsEngineering == true)
                 ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
-            //var obj = costs is not null ? costs : _swCostService.GetById(id);
-            return View(_mapper.Map<SWCostViewModel>(_swCostService.GetById(id)/*obj*/));
+            var scope = _scopeWork.Find(x => x.Id == Id).Select(x => x.ScopeWorkAmendments).FirstOrDefault();
+            if (scope.Count > 0)
+            {
+                ViewData["contractPrice"] = scope.First().Amendment.ContractPrice;
+            }
+            else
+            {
+                ViewData["contractPrice"] = contract.ContractPrice;
+            }
+            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(Id)));
         }
 
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
-        public IActionResult Edit(SWCostViewModel model, int contractId, int returnContractId = 0)
+        public IActionResult EditSWCostByScopeWorkId(ScopeWorkViewModel model, int contractId, int returnContractId = 0)
         {
-            List<SWCostDTO> costs = new List<SWCostDTO>
-            {
-                _mapper.Map<SWCostDTO>(model)
-            };
-
-            var contrId = model?.ScopeWorkId is not null ? _scopeWork?.GetById((int)model.ScopeWorkId)?.ContractId : null;
-            var contract = contrId.HasValue ? _contractService.GetById((int)contrId) : null;
+            List<SWCostDTO> costs = new List<SWCostDTO>();
+            costs.AddRange(_mapper.Map<List<SWCostDTO>>(model.SWCosts));
+            var contract = _contractService.GetById(contractId);
 
             if (contract is not null)
             {
@@ -778,16 +796,18 @@ namespace MvcLayer.Controllers
                 {
                     if (!contract.IsOneOfMultiple)
                     {
-                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs);
+                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.Id, costs);
                     }
                     else
                     {
-                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs, true);
+                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.Id, costs, true);
                     }
                 }
             }
-
-            _swCostService.Update(_mapper.Map<SWCostDTO>(model));
+            foreach (var swCost in model.SWCosts)
+            {
+                _swCostService.Update(_mapper.Map<SWCostDTO>(swCost));
+            }
             return RedirectToAction("GetByContractId", new { contractId = contractId, returnContractId = returnContractId });
         }
 
@@ -866,9 +886,10 @@ namespace MvcLayer.Controllers
             return View();
         }
 
-
-
-
+        public ActionResult GetSWCostByScopeWork(int ScopeWorkId)
+        {
+            return PartialView(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(ScopeWorkId)));
+        }
 
         #region AdditionsMethods
         private void CreateOrUpdateSWCostsOfMainContract(int multipleContractId, bool isOwnForses, List<SWCostDTO> costs)

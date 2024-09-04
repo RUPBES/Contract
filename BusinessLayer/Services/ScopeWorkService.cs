@@ -251,7 +251,8 @@ namespace BusinessLayer.Services
         {
             try
             {
-                var amendId = _database.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.FirstOrDefault().AmendmentId;
+                var amendId = _database.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.Select(x => x.AmendmentId).FirstOrDefault();
+                if (amendId == 0) { return null; }
                 var amend = _database.Amendments.GetById((int)amendId);
                 return _mapper.Map<AmendmentDTO>(amend);
             }
