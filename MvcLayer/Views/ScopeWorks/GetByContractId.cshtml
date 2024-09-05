@@ -1,5 +1,5 @@
 ﻿@using BusinessLayer.Helpers
-@model IEnumerable<MvcLayer.Models.ScopeWorkViewModel>
+@model MvcLayer.Models.ScopeWorkViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
@@ -57,27 +57,27 @@
                 <div class="top-modal-block">
                     <div>
                         <label class="my-modal-title">@ViewData["Title"]</label>
-                        <select id="selectAmend" class="form-select" onchange="changeAmendment(this)">
-                            <option value="0" disabled selected>Выберите документ</option>
-                            @foreach (var scope in Model)
+                        @{
+                            var amendment = ScopeWork.GetAmendmentByScopeId(Model.Id);
+                            if (amendment != null)
                             {
-                                var amendment = ScopeWork.GetAmendmentByScopeId(scope.Id);
-                                if (amendment == null)
-                                {
-                                    <option value="@scope.Id">Контракт</option>
-                                }
-                                else
-                                {
-                                    <option value="@scope.Id">@amendment.Number</option>
-                                }
+                                <span style="font-weight:bold">@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
                             }
-                        </select>
-                        <div id="DivEdit" class="icon edit" title="Редактировать" >
-                            <a onclick="Edit()"></a>
+                            else
+                            {
+                                <span style="font-weight:bold">По контракту</span>
+                            }
+                        }
+                        <div id="DivEdit" class="icon edit" title="Редактировать">
+                            <a asp-action="EditSWCostByScopeWorkId" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"
+                               asp-route-returnContractId="@ViewBag.returnContractId"></a>
                         </div>
-                        <div id="DivDelete" class="icon delete" title="Удалить" >
-                            <a onclick="confirm()"></a>
-                        </div>
+                        @if (amendment != null)
+                        {
+                            <div id="DivDelete" class="icon delete" title="Удалить">
+                                <a onclick="confirm(@Model.Id)"></a>
+                            </div>
+                        }
                     </div>
                     @if (backId != null && backId > 0)
                     {
@@ -89,75 +89,108 @@
                     }
                 </div>
                 <hr class="modal-line" />
-              
-                    <div class="modal-overflow-70">
-                        
-                    </div>
-                
-                
-                <div id="modalContent" class="modal-overflow-70">
-                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
-                        </symbol>
-                        <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
-                        </symbol>
-                        <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                        </symbol>
-                    </svg>
-                    <div class="alert alert-warning d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                        <div>
-                            Выберите документ
-                        </div>
-                    </div>
+
+                <div class="modal-overflow-70">
+                    <table class="table table-striped table-main table-hover ">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Period)
+                                </th>
+                                @if (ViewBag.IsEngin == null)
+                                {
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CostNds)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.SmrCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PnrCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.AdditionalCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.EquipmentCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CostNoNds)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.MaterialCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.GenServiceCost)
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th>
+                                        Объем услуг
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.SWCosts.OrderBy(x => x.Period))
+                            {
+                                <tr>
+                                    <td>
+                                        @item.Period?.ToString("MMMM yyyy")
+                                    </td>
+                                    @if (ViewBag.IsEngin == null)
+                                    {
+
+                                        <td class="text-end">
+                                            @item.CostNds?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.SmrCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.PnrCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.AdditionalCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.EquipmentCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.OtherExpensesCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.CostNoNds?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.MaterialCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.GenServiceCost?.ToString("N2")
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">
+                                            @item.SmrCost?.ToString("N2")
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-                
             </div>
         </div>
     </div>
 </div>
 @section Scripts {
-    <script>
-        $('#DivEdit').hide();
-        $('#DivDelete').hide();
-        function changeAmendment(select) {            
-            $('#DivEdit').show();
-            var text = $("#selectAmend option:selected").text();
-            if (text === "Контракт") {
-                $('#DivDelete').hide();
-            }
-            else {
-                $('#DivDelete').show();
-            }
-            var value = select.value;
-            
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("GetSWCostByScopeWork", "ScopeWorks")',
-                // contentType: "application/html; charset=utf-8",
-                data: { ScopeWorkId: value },
-                // dataType: 'html',
-                success: function (result) {
-                    $('#modalContent').html(result);                           
-                },
-                error: function (result) {
-                    alert("Ошибка отображения");
-                }
-            })
-        }
-
-        function Edit() {
-            var id = $("#selectAmend option:selected").val();
-            var url = '@Url.Action("EditSWCostByScopeWorkId", "ScopeWorks", new { Id = "__id__", contractId = (int)@contractId, returnContractId = (int)@ViewBag.returnContractId })';
-            url = url.replace('__id__', id);
-            console.log(url);
-            window.location.href = url;
-        }
-
-        function confirm() {
+    <script>        
+        function confirm(id) {
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("ShowDelete", "ScopeWorks")',
@@ -168,8 +201,7 @@
                     $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('show');
 
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
-                    var id = $("#selectAmend option:selected").val();
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')                    
                     elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
                             type: 'POST',

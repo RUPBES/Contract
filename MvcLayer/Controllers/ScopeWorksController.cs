@@ -51,6 +51,7 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.GetAll()));
         }
 
+        //Показывает последний работ объем и дает изменить/удалить
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
             var obj = _contractService.GetById(contractId);
@@ -65,7 +66,8 @@ namespace MvcLayer.Controllers
                 ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
-            return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true)));
+            var scope = _scopeWork.GetLastScope(contractId);            
+            return View(_mapper.Map<ScopeWorkViewModel>(_mapper.Map<ScopeWorkDTO>(scope)));
         }
 
         public IActionResult ChoosePeriod(int contractId, int returnContractId = 0)
@@ -769,10 +771,11 @@ namespace MvcLayer.Controllers
                 ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
-            var scope = _scopeWork.Find(x => x.Id == Id).Select(x => x.ScopeWorkAmendments).FirstOrDefault();
-            if (scope.Count > 0)
+            var amendment = _scopeWork.GetAmendmentByScopeId(Id);
+
+            if (amendment != null)
             {
-                ViewData["contractPrice"] = scope.First().Amendment.ContractPrice;
+                ViewData["contractPrice"] = amendment.ContractPrice;
             }
             else
             {
@@ -884,12 +887,7 @@ namespace MvcLayer.Controllers
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View();
-        }
-
-        public ActionResult GetSWCostByScopeWork(int ScopeWorkId)
-        {
-            return PartialView(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(ScopeWorkId)));
-        }
+        }  
 
         #region AdditionsMethods
         private void CreateOrUpdateSWCostsOfMainContract(int multipleContractId, bool isOwnForses, List<SWCostDTO> costs)
