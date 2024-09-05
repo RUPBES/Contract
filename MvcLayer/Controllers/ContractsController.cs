@@ -1050,7 +1050,7 @@ namespace MvcLayer.Controllers
             viewModel.remainingScopeOwn.TotalCost = viewModel.contractPriceOwn.TotalCost - viewModel.remainingScopeOwn.TotalCost;
             viewModel.remainingScopeOwn.TotalWithoutNds = viewModel.contractPriceOwn.TotalWithoutNds - viewModel.remainingScopeOwn.TotalWithoutNds;
             #endregion
-            if (doc.IsSubContract != true && doc.IsAgreementContract != true && doc.IsOneOfMultiple != true)
+            if (doc.IsSubContract != true && doc.IsAgreementContract != true)
             {
                 ViewData["main"] = true; 
             }

@@ -80,7 +80,7 @@ namespace MvcLayer.Controllers
                 {
                     ContractId = contractId
                 };
-                var isScope = _scopeWork.Find(x => x.ContractId == contractId).FirstOrDefault();
+                var isScope = _scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true).FirstOrDefault();
 
                 if (isScope != null)
                 {
