@@ -2,8 +2,9 @@
 {
     public enum ContractType
     {
-        GenСontractor,
-        SubContractor,
-        Agreement
+        GenСontract,
+        SubContract,
+        Agreement,
+        MultipleContract
     }
 }
