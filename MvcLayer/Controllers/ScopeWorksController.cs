@@ -758,7 +758,7 @@ namespace MvcLayer.Controllers
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
             //var obj = costs is not null ? costs : _swCostService.GetById(id);
-            return View(_mapper.Map<SWCostViewModel>(_swCostService.GetById(id)/*obj*/));
+            return View(_mapper.Map<SWCostViewModel>(_swCostService.GetById(Id)/*obj*/));
         }
 
         [HttpPost]
@@ -775,18 +775,18 @@ namespace MvcLayer.Controllers
 
             if (contract is not null)
             {
-                int mainContractId = 0;
-                if (_contractService.IsNotGenContract(contract.Id, out mainContractId))
-                {
-                    if (!contract.IsOneOfMultiple)
-                    {
-                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs);
-                    }
-                    else
-                    {
-                        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs, true);
-                    }
-                }
+                //int mainContractId = 0;
+                //if (_contractService.IsNotGenContract(contract.Id, out mainContractId))
+                //{
+                //    if (!contract.IsOneOfMultiple)
+                //    {
+                //        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs);
+                //    }
+                //    else
+                //    {
+                //        _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs, true);
+                //    }
+                //}
             }
 
             _swCostService.Update(_mapper.Map<SWCostDTO>(model));
@@ -868,59 +868,7 @@ namespace MvcLayer.Controllers
         }  
 
         #region AdditionsMethods
-        private void CreateOrUpdateSWCostsOfMainContract(int multipleContractId, bool isOwnForses, List<SWCostDTO> costs)
-        {
-            int? scopeId = null;
-            var contractMultiple = _contractService.GetById(multipleContractId);
-
-            //если есть объем работ у главного договора
-            if (_contractService.IsThereScopeWorks(contractMultiple.Id, isOwnForses, out scopeId))
-            {
-                //есть стоимости у гл.дог-ра (ищем по ID объема работ)                  
-                if (_contractService.IsThereSWCosts(scopeId))
-                {
-                    ///обновляем соответствующие периоды, добавляя из подобъекта, и если их нет создаем с этим же периодом
-                    _scopeWork.AddSWCostForMainContract(scopeId, costs);
-                }
-                else
-                {
-                    //создаем, копируя с подобъекта
-                    _scopeWork.CreateSWCostForMainContract(scopeId, costs, isOwnForses);
-                }
-            }
-            else
-            {
-                //создаем объем и копируем ему данные стоимости из подобъекта
-                var scopeWorkId = _scopeWork.Create(new ScopeWorkDTO
-                {
-                    ContractId = contractMultiple.Id,
-                    IsOwnForces = isOwnForses,
-                    IsChange = false
-                });
-
-                _scopeWork.CreateSWCostForMainContract(scopeWorkId, costs, isOwnForses);
-            }
-        }
-
-        /// <summary>
-        /// обновляем глав. договор, удалением старых и добовления новых стоимостей
-        /// </summary>
-        /// <param name="multipleContractId"></param>
-        /// <param name="changeScopeId"></param>
-        /// <param name="isOwnForses"></param>
-        /// <param name="costs"></param>
-        private void UpdateSWCostsOfMainContract(int multipleContractId, int changeScopeId, bool isOwnForses, List<SWCostDTO> costs)
-        {
-            int? scopeId = null;
-            var contractMultiple = _contractService.GetById(multipleContractId);
-
-            //если есть объем работ у главного договора, проверяем стоимости
-            if (_contractService.IsThereScopeWorks(contractMultiple.Id, isOwnForses, out scopeId))
-            {
-                ///обновляем соответствующие периоды, вычетаем из объема договора старый объем подобъекта и добавляем новый объем
-                _scopeWork.UpdateCostOwnForceMnContract(multipleContractId, changeScopeId, costs);
-            }
-        }
+      
         #endregion
     }    
 }
