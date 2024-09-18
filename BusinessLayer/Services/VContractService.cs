@@ -81,18 +81,35 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org)
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string typeRequest, string sortOrder, string org)
         {
             var list = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<VContract> items;
             if (!String.IsNullOrEmpty(request))
-            {     
-                items = _database.vContracts.FindContract(request).Where(x => /*list.Contains(x.Author) ||*/ list.Contains(x.Owner)); 
+            {
+                switch (typeRequest)
+                {
+                    case "number":
+                        items = _database.vContracts.Find(x => list.Contains(x.Owner) && x.Number != null && x.Number.Contains(request));
+                        break;
+                    case "nameObject":
+                        items = _database.vContracts.Find(x => list.Contains(x.Owner) && x.NameObject != null && x.NameObject.Contains(request));
+                        break;
+                    case "client":
+                        items = _database.vContracts.Find(x => list.Contains(x.Owner) && x.Client != null && x.Client.Contains(request));
+                        break;
+                    case "general":
+                        items = _database.vContracts.Find(x => list.Contains(x.Owner) && x.GenContractor != null && x.GenContractor.Contains(request));
+                        break;                   
+                    default:
+                        items = _database.vContracts.Find(x => list.Contains(x.Owner));
+                        break;
+                }                
             }
             else 
             { 
-                items = _database.vContracts.Find(x => /*list.Contains(x.Author) ||*/ list.Contains(x.Owner)); 
+                items = _database.vContracts.Find(x => list.Contains(x.Owner)); 
             }
             int count = items.Count();
 

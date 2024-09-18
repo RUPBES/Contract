@@ -23,12 +23,13 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         //void CreateSWCostForMainContract(int? scopeId, List<SWCostDTO> costs, bool isOwnForces);
         //void UpdateCostOwnForceMnContract(int? scopeMainContractId, int changeScopeId, List<SWCostDTO> costs, bool isSubcontr = false);
 
+        void AddOwnForcesCostsByScopeId(ScopeWorkDTO scopeWork, int operatorSign = 1);
         void AddOrSubstractCostsOwnForceMnContract(int? mainOwnContrId, List<SWCostDTO> cost, int addOrSubstr);
         void RemoveCostsOfMainContract(int multipleContractId, int subObjId);
         void RemoveOneCostOfMainContract(int? mainContractScopeId, SWCostDTO cost);
         void RemoveExistOwnForce(int mainScopeId, int swCostId);
         bool DeleteAllScopeWorkContract(int scopeWorkId);
-
-
+        void UpdateParentCosts(int parentContrId, List<SWCostDTO> costs, bool isOwnForces, int operatorSign, int? changeScopeId = null);
+        void RemoveSubContractCost(int costId, int contractId, Dictionary<int, ContractType> parentContracts, int operatorSign = -1);
     }
 }

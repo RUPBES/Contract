@@ -49,7 +49,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts        
-        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
@@ -65,6 +65,7 @@ namespace MvcLayer.Controllers
             else
             {
                 searchString = currentFilter;
+                typeSearch = currentType;
             }
 
             ViewData["IsEngineering"] = false;
@@ -75,11 +76,12 @@ namespace MvcLayer.Controllers
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
             ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentType"] = typeSearch;
             ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
             {
-                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName));
             }
             else
             {
@@ -88,7 +90,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts of Engineerings
-        public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string sortOrder)
+        public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
@@ -99,6 +101,7 @@ namespace MvcLayer.Controllers
             else
             {
                 searchString = currentFilter;
+                typeSearch = currentType;
             }
 
             ViewData["IsEngineering"] = true;
@@ -113,7 +116,7 @@ namespace MvcLayer.Controllers
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
             {
-                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName));
             }
             else
             {
@@ -1047,7 +1050,7 @@ namespace MvcLayer.Controllers
             viewModel.remainingScopeOwn.TotalCost = viewModel.contractPriceOwn.TotalCost - viewModel.remainingScopeOwn.TotalCost;
             viewModel.remainingScopeOwn.TotalWithoutNds = viewModel.contractPriceOwn.TotalWithoutNds - viewModel.remainingScopeOwn.TotalWithoutNds;
             #endregion
-            if (doc.IsSubContract != true && doc.IsAgreementContract != true && doc.IsOneOfMultiple != true)
+            if (doc.IsSubContract != true && doc.IsAgreementContract != true)
             {
                 ViewData["main"] = true; 
             }
