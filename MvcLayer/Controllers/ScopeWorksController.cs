@@ -733,17 +733,8 @@ namespace MvcLayer.Controllers
                 ViewData["IsEngin"] = true;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
-            var amendment = _scopeWork.GetAmendmentByScopeId(Id);
-
-            if (amendment != null)
-            {
-                ViewData["contractPrice"] = amendment.ContractPrice;
-            }
-            else
-            {
-                ViewData["contractPrice"] = contract.ContractPrice;
-            }
-            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(Id)));
+            //var obj = costs is not null ? costs : _swCostService.GetById(id);
+            return View(_mapper.Map<SWCostViewModel>(_swCostService.GetById(Id)/*obj*/));
         }
 
         [HttpPost]
@@ -758,21 +749,17 @@ namespace MvcLayer.Controllers
 
             if (contractType == ContractType.GenСontract)
             {
-                _scopeWork.UpdateParentCosts(contractId, costs, isOwnForces: true, operatorSign: 1, changeScopeId: model?.Id);
-            }
-            else if (contractType == ContractType.MultipleContract)
-            {
-                _scopeWork.UpdateParentCosts(parentContrId, costs, true, 1, model?.Id);
-                _scopeWork.UpdateParentCosts(parentContrId, costs, false, 1, model?.Id);
-
-            }
-            else
-            {
-                while (parentContrId != 0)
+                int mainContractId = 0;
+                if (_contractService.IsNotGenContract(contract.Id, out mainContractId))
                 {
-                    _scopeWork.UpdateParentCosts(parentContrId, costs, true, -1, model?.Id);
-                    contract = parentContrId > 0 ? _contractService.GetById(parentContrId) : null;
-                    contractType = _contractService.GetContractType(contract, out parentContrId);
+                    //if (!contract.IsOneOfMultiple)
+                    //{
+                    //    _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs);
+                    //}
+                    //else
+                    //{
+                    //    _scopeWork.UpdateCostOwnForceMnContract(mainContractId, (int)model?.ScopeWorkId, costs, true);
+                    //}
                 }
             }
 
