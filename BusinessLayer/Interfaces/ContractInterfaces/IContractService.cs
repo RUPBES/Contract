@@ -18,16 +18,13 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org);
         //////////////////////////////////////////
         ///
-        bool IsNotGenContract(int? contractId, out int mainContrId);        
-        bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId);  
-      
-        ContractType GetContractType(ContractDTO? contract, out int parentContrId);
-
-        Dictionary<int, ContractType>? GetParentsList(ContractDTO? contract);
-
+        bool IsNotGenContract(int? contractId, out int mainContrId);
+        bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId);
         bool IsThereAmendment(int contarctId);
-
         int? GetDayOfRaschet(int contrId);
         (bool isExistChild, int id) IsHaveChild(int id);
+        Dictionary<int, ContractType>? GetParentsList(ContractDTO? contract);
+
+        ContractType GetContractType(ContractDTO? contract, out int parentContrId);
     }
 }

@@ -130,17 +130,22 @@ namespace MvcLayer.Controllers
             if (contract == null)
             {
                 return NotFound();
-            }         
+            }
             var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).
-                Select(x => new AmendmentDTO {ContractPrice = x.ContractPrice, DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork,
-                DateEntryObject = x.DateEntryObject}).LastOrDefault();
+                Select(x => new AmendmentDTO
+                {
+                    ContractPrice = x.ContractPrice,
+                    DateBeginWork = x.DateBeginWork,
+                    DateEndWork = x.DateEndWork,
+                    DateEntryObject = x.DateEntryObject
+                }).LastOrDefault();
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
                 contract.DateBeginWork = amendment.DateBeginWork;
                 contract.DateEndWork = amendment.DateEndWork;
                 contract.EnteringTerm = amendment.DateEntryObject;
-            }            
+            }
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -530,8 +535,8 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
-        {            
-            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);                  
+        {
+            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
             try
             {
                 _contractService.Update(_mapper.Map<ContractDTO>(contract));
@@ -859,7 +864,7 @@ namespace MvcLayer.Controllers
             var doc = _contractService.Find(x => x.Id == id).Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering }).FirstOrDefault();
             var viewModel = new ScopeWorkContractViewModel();
             viewModel.AmendmentInfo = _amendmentService.IsThereScopeWorkWitnLastAmendmentByContractId(id) == false ? ConstantsApp.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : String.Empty;
-            var amendmentId = _amendmentService?.Find(x=>x.ContractId ==  id)?.LastOrDefault()?.Id;
+            var amendmentId = _amendmentService?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
             var lastScope = _scopeWorkService.GetLastScope(id);
             var subDoc = _contractService.Find(x => x.SubContractId == id || x.AgreementContractId == id || x.MultipleContractId == id).Select(x => x.Id).ToList();
             #region Заполнение данными из объема работ(План)
@@ -1052,9 +1057,9 @@ namespace MvcLayer.Controllers
             #endregion
             if (doc.IsSubContract != true && doc.IsAgreementContract != true)
             {
-                ViewData["main"] = true; 
+                ViewData["main"] = true;
             }
-            
+
             if (doc.IsEngineering == true)
             {
                 ViewData["Engin"] = true;

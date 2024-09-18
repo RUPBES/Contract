@@ -566,11 +566,11 @@ namespace BusinessLayer.Services
                     parentId = _database.Contracts.GetById(contract?.MultipleContractId ?? 0).Id;
                     contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
                 }
-                else 
+                else
                 {
                     listParents.Add(contract?.Id ?? 0, ContractType.GenСontract);
                     break;
-                } 
+                }
             }
 
             return listParents;
@@ -586,7 +586,6 @@ namespace BusinessLayer.Services
             }
             return false;
         }
-
 
         public bool IsThereAmendment(int contarctId)
         {
