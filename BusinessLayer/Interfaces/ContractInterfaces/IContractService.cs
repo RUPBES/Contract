@@ -1,4 +1,5 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Enums;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models.KDO;
 
@@ -18,10 +19,12 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         //////////////////////////////////////////
         ///
         bool IsNotGenContract(int? contractId, out int mainContrId);
-        bool IsThereScopeWorks(int contarctId, out int? scopeId);
         bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId);
-        bool IsThereSWCosts(int? scopeId);
         bool IsThereAmendment(int contarctId);
         int? GetDayOfRaschet(int contrId);
+        (bool isExistChild, int id) IsHaveChild(int id);
+        Dictionary<int, ContractType>? GetParentsList(ContractDTO? contract);
+
+        ContractType GetContractType(ContractDTO? contract, out int parentContrId);
     }
 }

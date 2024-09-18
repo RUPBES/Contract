@@ -7,6 +7,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     public interface IVContractEnginService : ILookupEntity<VContractDTO, VContractEngin>
     {
         public IEnumerable<VContractDTO> FindContract(string queryString);
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string sortOrder, string org);
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string typeRequest, string sortOrder, string org);
     }
 }

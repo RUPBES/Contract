@@ -891,7 +891,7 @@ namespace MvcLayer.Controllers
 
                 List<PrepaymentPlanDTO> plan = new();
 
-                while (prepaymentViewModel.PeriodStart <= prepaymentViewModel.PeriodEnd)
+                while (Checker.LessOrEquallyFirstDateByMonth(prepaymentViewModel.PeriodStart,prepaymentViewModel.PeriodEnd))
                 {
                     var prev = _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentViewModel.ChangePrepaymentId && p.Period == prepaymentViewModel.PeriodStart).FirstOrDefault();
                     if (prev == null)

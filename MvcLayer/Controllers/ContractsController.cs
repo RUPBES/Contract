@@ -49,7 +49,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts        
-        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
@@ -65,6 +65,7 @@ namespace MvcLayer.Controllers
             else
             {
                 searchString = currentFilter;
+                typeSearch = currentType;
             }
 
             ViewData["IsEngineering"] = false;
@@ -75,11 +76,12 @@ namespace MvcLayer.Controllers
             ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
             ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
             ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentType"] = typeSearch;
             ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
             {
-                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName));
             }
             else
             {
@@ -88,7 +90,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Contracts of Engineerings
-        public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string sortOrder)
+        public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
@@ -99,6 +101,7 @@ namespace MvcLayer.Controllers
             else
             {
                 searchString = currentFilter;
+                typeSearch = currentType;
             }
 
             ViewData["IsEngineering"] = true;
@@ -113,7 +116,7 @@ namespace MvcLayer.Controllers
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
             {
-                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizationName));
+                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName));
             }
             else
             {
@@ -127,17 +130,22 @@ namespace MvcLayer.Controllers
             if (contract == null)
             {
                 return NotFound();
-            }         
+            }
             var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).
-                Select(x => new AmendmentDTO {ContractPrice = x.ContractPrice, DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork,
-                DateEntryObject = x.DateEntryObject}).LastOrDefault();
+                Select(x => new AmendmentDTO
+                {
+                    ContractPrice = x.ContractPrice,
+                    DateBeginWork = x.DateBeginWork,
+                    DateEndWork = x.DateEndWork,
+                    DateEntryObject = x.DateEntryObject
+                }).LastOrDefault();
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
                 contract.DateBeginWork = amendment.DateBeginWork;
                 contract.DateEndWork = amendment.DateEndWork;
                 contract.EnteringTerm = amendment.DateEntryObject;
-            }            
+            }
             return View(_mapper.Map<ContractViewModel>(contract));
         }
 
@@ -527,8 +535,8 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
-        {            
-            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);                  
+        {
+            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
             try
             {
                 _contractService.Update(_mapper.Map<ContractDTO>(contract));
@@ -856,7 +864,7 @@ namespace MvcLayer.Controllers
             var doc = _contractService.Find(x => x.Id == id).Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering }).FirstOrDefault();
             var viewModel = new ScopeWorkContractViewModel();
             viewModel.AmendmentInfo = _amendmentService.IsThereScopeWorkWitnLastAmendmentByContractId(id) == false ? ConstantsApp.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : String.Empty;
-            var amendmentId = _amendmentService?.Find(x=>x.ContractId ==  id)?.LastOrDefault()?.Id;
+            var amendmentId = _amendmentService?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
             var lastScope = _scopeWorkService.GetLastScope(id);
             var subDoc = _contractService.Find(x => x.SubContractId == id || x.AgreementContractId == id || x.MultipleContractId == id).Select(x => x.Id).ToList();
             #region Заполнение данными из объема работ(План)
@@ -1047,11 +1055,11 @@ namespace MvcLayer.Controllers
             viewModel.remainingScopeOwn.TotalCost = viewModel.contractPriceOwn.TotalCost - viewModel.remainingScopeOwn.TotalCost;
             viewModel.remainingScopeOwn.TotalWithoutNds = viewModel.contractPriceOwn.TotalWithoutNds - viewModel.remainingScopeOwn.TotalWithoutNds;
             #endregion
-            if (doc.IsSubContract != true && doc.IsAgreementContract != true && doc.IsOneOfMultiple != true)
+            if (doc.IsSubContract != true && doc.IsAgreementContract != true)
             {
-                ViewData["main"] = true; 
+                ViewData["main"] = true;
             }
-            
+
             if (doc.IsEngineering == true)
             {
                 ViewData["Engin"] = true;
