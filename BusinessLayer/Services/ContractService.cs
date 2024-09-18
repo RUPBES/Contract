@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
@@ -416,9 +417,9 @@ namespace BusinessLayer.Services
                 w.IsSubContract == false &&
                  list.Contains(w.Owner);
             }
-            IEnumerable<Contract> items = _database.Contracts.Find(where:where, select:select).OrderBy(o => o.NameObject);
+            IEnumerable<Contract> items = _database.Contracts.Find(where: where, select: select).OrderBy(o => o.NameObject);
             count = items.Count();
-            items = items.Skip(skipEntities).Take(pageSize);            
+            items = items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }
@@ -431,7 +432,8 @@ namespace BusinessLayer.Services
                 w.IsOneOfMultiple == false &&
                 w.IsSubContract == false &&
                 list.Contains(w.Owner);
-            Func<Contract, Contract> select = s => new Contract{
+            Func<Contract, Contract> select = s => new Contract
+            {
                 NameObject = s.NameObject,
                 Number = s.Number,
                 Date = s.Date,
@@ -444,9 +446,9 @@ namespace BusinessLayer.Services
             };
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Contract> items = _database.Contracts.Find(where, select);
-            
+
             count = items.Count();
-            items = items.Skip(skipEntities).Take(pageSize);            
+            items = items.Skip(skipEntities).Take(pageSize);
             var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
             return t;
         }
@@ -466,7 +468,7 @@ namespace BusinessLayer.Services
                     if (isParse)
                     {
                         return answer;
-                    }                   
+                    }
                 }
             }
             return null;
@@ -479,29 +481,99 @@ namespace BusinessLayer.Services
 
             if ((contract?.IsAgreementContract ?? false))
             {
-                mainContrId = contract?.AgreementContractId??0;
+                mainContrId = contract?.AgreementContractId ?? 0;
             }
             else if ((contract?.IsSubContract ?? false))
             {
-                mainContrId = contract?.SubContractId??0;
+                mainContrId = contract?.SubContractId ?? 0;
             }
             else if (contract?.IsOneOfMultiple ?? false)
             {
-                mainContrId = contract?.MultipleContractId??0;
+                mainContrId = contract?.MultipleContractId ?? 0;
             }
 
-            return (contract?.IsOneOfMultiple??false) || (contract?.IsSubContract??false) || (contract?.IsAgreementContract??false);
+            return (contract?.IsOneOfMultiple ?? false) || (contract?.IsSubContract ?? false) || (contract?.IsAgreementContract ?? false);
         }
 
-        public bool IsThereScopeWorks(int contarctId, out int? scopeId)
+        public ContractType GetContractType(ContractDTO? contract, out int parentContrId)
         {
-            scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
+            parentContrId = 0;
 
-            if (scopeId is not null && scopeId > 0)
+            if ((contract?.IsAgreementContract ?? false))
             {
-                return true;
+                parentContrId = contract?.AgreementContractId ?? 0;
+                return ContractType.Agreement;
             }
-            return false;
+            else if ((contract?.IsSubContract ?? false))
+            {
+                parentContrId = contract?.SubContractId ?? 0;
+                return ContractType.SubContract;
+            }
+            else if (contract?.IsOneOfMultiple ?? false)
+            {
+                parentContrId = contract?.MultipleContractId ?? 0;
+                return ContractType.MultipleContract;
+            }
+
+            return ContractType.GenСontract;
+        }
+
+        public Dictionary<int, ContractType>? GetParentsList(ContractDTO? contract)
+        {
+            var listParents = new Dictionary<int, ContractType>();
+            int parentId = contract.Id;
+
+
+            if ((contract?.IsAgreementContract ?? false))
+            {
+                parentId = _database.Contracts.GetById(contract?.AgreementContractId ?? 0).Id;
+                contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+            }
+            else if ((contract?.IsSubContract ?? false))
+            {
+                parentId = _database.Contracts.GetById(contract?.SubContractId ?? 0).Id;
+                contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+            }
+            else if (contract?.IsOneOfMultiple ?? false)
+            {
+                parentId = _database.Contracts.GetById(contract?.MultipleContractId ?? 0).Id;
+                contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+            }
+            else
+            {
+                listParents.Add(contract?.Id ?? 0, ContractType.GenСontract);
+                parentId = 0;
+            }
+
+
+            while (parentId > 0)
+            {
+                if ((contract?.IsAgreementContract ?? false))
+                {
+                    listParents.Add(contract?.Id ?? 0, ContractType.Agreement);
+                    parentId = _database.Contracts.GetById(contract?.AgreementContractId ?? 0).Id;
+                    contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                }
+                else if ((contract?.IsSubContract ?? false))
+                {
+                    listParents.Add(contract?.Id ?? 0, ContractType.SubContract);
+                    parentId = _database.Contracts.GetById(contract?.SubContractId ?? 0).Id;
+                    contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                }
+                else if (contract?.IsOneOfMultiple ?? false)
+                {
+                    listParents.Add(contract?.Id ?? 0, ContractType.MultipleContract);
+                    parentId = _database.Contracts.GetById(contract?.MultipleContractId ?? 0).Id;
+                    contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                }
+                else 
+                {
+                    listParents.Add(contract?.Id ?? 0, ContractType.GenСontract);
+                    break;
+                } 
+            }
+
+            return listParents;
         }
 
         public bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId)
@@ -515,17 +587,6 @@ namespace BusinessLayer.Services
             return false;
         }
 
-        public bool IsThereSWCosts(int? scopeId)
-        {
-            if (scopeId is not null && scopeId > 0)
-            {
-                if (_database.SWCosts.Find(x => x.ScopeWorkId == scopeId)?.Count() > 0)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
 
         public bool IsThereAmendment(int contarctId)
         {
@@ -536,6 +597,12 @@ namespace BusinessLayer.Services
                 return true;
             }
             return false;
+        }
+
+        public (bool isExistChild, int id) IsHaveChild(int id)
+        {
+
+            return (true, 0);
         }
     }
 }
