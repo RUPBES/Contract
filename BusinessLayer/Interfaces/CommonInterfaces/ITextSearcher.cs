@@ -2,6 +2,6 @@
 {
     public interface ITextSearcher
     {
-        string? FindEstimateNumber(string args);
+        string? FindNumberWithEnd(string args);
     }
 }

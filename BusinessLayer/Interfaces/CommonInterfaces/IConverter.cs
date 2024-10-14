@@ -11,5 +11,6 @@
         string? GetTypeOfAmendment(int number);
         DateTime? GetDateFromString(string str);
         string? GetNameOrganizationByCode(string code);
+        string? GetTypeOfEstimateApp(int number);
     }
 }

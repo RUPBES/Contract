@@ -14,28 +14,7 @@
         flex-direction: row;
     }
 
-    .dm-modal {
-        background-color: lightsteelblue;
-    }
-
-    .close-btn {
-        color: red
-    }
-
-        .close-btn::after {
-            border: 2px solid #F00 !important;
-        }
-
-        .close-btn:hover::after {
-            border-color: red !important;
-            color: red !important;
-            -webkit-transform: scale(1);
-            -moz-transform: scale(1);
-            -ms-transform: scale(1);
-            transform: scale(1);
-            font-weight: bold;
-        }
-
+   
     .chosen-container-single .chosen-single {
         margin-left: 0% !important;
     }
@@ -95,7 +74,7 @@
                     $("#HeaderLabel").text("Этап 2: Загрузка чертежей")
                 },
                 error: function (error) {
-                    var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                    var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
                     $.ajax({
                         type: 'POST',
                         url: '@Url.Action("ShowError", "Parse")',

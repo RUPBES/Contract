@@ -2,8 +2,11 @@
 @model IEnumerable<ExcelWorksheet>
 @if (Model.Count() > 2)
 {
-    <label class="control-label">Страница в файле Excel:</label>
-    <select name="page" id="ex" class="form-select">
+    <label style="font-weight:700 !important; font-size:0.95rem;">Выберите необходимую страницу Excel</label>
+    <select name="page" id="ex" class="form-select underline-green">
+        <option selected disabled>
+            <span>Выбрать</span>
+        </option>
         @foreach (var item in Model)
         {
             <option value="@item.Index">
@@ -13,6 +16,7 @@
             </option>
         }
     </select>
+    <button id="GetDataFromFile" class="mt-3 btn btn-hidden btn-primary" type="button">Извлечь данные</button>
 }
 else if (Model.Count() == 1)
 {
@@ -23,6 +27,13 @@ else if (Model.Count() == 1)
             </span>
         </option>
     </select>
+    <button id="GetDataFromFile" class="mt-3 btn btn-primary" type="button">Извлечь данные</button>
 }
 
-<button id="GetDataFromFile" class="mt-3 btn btn-primary" type="button">Извлечь данные</button>
+<script>
+    $("select#ex").change((e) => {
+        e.target.classList.remove("underline-green");
+        let elem = document.querySelector("button#GetDataFromFile");
+        elem.classList.remove('btn-hidden');
+    });
+</script>

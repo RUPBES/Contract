@@ -1,17 +1,14 @@
 ﻿using AutoMapper;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
-using BusinessLayer.Services;
 using DatabaseLayer.Models.PRO;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
-using System.Diagnostics;
 
 namespace MvcLayer.Controllers.PRO
 {
@@ -47,8 +44,8 @@ namespace MvcLayer.Controllers.PRO
 
         public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            //Stopwatch stopwatch = new Stopwatch();
+            //stopwatch.Start();
             ///////////////////////
             ViewData["contractNumber"] = _contractService.Find(x => x.Id == contractId).Select(x => x.Number).FirstOrDefault();
             ViewData["contractId"] = contractId;
@@ -130,7 +127,7 @@ namespace MvcLayer.Controllers.PRO
                 }
                 estimateViewItem.EstimateViewModelDrawnings.Add(estimateViewDrawning);
             }
-            var i1 = stopwatch.ElapsedMilliseconds;
+            //var i1 = stopwatch.ElapsedMilliseconds;
             foreach (var detailsView in listEstimate)
             {
                 foreach (var item in detailsView.DetailsView)
@@ -158,7 +155,7 @@ namespace MvcLayer.Controllers.PRO
                     item.EstimateViewModelDrawnings = listOrder;
                 }
             }
-            var i2 = stopwatch.ElapsedMilliseconds;
+            //var i2 = stopwatch.ElapsedMilliseconds;
             foreach (var detailsView in listEstimate)
             {
                 foreach (var item in detailsView.DetailsView)
@@ -178,15 +175,21 @@ namespace MvcLayer.Controllers.PRO
                     }
                 }
             }
-            var i3 = stopwatch.ElapsedMilliseconds;
+            //var i3 = stopwatch.ElapsedMilliseconds;
             answer.Objects = listEstimate;
             ViewBag.CurrentSearchString = SearchString;
             ViewBag.CurrentListSearchString = ListSearchString;
-            var i4 = stopwatch.ElapsedMilliseconds;
+            //var i4 = stopwatch.ElapsedMilliseconds;
             return View(answer);
         }
 
-        public ActionResult AddEstimate(int contractId, int returnContractId = 0)
+        public ActionResult GetType(int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+        public ActionResult AddEstimate(int contractId, int returnContractId = 0, string? type = null)
         {
             var list = _estimateService.Find(x => x.Id != 0).Select(x => new Estimate
             {
@@ -198,6 +201,7 @@ namespace MvcLayer.Controllers.PRO
             }).ToList();
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
+            ViewData["type"] = type;
             return View(list);
         }
 
@@ -209,12 +213,12 @@ namespace MvcLayer.Controllers.PRO
             return View();
         }
 
-        public ActionResult GetEstimateData(string path, int contractId, DateTime date, int page = 0)
+        public ActionResult GetEstimateData(string path, int contractId, DateTime date, int page = 0, string? type = null)
         {
             try
             {
                 var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
-                var answer = _pars.ParseEstimate(path, page);
+                var answer = _pars.ParseEstimate(path, page, type);
 
                 if (answer is not null)
                 {
@@ -222,16 +226,18 @@ namespace MvcLayer.Controllers.PRO
                     && x.BuildingCode == answer.BuildingCode && x.BuildingName == answer.BuildingName
                     && x.Number == answer.Number).FirstOrDefault() != null)
                     {
-                        throw new Exception("Такая локальная смета уже загружена.");
+                        return BadRequest($"Локальная смета №{answer.Number} уже загружена.");
                     }
                     var contract = _contractService.GetById(contractId);
                     var abbrKindWork = _abbreviationKindOfWorkService.GetAll();
                     List<AbbreviationKindOfWorkDTO> list = new List<AbbreviationKindOfWorkDTO>();
+
                     foreach (var item in abbrKindWork)
                     {
                         if (answer.DrawingsKit.Contains(item.name))
                             list.Add(item);
                     }
+
                     if (list.Count == 1)
                     {
                         answer.KindOfWorkId = list[0].Id;
@@ -248,10 +254,18 @@ namespace MvcLayer.Controllers.PRO
                     {
                         answer.KindOfWorkId = 59;
                     }
+
                     answer.EstimateDate = date;
+                    if (type == ConstantsApp.SMR_PRO_APP)
+                    {
+                        answer.FullNumber = answer.BuildingCode + "." + answer.Number;
+                    }
+                    else
+                    {
+                        answer.FullNumber = answer.Number;
+                    }
                     answer.ContractId = contractId;
                     answer.SubContractor = contract?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.Organization?.Name;
-                    answer.ContractsCost = 0.1M;
                     answer.Owner = organizationName;
                     var estimateId = _estimateService.Create(answer);
                     ViewData["estimateId"] = estimateId;
@@ -260,11 +274,11 @@ namespace MvcLayer.Controllers.PRO
                     {
                         fileInf.Delete();
                     }
-                    return Content(estimateId.ToString());
+                    return Content(estimateId.ToString()+'-'+type);
                 }
                 else
                 {
-                    throw new Exception("Загрузите файл локальной сметы");
+                    return BadRequest("Загрузите файл локальной сметы");
                 }
             }
             catch (Exception ex)
@@ -274,23 +288,26 @@ namespace MvcLayer.Controllers.PRO
                 {
                     fileInf.Delete();
                 }
-                throw new Exception(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
+        
         [HttpGet]
-        public ActionResult GetEstimateLaborCost(int EstimateId)
+        public ActionResult GetEstimateLaborCost(int EstimateId, string type)
         {
             var LaborCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.LaborCost).FirstOrDefault();
+            ViewData["Type"] = type;
             return PartialView("_GetEstimateLaborCost", LaborCost);
         }
+        
         [HttpPost]
-        public ActionResult GetEstimateLaborCost(string path, int? estimateId, int page = 0)
+        public ActionResult GetEstimateLaborCost(string path, int? estimateId, int page = 0, string type = null)
         {
             try
             {
                 if (estimateId is not null)
                 {
-                    _pars.ParseAndReturnLaborCosts(path, page, (int)estimateId);
+                    _pars.ParseAndReturnLaborCosts(path, page, (int)estimateId, type);
                     FileInfo fileInf = new FileInfo(path);
                     if (fileInf.Exists)
                     {
@@ -300,7 +317,7 @@ namespace MvcLayer.Controllers.PRO
                 }
                 else
                 {
-                    throw new Exception("Произошла ошибка при передаче данных о смете.");
+                    return BadRequest("Ошибка при передаче данных о смете.");
                 }
             }
             catch (Exception ex)
@@ -310,7 +327,7 @@ namespace MvcLayer.Controllers.PRO
                 {
                     fileInf.Delete();
                 }
-                throw new Exception(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -322,28 +339,32 @@ namespace MvcLayer.Controllers.PRO
             return Content("OK");
         }
 
-        public ActionResult GetDrawingsFiles(int EstimateId)
+        public ActionResult GetDrawingsFiles(int EstimateId, string type)
         {
             ViewData["EstimateDate"] = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.DrawingsDate).
                 FirstOrDefault()?.ToString("dd MMMM yyyy");
+            ViewData["Type"] = type;
             var files = _estimateService.GetFiles(EstimateId);
             return PartialView("_GetDrawingsFiles", files);
         }
+
         [HttpGet]
-        public ActionResult GetEstimateContractCost(int EstimateId)
+        public ActionResult GetEstimateContractCost(int EstimateId, string type)
         {
+            ViewData["Type"] = type;
             var ContractCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.ContractsCost).FirstOrDefault();
             return PartialView("_GetContractCost", ContractCost);
         }
 
         [HttpPost]
-        public ActionResult GetEstimateContractCost(string path, int? estimateId, int page = 0)
+        public ActionResult GetEstimateContractCost(string path, int? estimateId, int page = 0, string type = null)
         {
             try
             {
                 if (estimateId is not null)
                 {
-                    _pars.ParseAndReturnContractCosts(path, page, (int)estimateId);
+                    ViewData["Type"] = type;
+                    _pars.ParseAndReturnContractCosts(path, page, (int)estimateId, type);
                     FileInfo fileInf = new FileInfo(path);
                     if (fileInf.Exists)
                     {
@@ -353,7 +374,7 @@ namespace MvcLayer.Controllers.PRO
                 }
                 else
                 {
-                    throw new Exception("Произошла ошибка при передаче данных о смете.");
+                    return BadRequest("Произошла ошибка при передаче данных о смете");
                 }
             }
             catch (Exception ex)
@@ -363,24 +384,27 @@ namespace MvcLayer.Controllers.PRO
                 {
                     fileInf.Delete();
                 }
-                throw new Exception(ex.Message);
+                return BadRequest("Ошибка считывания документа Excel");
             }
         }
+
         [HttpGet]
-        public ActionResult GetEstimateDoneSmrCost(int EstimateId)
+        public ActionResult GetEstimateDoneSmrCost(int EstimateId, string type)
         {
+            ViewData["Type"] = type;
             var DoneSmrCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.DoneSmrCost).FirstOrDefault();
             return PartialView("_GetSmrDoneCost", DoneSmrCost);
         }
 
         [HttpPost]
-        public ActionResult GetEstimateDoneSmrCost(string path, int? estimateId, int page = 0)
+        public ActionResult GetEstimateDoneSmrCost(string path, int? estimateId, int page = 0, string type = null)
         {
             try
             {
                 if (estimateId is not null)
                 {
-                    _pars.ParseAndReturnDoneSmrCost(path, page, (int)estimateId);
+                    ViewData["Type"] = type;
+                    _pars.ParseAndReturnDoneSmrCost(path, page, (int)estimateId, type);
                     FileInfo fileInf = new FileInfo(path);
                     if (fileInf.Exists)
                     {
@@ -390,7 +414,7 @@ namespace MvcLayer.Controllers.PRO
                 }
                 else
                 {
-                    throw new Exception("Произошла ошибка при передаче данных о смете.");
+                    return BadRequest("Произошла ошибка при передаче данных о смете.");
                 }
             }
             catch (Exception ex)
@@ -400,7 +424,7 @@ namespace MvcLayer.Controllers.PRO
                 {
                     fileInf.Delete();
                 }
-                throw new Exception(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -409,33 +433,6 @@ namespace MvcLayer.Controllers.PRO
         {
             var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
             return PartialView("_GetEstimateResult", estimate);
-        }
-
-        // GET: EstimateController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: EstimateController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: EstimateController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
 
         // GET: EstimateController/Edit/5
@@ -467,23 +464,7 @@ namespace MvcLayer.Controllers.PRO
             ViewData["returnContractId"] = returnContractId;
             return View(id);
         }
-
-        // POST: EstimateController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: EstimateController/Delete/5
+               
         public ActionResult Delete(int id)
         {            
             _estimateService.Delete(id);
@@ -491,19 +472,5 @@ namespace MvcLayer.Controllers.PRO
             return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
         }
 
-        // POST: EstimateController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
     }
 }

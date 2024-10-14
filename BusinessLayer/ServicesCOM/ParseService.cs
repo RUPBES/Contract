@@ -1,10 +1,10 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using System.Reflection;
@@ -16,18 +16,18 @@ namespace BusinessLayer.ServicesCOM
         private readonly IExcelReader _excelReader;
         private readonly IConverter _converter;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
         private readonly ITextSearcher _textSearcher;
         private readonly IEstimateService _estimateService;
-        public ParseService(IExcelReader excelReader, IConverter converter, ILoggerContract logger, IHttpContextAccessor http,
-            ITextSearcher textSearcher, IEstimateService estimateService)
+        private readonly IHttpHelper _httpHelper;
+        public ParseService(IExcelReader excelReader, IConverter converter, ILoggerContract logger,
+            ITextSearcher textSearcher, IEstimateService estimateService, IHttpHelper httpHelper)
         {
             _excelReader = excelReader;
             _converter = converter;
             _logger = logger;
-            _http = http;
             _textSearcher = textSearcher;
             _estimateService = estimateService;
+            _httpHelper = httpHelper;
         }
 
         public ScopeWorkDTO GetScopeWorks(string path, int page)
@@ -211,7 +211,7 @@ namespace BusinessLayer.ServicesCOM
                     ob.Item1 = excel.Cells[item.Item1, item.Item2].Value.ToString();
                     ob.Item2 = item.Item1;
                     if (!listString.Contains(ob))
-                    listString.Add(ob);
+                        listString.Add(ob);
                 }
             }
 
@@ -223,13 +223,13 @@ namespace BusinessLayer.ServicesCOM
 
             var pnrCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость пусконаладочных работ")).FirstOrDefault();
 
-            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс")).FirstOrDefault();            
+            var equipmentCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс")).FirstOrDefault();
             var equipmentTransportCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость оборудования ндс транспорт")).FirstOrDefault();
             var equipmentClientCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "оборудован заказчик")).FirstOrDefault();
 
             var sumWorkCoordates = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумм учитыв расчет вып раб")).FirstOrDefault();
 
-            var statistic  = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость работ отчет", "стоимость работ отчёт")).FirstOrDefault();
+            var statistic = listString.Where(x => _excelReader.FindByWords(x.Item1, "стоимость работ отчет", "стоимость работ отчёт")).FirstOrDefault();
 
             var NdsPrice = listString.Where(x => _excelReader.FindByWords(x.Item1, "сумма НДС")).ToList();
             var Nds = listString.Where(x => _excelReader.FindByWords(x.Item1, "НДС")).ToList();
@@ -264,7 +264,7 @@ namespace BusinessLayer.ServicesCOM
                     {
                         c3A.PnrNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                     }
-                    else 
+                    else
                     if (item.Item2 < sumWorkCoordates.Item2)
                     {
                         c3A.EquipmentNdsCost = (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
@@ -289,7 +289,7 @@ namespace BusinessLayer.ServicesCOM
                 {
                     c3A.OtherExpensesNdsCost += (decimal)_excelReader.GetValueDouble(excel, item.Item2, col.Item2);
                 }
-                
+
             }
 
             if (equipmentTransportCoordates.Item1 != null)
@@ -326,34 +326,43 @@ namespace BusinessLayer.ServicesCOM
             return c3A;
         }
 
-        public EstimateDTO ParseEstimate(string path, int page)
+        public EstimateDTO ParseEstimate(string path, int page, string? type)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             var estimate = new EstimateDTO();
             try
             {
+                var searchingKeys = _estimateService.ReturnKeysSearch(type);
                 var excel = _excelReader.GetExcelWorksheet(path, page);
-                var ending = excel.Dimension.End.Column;
-                var Number = GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Локальная смета", "Локальный сметный расчет");
-                if (Number == string.Empty)
+                string estimateNumber = string.Empty;
+                if (type == ConstantsApp.SXW_SINKEVICH_APP)
+                {
+                    estimateNumber = GetCellValue(excel, shiftRow: 0, shiftCol: 1, searchingKeys.Estimate.DocName.ToArray());
+                    estimate.Number = estimateNumber ?? string.Empty;
+                }
+                else
+                {
+                    estimateNumber = GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.Estimate.DocName.ToArray());
+                    estimate.Number = _textSearcher?.FindNumberWithEnd(estimateNumber) ?? "";
+                }
+                if (estimateNumber == string.Empty)
                 {
                     throw new Exception("Файл не является локальной сметой");
                 }
-                var BuildingName = _excelReader.FindCellByQuery(excel,"Наименован здан", "Наименован сооружения");
+
+
+                var BuildingName = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.BuildingName.ToArray());
                 estimate.BuildingName = GetValueInRow(excel, BuildingName.FirstOrDefault().Item1, BuildingName.FirstOrDefault().Item2);
-                var BuildingCode = _excelReader.FindCellByQuery(excel, "Шифр здан", "Шифр сооружен");
+
+                var BuildingCode = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.BuildingCode.ToArray());
                 estimate.BuildingCode = GetValueInRow(excel, BuildingCode.FirstOrDefault().Item1, BuildingCode.FirstOrDefault().Item2);
-                var DrawingsKit = _excelReader.FindCellByQuery(excel, "Комплект чертежей");
+
+                var DrawingsKit = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.DrawingKit.ToArray());
                 estimate.DrawingsKit = GetValueInRow(excel, DrawingsKit.FirstOrDefault().Item1, DrawingsKit.FirstOrDefault().Item2);
 
-                estimate.Number = _textSearcher?.FindEstimateNumber(Number) ?? "";
+                var cellAboveDates = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.StartLineLookingForEstimateName.ToArray());
+                int rowNameEstimate = cellAboveDates.FirstOrDefault().Item1 - 1;
+                var drawingName = string.Empty;
 
-                var cellAboveDates5 = _excelReader.FindCellByQuery(excel, "Составлена в ценах на", "Составлена в", "в тек цен");
-                int rowNameEstimate = cellAboveDates5.FirstOrDefault().Item1 - 1;
-                var drawingName = string.Empty;                
                 for (int i = excel.Dimension.Start.Column; i <= excel.Dimension.End.Column; i++)
                 {
                     drawingName = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
@@ -367,144 +376,141 @@ namespace BusinessLayer.ServicesCOM
                         rowNameEstimate = rowNameEstimate - 1;
                     }
                 }
-                estimate.DrawingsName = drawingName;
+
+                estimate.DrawingsName = drawingName?.Replace("На ", "")?.Replace("НА ", "").Replace("на ", "");
             }
             catch (Exception e)
             {
-                _logger.WriteLog(
-                               logLevel: LogLevel.Warning,
-                               message: e.Message,
-                               nameSpace: typeof(ParseService).Name,
-                               methodName: MethodBase.GetCurrentMethod().Name,
-                               userName: user
-                               );
+                _logger.WriteLog(logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
+                                 methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
                 return null;
             }
             return estimate;
         }
 
-        public bool ParseAndReturnLaborCosts(string path, int page, int estimateId)
+        public bool ParseAndReturnLaborCosts(string path, int page, int estimateId, string? type)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
-            var estimate = _estimateService.GetById(estimateId);
-
-            var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
-            try
+            if (string.IsNullOrEmpty(path))
             {
-                var excel = _excelReader.GetExcelWorksheet(path, page);
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "Расчет стоимости") == string.Empty)
-                {
-                    throw new Exception("Файл не является расчетом стоимости");
-                }
-                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "трудозатраты", "трудозатрат", "трудозатраты чел.час.", "ТРУДОЗАТРАТ");
-                var OneofNumber = _excelReader.FindCellByQuery(excel, estimate.DrawingsName).FirstOrDefault();
-                var num = excel.Cells[OneofNumber.Item1, OneofNumber.Item2].Value?.ToString() ?? "";
-                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0)) - 1).Trim();
-                if (num.Last() == '.') num = num.Substring(0, num.Count() - 1);
-                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {num}", $"ИТОГО по смете {num}", $"Итого по смете {num}");
-                var col = nameColumnLabor.FirstOrDefault().Item2;
-                var row = nameRowEstimate.FirstOrDefault().Item1;
-                var result = excel.Cells[row, col].Value ?? 0;
-
-                estimate.LaborCost = (double)result;
-                _estimateService.Update(estimate);
-                return true;
-            }
-            catch (Exception e)
-            {
-                _logger.WriteLog(
-                               logLevel: LogLevel.Warning,
-                               message: e.Message,
-                               nameSpace: typeof(ParseService).Name,
-                               methodName: MethodBase.GetCurrentMethod().Name,
-                               userName: user
-                               );
                 return false;
             }
-        }
-
-        public bool ParseAndReturnContractCosts(string path, int page, int estimateId)
-        {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
 
             var estimate = _estimateService.GetById(estimateId);
+            var searchingKeys = _estimateService.ReturnKeysSearch(type);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
+            var shiftRow = 0;
 
-            var numberEstimate = estimate.BuildingCode + "." + estimate.Number;
-            try
+            if (type != ConstantsApp.SMR_PRO_APP)
             {
-                var excel = _excelReader.GetExcelWorksheet(path, page);
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "График строительства") == string.Empty)
-                {
-                    throw new Exception("Файл не является графиком строительства");
-                }
-                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "всего");
-                var OneofNumber = _excelReader.FindCellByQuery(excel, estimate.DrawingsName).FirstOrDefault();
-                var num = excel.Cells[OneofNumber.Item1, OneofNumber.Item2].Value?.ToString() ?? "";
-                num = num.Substring(0, num.ToLower().IndexOf(estimate.DrawingsName.ToLower().ElementAt(0)) - 1).Trim();
-                if (num.Last() == '.') num = num.Substring(0, num.Count() - 1);
-                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"И Т О Г О по смете {num}", $"ИТОГО по смете {num}", $"Итого по смете {num}");
-                var col = nameColumnLabor.FirstOrDefault().Item2;
-                var row = nameRowEstimate.FirstOrDefault().Item1;
-                var result = excel.Cells[row, col].Value ?? 0M;
+                shiftRow += 2;
+            }
 
-                estimate.ContractsCost = decimal.Parse(result.ToString().Replace('.', ','));
-                _estimateService.Update(estimate);
-                return true;
-            }
-            catch (Exception e)
+            if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.LaborCost.DocName.ToArray()) == string.Empty)
             {
-                _logger.WriteLog(
-                               logLevel: LogLevel.Warning,
-                               message: e.Message,
-                               nameSpace: typeof(ParseService).Name,
-                               methodName: MethodBase.GetCurrentMethod().Name,
-                               userName: user
-                               );
-                return false;
+                throw new Exception("Файл не является расчетом стоимости");
             }
+            if (ExistEstmtNumberIntoSheet(excel, estimate.DrawingsName, estimate?.FullNumber))
+            {
+                throw new Exception($"Данный расчет стоимости не содержит строку с сметой №{estimate?.FullNumber}");
+            }
+
+            var arrayColumnCoordinates = _excelReader.FindCellByQuery(excel, searchingKeys.LaborCost.ColName.ToArray());
+
+
+
+            estimate.LaborCost = (double)ReturnResultSearching(excel, arrayColumnCoordinates, searchingKeys.LaborCost.RowName, estimate?.FullNumber, shiftRow);
+            _estimateService.Update(estimate);
+
+            return true;
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.WriteLog(
+            //                   logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
+            //                   methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
+            //    return false;
+            //}
         }
 
-        public bool ParseAndReturnDoneSmrCost(string path, int page, int estimateId)
+        public bool ParseAndReturnContractCosts(string path, int page, int estimateId, string? type)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+            //try
+            //{
+            var estimate = _estimateService.GetById(estimateId);
+            var searchingKeys = _estimateService.ReturnKeysSearch(type);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
+            var newDrawing = string.Empty;
+            if (estimate.DrawingsName.Length > 17)
+            {
+                newDrawing = estimate.DrawingsName.Substring(0, 20);
+            }
+            if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.ContractCost.DocName.ToArray()) == string.Empty)
+            {
+                throw new Exception("Файл не является графиком строительства");
+            }
+            if (ExistEstmtNumberIntoSheet(excel, newDrawing, estimate.FullNumber))
+            {
+                throw new Exception($"Данный график строительства не содержит строку с сметой №{estimate?.FullNumber}");
+            }
+
+            var arrayColumnCoordinates = _excelReader.FindCellByQuery(excel, searchingKeys.ContractCost.ColName.ToArray());
+            estimate.ContractsCost = ReturnResultSearching(excel, arrayColumnCoordinates, searchingKeys.ContractCost.RowName, estimate?.FullNumber, 0);
+            _estimateService.Update(estimate);
+
+            return true;
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.WriteLog(logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
+            //                   methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
+            //    return false;
+            //}
+        }
+
+        public bool ParseAndReturnDoneSmrCost(string path, int page, int estimateId, string? type)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
 
             var estimate = _estimateService.GetById(estimateId);
-            try
-            {
-                var excel = _excelReader.GetExcelWorksheet(path, page);
-                if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, "СДАЧИ - ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ") == string.Empty)
-                {
-                    throw new Exception("Файл не является справкой С-2б");
-                }
-                var nameColumnLabor = _excelReader.FindCellByQuery(excel, "с начала строительства");
-                var nameRowEstimate = _excelReader.FindCellByQuery(excel, $"в с е г о по смете №{estimate.Number}", $"всего по смете №{estimate.Number}");
-                var col = nameColumnLabor.FirstOrDefault().Item2 + 1;
-                var row = nameRowEstimate.FirstOrDefault().Item1;
-                var result = excel.Cells[row, col].Value ?? 0;
+            var searchingKeys = _estimateService.ReturnKeysSearch(type);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
 
-                estimate.DoneSmrCost = decimal.Parse(result.ToString().Replace('.', ','));
-                _estimateService.Update(estimate);
-                return true;
-            }
-            catch (Exception e)
+            if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.DoneSmrCost.DocName.ToArray()) == string.Empty)
             {
-                _logger.WriteLog(
-                               logLevel: LogLevel.Warning,
-                               message: e.Message,
-                               nameSpace: typeof(ParseService).Name,
-                               methodName: MethodBase.GetCurrentMethod().Name,
-                               userName: user
-                               );
-                return false;
+                throw new Exception("Файл не является справкой С-2б");
             }
+
+            var shiftRow = 0;
+            if (type == ConstantsApp.SXW_SINKEVICH_APP)
+            {
+                shiftRow += 1;
+            }
+            var arrayColumnCoordinates = _excelReader.FindCellByQuery(excel, searchingKeys.DoneSmrCost.ColName.ToArray());
+            estimate.DoneSmrCost = ReturnResultSearching(excel, arrayColumnCoordinates,
+                                                          searchingKeys.DoneSmrCost.RowName, estimate?.FullNumber, shiftRow,
+                                                          searchingKeys.DoneSmrCost.ExtraColName.FirstOrDefault(),
+                                                          searchingKeys.DoneSmrCost.ExtraRowName);
+
+            _estimateService.Update(estimate);
+            return true;
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.WriteLog(logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
+            //                   methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
+            //    return false;
+            //}
         }
+
+
+
 
         private string GetCellValue(ExcelWorksheet excel, int shiftRow, int shiftCol, params string[] names)
         {
@@ -520,19 +526,87 @@ namespace BusinessLayer.ServicesCOM
         private string GetValueInRow(ExcelWorksheet excel, int shiftRow, int shiftCol)
         {
             //вернет первое значение строку, второе - столбец            
-            var value = excel.Cells[shiftRow,shiftCol].Text?.Trim();
+            var value = excel.Cells[shiftRow, shiftCol].Text?.Trim();
             if (value.Contains(':'))
             {
-               var mas = value.Split(':');
+                var mas = value.Split(':');
                 return mas[1].Trim();
             }
-            for (int i = shiftCol+1; i <= excel.Dimension.End.Column; i++)
+            for (int i = shiftCol + 1; i <= excel.Dimension.End.Column; i++)
             {
                 var valText = excel.Cells[shiftRow, i].Text?.Trim();
                 if (valText != string.Empty)
                     return valText;
             }
             return string.Empty;
+        }
+
+        private decimal ReturnResultSearching(ExcelWorksheet excel, IEnumerable<(int, int)> nameColumn, List<string> rowName, string estimateNumber, int shiftRow = 0, string? extraCol = null, List<string>? extraRow = null)
+        {
+            var rowNameList = new List<string>();
+            foreach (var item in rowName)
+            {
+                rowNameList.Add($"{item}{estimateNumber}");
+            }
+
+            var nameRowEstimate = _excelReader.FindCellByQuery(excel, rowNameList.ToArray());
+            var row = nameRowEstimate.FirstOrDefault().Item1 + shiftRow;
+            var col = nameColumn.FirstOrDefault().Item2;
+
+            if (extraCol != null)
+            {
+                var indexRow = nameColumn.FirstOrDefault().Item1 + 1;
+                for (int indexCol = col; indexCol <= excel.Dimension.End.Column; indexCol++)
+                {
+                    var text = excel.Cells[indexRow, indexCol].Value?.ToString();
+
+                    if (!string.IsNullOrEmpty(text) && text.Equals(extraCol, StringComparison.OrdinalIgnoreCase))
+                    {
+                        col = indexCol;
+                        break;
+                    }
+                    if (indexCol == excel.Dimension.End.Column)
+                    {
+                        indexCol = col;
+                        if (indexRow != excel.Dimension.End.Row)
+                        {
+                            indexRow++;
+                        }
+                    }
+                }
+            }
+
+            if (extraRow != null)
+            {
+                var nameRowEstimate2 = _excelReader.FindCellByQuery(excel, extraRow.ToArray());
+                int row2 = row;
+
+                foreach (var item in nameRowEstimate2)
+                {
+                    if (row2 < item.Item1)
+                    {
+                        row = item.Item1;
+                        break;
+                    }
+                }
+            }
+
+            var result = (col == 0 || row == 0) ? 0M : excel.Cells[row, col].Value ?? 0M;
+
+            return Convert.ToDecimal(result);
+        }
+
+        private bool ExistEstmtNumberIntoSheet(ExcelWorksheet excel, string drawingsName, string? numberEstimate, bool? IsSplite = null)
+        {
+            var coordinatesLineWithEstNumber = _excelReader.FindCellByQuery(excel, drawingsName).FirstOrDefault();
+            var lineWithEstNumber = (coordinatesLineWithEstNumber.Item1 == 0 || coordinatesLineWithEstNumber.Item2 == 0) ? string.Empty :
+                            (excel.Cells[coordinatesLineWithEstNumber.Item1, coordinatesLineWithEstNumber.Item2].Value?.ToString() ?? string.Empty);
+
+            if (string.IsNullOrEmpty(lineWithEstNumber) || !lineWithEstNumber.Contains(numberEstimate))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

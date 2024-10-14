@@ -1,0 +1,62 @@
+﻿@using BusinessLayer.Enums
+@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+@model string
+@{
+    ViewData["Title"] = "Выберите программный комплекс, из которого выгружены данные";
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+    var contid = ViewBag.contractId;
+}
+<style>
+    .form_select {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btn {
+        margin-left: 72%;
+    }
+</style>
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:535px;">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    @if (backId != null && backId > 0)
+                    {
+                        <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == null || backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <form asp-action="AddEstimate" method="get" class="row">
+                    <div>
+                        <input name="contractId" value="@ViewBag.contractId" hidden />
+                        <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+                        <select name="type" class="form-select">
+                            <option disabled>Выбрать подходящее</option>
+                            @foreach (var item in Enum.GetValues<EstimateType>())
+                            {
+                                <option value="@item.ToString()">
+                                    <span>
+                                        @Converter?.GetTypeOfEstimateApp((int)item)
+                                    </span>
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <button class="mt-3 btn btn-primary" style="margin-left: 0px;" type="submit">Выбрать</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

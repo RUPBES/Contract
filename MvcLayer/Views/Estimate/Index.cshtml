@@ -18,33 +18,7 @@
 
 @section Table {
     <style>
-        .demo-section {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .dm-modal {
-            background-color: lightsteelblue;
-        }
-
-        .close-btn {
-            color: red
-        }
-
-            .close-btn::after {
-                border: 2px solid #F00 !important;
-            }
-
-            .close-btn:hover::after {
-                border-color: red !important;
-                color: red !important;
-                -webkit-transform: scale(1);
-                -moz-transform: scale(1);
-                -ms-transform: scale(1);
-                transform: scale(1);
-                font-weight: bold;
-            }
-
+           
         .square {
             width: 20px;
             height: 20px;
@@ -55,45 +29,13 @@
 
         .overdue {
             background-color: #79a6fbb0 !important;
-        }
+        }              
 
-        .form_agreement {
-            display: flex !important;
-            padding: 0 30px !important;
-            margin-top: 0.5%;
-            margin-bottom: 0.5%;
-        }
-
-        .search_btn {
-            width: 2vh !important;
-            position: absolute;
-            padding: 0;
-            margin: 0 10px;
-            background-color: inherit;
-            border: none;
-            right: 210px;
-            top: 8px;
-        }
-
-        h1 {
-            /*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-                                                                                                                                                                                                                                                                                                        color: #004d8e;
-                                                                                                                                                                                                                                                                                                        transition: all 1s; */
+        h1 {                                                                                                                                                                                                                                                                                           transition: all 1s; */
             font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
-
-        .btn_agreement {
-            width: 180px;
-            border-radius: 20px;
-            margin-left: 1%;
-            font-weight: bold;
-        }
-
-        .contracts-list {
-            justify-content: space-between;
-        }
-
+       
         .color_label {
             display: flex;
             font-weight: bold;
@@ -112,13 +54,7 @@
             background-color: #ecf2f9;
         }
 
-        .img_newAgr {
-            width: 24px;
-            height: 24px;
-            margin-right: 3px;
-        }
-
-        input {
+       /*  input {
             margin: 0;
             font-family: inherit;
             font-size: inherit;
@@ -126,11 +62,11 @@
             border-radius: 20px;
             padding: 0px 30px 0px 10px;
             box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
-        }
+        } */
 
-        form {
+       /*  form {
             position: relative;
-        }
+        } */
 
         .modal-content {
             display: flex;
@@ -161,12 +97,9 @@
             max-height: 80vh;
         }
     </style>
-    <div class="contracts-list">
-
+    <div class="header-view">
         <h1 class="list_agreement">Смета по договору №@ViewData["contractNumber"]</h1>
-
-        <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" style="display: flex;"
-              asp-route-returnContractId="@ViewData["returnContractId"]">
+        <form asp-action="Index" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" style="display: flex;" asp-route-returnContractId="@ViewData["returnContractId"]">
             <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -417,20 +350,18 @@
                             <button type="button" class="btn btn-warning" onclick="ClearFind()">Очистить фильтр</button>
                         </div>
                     </div>
-
-
                 </div>
             </div>
-            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" style="font-weight: bold; margin-top: 0.5%; margin-bottom: 0.5%;">
-                Поиск
+            <div class="box-btn">
+                <button class="btn btn-ctr btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
+                    <div>Поиск</div>
             </button>
-
-            <div class="form_agreement">
-
-                <a type="button" class="btn btn-success btn_agreement" asp-action="AddEstimate"
-                   asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
-                   asp-route-returnContractId="@ViewData["returnContractId"]">
-                    <img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить
+            </div>
+            <div class="box-btn">
+                <a class="btn btn-ctr btn-success" asp-action="GetType"
+                   asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]">
+                    <img class="icon" src="~/icons/plus-circle.svg"/>
+                    <div >Добавить смету</div>
                 </a>
             </div>
         </form>
@@ -656,6 +587,8 @@
                                         }
                                     }
                                 </td>
+                                <td rowspan ="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                </td>
                                 <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
                                     @{
                                         val = draw.ContractsCost?.ToString("N2");
@@ -706,6 +639,7 @@
                             <td class="text-center align-middle">
                                 @draw.SubContractor
                             </td>
+                           
                             <td>
                                 <div class="icon edit" title="Редактировать смету">
                                     <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]"
@@ -915,11 +849,13 @@
                                 <td class="text-center align-middle">
                                     @draw.SubContractor
                                 </td>
+
                                 <td>
                                     <div class="icon edit" title="Редактировать смету">
                                         <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]"
                                            asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                                     </div>
+
                                     <div class="icon delete" title="Удалить запись">
                                         <a onclick="DeleteEstimate(@draw.Id)"></a>
                                     </div>
@@ -974,7 +910,8 @@
                             @sumBuilding.RemainsSmrCost?.ToString("N2")
                         </td>
                         <td colspan="2">
-                        </td>                        
+                        </td>  
+                        
                     </tr>
                     <tr>
                         <td class="text-end" colspan="9">
@@ -1005,7 +942,7 @@
                                 @result.Value.RemainsSmrCost?.ToString("N2")
                             </td>
                             <td colspan="2">
-                            </td>                            
+                            </td>                           
                         </tr>
                     }
                 }
@@ -1036,8 +973,7 @@
                     <td class="text-end align-middle">
                         @totalResult.RemainsSmrCost?.ToString("N2")
                     </td>
-                    <td colspan="2">
-                    </td>
+                    <td colspan="2"></td>                    
                 </tr>
                 <tr>
                     <td class="text-end" colspan="9">

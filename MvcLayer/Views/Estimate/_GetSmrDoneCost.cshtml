@@ -5,14 +5,13 @@
     <label>Выполнено по СМР</label>
     <input value="@Model.ToString("N2")" readonly />
 }
+<input name="type" value="@ViewBag.Type" type="text" id="typeDrawId" hidden />
 <form id="files5" method="post" enctype="multipart/form-data">
     <div id="example" style="min-width:400px; max-width: 800px;">
         <div class="demo-section input-group mb-2">
-            <input class="form-control" name="files" type="file" aria-label="files" multiple="multiple" />
+            <input class="form-control underline-green" name="files" type="file" aria-label="files" multiple="multiple" />
             <div class="btn-group" role="group">
-                <button type="submit" class="btn btn-success">Загрузить</button>
-                <button id="NextStep" class="btn btn-primary" type="button">Пропустить</button>
-
+                <button type="submit" class="btn btn-success btn-hidden">Загрузить</button>
             </div>
         </div>
         <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
@@ -22,27 +21,38 @@
 </form>
 
 <script>
+    $("input[type=file]").change((e) => {
+        e.target.classList.remove("underline-green");
+        let btnHidden = document.querySelector('button.btn-hidden');
+        btnHidden.classList.remove('btn-hidden');
+    });
+
+    changeClassByClickButton("button.btn-success", "button.btn-success", 'btn-success', 'btn-clicked');
+    changeClassByClickButton("#GetDataFromFile", "button.btn-success", 'btn-success', 'btn-clicked');
+
     $("#NextStep").on('click', function (e) {        
-        var estimateId = $("#EstimateId").val();    
+        var estimateId = $("#EstimateId").val();
+        const typeName = $('#typeDrawId').val();
         $.ajax({
             type: 'GET',
             url: '@Url.Action("GetEstimateResult", "Estimate")',
-            data: { EstimateId: estimateId },
+            data: { EstimateId: estimateId,type: typeName },
             success: function (viewData) {
-                $("#divForm").html(viewData)
-                $("#ListOfSheet").html("")
-                $("#HeaderLabel").text("Результат загрузки")
-                $("#result").html(``)
+                $("#divForm").html(viewData);
+                $("#ListOfSheet").html("");
+                showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>Загрузка данных из формы С-2Б пропущена</span></div>`);
+                
+                $(".view-result-step").html(``);
             },
             error: function (error) {
-                var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
                 $.ajax({
                     type: 'POST',
                     url: '@Url.Action("ShowError", "Parse")',
                     data: { message: errorMes },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                        showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
                     }
                 });
             }
@@ -83,45 +93,46 @@
                         $('#GetDataFromFile').click(function () {
                             let ex = $("#ex").val();
                             let estimateId = $("#EstimateId").val();
+                            const typeName = $('#typeDrawId').val();
                             $.ajax({
                                 type: 'POST',
                                 url: '@Url.Action("GetEstimateDoneSmrCost", "Estimate")',
-                                data: { path: path, estimateId: estimateId, page: ex },
+                                data: { path: path, estimateId: estimateId, page: ex, type: typeName },
                                 success: function (data) {
-                                    $("#ListOfSheet").html("")
-                                    $("#result").html(`<div class="alert alert-success" role="alert"><span><h3>Данные из акта формы С-2б загружены.</h3></span></div>`)
+                                    $("#ListOfSheet").html("");
+                                    showResultMessage("#result", `<div class="alert alert-success" role="alert"><span><h3>Данные из акта формы С-2б загружены</h3></span></div>`);
                                     $.ajax({
                                         type: 'GET',
                                         url: '@Url.Action("GetEstimateResult", "Estimate")',
-                                        data: { EstimateId: estimateId },
+                                        data: { EstimateId: estimateId, type: typeName },
                                         success: function (viewData) {
-                                            $("#divForm").html(viewData)
-                                            $("#ListOfSheet").html("")
-                                            $("#HeaderLabel").text("Результат загрузки")
+                                            $("#divForm").html(viewData);
+                                            $("#ListOfSheet").html("");
+                                            $(".view-result-step").html(``);
                                         },
                                         error: function (error) {
-                                            var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                                            var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
                                             $.ajax({
                                                 type: 'POST',
                                                 url: '@Url.Action("ShowError", "Parse")',
                                                 data: { message: errorMes },
                                                 dataType: 'html',
                                                 success: function (data) {
-                                                    $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                                                    showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
                                                 }
                                             });
                                         }
                                     });
                                 },
                                 error: function (error) {
-                                    var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                                    var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
                                     $.ajax({
                                         type: 'POST',
                                         url: '@Url.Action("ShowError", "Parse")',
                                         data: { message: errorMes },
                                         dataType: 'html',
                                         success: function (data) {
-                                            $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                                            showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
                                         }
                                     });
                                 }
@@ -129,14 +140,14 @@
                         });
                     },
                     error: function (error) {
-                        var errorMes = error.responseText.substring(18, error.responseText.indexOf("\r"));
+                        var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
                         $.ajax({
                             type: 'POST',
                             url: '@Url.Action("ShowError", "Parse")',
                             data: { message: errorMes },
                             dataType: 'html',
                             success: function (data) {
-                                $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                                showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
                             }
                         });
                     }
@@ -150,7 +161,7 @@
                     data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
                     dataType: 'html',
                     success: function (data) {
-                        $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
+                        showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
                         $("#container_progress").attr('style', `display:none`);
                     }
                 });

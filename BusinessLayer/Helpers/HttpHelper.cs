@@ -1,6 +1,7 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Http;
+using static System.Net.WebRequestMethods;
 
 namespace BusinessLayer.Helpers
 {
@@ -41,6 +42,13 @@ namespace BusinessLayer.Helpers
             }
 
             return null;
+        }
+
+        public string GetUserName(HttpContextAccessor http)
+        {
+            var name = http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
+            var family = http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
+            return (name != null || family != null) ? ($"{family} {name}") : "Не определен";
         }
     }
 }

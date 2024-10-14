@@ -11,6 +11,7 @@ namespace BusinessLayer.Models.PRO
     {
         public int Id { get; set; }
         public string? Number { get; set; }
+        public string? FullNumber { get; set; }
         public DateTime? EstimateDate { get; set; }
         public string BuildingCode { get; set; }
         public string BuildingName { get; set; }
