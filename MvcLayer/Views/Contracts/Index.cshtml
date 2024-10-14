@@ -42,31 +42,6 @@
             background-color: #79a6fbb0 !important;
         }
 
-        .form_agreement {
-            display: flex !important;
-            padding: 0 30px !important;
-            margin-top: 0.5%;
-            margin-bottom: 0.5%;
-        }
-
-        h1 {
-            transition: all 1s;
-            */ font-family: 'Ampersand', Montserrat, sans-serif;
-            font-size: 32px;
-        }
-
-        .btn_agreement {
-            width: 180px;
-            border-radius: 20px;
-            margin-left: 1%;
-            font-weight: bold;
-        }
-
-
-        .contracts-list {
-            justify-content: space-between;
-        }
-
         .color_label {
             display: flex;
             font-weight: bold;
@@ -85,26 +60,6 @@
             background-color: #ecf2f9;
         }
 
-        .img_newAgr {
-            width: 24px;
-            height: 24px;
-            margin-right: 3px;
-        }
-
-        input {
-            margin: 0;
-            font-family: inherit;
-            font-size: inherit;
-            line-height: inherit;
-            border-radius: 20px;
-            padding: 0px 30px 0px 10px;
-            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
-        }
-
-        form {
-            position: relative;
-        }
-
         .search-choice-close::before {
             content: "х";
             text-decoration: none !important;
@@ -116,87 +71,90 @@
             justify-content: space-between;
             position: relative;
         }
-
-        .search_btn {
-            cursor: pointer;
-        }
-
-        .table .thead-dark th > div > img {
-            filter: brightness(0) saturate(100%) invert(100%) sepia(11%) saturate(47%) hue-rotate(60deg) brightness(109%) contrast(90%);
-        }
-
-        .modal_form_searching {
-            display: flex;
-            position: absolute;
-            top: 25px;
-            right: -15px;
-            z-index: 100;
-        }
-
-        .form_search {
-            width: 175px;
-            background-color: black;
-            padding: 10px;
-            border-radius: 10px;
-            border: solid;
-        }
     </style>
     <div>
-        <div class="contracts-list">
+        <div class="header-view">
             <h1 class="list_agreement">Список договоров</h1>
             @if (ViewBag.IsEngineering)
-            {
-                <div class="form_agreement">
-                    @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                    {
-                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("CreateEngin", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
-                    }
-                </div>
+            { @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                {
+                    <div class="box-btn">
+                        <button type="button" class="btn btn-success btn-ctr " onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">
+                            <img class="icon" src="~/icons/plus-circle.svg" />Новый договор
+                        </button>
+
+                    </div>
+                }
             }
             @if (!ViewBag.IsEngineering)
-            {
-                <div class="form_agreement">
-                    @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                    {
-                        <button type="button" class="btn btn-success btn_agreement" onclick="location.href='@Url.Action("Create", "Contracts")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Новый договор</button>
-                    }
-                </div>
+            {@if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                {
+                    <div class="box-btn">
+                        <button type="button" class="btn btn-success btn-ctr " onclick="location.href='@Url.Action("Create", "Contracts")'">
+                            <img class="icon" src="~/icons/plus-circle.svg" />Новый договор
+                        </button>
+
+                    </div>
+                }
             }
         </div>
-
         <div class="full-width">
             <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
                 <thead>
                     <tr class="tr-head-main-table">
                         <th>
-                            <span class="table_span-numberanddate">
-                                Номер и дата договора
-                                @Html.ActionLink(" ", @actionMethod, new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNumberanddate", @class = "up" })
-                                <img class="search_btn" src="~/icons/search.svg" data-content-search="number" title="Поиск организации" alt="Поиск организации" />
-                            </span>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-numberanddate">
+                                    Номер и дата договора
+                                </span>
+                                <div class="inline-block-icons">
+                                    @Html.ActionLink(" ", @actionMethod, new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNumberanddate", @class = "up" })
+                                    <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="number" title="Поиск организации" alt="Поиск организации">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                    </svg>
+                                </div>
+                            </div>
                         </th>
                         <th>
-                            <span class="table_span-nameobject">
-                                Наименование объекта
-                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNameObject", @class = "up" })
-                                <img class="search_btn" src="~/icons/search.svg" data-content-search="nameObject" title="Поиск организации" alt="Поиск организации" />
-                            </span>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-nameobject">
+                                    Наименование объекта
+                                </span>
+                                <div class="inline-block-icons">
+                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNameObject", @class = "up" })
+                                    <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="nameObject" title="Поиск объекта" alt="Поиск объекта">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                    </svg>
+                                </div>
+                            </div>
                         </th>
                         <th>
-                            <span class="table_span-customer">
-                                Заказчик
-                                @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayCustomer", @class = "up" })
-                                <img class="search_btn" src="~/icons/search.svg" data-content-search="client" title="Поиск организации" alt="Поиск организации" />
-                            </span>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-customer">
+                                    Заказчик
+                                </span>
+                                <div class="inline-block-icons">
+                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayCustomer", @class = "up" })
+                                    <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="client" title="Поиск заказчика" alt="Поиск заказчика">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                    </svg>
+                                </div>
+                            </div>
                         </th>
                         @if (isEngineering != true)
                         {
                             <th>
-                                <span class="table_span-contractor">
-                                    <span>Генподрядчик</span>
-                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayGeneralContractor", @class = "up" })
-                                    <img class="search_btn" src="~/icons/search.svg" data-content-search="general" title="Поиск организации" alt="Поиск организации" />
-                                </span>
+                                <div class="inline-center-blocks-in-th">
+                                    <span class="table_span-contractor">
+                                        <span>Генподрядчик</span>
+                                    </span>
+                                    <div class="inline-block-icons">
+                                        @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayGeneralContractor", @class = "up" })
+                                        <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="general" title="Поиск генподрядчика" alt="Поиск генподрядчика">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                        </svg>
+                                    </div>
+                                </div>
                             </th>
                         }
                         <th>
@@ -781,26 +739,35 @@
 
         });
 
-        $('.search_btn').click(function (elem) {
+        $('.search_img_btn').click(function (elem) {
             closeModalForms();
-            const parent = elem.target.parentElement;
+            // const parent = elem.target.parentElement;
             const child = document.createElement('div');
             const page = $('#pageNumber').val();
             const type = elem.target.dataset.contentSearch;
             var value = "";
-            var currentType = '@ViewBag.CurrentType';           
-            if (currentType != "none" && type == currentType)
+            var currentType = '@ViewBag.CurrentType';
+
+            if (currentType != "none" && type == currentType) {
                 value = "@ViewBag.CurrentFilter";
+            }
+
             child.classList.add('modal_form_searching');
-            child.innerHTML = `<form asp-action="@actionMethod" asp-controller="Contracts" method="GET" class="form_search">
-                                                                          <input name="typeSearch" value="${type}"  hidden />
-                                                                          <input type="text" value="${value}" class="form-control" name="searchString" aria-describedby="button-addon2">
-                                                                  <div class="input-group">
-                                                                       <button class="col-5 btn btn-secondary" type="button" onclick="return removeParent('.modal_form_searching');" style="padding: 0;height: 30px;font-size: 0.9rem;font-weight: 600;">Закрыть</button>
-                                                                       <button class="col-7 btn btn-primary" type="submit" id="button-addon2" style="padding: 0;height: 30px;font-size: 0.9rem;font-weight: 600;">Поиск</button>
-                                                                  </div>
-                                                        </form>`;
-            parent.appendChild(child);
+            let coords = getCoords(elem.target);
+
+            child.style.left = (+coords.left - 120) + "px";
+            child.style.top = (+coords.bottom + 25) + "px";
+
+            child.innerHTML = `<div class="cursor-icon"></div><form asp-action="@actionMethod" asp-controller="Contracts" method="GET" class="form_search">
+                        <input name="typeSearch" value="${type}"  hidden />
+                        <div class="btn-close-modal-searching" onclick="return removeParent('.modal_form_searching');">X</div>
+                         <div class="input-group">
+                                      <input type="text" value="${value}" class="form-control" name="searchString" aria-describedby="button-addon2">
+                              <button class="btn btn-primary" type="submit" id="button-addon2">Поиск</button>
+                         </div>
+                    </form>`;
+            // parent.appendChild(child);
+            document.body.append(child);
         });
         function removeParent(elem) {
             const p = $(elem);

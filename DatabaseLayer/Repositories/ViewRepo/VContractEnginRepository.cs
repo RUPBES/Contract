@@ -56,14 +56,43 @@ namespace DatabaseLayer.Repositories.ViewRepo
             return _context.VContractEngins/*.Where(x => x.LegalPersonId == legalPersonId)*/.OrderBy(x => x.Date).Skip(skip).Take(take).ToList();
         }
 
-        public IEnumerable<VContractEngin> FindLikeNameObj(string queryString)
+
+        public IEnumerable<VContractEngin> FindLikeNameObj(string queryString, string[] listOwners)
         {
-            return _context.VContractEngins.Where(x => EF.Functions.Like(x.NameObject, $"%{queryString}%")).OrderBy(x => x.Date).ToList();
+            return _context.VContractEngins.Where(x => EF.Functions.Like(x.NameObject, $"%{queryString}%") && listOwners.Contains(x.Owner)).OrderBy(x => x.Date).ToList();
         }
 
-        public IEnumerable<VContractEngin> FindContract(string queryString)
+        public IEnumerable<VContractEngin> FindNumberContract(string queryString, string[] listOwners = null)
         {
-            return _context.VContractEngins.Where(x => EF.Functions.Like(x.NameObject, $"%{queryString}%") || EF.Functions.Like(x.Number, $"%{queryString}%")).OrderBy(x => x.Date).ToList();
+            return _context.VContractEngins.Where(x =>
+                    (EF.Functions.Like(x.Number, $"%{queryString}%")) && listOwners.Contains(x.Owner))
+                .OrderBy(x => x.Date)
+                .ToList();
+        }
+
+        public IEnumerable<VContractEngin> FindContract(string queryString, string[] listOwners)
+        {
+            return _context.VContractEngins
+                .Where(x => 
+                    (EF.Functions.Like(x.NameObject, $"%{queryString}%") || EF.Functions.Like(x.Number, $"%{queryString}%") && listOwners.Contains(x.Owner)))
+                .OrderBy(x => x.Date)
+                .ToList();
+        }
+
+        public IEnumerable<VContractEngin> FindOrganization(string queryString, string typeOrganization, string[] listOwners)
+        {
+            switch (typeOrganization)
+            {
+                case "client":
+                    return _context.VContractEngins.Where(x => EF.Functions.Like(x.Client, $"%{queryString}%") && listOwners.Contains(x.Owner)).OrderBy(x => x.Date).ToList();
+
+                case "general":
+                    return _context.VContractEngins.Where(x => EF.Functions.Like(x.GenContractor, $"%{queryString}%") && listOwners.Contains(x.Owner)).OrderBy(x => x.Date).ToList();
+
+                default:
+
+                    return null;
+            }
         }
     }
 }

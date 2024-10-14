@@ -121,11 +121,13 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money");
 
             entity.Property(e => e.PercentOfContrPrice)
-                .HasColumnType("money")
-                .HasComputedColumnSql();
+            .HasDefaultValueSql("(0)")
+                .HasColumnType("money");
+            //.HasComputedColumnSql();
             entity.Property(e => e.RemainsSmrCost)
-                .HasColumnType("money")
-                .HasComputedColumnSql();
+            .HasDefaultValueSql("(0)")
+                .HasColumnType("money");
+            //.HasComputedColumnSql();
 
             entity.HasOne(d => d.Contract)
                 .WithMany(p => p.Estimates)
@@ -704,7 +706,7 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.GenServiceCost)
                 .HasColumnType("money")
-                .HasComment("стоимость ген.услуг");  
+                .HasComment("стоимость ген.услуг");
 
             entity.Property(e => e.MaterialCost)
                 .HasColumnType("money")
@@ -716,7 +718,7 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.OtherExpensesCost)
                 .HasColumnType("money")
-                .HasComment("стоимость остальных работ");  
+                .HasComment("стоимость остальных работ");
 
             entity.Property(e => e.OffsetTargetPrepayment)
                .HasColumnType("money")
@@ -724,7 +726,7 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.OffsetCurrentPrepayment)
               .HasColumnType("money")
-              .HasComment("Зачет текущего аванса");                   
+              .HasComment("Зачет текущего аванса");
 
             entity.Property(e => e.CostToConstructionIndustryFund)
            .HasColumnType("money")
@@ -732,7 +734,7 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.CostStatisticReportOfContractor)
            .HasColumnType("money")
-           .HasComment("стоимость работ для статистической отчетности подрядчика (справочно)");            
+           .HasComment("стоимость работ для статистической отчетности подрядчика (справочно)");
         });
 
         modelBuilder.Entity<FormFile>(entity =>

@@ -77,16 +77,16 @@ namespace BusinessLayer.Services
                 switch (typeRequest)
                 {
                     case "number":
-                        items = _database.vContractEngins.Find(x => (list.Contains(x.Author) || list.Contains(x.Owner)) && x.Number != null && x.Number.Contains(request));
+                        items = _database.vContractEngins.FindNumberContract(request, list); 
                         break;
                     case "nameObject":
-                        items = _database.vContractEngins.Find(x => (list.Contains(x.Author) || list.Contains(x.Owner)) && x.NameObject != null && x.NameObject.Contains(request));
+                        items = _database.vContractEngins.FindLikeNameObj(request, list);
                         break;
                     case "client":
-                        items = _database.vContractEngins.Find(x => (list.Contains(x.Author) || list.Contains(x.Owner)) && x.Client != null && x.Client.Contains(request));
+                        items = _database.vContractEngins.FindOrganization(request, "client", list);
                         break;
                     case "general":
-                        items = _database.vContractEngins.Find(x => (list.Contains(x.Author) || list.Contains(x.Owner)) && x.GenContractor != null && x.GenContractor.Contains(request));
+                        items = _database.vContractEngins.FindOrganization(request, "general", list);
                         break;
                     default:
                         items = _database.vContractEngins.Find(x => list.Contains(x.Author) || list.Contains(x.Owner));
