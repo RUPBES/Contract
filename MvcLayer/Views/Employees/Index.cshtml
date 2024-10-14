@@ -17,36 +17,8 @@
         min-width: 700px;
     }
 
-    .dm-modal {
-        background-color: lightsteelblue;
-    }
-
-    .close-btn {
-        color: red
-    }
-
-        .close-btn::after {
-            border: 2px solid #F00 !important;
-        }
-
-        .close-btn:hover::after {
-            border-color: red !important;
-            color: red !important;
-            -webkit-transform: scale(1);
-            -moz-transform: scale(1);
-            -ms-transform: scale(1);
-            transform: scale(1);
-            font-weight: bold;
-        }
-
     .input-group_flex {
         justify-content: right;
-    }
-
-    .img_newAgr {
-        width: 24px;
-        height: 24px;
-        margin-right: 3px;
     }
 </style>
 <div class="dm-overlay">
@@ -63,12 +35,12 @@
                             <div class="link_add_emp"></div>
                             <div class="btn_panel_search">
                                 <form asp-controller="Employees" asp-action="Index" style="search-form" method="get">
-                                    <input type="text" name="searchString" placeholder="Поиск по ФИО" value="@ViewData["CurrentFilter"]" id="er" />
-                                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" class="search_btn" /></button>
+                                    <input class="btn-ctr" type="text" name="searchString" placeholder="Поиск по ФИО" value="@ViewData["CurrentFilter"]"/>
+                                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" /></button>
                                 </form>
                                 @if (permissions is not null && permissions.IsCreator)
                                 {
-                                    <button type="button" class="btn btn-success new_entity" onclick="location.href='@Url.Action("Create", "Employees")'"><img class="img_newAgr" src="~/icons/plus_icon.png" />Добавить сотрудника</button>
+                                    <button type="button" class="btn btn-success btn-ctr" onclick="location.href='@Url.Action("Create", "Employees")'"><img class="icon" src="~/icons/plus-circle.svg" />Добавить сотрудника</button>
                                 }
                             </div>
                         </div>

@@ -98,6 +98,7 @@ namespace DatabaseLayer.Repositories
                     estimate.BuildingName = entity.BuildingName;                    
                     estimate.ContractId = entity.ContractId;
                     estimate.DrawingsName = entity.DrawingsName;
+                    estimate.FullNumber = entity.FullNumber;
 
                     estimate.DrawingsDate = entity.DrawingsDate;
                     estimate.ContractsCost = entity.ContractsCost;
@@ -106,6 +107,8 @@ namespace DatabaseLayer.Repositories
                     estimate.DoneSmrCost = entity.DoneSmrCost;
                     estimate.SubContractor = entity.SubContractor;
                     estimate.RemainsSmrCost = entity.RemainsSmrCost;
+
+                    estimate.PercentOfContrPrice = entity.PercentOfContrPrice;
                     estimate.Owner = entity.Owner;
 
                     estimate.DrawingsKit = entity.DrawingsKit;

@@ -1,4 +1,6 @@
-﻿namespace DatabaseLayer.Interfaces
+﻿using DatabaseLayer.Models.KDO;
+
+namespace DatabaseLayer.Interfaces
 {
     public interface IViewRepository<T> where T : class
     {
@@ -8,8 +10,9 @@
         IEnumerable<T> GetEntitySkipTake(int skip, int take, string org);
         IEnumerable<T> GetEntityWithSkipTake(int skip, int take, int legalPersonId);
         IEnumerable<T> Find(Func<T, bool> predicate);
-        IEnumerable<T> FindLikeNameObj(string queryString);
-        IEnumerable<T> FindContract(string queryString);
-
+        IEnumerable<T> FindLikeNameObj(string queryString, string[] listOwners = null);
+        IEnumerable<T> FindContract(string queryString, string[] listOwners = null);
+        IEnumerable<T> FindOrganization(string queryString, string typeOrganization, string[] listOwners);
+        IEnumerable<T> FindNumberContract(string queryString, string[] listOwners = null);
     }
 }
