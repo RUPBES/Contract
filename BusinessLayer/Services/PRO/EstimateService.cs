@@ -30,7 +30,7 @@ namespace BusinessLayer.Services
 
         public int? Create(EstimateDTO item)
         {
-            var user = _httpHelper.GetUserName(new HttpContextAccessor());
+            var user = _httpHelper.GetUserName();
 
             if (item is not null)
             {
@@ -44,8 +44,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create Estimate, ID={estimate.Id}",
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return estimate.Id;
                 }
@@ -55,15 +54,14 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create Estimate, object is null",
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var user = _httpHelper.GetUserName(new HttpContextAccessor());
+            var user = _httpHelper.GetUserName();
 
             if (id > 0)
             {
@@ -80,8 +78,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete Estimate, ID={id}",
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -89,8 +86,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -100,8 +96,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete Estimate, ID is not more than zero",
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -131,7 +126,7 @@ namespace BusinessLayer.Services
 
         public void Update(EstimateDTO item)
         {         
-            var user = _httpHelper.GetUserName(new HttpContextAccessor());
+            var user = _httpHelper.GetUserName();
 
             if (item is not null)
             {
@@ -145,8 +140,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update Estimate, ID={item.Id}",
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -154,8 +148,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update Estimate, object is null",
                             nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

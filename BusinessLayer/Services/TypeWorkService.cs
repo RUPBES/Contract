@@ -27,10 +27,6 @@ namespace BusinessLayer.Services
 
         public int? Create(TypeWorkDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.TypeWorks.GetById(item.Id) is null)
@@ -44,8 +40,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create a type of work, ID={typeWork.Id}",
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return typeWork.Id;
                 }
@@ -55,18 +50,13 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create a type of work, object is null",
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var typeWork = _database.TypeWorks.GetById(id);
@@ -82,8 +72,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete a type of work, ID={id}",
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -91,8 +80,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -102,8 +90,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete a type of work, ID is not more than zero",
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -133,10 +120,6 @@ namespace BusinessLayer.Services
 
         public void Update(TypeWorkDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.TypeWorks.Update(_mapper.Map<TypeWork>(item));
@@ -146,8 +129,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update a type of work, ID={item.Id}",
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -155,8 +137,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update a type of work, object is null",
                             nameSpace: typeof(TypeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

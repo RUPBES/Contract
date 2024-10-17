@@ -52,7 +52,12 @@ namespace MvcLayer
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Data"));
             });
-            
+
+            services.AddDbContext<OpenIdDictDbContxt>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("Authentication"));
+            });
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -127,10 +132,16 @@ namespace MvcLayer
                         {
                             foreach (var scope in scopes)
                             {
+                                if (scope.Contains("nameidentifier"))
+                                {
+                                    identity.AddClaim(new Claim("nameOid", scope));
+                                }
+
                                 if (scope.Contains("Org"))
                                 {
                                     identity.AddClaim(new Claim("org", scope));
                                 }
+
                                 if (scope.Contains("GRP_"))
                                 {
                                     identity.AddClaim(new Claim("grp", scope));

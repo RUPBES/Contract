@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using BusinessLayer.ServicesCOM;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Services.PRO;
+using BusinessLayer.Services.Administrator;
 
 namespace BusinessLayer.IoC
 {
@@ -22,6 +23,7 @@ namespace BusinessLayer.IoC
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAutoMapper(typeof(MapperBL));
             //services.AddDbContext<ContractsContext>(op => op.UseSqlServer(connectionString));
+            services.AddScoped<IAdminService, ActiveUsersService>();
             services.AddScoped<IContractUoW, ContractUoW>();
             services.AddScoped<IConverter, Converter>();
             services.AddScoped<ILoggerContract, LoggerDb>();
@@ -34,6 +36,8 @@ namespace BusinessLayer.IoC
             services.AddScoped<ICorrespondenceService, CorrespondenceService>();
             services.AddScoped<IContractOrganizationService, ContractOrganizationService>();
             services.AddScoped<IExcelReader, ExcelReader>();
+
+            services.AddScoped<IExcelWriter, ExcelWriter>();
             services.AddScoped<IEstimateService, EstimateService>();
             services.AddScoped<IEstimateDocService, EstimateDocService>();
             services.AddScoped<IEmployeeService, EmployeeService>();

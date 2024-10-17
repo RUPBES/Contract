@@ -30,10 +30,6 @@ namespace BusinessLayer.Services
 
         public int? Create(ScopeWorkDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.ScopeWorks.GetById(item.Id) is null)
@@ -47,8 +43,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create scope works, ID={scopeWorks.Id}",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return scopeWorks.Id;
                 }
@@ -58,8 +53,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create scope works, object is null",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
@@ -90,10 +84,6 @@ namespace BusinessLayer.Services
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var scopeWorks = _database.ScopeWorks.GetById(id);
@@ -109,8 +99,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete scope works, ID={id}",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -118,8 +107,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -129,17 +117,12 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete scope works, ID is not more than zero",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
         public void Update(ScopeWorkDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.ScopeWorks.Update(_mapper.Map<ScopeWork>(item));
@@ -149,8 +132,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update scope works, ID={item.Id}",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -158,8 +140,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update scope works, object is null",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -218,10 +199,6 @@ namespace BusinessLayer.Services
 
         public void AddAmendmentToScopeWork(int amendmentId, int scopeworkId)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (amendmentId > 0 && scopeworkId > 0)
             {
                 _database.ScopeWorkAmendments.Create(new ScopeWorkAmendment
@@ -236,8 +213,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"add amendment (ID={amendmentId}) to scope work (ID={scopeworkId})",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -245,8 +221,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not add scopeWorkAmendments",
                             nameSpace: typeof(ScopeWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

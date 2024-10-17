@@ -13,6 +13,7 @@ namespace DatabaseLayer.Models.KDO
         public string NameSpace { get; set; }
         public string MethodName { get; set; }
         public string UserName { get; set; }
+        public string? UserIdentifierOid { get; set; }
         public DateTime? DateTime { get; set; }
     }
 }

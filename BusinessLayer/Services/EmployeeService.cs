@@ -46,8 +46,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create employee, ID={employee.Id}, Name={employee.Fio}",
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return employee.Id;
                 }
@@ -57,8 +56,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create employee, object is null",
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
@@ -84,8 +82,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete employee, ID={id}",
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -93,8 +90,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -104,8 +100,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete employee, ID is not more than zero",
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -148,8 +143,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update employee, ID={item.Id}",
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -157,8 +151,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update employee, object is null",
                             nameSpace: typeof(EmployeeService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

@@ -160,7 +160,7 @@ namespace MvcLayer.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             _organizationService.Delete(id);
-            _logger.WriteLog(LogLevel.Information, "delete organization", typeof(OrganizationsController).Name, this.ControllerContext.RouteData.Values["action"].ToString(), User.Identity.Name);
+            _logger.WriteLog(LogLevel.Information, "delete organization", typeof(OrganizationsController).Name, this.ControllerContext.RouteData.Values["action"].ToString());
             return RedirectToAction(nameof(Index));
         }
 

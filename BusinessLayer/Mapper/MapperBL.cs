@@ -37,6 +37,7 @@ namespace BusinessLayer.Mapper
             CreateMap<FormC3a, FormDTO>().ReverseMap();
             CreateMap<DatabaseLayer.Models.KDO.File, FileDTO>().ReverseMap();
             CreateMap<Log, LogDTO>().ReverseMap();
+            CreateMap<Log, UserActivity>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
             CreateMap<MaterialDTO, MaterialGc>().ReverseMap();
             CreateMap<MaterialCostDTO, MaterialCost>().ReverseMap();

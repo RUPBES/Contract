@@ -13,6 +13,7 @@ namespace BusinessLayer.Models
         public string? NameSpace { get; set; }
         public string? MethodName { get; set; }
         public string? UserName { get; set; }
+        public string? UserIdentifierOid { get; set; }
         public DateTime? Date { get; set; }
     }
 }

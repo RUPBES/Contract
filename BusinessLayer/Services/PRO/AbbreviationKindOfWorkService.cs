@@ -27,10 +27,6 @@ namespace BusinessLayer.Services.PRO
 
         public int? Create(AbbreviationKindOfWorkDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.AbbreviationKindOfWorks.GetById(item.Id) is null)
@@ -43,8 +39,7 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Information,
                             message: $"create AbbreviationKindOfWork, ID={abbreviationKindOfWork.Id}",
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return abbreviationKindOfWork.Id;
                 }
@@ -54,18 +49,13 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Warning,
                             message: $"not create AbbreviationKindOfWork, object is null",
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var abbreviationKindOfWork = _database.AbbreviationKindOfWorks.GetById(id);
@@ -81,8 +71,7 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Information,
                             message: $"delete AbbreviationKindOfWork, ID={id}",
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -90,8 +79,7 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -101,8 +89,7 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Warning,
                             message: $"not delete AbbreviationKindOfWork, ID is not more than zero",
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -132,10 +119,6 @@ namespace BusinessLayer.Services.PRO
 
         public void Update(AbbreviationKindOfWorkDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.AbbreviationKindOfWorks.Update(_mapper.Map<AbbreviationKindOfWork>(item));
@@ -145,8 +128,7 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Information,
                             message: $"update AbbreviationKindOfWork, ID={item.Id}",
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -154,8 +136,7 @@ namespace BusinessLayer.Services.PRO
                             logLevel: LogLevel.Warning,
                             message: $"not update AbbreviationKindOfWork, object is null",
                             nameSpace: typeof(AbbreviationKindOfWorkService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
     }

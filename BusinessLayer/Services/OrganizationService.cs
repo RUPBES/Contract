@@ -4,10 +4,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Server;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 
 namespace BusinessLayer.Services
@@ -17,22 +14,17 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
 
-        public OrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public OrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _http = http;
+           
         }
 
         public int? Create(OrganizationDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.Organizations.GetById(item.Id) is null)
@@ -46,8 +38,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create organization, ID={organization.Id}, Name={organization.Name}",
                             nameSpace: typeof(OrganizationService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return organization.Id;
                 }
@@ -57,18 +48,13 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create organization, object is null",
                             nameSpace: typeof(OrganizationService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var organization = _database.Organizations.GetById(id);
@@ -82,8 +68,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete organization, ID={id}",
                             nameSpace: typeof(OrganizationService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                 }
             }
             else
@@ -92,8 +77,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete organization, ID is not more than zero",
                             nameSpace: typeof(OrganizationService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -123,10 +107,6 @@ namespace BusinessLayer.Services
 
         public void Update(OrganizationDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.Organizations.Update(_mapper.Map<Organization>(item));
@@ -136,8 +116,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"update organization, ID={item.Id}",
                             nameSpace: typeof(OrganizationService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -145,8 +124,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update organization, object is null",
                             nameSpace: typeof(OrganizationService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

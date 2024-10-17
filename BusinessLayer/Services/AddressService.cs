@@ -4,15 +4,8 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Services
 {
@@ -21,21 +14,16 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
 
-        public AddressService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public AddressService(IContractUoW database, IMapper mapper, ILoggerContract logger)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _http = http;
         }
 
         public int? Create(AddressDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
             if (item is not null)
             {
                 if (_database.Addresses.GetById(item.Id) is null)
@@ -49,8 +37,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create address, ID={address.Id}, Name={address.FullAddress}",
                             nameSpace: typeof(AddressService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return address.Id;
                 }
@@ -60,18 +47,13 @@ namespace BusinessLayer.Services
                 logLevel: LogLevel.Warning,
                 message: $"not create address, object is null",
                 nameSpace: typeof(AddressService).Name,
-                methodName: MethodBase.GetCurrentMethod().Name, 
-                userName: user);            
+                methodName: MethodBase.GetCurrentMethod().Name);            
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var address = _database.Addresses.GetById(id);
@@ -87,8 +69,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete address, ID={id}",
                             nameSpace: typeof(AddressService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -96,8 +77,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(AddressService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -107,8 +87,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete address, ID is not more than zero",
                             nameSpace: typeof(AddressService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -138,10 +117,6 @@ namespace BusinessLayer.Services
 
         public void Update(AddressDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен"; 
-
             if (item is not null)
             {
                 _database.Addresses.Update(_mapper.Map<Address>(item));
@@ -151,8 +126,7 @@ namespace BusinessLayer.Services
                     logLevel: LogLevel.Information,
                     message: $"update address, ID={item.Id}",
                     nameSpace: typeof(AddressService).Name,
-                    methodName: MethodBase.GetCurrentMethod().Name,
-                    userName: user);
+                    methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -160,8 +134,7 @@ namespace BusinessLayer.Services
                     logLevel: LogLevel.Warning,
                     message: $"not update address, object is null",
                     nameSpace: typeof(AddressService).Name,
-                    methodName: MethodBase.GetCurrentMethod().Name,
-                    userName: user);
+                    methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
     }

@@ -31,10 +31,6 @@ namespace BusinessLayer.Services
 
         public int? Create(SWCostDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.SWCosts.GetById(item.Id) is null)
@@ -43,7 +39,7 @@ namespace BusinessLayer.Services
 
                     _database.SWCosts.Create(model);
                     _database.Save();
-                    _logger.WriteLog(LogLevel.Information, $"create scope work costs, ID={model.Id}", typeof(SWCostService).Name, MethodBase.GetCurrentMethod().Name, _http?.HttpContext?.User?.Identity?.Name);
+                    _logger.WriteLog(LogLevel.Information, $"create scope work costs, ID={model.Id}", typeof(SWCostService).Name, MethodBase.GetCurrentMethod().Name);
 
                     return model.Id;
                 }
@@ -53,18 +49,13 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create scope work costs, object is null",
                             nameSpace: typeof(SWCostService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var model = _database.SWCosts.GetById(id);
@@ -80,8 +71,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete scope work costs, ID={id}",
                             nameSpace: typeof(SWCostService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -89,8 +79,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(SWCostService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -100,8 +89,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete scope work costs, ID is not more than zero",
                             nameSpace: typeof(SWCostService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -136,10 +124,6 @@ namespace BusinessLayer.Services
 
         public void Update(SWCostDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.SWCosts.Update(_mapper.Map<SWCost>(item));
@@ -149,8 +133,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update scope work costs, ID={item.Id}",
                             nameSpace: typeof(SWCostService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -158,8 +141,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update scope work costs, object is null",
                             nameSpace: typeof(SWCostService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

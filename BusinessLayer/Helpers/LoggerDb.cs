@@ -1,8 +1,5 @@
-﻿using AutoMapper;
-using BusinessLayer.Interfaces.CommonInterfaces;
-using BusinessLayer.Models;
+﻿using BusinessLayer.Interfaces.CommonInterfaces;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
 
@@ -11,14 +8,14 @@ namespace BusinessLayer.Helpers
     internal class LoggerDb : ILoggerContract
     {
         private readonly IContractUoW _contract;
-        private readonly IMapper _mapper;
-        public LoggerDb(IContractUoW contract, IMapper mapper)
+        private readonly IHttpHelper _httpHelper;
+        public LoggerDb(IContractUoW contract, IHttpHelper httpHelper)
         {
             _contract = contract;
-            _mapper = mapper;
+            _httpHelper = httpHelper;
         }
 
-        public void WriteLog(LogLevel logLevel, string message, string nameSpace = null, string methodName = null, string userName = null)
+        public void WriteLog(LogLevel logLevel, string message, string nameSpace = null, string methodName = null)
         {
             try
             {
@@ -28,20 +25,11 @@ namespace BusinessLayer.Helpers
                     Message = message,
                     NameSpace = nameSpace,
                     MethodName = methodName,
-                    UserName = userName,
-                    DateTime = DateTime.Now
+                    UserName = _httpHelper.GetUserName(),
+                    DateTime = DateTime.Now,
+                    UserIdentifierOid = _httpHelper.GetUserIdentifierOid()
                 });
-                _contract.Save();
-                //LogDTO log = new LogDTO();
-
-                //log.LogLevel = logLevel.ToString();
-                //log.Message = message;
-                //log.NameSpace = nameSpace;
-                //log.MethodName = methodName;
-                //log.UserName = userName;
-                //log.Date = DateTime.Now;
-
-                //_contract.Logs.Create(_mapper.Map<Log>(log));
+                _contract.Save();               
             }
             catch (Exception)
             {

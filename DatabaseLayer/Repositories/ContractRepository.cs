@@ -139,7 +139,7 @@ namespace DatabaseLayer.Repositories
 
                     #endregion
 
-                    foreach (var item in entity.ContractOrganizations)
+                    foreach (var item in entity.ContractOrganizations.Where(x=>x.OrganizationId != 0))
                     {
                         //запись в БД существующая (по контракту и атрибутам)
                         var contractOrg = _context.ContractOrganizations

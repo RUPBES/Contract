@@ -27,10 +27,6 @@ namespace BusinessLayer.Services
 
         public int? Create(ServiceGCDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.ServiceGCs.GetById(item.Id) is null)
@@ -44,8 +40,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create service of general contractor, ID={service.Id}",
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return service.Id;
                 }
@@ -55,18 +50,13 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create service of general contractor, object is null",
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var service = _database.ServiceGCs.GetById(id);
@@ -82,8 +72,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete service of general contractor, ID={id}",
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -91,8 +80,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -102,8 +90,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete service of general contractor, ID is not more than zero",
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -128,10 +115,6 @@ namespace BusinessLayer.Services
 
         public void Update(ServiceGCDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.ServiceGCs.Update(_mapper.Map<ServiceGc>(item));
@@ -141,8 +124,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update service of general contractor, ID={item.Id}",
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -150,8 +132,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update service of general contractor, object is null",
                             nameSpace: typeof(ServiceGCService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -162,10 +143,6 @@ namespace BusinessLayer.Services
 
         public void AddAmendmentToService(int amendmentId, int serviceId)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (amendmentId > 0 && serviceId > 0)
             {
                 _database.ServiceAmendments.Create(new ServiceAmendment
@@ -180,8 +157,7 @@ namespace BusinessLayer.Services
                            logLevel: LogLevel.Information,
                            message: $"add amendment (ID={amendmentId}) to service gencontractor (ID={serviceId})",
                            nameSpace: typeof(ServiceGCService).Name,
-                           methodName: MethodBase.GetCurrentMethod().Name,
-                           userName: user);
+                           methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -189,8 +165,7 @@ namespace BusinessLayer.Services
                            logLevel: LogLevel.Warning,
                            message: $"not add serviceAmendment",
                            nameSpace: typeof(ServiceGCService).Name,
-                           methodName: MethodBase.GetCurrentMethod().Name,
-                           userName: user);
+                           methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 

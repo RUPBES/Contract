@@ -382,7 +382,7 @@ namespace BusinessLayer.ServicesCOM
             catch (Exception e)
             {
                 _logger.WriteLog(logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
-                                 methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
+                                 methodName: MethodBase.GetCurrentMethod().Name);
                 return null;
             }
             return estimate;

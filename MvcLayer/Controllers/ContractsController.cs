@@ -7,6 +7,7 @@ using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.CommonInterfaces;
 
 namespace MvcLayer.Controllers
 {
@@ -27,11 +28,13 @@ namespace MvcLayer.Controllers
 
         private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
+        private readonly IAdminService _admin;
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
             IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService,
-            ISWCostService sWCostService, IPrepaymentService prepaymentService, IFormService formService, IAmendmentService amendmentService)
+            ISWCostService sWCostService, IPrepaymentService prepaymentService, IFormService formService, IAmendmentService amendmentService,
+            IAdminService adminService)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -46,14 +49,14 @@ namespace MvcLayer.Controllers
             _prepaymentService = prepaymentService;
             _formService = formService;
             _amendmentService = amendmentService;
+            _admin = adminService;
         }
 
         // GET: Contracts        
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-            //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
-
+            var sas = _admin.GetListActivity();
             if (pageNum < 1)
             {
                 pageNum = 1;

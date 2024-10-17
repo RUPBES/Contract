@@ -28,10 +28,6 @@ namespace BusinessLayer.Services
 
         public int? Create(PrepaymentFactDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 if (_database.PrepaymentFacts.GetById(item.Id) is null)
@@ -45,8 +41,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"create prepayment fact, ID={prepPlan.Id}",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
                     return prepPlan.Id;
                 }
@@ -56,18 +51,13 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not create prepayment fact, object is null",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
         }
 
         public void Delete(int id, int? secondId = null)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (id > 0)
             {
                 var model = _database.PrepaymentFacts.GetById(id);
@@ -83,8 +73,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"delete prepayment plan, ID={id}",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
@@ -92,8 +81,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Error,
                             message: e.Message,
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
@@ -103,8 +91,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not delete prepayment plan, ID is not more than zero",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -129,10 +116,6 @@ namespace BusinessLayer.Services
 
         public void Update(PrepaymentFactDTO item)
         {
-            var name = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? null;
-            var family = _http?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "family_name")?.Value ?? null;
-            var user = (name != null || family != null) ? ($"{family} {name}") : "Не определен";
-
             if (item is not null)
             {
                 _database.PrepaymentFacts.Update(_mapper.Map<PrepaymentFact>(item));
@@ -142,8 +125,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Information,
                             message: $"update prepayment fact, ID={item.Id}",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
@@ -151,8 +133,7 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update prepayment fact, object is null",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name,
-                            userName: user);                
+                            methodName: MethodBase.GetCurrentMethod().Name);                
             }
         }
 

@@ -12,5 +12,8 @@
         DateTime? GetDateFromString(string str);
         string? GetNameOrganizationByCode(string code);
         string? GetTypeOfEstimateApp(int number);
+        string ConvertMethodNameToRussian(string name);
+        string ConvertNameSpaceToRussian(string name);
+
     }
 }
