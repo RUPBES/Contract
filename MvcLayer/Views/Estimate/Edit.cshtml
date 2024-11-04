@@ -1,46 +1,19 @@
-﻿@using DatabaseLayer.Models.PRO
-@model int
+﻿@model BusinessLayer.Models.PRO.EstimateDTO
+@inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IAbbreviationKindOfWorkService AbbrKind
 @{
-    ViewData["Title"] = "Редактирование данных по смете";
+    ViewData["Title"] = "Редактирование сметы";
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
     else backId = (int)ViewData["returnContractId"];
 
 }
-<style>
-    .demo-section {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .chosen-container-single .chosen-single {
-        margin-left: 0% !important;
-    }
-
-    .estimate__group-container {
-        flex-wrap: nowrap !important;
-    }
-
-    .input_estimate {
-        padding: 0rem .75rem !important;
-    }
-
-    .focus {
-        color: #000 !important;
-        background-color: #ffc107 !important;
-        border-color: #ffc107 !important;
-    }
-</style>
-<input id="contractId" value="@ViewData["contractId"]" hidden />
-<input id="EstimateId" value="@Model" hidden />
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:80vw; min-height: 30vh">
+            <div class="dm-modal" style="max-width:700px">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <label id="HeaderLabel" class="my-modal-title"></label>
                     @if (backId > 0)
                     {
                         <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" asp-route-contractId="@backId" class="close-btn"></a>
@@ -50,15 +23,132 @@
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
-                <hr class="modal-line">
-                <div id="divForm" class="divForm_modal">
-                </div>
-                <div id="ListOfSheet"></div>
-                <div id="result"></div>
+                <hr class="modal-line" />
+                <form asp-action="Edit" class="row">
+
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="Number" />
+                    <input type="hidden" asp-for="BuildingCode" />
+                    <input type="hidden" asp-for="BuildingName" />
+                    <input type="hidden" asp-for="ContractId" />
+
+                    <div class="form-group col-4">
+                        <label asp-for="Number"></label>
+                        <input asp-for="Number" class="form-control" disabled />
+                    </div>
+                    <div class="form-group col-8">
+                        <label asp-for="BuildingCode"></label>
+                        <input asp-for="BuildingCode" class="form-control" disabled />
+                    </div>
+                    <div class="form-group mb-4 col-12">
+                        <label asp-for="BuildingName"></label>
+                        <textarea asp-for="BuildingName" class="form-control" disabled></textarea>
+                    </div>
+                   
+
+                    <div class="form-group mt-2 col-12">
+                        <label asp-for="DrawingsName"></label>
+                        <textarea asp-for="DrawingsName" rows="2" class="form-control"></textarea>
+                        <span asp-validation-for="DrawingsName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mt-2 col-4">
+                        <label asp-for="EstimateDate"></label>
+                        <input asp-for="EstimateDate" type="date" class="form-control" />
+                        <span asp-validation-for="EstimateDate" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mt-2 col-4">
+                        <label asp-for="DrawingsKit"></label>
+                        <input asp-for="DrawingsKit" class="form-control" />
+                        <span asp-validation-for="DrawingsKit" class="text-danger"></span>
+                    </div>
+                    @if (Model.DrawingsDate != null && Model.DrawingsDate != default)
+                    {
+                        <div class="form-group mt-2 col-4">
+                            <label asp-for="DrawingsDate"></label>
+                            <input asp-for="DrawingsDate" type="date" class="form-control" />
+                            <span asp-validation-for="DrawingsDate" class="text-danger"></span>
+                        </div>
+                    }
+                    <div class="form-group col-4 mt-1">
+                        <label class="form-label">Вид работ</label>
+                        <select name="KindOfWorkId" class="form-control js-chosen">
+                            @if (Model.KindOfWorkId != 0)
+                            {
+                                <option value="@Model.KindOfWorkId" selected>@AbbrKind.GetById(Model.KindOfWorkId).Name</option>
+                            }
+                            else
+                            {
+                                <option disabled selected>Выберите организацию</option>
+                            }
+                            @foreach (var item in AbbrKind.GetAll())
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group mt-2 col-4">
+                        <label asp-for="ContractsCost"></label>
+                        <input asp-for="ContractsCost" type="number" class="form-control" />
+                        <span asp-validation-for="ContractsCost" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mt-2 col-4">
+                        <label asp-for="LaborCost"></label>
+                        <input asp-for="LaborCost" type="number" class="form-control" />
+                        <span asp-validation-for="LaborCost" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mt-2 col-4">
+                        <label asp-for="DoneSmrCost"></label>
+                        <input asp-for="DoneSmrCost" type="number" class="form-control" />
+                        <span asp-validation-for="DoneSmrCost" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mt-2 col-4">
+                        <label asp-for="SubContractor"></label>
+                        <input asp-for="SubContractor" class="form-control" />
+                        <span asp-validation-for="SubContractor" class="text-danger"></span>
+                    </div>
+
+
+                    @if (Model.IsChange)
+                    {
+                        // <div class="form-group col-4">
+                        // <label asp-for="IsChange"></label>
+                        //     <input type="radio" id="oneRadio" name="IsChange" value="true" />
+                        //     <label for="oneRadio">Да</label>
+                        //     <input type="radio" id="twoRadio" name="IsChange" value="false" />
+                        //     <label for="twoRadio">Нет</label>
+
+                        // </div>
+
+                        <div class="form-group mt-2 col-4">
+                            <label asp-for="ChangeEstimateDate"></label>
+                            <input asp-for="ChangeEstimateDate" type="date" class="form-control" />
+                            <span asp-validation-for="ChangeEstimateDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group mt-2 col-4">
+                            <label asp-for="ChangeDrawingDate"></label>
+                            <input asp-for="ChangeDrawingDate" type="date" class="form-control" />
+                            <span asp-validation-for="ChangeDrawingDate" class="text-danger"></span>
+                        </div>
+                        // <div class="form-group col-4">
+                        //     <label asp-for="ChangeNumber"></label>
+                        //     <input asp-for="ChangeNumber" class="form-control" />
+                        //     <span asp-validation-for="ChangeNumber" class="text-danger"></span>
+                        // </div>
+                    }
+
+                    <div class="form-group mt-3 btn_position">
+                        <input type="submit" value="Изменить" class="btn btn-primary" />
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+@*
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -88,3 +178,4 @@
         }, false);
     </script>
 }
+*@

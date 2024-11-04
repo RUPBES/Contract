@@ -13,7 +13,10 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         FileDTO? GetById(int id);
         void Update(FileDTO item);
         void Delete(int id);
-        IEnumerable<FileDTO> GetFilesOfEntity(int amendmentId, FolderEnum folder);
+        void DeleteByPath(string absolutePath);
+        IEnumerable<FileDTO> GetFilesOfEntity(int entityId, FolderEnum folder);
         void AttachFileToEntity(int fileId, int entityId, FolderEnum folder);
+
+        IEnumerable<FileDTO> GetByBuildingCode(string buildingCode, string keyFolder);
     }
 }

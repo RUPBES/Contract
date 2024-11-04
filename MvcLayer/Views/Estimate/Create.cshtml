@@ -1,0 +1,413 @@
+﻿@using DatabaseLayer.Models.PRO
+@* 
+@model List<Estimate> 
+    *@
+@{
+    bool isChange = ViewBag.isChange == true? true : false;
+    int estimateId = ViewBag.estimateId??0;
+
+    int backId = 0;
+    if ((int)ViewData["returnContractId"] == 0)
+        backId = (int)ViewData["contractId"];
+    else backId = (int)ViewData["returnContractId"];
+}
+
+<input id="contractId" value="@ViewData["contractId"]" hidden />
+<input id="EstimateId" hidden />
+<input id="typeId" name="type" value="@ViewData["type"]" hidden />
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="position:relative;min-width:40vw;max-width:80vw;min-height:35vh;">
+                <div class="top-modal-block">
+                    <label id="HeaderLabel" class="my-modal-title">Загрузка данных из сметы</label>
+                    @if (backId > 0)
+                    {
+                        <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" asp-route-contractId="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <div id="divForm" class="divForm_modal">
+                    <form id="files" method="post" enctype="multipart/form-data">
+                        <input name="isChange" id="isChangeId" value="@isChange" hidden/>
+                        <input name="estimateParentId" id="estimateParentId" value="@estimateId" hidden />
+
+                        <div id="example" style="min-width:400px; max-width: 800px;">
+                            <div class="demo-section input-group mb-3 mt-2">
+                                <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
+                                <label class="input-group-text" for="dateEstimateId">Дата получения сметы</label>
+                                <input class="form-control underline-green" name="date" type="text" id="dateEstimateId" />
+                            </div>
+                            <div class="input-group mb-3 box-hidden">
+                                <input class="form-control underline-green" name="files" type="file" aria-label="files" multiple="multiple" />
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-success btn-hidden">Загрузить файл</button>
+                                </div>
+                            </div>
+                            <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
+                                <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div id="ListOfSheet"></div>
+                <div id="result"></div>
+                <div class="view-result-step">
+                    <div class="container-line">
+                        <div class="line-item">
+                            <div class="empty box"></div>
+                            <div class="line-step box">
+                                <div class="line"></div>
+                                <div class="point">
+                                    <div class="inside-point"></div>
+                                </div>
+                            </div>
+                            <div class="name-point box">Сметы</div>
+                        </div>
+                        <div class="line-item unactive-step">
+                            <div class="empty box"></div>
+                            <div class="line-step box">
+                                <div class="line"></div>
+                                <div class="point">
+                                    <div class="inside-point"></div>
+                                </div>
+                            </div>
+                            <div class="name-point box">Чертежи</div>
+                        </div>
+                        <div class="line-item unactive-step">
+                            <div class="empty box"></div>
+                            <div class="line-step box">
+                                <div class="line"></div>
+                                <div class="point">
+                                    <div class="inside-point"></div>
+                                </div>
+                            </div>
+                            <div class="name-point box">Расчет стоимости</div>
+                        </div>
+                        <div class="line-item unactive-step">
+                            <div class="empty box"></div>
+                            <div class="line-step box">
+                                <div class="line"></div>
+                                <div class="point">
+                                    <div class="inside-point"></div>
+                                </div>
+                            </div>
+                            <div class="name-point box">График производства</div>
+                        </div>
+                        <div class="line-item unactive-step">
+                            <div class="empty box"></div>
+                            <div class="line-step box">
+                                <div class="line"></div>
+                                <div class="point">
+                                    <div class="inside-point"></div>
+                                </div>
+                            </div>
+                            <div class="name-point box">Форма С-2Б</div>
+                        </div>
+                        <div class="next-step">
+                            <button id="NextStep" class="btn btn-outline-primary" type="button" disabled>
+                                <img src="~/icons/box-arrow-in-right.svg" />
+                                Пропустить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $("#dateEstimateId").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+
+        $("#dateEstimateId").change((e) => {
+            e.target.classList.remove("underline-green");
+            let element = document.querySelector("div.box-hidden");
+            element.classList.remove("box-hidden");
+            element.classList.add("demo-section");
+        });
+        $("input[type=file]").change((e) => {
+            e.target.classList.remove("underline-green");
+            let btnHidden = document.querySelector('button.btn-hidden');
+            btnHidden.classList.remove('btn-hidden');
+        });
+        changeClassByClickButton("button.btn-success", "button.btn-success", 'btn-success', 'btn-clicked');
+        changeClassByClickButton("#GetDataFromFile", "button.btn-success", 'btn-success', 'btn-clicked');
+
+        // $("#NumberEstimate").on('change', function (e) {
+        //     var number = this.value;
+        //     $("#EstimateId").val(number);
+        //     $.ajax({
+        //         type: 'POST',
+        //         data: { EstimateId: number },
+        //         url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+        //         success: function (viewData) {
+        //             $("#divForm").html(viewData)
+        //             $("#ListOfSheet").html("")
+        //             $("#HeaderLabel").text("Загрузка чертежей")
+        //             GoNextStep();
+        //         },
+        //         error: function (error) {
+        //             var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+        //             $.ajax({
+        //                 type: 'POST',
+        //                 url: '@Url.Action("ShowError", "Parse")',
+        //                 data: { message: errorMes },
+        //                 dataType: 'html',
+        //                 success: function (data) {
+        //                     showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
+        //                 }
+        //             });
+        //         }
+        //     });
+        // });
+
+        // function AddCopyEstimate() {
+        //     var drawKit = $("#drawKit").val();
+        //     if (drawKit == "") {
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: '@Url.Action("ShowError", "Parse")',
+        //             data: { message: "Введите наименование комплекта чертежей." },
+        //             dataType: 'html',
+        //             success: function (data) {
+        //                 showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
+        //             }
+        //         });
+        //     }
+        //     else {
+        //         var number = $('#NumberEstimateAdd').val();
+        //         console.log(number)
+        //         $.ajax({
+        //             type: 'POST',
+        //             data: { EstimateId: number, DrawningKit: drawKit },
+        //             url: '@Url.Action("AddCopyEstimate", "Estimate")',
+        //             success: function (estimateNumber) {
+        //                 $("#EstimateId").val(estimateNumber);
+        //                 $.ajax({
+        //                     type: 'POST',
+        //                     data: { EstimateId: estimateNumber },
+        //                     url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+        //                     success: function (viewData) {
+        //                         $("#divForm").html(viewData)
+        //                         $("#ListOfSheet").html("");
+        //                         $("#HeaderLabel").text("Загрузка чертежей");
+        //                     },
+        //                     error: function (error) {
+        //                         var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+        //                         $.ajax({
+        //                             type: 'POST',
+        //                             url: '@Url.Action("ShowError", "Parse")',
+        //                             data: { message: errorMes },
+        //                             dataType: 'html',
+        //                             success: function (data) {
+        //                                 showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
+        //                             }
+        //                         });
+        //                     }
+        //                 });
+        //             },
+        //             error: function (error) {
+        //                 var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+        //                 $.ajax({
+        //                     type: 'POST',
+        //                     url: '@Url.Action("ShowError", "Parse")',
+        //                     data: { message: errorMes },
+        //                     dataType: 'html',
+        //                     success: function (data) {
+        //                         showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
+        //                     }
+        //                 });
+        //             }
+        //         });
+        //     }
+        // }
+
+        $("form#files").submit(function () {
+            let contractId = $("#contractId").val();
+            let dateEstimate = $("#dateEstimateId").val();
+            let formData = new FormData(files);
+            event.preventDefault();
+            function setProgress(e) {
+                if (e.lengthComputable) {
+                    $("#container_progress").removeAttr('style');
+                    var complete = e.loaded / e.total;
+                    var completeFloor = Math.floor(complete * 100)
+                    $("#pBar").attr('style', `width:${completeFloor}%`);
+                    $("#pBar").text(`${completeFloor}%`);
+                }
+            }
+
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", setProgress, false);
+                    xhr.addEventListener("progress", setProgress, false);
+                    return xhr;
+                },
+                type: 'POST',
+                url: '@Url.Action("DownloadFile", "Parse")',
+                data: formData,
+                success: function (data) {
+                    let path = data;
+                    let isChange = $("#isChangeId").val();
+                    let estimateParentId = $("#estimateParentId").val();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetCountPagesInExcel", "Parse")',
+                        data: { path: path, isEstimate: true, isChange: isChange, estimateId: estimateParentId },
+                        dataType: 'html',
+                        success: function (data) {
+                            $("#ListOfSheet").html(data);
+
+                            $('#btnChooseAllId').click(function () {
+                                let pages = $("#countDocumentPages").val();
+                                let typeId = $("#typeId").val();
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("GetEstimateData", "Estimate")',
+                                    data: { path: path, contractId: contractId, page: pages, date: dateEstimate, type: typeId, isAllDoc: true },
+                                    success: function (data) {
+
+                                       console.log(data);
+                                        window.location.href = data;
+                                    },
+                                    error: function (error) {
+                                        var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: '@Url.Action("ShowError", "Parse")',
+                                            data: { message: errorMes },
+                                            dataType: 'html',
+                                            success: function (data) {
+                                                showResultMessage("#result", data);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                           
+                            $('#GetDataFromFile').click(function () {
+                                let ex = $("#ex").val();
+                                let typeId = $("#typeId").val();
+                                let changeEstimateId = $("#changeEstimateId").val();
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("GetEstimateData", "Estimate")',
+                                    data: { path: path, contractId: contractId, page: ex, date: dateEstimate, type: typeId, isAllDoc: false, changeEstimateId: changeEstimateId },
+                                    success: function (data) {
+
+                                        const datas = data.split('-');
+                                        $("#EstimateId").val(datas[0]);
+                                        $("#typeId").val(datas[1]);
+                                        showResultMessage("#result", `<div class="alert alert-success" role="alert"><span><h3>Загружены данные из локальной сметы</h3></span></div>`);
+
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: '@Url.Action("GetDrawingsFiles", "Estimate")',
+                                            data: { EstimateId: datas[0], type: datas[1] },
+                                            success: function (viewData) {
+                                                $("#divForm").html(viewData)
+                                                $("#ListOfSheet").html("")
+                                                GoNextStep();
+                                                $("#NextStep").prop('disabled', false);
+                                                $("#HeaderLabel").text("Загрузка чертежей");
+                                            },
+                                            error: function (error) {
+                                                var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: '@Url.Action("ShowError", "Parse")',
+                                                    data: { message: errorMes },
+                                                    dataType: 'html',
+                                                    success: function (data) {
+                                                        showResultMessage("#result", data);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    },
+                                    error: function (error) {
+                                        var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+                                        $.ajax({
+                                            type: 'POST',
+                                            url: '@Url.Action("ShowError", "Parse")',
+                                            data: { message: errorMes },
+                                            dataType: 'html',
+                                            success: function (data) {
+                                                showResultMessage("#result", data);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        },
+                        error: function (error) {
+                            var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("ShowError", "Parse")',
+                                data: { message: errorMes },
+                                dataType: 'html',
+                                success: function (data) {
+                                    showResultMessage("#result", data);
+                                }
+                            });
+                        }
+                    });
+                    $("#container_progress").attr('style', `display:none`);
+                },
+                error: function (errorFile) {
+                    console.log('ошибка')
+                    var errorMes = errorFile.responseText;//.substring(18, errorFile.responseText.indexOf("\r"));
+                    console.log(errorMes)
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("ShowError", "Parse")',
+                        data: { message: errorMes },
+                        dataType: 'html',
+                        success: function (data) {
+                            showResultMessage("#result", data);
+                            $("#container_progress").attr('style', `display:none`);
+                        }
+                    });
+                },
+                contentType: false,
+                processData: false
+            });
+        });
+
+        function ChangeView(flag) {
+            if (flag === 1) {
+                document.getElementById('files').removeAttribute("hidden");
+                document.getElementById('Edit').setAttribute("hidden", true);
+                document.getElementById('AddToEstimate').setAttribute("hidden", true);
+            }
+            else if (flag === 2) {
+                document.getElementById('Edit').removeAttribute("hidden");
+                document.getElementById('files').setAttribute("hidden", true);
+                document.getElementById('AddToEstimate').setAttribute("hidden", true);
+            }
+            else if (flag === 3) {
+                document.getElementById('AddToEstimate').removeAttribute("hidden");
+                document.getElementById('files').setAttribute("hidden", true);
+                document.getElementById('Edit').setAttribute("hidden", true);
+
+            }
+        }
+    </script>
+}

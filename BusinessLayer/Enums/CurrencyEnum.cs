@@ -1,10 +1,9 @@
-﻿namespace BusinessLayer.Enums
+﻿namespace BusinessLayer.Enums;
+
+public enum CurrencyEnum
 {
-    public enum CurrencyEnum
-    {
-        BYN,
-        USD,
-        EUR,
-        RUR
-    }
+    BYN,
+    USD,
+    EUR,
+    RUR
 }

@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public int KindOfWorkId { get; set; }
-        public string? name { get; set; }
+        public string? Name { get; set; }
 
         public virtual KindOfWork KindOfWork { get; set; }
         public virtual IEnumerable<Estimate> Estimates { get; set; }

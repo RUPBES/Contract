@@ -5,6 +5,7 @@ namespace BusinessLayer.Helpers
     public static class ConstantsApp
     {
         public static string WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK = "Введен новый ДС, проверьте данные объема работ";
+        public static string WORKSHEET_NAME_DEFAULT = "Страница 1";
        
         #region Роли пользователя
 
@@ -74,7 +75,7 @@ namespace BusinessLayer.Helpers
         #region ключи для поиска по СИНКЕВИЧА ПРОГЕ -- SXW
 
         public static List<string> SXW_ESTIMATE_DOC_NAME = new List<string> { "Локальная смета", "ЛОКАЛЬНАЯ СМЕТА" };
-        public static List<string> SXW_ESTIMATE_BUILDING_NAME = new List<string> { "Наименован здан", "Наименован сооружения" };
+        public static List<string> SXW_ESTIMATE_BUILDING_NAME = new List<string> { "Наименован здан", "Наименован сооружения"/*, "ЧАСТЬ ОБЪЕКТ"*/ };
         public static List<string> SXW_ESTIMATE_BUILDING_CODE = new List<string> { "Шифр здан", "Шифр сооружен" };
         public static List<string> SXW_ESTIMATE_DRAWING_KIT = new List<string> { "Комплект чертежей" };
         public static List<string> SXW_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME = new List<string> { "Составлена в ценах на", "Составлена в", "в тек цен" };
@@ -122,7 +123,7 @@ namespace BusinessLayer.Helpers
 
         //DONE_SMR_COST
 
-        public static List<string> BLSMT_DONE_SMR_COST_DOC_NAME = new List<string> { "СДАЧИ - ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ", "СДАЧИ-ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ" };
+        public static List<string> BLSMT_DONE_SMR_COST_DOC_NAME = new List<string> { "СДАЧИ - ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ", "СДАЧИ-ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ", "ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ" };
         public static List<string> BLSMT_DONE_SMR_COST_COL_NAME = new List<string> { "с начала строительства" };
         public static List<string> BLSMT_DONE_SMR_COST_ROW_NAME = new List<string> { "Смета: №", "смета:№", "смета: № " };
         public static List<string> BLSMT_DONE_SMR_COST_EXTRA_COL_NAME = new List<string> { "стоимость", "стоимост" };

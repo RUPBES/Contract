@@ -30,6 +30,12 @@ namespace DatabaseLayer.Models.PRO
         public string Owner { get; set; }
         public int KindOfWorkId { get; set; }
 
+        public bool IsChange { get; set; }
+        public int? ChangeEstimateId { get; set; }
+        public DateTime? ChangeEstimateDate { get; set; }
+        public DateTime? ChangeDrawingDate { get; set; }
+        public int? ChangeNumber { get; set; }
+
         public virtual AbbreviationKindOfWork AbbreviationKindOfWork { get; set; }
         public int ContractId { get; set; }
         public virtual KDO.Contract Contract { get; set; }

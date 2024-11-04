@@ -126,6 +126,22 @@ namespace MvcLayer.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-        }        
+        }
+
+        public ActionResult OpenFile(int id, string fileType)
+        {
+            if (id != 0)
+            {
+                var file = _file.GetById(id);
+                var path = _env.WebRootPath + file.FilePath;
+                var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                var fsResult = new FileStreamResult(fileStream, fileType);
+                return fsResult; 
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
     }
 }

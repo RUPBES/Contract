@@ -11,7 +11,7 @@ namespace BusinessLayer.Models.PRO
     {
         public int Id { get; set; }
         public int KindOfWorkId { get; set; }
-        public string? name { get; set; }
+        public string? Name { get; set; }
 
         public virtual KindOfWorkDTO KindOfWork { get; set; }
         public virtual List<AbbreviationKindOfWorkDTO> Abbreviations { get; set; }

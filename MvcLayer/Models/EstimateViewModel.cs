@@ -36,6 +36,13 @@ namespace MvcLayer.Models
         public decimal? RemainsSmrCost { get; set; }
         public string Owner { get; set; }
         public string KindOfWork { get; set; }
+
+        public bool IsChange { get; set; }
+        public int? ChangeEstimateId { get; set; }
+        public DateTime? ChangeEstimateDate { get; set; }
+        public DateTime? ChangeDrawingDate { get; set; }
+        public int? ChangeNumber { get; set; }
+
         public List<EstimateFileDTO> EstimateFiles { get; set; } = new List<EstimateFileDTO>();
     }
 

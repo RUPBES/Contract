@@ -36,10 +36,12 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="AddEstimate" method="get" class="row">
+                <form asp-action="Create" method="get" class="row">
                     <div>
                         <input name="contractId" value="@ViewBag.contractId" hidden />
                         <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
+                        <input name="isChange" value="@ViewBag.isChange" hidden /> 
+                        <input name="estimateId" value="@ViewBag.estimateId" hidden />
                         <select name="type" class="form-select">
                             <option disabled>Выбрать подходящее</option>
                             @foreach (var item in Enum.GetValues<EstimateType>())

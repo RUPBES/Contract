@@ -24,7 +24,10 @@ namespace BusinessLayer.IoC
             services.AddAutoMapper(typeof(MapperBL));
             //services.AddDbContext<ContractsContext>(op => op.UseSqlServer(connectionString));
             services.AddScoped<IAdminService, ActiveUsersService>();
+
+            services.AddScoped<IOpenIdDictUoW, OpenIdDictUoW>();
             services.AddScoped<IContractUoW, ContractUoW>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IConverter, Converter>();
             services.AddScoped<ILoggerContract, LoggerDb>();
 

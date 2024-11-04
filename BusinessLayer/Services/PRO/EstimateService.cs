@@ -6,10 +6,9 @@ using BusinessLayer.Models.PRO;
 using DatabaseLayer.Interfaces;
 using BusinessLayer.Helpers;
 using DatabaseLayer.Models.PRO;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 
 namespace BusinessLayer.Services
 {
@@ -19,19 +18,19 @@ namespace BusinessLayer.Services
         private readonly IContractUoW _database;
         private readonly ILoggerContract _logger;
         private readonly IHttpHelper _httpHelper;
+        private readonly IHostingEnvironment _env;
 
-        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpHelper http)
+        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpHelper http, IHostingEnvironment env)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _httpHelper = http;
+            _env = env;
         }
 
         public int? Create(EstimateDTO item)
         {
-            var user = _httpHelper.GetUserName();
-
             if (item is not null)
             {
                 if (_database.Estimates.GetById(item.Id) is null)
@@ -61,8 +60,6 @@ namespace BusinessLayer.Services
 
         public void Delete(int id, int? secondId = null)
         {
-            var user = _httpHelper.GetUserName();
-
             if (id > 0)
             {
                 var emp = _database.Estimates.GetById(id);
@@ -71,32 +68,40 @@ namespace BusinessLayer.Services
                 {
                     try
                     {
+                        var files = _database.EstimateFiles.Find(x=>x.EstimateId == id);
+                        if (files is not null && files?.Count() > 0)
+                        {
+                            foreach (var item in files)
+                            {
+                                var filePath = _env.WebRootPath + item.File.FilePath;
+                                //todo: 1) предусмотреть удаление папок с файлами
+                                if (File.Exists(filePath))
+                                {
+                                    File.Delete(filePath);
+
+                                    _logger.WriteLog(logLevel: LogLevel.Information, message: $"file has been removed from folder {filePath}",
+                                       nameSpace: typeof(FileService).Name, methodName: MethodBase.GetCurrentMethod().Name);
+                                }
+                                _database.EstimateFiles.Delete(item.EstimateId, item.FileId);
+                            }
+                        }
                         _database.Estimates.Delete(id);
                         _database.Save();
 
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"delete Estimate, ID={id}",
-                            nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                        _logger.WriteLog(logLevel: LogLevel.Information, message: $"delete Estimate, ID={id}",
+                            nameSpace: typeof(EstimateService).Name, methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Error,
-                            message: e.Message,
-                            nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                        _logger.WriteLog(logLevel: LogLevel.Error, message: e.Message,
+                            nameSpace: typeof(EstimateService).Name, methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
             }
             else
             {
-                _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not delete Estimate, ID is not more than zero",
-                            nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                _logger.WriteLog(logLevel: LogLevel.Warning, message: $"not delete Estimate, ID is not more than zero",
+                            nameSpace: typeof(EstimateService).Name, methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -125,9 +130,7 @@ namespace BusinessLayer.Services
         }
 
         public void Update(EstimateDTO item)
-        {         
-            var user = _httpHelper.GetUserName();
-
+        {
             if (item is not null)
             {
                 item.PercentOfContrPrice = CalculatePercentOfContractPrice(item);
@@ -245,14 +248,14 @@ namespace BusinessLayer.Services
             if (value != null)
                 items = items.Where(x => x.BuildingCode.Contains(value)).ToList();
 
-            SearchString.TryGetValue("Название здания", out value);     
+            SearchString.TryGetValue("Название здания", out value);
             if (value != null)
                 items = items.Where(x => x.BuildingName.Contains(value)).ToList();
 
-            SearchString.TryGetValue("Подрядчик", out value);            
+            SearchString.TryGetValue("Подрядчик", out value);
             if (value != null)
                 items = items.Where(x => x.SubContractor.Contains(value)).ToList();
-            
+
             SearchString.TryGetValue("Начало периода получения чертежа", out value);
             if (value != null)
             {
@@ -260,7 +263,7 @@ namespace BusinessLayer.Services
                 DateTime.TryParse(value, out date);
                 items = items.Where(x => x.DrawingsDate >= date).ToList();
             }
-            
+
             SearchString.TryGetValue("Конец периода получения чертежа", out value);
             if (value != null)
             {
@@ -268,7 +271,7 @@ namespace BusinessLayer.Services
                 DateTime.TryParse(value, out date);
                 items = items.Where(x => x.DrawingsDate <= date).ToList();
             }
-            
+
             SearchString.TryGetValue("Начало периода получения сметы", out value);
             if (value != null)
             {
@@ -276,7 +279,7 @@ namespace BusinessLayer.Services
                 DateTime.TryParse(value, out date);
                 items = items.Where(x => x.EstimateDate >= date).ToList();
             }
-            
+
             SearchString.TryGetValue("Конец периода получения сметы", out value);
             if (value != null)
             {
@@ -289,7 +292,7 @@ namespace BusinessLayer.Services
             #region ListSearchString            
             List<int> listItems;
             ListSearchString.TryGetValue("Буквенный индекс чертежей", out listItems);
-            if (listItems!= null && listItems.Count > 0)
+            if (listItems != null && listItems.Count > 0)
             {
                 var answer = new List<Estimate>();
                 foreach (var item in listItems)
@@ -299,7 +302,7 @@ namespace BusinessLayer.Services
                 items = answer;
             }
 
-            ListSearchString.TryGetValue("Вид работы", out listItems);            
+            ListSearchString.TryGetValue("Вид работы", out listItems);
             if (listItems != null && listItems.Count > 0)
             {
                 var answer = new List<Estimate>();
@@ -360,9 +363,9 @@ namespace BusinessLayer.Services
             var doneSmr = item.DoneSmrCost;
             var costContr = item.ContractsCost;
 
-            if(doneSmr > 0M && costContr > 0M)
+            if (doneSmr > 0M && costContr > 0M)
             {
-                decimal devided = (decimal)((doneSmr * 100) / (costContr*100))*100;
+                decimal devided = (decimal)((doneSmr * 100) / (costContr * 100)) * 100;
                 return Math.Round(devided, 2);
             }
             return 0M;
@@ -370,93 +373,95 @@ namespace BusinessLayer.Services
 
         public Finding ReturnKeysSearch(string type)
         {
-
             var keyStore = new Dictionary<string, Finding>();
-
-            keyStore.Add(ConstantsApp.SMR_PRO_APP, new Finding());
-            keyStore.Add(ConstantsApp.SXW_SINKEVICH_APP, new Finding());
-            keyStore.Add(ConstantsApp.BELSMETA_APP, new Finding());
-
             #region SMR
 
-            keyStore[ConstantsApp.SMR_PRO_APP].Estimate = new SearchEstimateObject();
-            keyStore[ConstantsApp.SMR_PRO_APP].Estimate.DocName = ConstantsApp.SMR_ESTIMATE_DOC_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].Estimate.BuildingName = ConstantsApp.SMR_ESTIMATE_BUILDING_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].Estimate.BuildingCode = ConstantsApp.SMR_ESTIMATE_BUILDING_CODE;
-            keyStore[ConstantsApp.SMR_PRO_APP].Estimate.DrawingKit = ConstantsApp.SMR_ESTIMATE_DRAWING_KIT;
-            keyStore[ConstantsApp.SMR_PRO_APP].Estimate.StartLineLookingForEstimateName = ConstantsApp.SMR_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME;
+            if (type.Equals(ConstantsApp.SMR_PRO_APP, StringComparison.OrdinalIgnoreCase))
+            {
+                keyStore.Add(ConstantsApp.SMR_PRO_APP, new Finding());
+                keyStore[ConstantsApp.SMR_PRO_APP].Estimate = new SearchEstimateObject();
+                keyStore[ConstantsApp.SMR_PRO_APP].Estimate.DocName = ConstantsApp.SMR_ESTIMATE_DOC_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].Estimate.BuildingName = ConstantsApp.SMR_ESTIMATE_BUILDING_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].Estimate.BuildingCode = ConstantsApp.SMR_ESTIMATE_BUILDING_CODE;
+                keyStore[ConstantsApp.SMR_PRO_APP].Estimate.DrawingKit = ConstantsApp.SMR_ESTIMATE_DRAWING_KIT;
+                keyStore[ConstantsApp.SMR_PRO_APP].Estimate.StartLineLookingForEstimateName = ConstantsApp.SMR_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME;
 
-            keyStore[ConstantsApp.SMR_PRO_APP].LaborCost = new SearchObject();
-            keyStore[ConstantsApp.SMR_PRO_APP].LaborCost.DocName = ConstantsApp.SMR_LABOR_COST_DOC_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].LaborCost.ColName = ConstantsApp.SMR_LABOR_COST_COL_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].LaborCost.RowName = ConstantsApp.SMR_LABOR_COST_ROW_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].LaborCost = new SearchObject();
+                keyStore[ConstantsApp.SMR_PRO_APP].LaborCost.DocName = ConstantsApp.SMR_LABOR_COST_DOC_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].LaborCost.ColName = ConstantsApp.SMR_LABOR_COST_COL_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].LaborCost.RowName = ConstantsApp.SMR_LABOR_COST_ROW_NAME;
 
-            keyStore[ConstantsApp.SMR_PRO_APP].ContractCost = new SearchObject();
-            keyStore[ConstantsApp.SMR_PRO_APP].ContractCost.DocName = ConstantsApp.SMR_CONTRACT_COST_DOC_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].ContractCost.ColName = ConstantsApp.SMR_CONTRACT_COST_COL_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].ContractCost.RowName = ConstantsApp.SMR_CONTRACT_COST_ROW_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].ContractCost = new SearchObject();
+                keyStore[ConstantsApp.SMR_PRO_APP].ContractCost.DocName = ConstantsApp.SMR_CONTRACT_COST_DOC_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].ContractCost.ColName = ConstantsApp.SMR_CONTRACT_COST_COL_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].ContractCost.RowName = ConstantsApp.SMR_CONTRACT_COST_ROW_NAME;
 
-            keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost = new SearchObject();
-            keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.DocName = ConstantsApp.SMR_DONE_SMR_COST_DOC_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.ExtraColName = ConstantsApp.SMR_DONE_SMR_COST_EXTRA_COL_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.ColName = ConstantsApp.SMR_DONE_SMR_COST_COL_NAME;
-            keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.RowName = ConstantsApp.SMR_DONE_SMR_COST_ROW_NAME;
-
+                keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost = new SearchObject();
+                keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.DocName = ConstantsApp.SMR_DONE_SMR_COST_DOC_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.ExtraColName = ConstantsApp.SMR_DONE_SMR_COST_EXTRA_COL_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.ColName = ConstantsApp.SMR_DONE_SMR_COST_COL_NAME;
+                keyStore[ConstantsApp.SMR_PRO_APP].DoneSmrCost.RowName = ConstantsApp.SMR_DONE_SMR_COST_ROW_NAME;
+            }
             #endregion
 
             #region SXW
+            else if (type.Equals(ConstantsApp.SXW_SINKEVICH_APP, StringComparison.OrdinalIgnoreCase))
+            {
+                keyStore.Add(ConstantsApp.SXW_SINKEVICH_APP, new Finding());
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate = new SearchEstimateObject();
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.DocName = ConstantsApp.SXW_ESTIMATE_DOC_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.BuildingName = ConstantsApp.SXW_ESTIMATE_BUILDING_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.BuildingCode = ConstantsApp.SXW_ESTIMATE_BUILDING_CODE;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.DrawingKit = ConstantsApp.SXW_ESTIMATE_DRAWING_KIT;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.StartLineLookingForEstimateName = ConstantsApp.SXW_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME;
 
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate = new SearchEstimateObject();
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.DocName = ConstantsApp.SXW_ESTIMATE_DOC_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.BuildingName = ConstantsApp.SXW_ESTIMATE_BUILDING_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.BuildingCode = ConstantsApp.SXW_ESTIMATE_BUILDING_CODE;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.DrawingKit = ConstantsApp.SXW_ESTIMATE_DRAWING_KIT;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].Estimate.StartLineLookingForEstimateName = ConstantsApp.SXW_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost = new SearchObject();
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost.DocName = ConstantsApp.SXW_LABOR_COST_DOC_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost.ColName = ConstantsApp.SXW_LABOR_COST_COL_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost.RowName = ConstantsApp.SXW_LABOR_COST_ROW_NAME;
 
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost = new SearchObject();
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost.DocName = ConstantsApp.SXW_LABOR_COST_DOC_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost.ColName = ConstantsApp.SXW_LABOR_COST_COL_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].LaborCost.RowName = ConstantsApp.SXW_LABOR_COST_ROW_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost = new SearchObject();
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost.DocName = ConstantsApp.SXW_CONTRACT_COST_DOC_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost.ColName = ConstantsApp.SXW_CONTRACT_COST_COL_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost.RowName = ConstantsApp.SXW_CONTRACT_COST_ROW_NAME;
 
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost = new SearchObject();
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost.DocName = ConstantsApp.SXW_CONTRACT_COST_DOC_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost.ColName = ConstantsApp.SXW_CONTRACT_COST_COL_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].ContractCost.RowName = ConstantsApp.SXW_CONTRACT_COST_ROW_NAME;
-
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost = new SearchObject();
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.DocName = ConstantsApp.SXW_DONE_SMR_COST_DOC_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.ExtraColName = ConstantsApp.SXW_DONE_SMR_COST_EXTRA_COL_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.ColName = ConstantsApp.SXW_DONE_SMR_COST_COL_NAME;
-            keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.RowName = ConstantsApp.SXW_DONE_SMR_COST_ROW_NAME;
-
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost = new SearchObject();
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.DocName = ConstantsApp.SXW_DONE_SMR_COST_DOC_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.ExtraColName = ConstantsApp.SXW_DONE_SMR_COST_EXTRA_COL_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.ColName = ConstantsApp.SXW_DONE_SMR_COST_COL_NAME;
+                keyStore[ConstantsApp.SXW_SINKEVICH_APP].DoneSmrCost.RowName = ConstantsApp.SXW_DONE_SMR_COST_ROW_NAME;
+            }
             #endregion
 
             #region BELSMETA
 
-            keyStore[ConstantsApp.BELSMETA_APP].Estimate = new SearchEstimateObject();
-            keyStore[ConstantsApp.BELSMETA_APP].Estimate.DocName = ConstantsApp.BLSMT_ESTIMATE_DOC_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].Estimate.BuildingName = ConstantsApp.BLSMT_ESTIMATE_BUILDING_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].Estimate.BuildingCode = ConstantsApp.BLSMT_ESTIMATE_BUILDING_CODE;
-            keyStore[ConstantsApp.BELSMETA_APP].Estimate.DrawingKit = ConstantsApp.BLSMT_ESTIMATE_DRAWING_KIT;
-            keyStore[ConstantsApp.BELSMETA_APP].Estimate.StartLineLookingForEstimateName = ConstantsApp.BLSMT_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME;
+            else if (type.Equals(ConstantsApp.SXW_SINKEVICH_APP, StringComparison.OrdinalIgnoreCase))
+            {
+                keyStore.Add(ConstantsApp.BELSMETA_APP, new Finding());
+                keyStore[ConstantsApp.BELSMETA_APP].Estimate = new SearchEstimateObject();
+                keyStore[ConstantsApp.BELSMETA_APP].Estimate.DocName = ConstantsApp.BLSMT_ESTIMATE_DOC_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].Estimate.BuildingName = ConstantsApp.BLSMT_ESTIMATE_BUILDING_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].Estimate.BuildingCode = ConstantsApp.BLSMT_ESTIMATE_BUILDING_CODE;
+                keyStore[ConstantsApp.BELSMETA_APP].Estimate.DrawingKit = ConstantsApp.BLSMT_ESTIMATE_DRAWING_KIT;
+                keyStore[ConstantsApp.BELSMETA_APP].Estimate.StartLineLookingForEstimateName = ConstantsApp.BLSMT_ESTIMATE_START_LINE_LOOKING_FOR_ESTIMATE_NAME;
 
-            keyStore[ConstantsApp.BELSMETA_APP].LaborCost = new SearchObject();
-            keyStore[ConstantsApp.BELSMETA_APP].LaborCost.DocName = ConstantsApp.BLSMT_LABOR_COST_DOC_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].LaborCost.ColName = ConstantsApp.BLSMT_LABOR_COST_COL_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].LaborCost.RowName = ConstantsApp.BLSMT_LABOR_COST_ROW_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].LaborCost = new SearchObject();
+                keyStore[ConstantsApp.BELSMETA_APP].LaborCost.DocName = ConstantsApp.BLSMT_LABOR_COST_DOC_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].LaborCost.ColName = ConstantsApp.BLSMT_LABOR_COST_COL_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].LaborCost.RowName = ConstantsApp.BLSMT_LABOR_COST_ROW_NAME;
 
-            keyStore[ConstantsApp.BELSMETA_APP].ContractCost = new SearchObject();
-            keyStore[ConstantsApp.BELSMETA_APP].ContractCost.DocName = ConstantsApp.BLSMT_CONTRACT_COST_DOC_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].ContractCost.ColName = ConstantsApp.BLSMT_CONTRACT_COST_COL_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].ContractCost.RowName = ConstantsApp.BLSMT_CONTRACT_COST_ROW_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].ContractCost = new SearchObject();
+                keyStore[ConstantsApp.BELSMETA_APP].ContractCost.DocName = ConstantsApp.BLSMT_CONTRACT_COST_DOC_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].ContractCost.ColName = ConstantsApp.BLSMT_CONTRACT_COST_COL_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].ContractCost.RowName = ConstantsApp.BLSMT_CONTRACT_COST_ROW_NAME;
 
-            keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost = new SearchObject();
-            keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.DocName = ConstantsApp.BLSMT_DONE_SMR_COST_DOC_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.ColName = ConstantsApp.BLSMT_DONE_SMR_COST_COL_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.RowName = ConstantsApp.BLSMT_DONE_SMR_COST_ROW_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.ExtraColName = ConstantsApp.BLSMT_DONE_SMR_COST_EXTRA_COL_NAME;
-            keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.ExtraRowName = ConstantsApp.BLSMT_DONE_SMR_COST_EXTRA_ROW_NAME;
-
+                keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost = new SearchObject();
+                keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.DocName = ConstantsApp.BLSMT_DONE_SMR_COST_DOC_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.ColName = ConstantsApp.BLSMT_DONE_SMR_COST_COL_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.RowName = ConstantsApp.BLSMT_DONE_SMR_COST_ROW_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.ExtraColName = ConstantsApp.BLSMT_DONE_SMR_COST_EXTRA_COL_NAME;
+                keyStore[ConstantsApp.BELSMETA_APP].DoneSmrCost.ExtraRowName = ConstantsApp.BLSMT_DONE_SMR_COST_EXTRA_ROW_NAME;
+            }
             #endregion
 
             Finding? result = new Finding();

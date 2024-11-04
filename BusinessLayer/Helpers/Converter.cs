@@ -205,5 +205,62 @@ namespace BusinessLayer.Helpers
             _ => null
         };
 
+        public string ConvertMethodNameToRussian(string name) => name switch
+        {
+            "Create" => "Создание",
+            "Update" => "Обновление",
+            "Delete" => "Удаление",
+            "AddFile" => "Добавление файла",
+            "AddAmendmentToPrepayment" => "Добавление доп.соглашения",
+            "AddAmendmentToMaterial" => "Добавление доп.соглашения",
+            "AddAmendmentToScopeWork" => "Добавление доп.соглашения",            
+            "AttachFileToEntity" => "Добавление файла",
+            "DeleteAfterScopeWork" => "Удаление объемов работ»",
+            "ParseAndReturnLaborCosts" => "Загрузка трудозатрат по смете",
+            "ParseAndReturnDoneSmrCost" => "Загрузка \"выполненно смр\" по смете",
+            "ParseAndReturnContractCosts" => "Загрузка \"стоимость по договору\" по смете",
+            "ParseEstimate" => "Загрузка данных по смете",
+            _ => string.Empty
+        };
+
+        public string ConvertNameSpaceToRussian(string name) => name switch
+        {
+            "AbbreviationKindOfWorkService" => "Категория работ по смете",
+            "ActService" => "Акт приостановления/возобновления работ",
+            "AddressService" => "Адрес",
+            "AmendmentService" => "Дополнительное соглашение",
+            "CommissionActService" => "Акт ввода",
+            "ContractOrganizationService" => "Организация и договор",
+            "ContractService" => "Договор",
+            "CorrespondenceService" => "Переписка с заказчиком",
+            "DepartmentService" => "Отдел организации",
+
+            "EmployeeService" => "Сотрудники",
+            "EstimateService" => "Смета",
+            "EstimateDocService" => "Проектно-сметная документация",
+            "FileService" => "Файл",
+            "FormService" => "Форма С-3А",
+            "KindOfWorkService" => "Вид работ по смете",
+            "MaterialCostService" => "Стоимость материалов",
+            "MaterialService" => "Материалы",
+
+            "OrganizationService" => "Организация",
+            "PaymentService" => "Оплата",
+            "ParseService" => "Извлечение данных из Excel",
+            "PhoneService" => "Телефон",
+            "PrepaymentFactService" => "Авансы (факт)",
+            "PrepaymentPlanService" => "Авансы (план)",
+            "PrepaymentService" => "Авансы",
+
+            "PrepaymentTakeService" => "Полученные авансы",
+            "ScopeWorkService" => "Объем работ",
+            "SelectionProcedureService" => "Процедура выбора",
+            "ServiceCostService" => "Стоимость услуг",
+            "ServiceGCService" => "Услуги генподрядчика",
+            "SWCostService" => "Стоимость объема работ",
+            "TypeWorkService" => "Вид работ",           
+
+            _ => string.Empty
+        };
     }
 }

@@ -60,7 +60,7 @@ namespace DatabaseLayer.Repositories.PRO
 
                 if (abbreviationKindOfWorks is not null)
                 {
-                    abbreviationKindOfWorks.name = entity.name;
+                    abbreviationKindOfWorks.Name = entity.Name;
                     abbreviationKindOfWorks.KindOfWorkId = entity.KindOfWorkId;  
                     _context.AbbreviationKindOfWorks.Update(abbreviationKindOfWorks);
                 }

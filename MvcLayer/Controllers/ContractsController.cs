@@ -56,7 +56,8 @@ namespace MvcLayer.Controllers
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-            var sas = _admin.GetListActivity();
+            //_admin.GetListActivity(7);
+            
             if (pageNum < 1)
             {
                 pageNum = 1;

@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Helpers;
 using BusinessLayer.IoC;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -52,11 +53,15 @@ namespace MvcLayer
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Data"));
             });
-
             services.AddDbContext<OpenIdDictDbContxt>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Authentication"));
             });
+
+            /*OptionsPattern*/
+            services.Configure<ExcelActivityReportOptions>(Configuration.GetSection(ExcelActivityReportOptions.ExcelActivityReport));
+            services.Configure<EmailOptions>(Configuration.GetSection(EmailOptions.EmailSettings));
+            services.Configure<EmailRecipient>(Configuration.GetSection(EmailRecipient.EmailRecipients));
 
             services.AddAuthentication(options =>
             {

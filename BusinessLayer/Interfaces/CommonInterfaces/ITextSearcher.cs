@@ -1,7 +1,10 @@
-﻿namespace BusinessLayer.Interfaces.CommonInterfaces
+﻿using BusinessLayer.Models.PRO;
+
+namespace BusinessLayer.Interfaces.CommonInterfaces
 {
     public interface ITextSearcher
     {
-        string? FindNumberWithEnd(string args);
+        string? SearchNumberWithEnd(string args);
+        AbbreviationKindOfWorkDTO? SearchKindOfWork(string args);
     }
 }

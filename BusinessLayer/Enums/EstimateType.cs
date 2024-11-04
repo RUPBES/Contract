@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BusinessLayer.Enums
+﻿namespace BusinessLayer.Enums;
+public enum EstimateType
 {
-    public enum EstimateType
-    {
-        SmrPro = 1,
-        SxwSinkevich,
-        Belsmeta
-    }
+    SmrPro = 1,
+    SxwSinkevich,
+    Belsmeta
 }

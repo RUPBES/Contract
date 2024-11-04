@@ -9,6 +9,7 @@ using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Reflection;
 using File = DatabaseLayer.Models.KDO.File;
 
@@ -21,7 +22,7 @@ namespace BusinessLayer.Services
         private readonly ILoggerContract _logger;
         private readonly IHostingEnvironment _env;
 
-        public FileService(IContractUoW database, IMapper mapper, ILoggerContract logger,  IHostingEnvironment env)
+        public FileService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env)
         {
             _database = database;
             _mapper = mapper;
@@ -44,11 +45,17 @@ namespace BusinessLayer.Services
                     int i = 1;
                     int positionDot = file.FileName.LastIndexOf('.');
 
-                    if (!Directory.Exists(_env.WebRootPath + "\\StaticFiles\\" + folderNested))
+                    //if (!Directory.Exists(_env.WebRootPath + "\\StaticFiles\\" + folderNested))
+                    //{
+                    //    DirectoryInfo directory = new DirectoryInfo($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
+                    //    directory.Create();
+                    //}
+
+                    if (!Directory.Exists($@"{_env.WebRootPath}\StaticFiles\{folderNested}"))
                     {
-                        DirectoryInfo directory = new DirectoryInfo($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
-                        directory.Create();
+                        Directory.CreateDirectory($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
                     }
+
                     while (System.IO.File.Exists(fullPath))
                     {
                         fileName = file.FileName.Insert(positionDot, "[" + i + "]");
@@ -118,7 +125,7 @@ namespace BusinessLayer.Services
 
                             _logger.WriteLog(
                                logLevel: LogLevel.Information,
-                               message: $"file has been removed from folder ##{file.FilePath}##, ID={id}",
+                               message: $"file has been removed from folder {file.FilePath}, ID={id}",
                                nameSpace: typeof(FileService).Name,
                                methodName: MethodBase.GetCurrentMethod().Name);
                         }
@@ -157,6 +164,14 @@ namespace BusinessLayer.Services
                                message: $"not delete file, ID is not more than zero",
                                nameSpace: typeof(FileService).Name,
                                methodName: MethodBase.GetCurrentMethod().Name);
+            }
+        }
+
+        public void DeleteByPath(string absolutePath)
+        {
+            if (System.IO.File.Exists(absolutePath))
+            {
+                System.IO.File.Delete(absolutePath);
             }
         }
 
@@ -248,10 +263,19 @@ namespace BusinessLayer.Services
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
+                case FolderEnum.Estimate:
+
+                    var filesEstimate = _database.EstimateFiles.Find(x => x.EstimateId == entityId);
+                    foreach (var file in filesEstimate)
+                    {
+                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                    }
+                    return _mapper.Map<IEnumerable<FileDTO>>(result);
+
                 case FolderEnum.EstimateDocumentations:
 
-                    var filesEstimate = _database.EstimateDocFiles.Find(x => x.EstimateDocId == entityId);
-                    foreach (var file in filesEstimate)
+                    var filesEstimateDoc = _database.EstimateDocFiles.Find(x => x.EstimateDocId == entityId);
+                    foreach (var file in filesEstimateDoc)
                     {
                         result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
                     }
@@ -389,6 +413,11 @@ namespace BusinessLayer.Services
                             nameSpace: typeof(FileService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
+        }
+
+        public IEnumerable<FileDTO> GetByBuildingCode(string buildingCode, string keyFolder)
+        {
+            return _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(x => x.FilePath.Contains($@"\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\")));
         }
     }
 }

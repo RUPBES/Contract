@@ -28,7 +28,6 @@ namespace MvcLayer.Controllers
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
         {
             //TODO: 2. здесь название организации, ее вставить в _employeesService.GetPage и _employeesService.GetPageFilter чтобы взять инфу по организации
-            //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
 
             ViewBag.CurrentSort = sortOrder;

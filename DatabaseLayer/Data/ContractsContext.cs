@@ -1292,7 +1292,7 @@ public partial class ContractsContext : DbContext
 
             entity.HasComment("Аббревитуры типов работы");
 
-            entity.Property(e => e.name)
+            entity.Property(e => e.Name)
                 .HasComment("Наименование");
 
             entity.HasOne(d => d.KindOfWork)

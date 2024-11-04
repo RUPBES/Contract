@@ -1,16 +1,15 @@
-﻿namespace BusinessLayer.Enums
+﻿namespace BusinessLayer.Enums;
+
+public enum FolderEnum
 {
-    public enum FolderEnum
-    {
-        Acts,
-        Amendment,
-        CommissionActs,
-        Correspondences,
-        EstimateDocumentations, 
-        Form3C,
-        Contracts,
-        PrepaymentTake,
-        Other,
-        Estimate
-    }
+    Acts,
+    Amendment,
+    CommissionActs,
+    Correspondences,
+    EstimateDocumentations, 
+    Form3C,
+    Contracts,
+    PrepaymentTake,
+    Other,
+    Estimate
 }

@@ -114,6 +114,13 @@ namespace DatabaseLayer.Repositories
                     estimate.DrawingsKit = entity.DrawingsKit;
                     estimate.KindOfWorkId = entity.KindOfWorkId;
                     estimate.ContractId = entity.ContractId;
+
+                    estimate.IsChange = entity.IsChange;
+                    estimate.ChangeDrawingDate = entity.ChangeDrawingDate;
+                    estimate.ChangeEstimateDate = entity.ChangeEstimateDate;
+                    estimate.ChangeEstimateId = entity.ChangeEstimateId;
+                    estimate.ChangeNumber = entity.ChangeNumber;
+
                     _context.Estimates.Update(estimate);
                 }
             }

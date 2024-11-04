@@ -342,7 +342,7 @@ namespace BusinessLayer.ServicesCOM
                 else
                 {
                     estimateNumber = GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.Estimate.DocName.ToArray());
-                    estimate.Number = _textSearcher?.FindNumberWithEnd(estimateNumber) ?? "";
+                    estimate.Number = _textSearcher?.SearchNumberWithEnd(estimateNumber) ?? "";
                 }
                 if (estimateNumber == string.Empty)
                 {
@@ -351,33 +351,46 @@ namespace BusinessLayer.ServicesCOM
 
 
                 var BuildingName = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.BuildingName.ToArray());
-                estimate.BuildingName = GetValueInRow(excel, BuildingName.FirstOrDefault().Item1, BuildingName.FirstOrDefault().Item2);
-
-                var BuildingCode = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.BuildingCode.ToArray());
-                estimate.BuildingCode = GetValueInRow(excel, BuildingCode.FirstOrDefault().Item1, BuildingCode.FirstOrDefault().Item2);
-
-                var DrawingsKit = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.DrawingKit.ToArray());
-                estimate.DrawingsKit = GetValueInRow(excel, DrawingsKit.FirstOrDefault().Item1, DrawingsKit.FirstOrDefault().Item2);
-
-                var cellAboveDates = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.StartLineLookingForEstimateName.ToArray());
-                int rowNameEstimate = cellAboveDates.FirstOrDefault().Item1 - 1;
-                var drawingName = string.Empty;
-
-                for (int i = excel.Dimension.Start.Column; i <= excel.Dimension.End.Column; i++)
+                if (BuildingName.Count() > 0)
                 {
-                    drawingName = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
-                    if (drawingName is not null)
-                    {
-                        break;
-                    }
-                    if (i == excel.Dimension.End.Column && string.IsNullOrEmpty(drawingName))
-                    {
-                        i = excel.Dimension.Start.Column;
-                        rowNameEstimate = rowNameEstimate - 1;
-                    }
+                    estimate.BuildingName = GetValueInRow(excel, BuildingName.FirstOrDefault().Item1, BuildingName.FirstOrDefault().Item2);
                 }
 
-                estimate.DrawingsName = drawingName?.Replace("На ", "")?.Replace("НА ", "").Replace("на ", "");
+
+                var BuildingCode = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.BuildingCode.ToArray());
+                if (BuildingCode.Count() > 0)
+                {
+                    estimate.BuildingCode = GetValueInRow(excel, BuildingCode.FirstOrDefault().Item1, BuildingCode.FirstOrDefault().Item2);
+                }
+
+                var DrawingsKit = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.DrawingKit.ToArray());
+                if (DrawingsKit.Count() > 0)
+                {
+                    estimate.DrawingsKit = GetValueInRow(excel, DrawingsKit.FirstOrDefault().Item1, DrawingsKit.FirstOrDefault().Item2);
+                }
+                var drawingName = string.Empty;
+                var cellAboveDates = _excelReader.FindCellByQuery(excel, searchingKeys.Estimate.StartLineLookingForEstimateName.ToArray());
+                if (cellAboveDates.Count() > 0)
+                {
+                    int rowNameEstimate = cellAboveDates.FirstOrDefault().Item1 - 1;
+
+
+                    for (int i = excel.Dimension.Start.Column; i <= excel.Dimension.End.Column; i++)
+                    {
+                        drawingName = excel.Cells[rowNameEstimate, i].Value?.ToString()?.Trim();
+                        if (drawingName is not null)
+                        {
+                            break;
+                        }
+                        if (i == excel.Dimension.End.Column && string.IsNullOrEmpty(drawingName))
+                        {
+                            i = excel.Dimension.Start.Column;
+                            rowNameEstimate = rowNameEstimate - 1;
+                        }
+                    }
+
+                    estimate.DrawingsName = drawingName?.Replace("На ", "")?.Replace("НА ", "").Replace("на ", "");
+                }
             }
             catch (Exception e)
             {
