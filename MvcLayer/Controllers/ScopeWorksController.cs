@@ -298,7 +298,9 @@ namespace MvcLayer.Controllers
                             if (contractType == ContractType.MultipleContract)
                             {
                                 _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, false, operationSign, scopeWork?.ChangeScopeWorkId);
-                                _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, true, operationSign, scopeWork?.ChangeScopeWorkId);
+                                var lastAmendmentTrue = _scopeWork.GetLastScope(contract.Id, true);
+                                var swCostsTrue = _swCostService.Find(x => x.ScopeWorkId == lastAmendmentTrue.Id).ToList();
+                                _scopeWork.UpdateParentCosts(parentContrId, swCostsTrue, true, operationSign, scopeWork?.ChangeScopeWorkId);
                             }
                         }
                         else

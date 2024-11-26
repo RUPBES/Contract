@@ -324,8 +324,8 @@ namespace BusinessLayer.Services
                 var scopeContractId = GetLastScope(contractId)?.Id;                
                 if (scopeContractId.HasValue)
                 {
-                    RemoveCostsFromMain(mainContractId, (int)scopeContractId, true);
-                    RemoveCostsFromMain(mainContractId, (int)scopeContractId, false);
+                    RemoveCostsFromMain(mainContractId, contractId, true);
+                    RemoveCostsFromMain(mainContractId, contractId, false);
 
                     _database.Save();
                 }
@@ -383,10 +383,10 @@ namespace BusinessLayer.Services
                 return true;
             }            
 
-            void RemoveCostsFromMain(int parentContractId, int contractScopeId, bool isOwnForces)
+            void RemoveCostsFromMain(int parentContractId, int contractId, bool isOwnForces)
             {
                 var mainScpId = GetLastScope(parentContractId, isOwnForces)?.Id;
-
+                var contractScopeId = GetLastScope(contractId, isOwnForces)?.Id;
                 if (mainScpId.HasValue)
                 {
                     foreach (var item in _database.SWCosts.Find(x => x.ScopeWorkId == mainScpId))
