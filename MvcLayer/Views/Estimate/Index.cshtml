@@ -18,7 +18,7 @@
 
 @section Table {
     <style>
-           
+
         .square {
             width: 20px;
             height: 20px;
@@ -29,13 +29,14 @@
 
         .overdue {
             background-color: #79a6fbb0 !important;
-        }              
+        }
 
-        h1 {                                                                                                                                                                                                                                                                                           transition: all 1s; */
-            font-family: 'Ampersand', Montserrat, sans-serif;
+        h1 {
+            transition: all 1s;
+            */ font-family: 'Ampersand', Montserrat, sans-serif;
             font-size: 32px;
         }
-       
+
         .color_label {
             display: flex;
             font-weight: bold;
@@ -93,7 +94,6 @@
                             <h3 class="modal-title">Поиск:</h3>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-
                         <div class="form-label">
                             <div class="input-group mb-3">
                                 <label class="input-group-text" for="inputGroupSearch01">Шифр здания</label>
@@ -339,15 +339,22 @@
                 </div>
             </div>
             <div class="box-btn">
-                <button class="btn btn-ctr btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop" >
+                <button class="btn btn-ctr btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     <div>Поиск</div>
-            </button>
+                </button>
+            </div>
+            <div class="box-btn">
+                <a class="btn btn-ctr btn-primary" asp-action="GetType" asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]"
+                   asp-route-isUpdate="true" asp-route-returnContractId="@ViewData["returnContractId"]">
+                    <img class="icon" src="~/icons/update.svg" />
+                    <div>Обновить данные</div>
+                </a>
             </div>
             <div class="box-btn">
                 <a class="btn btn-ctr btn-success" asp-action="GetType"
                    asp-controller="Estimate" asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]">
-                    <img class="icon" src="~/icons/plus-circle.svg"/>
-                    <div >Добавить данные</div>
+                    <img class="icon" src="~/icons/plus-circle.svg" />
+                    <div>Добавить данные</div>
                 </a>
             </div>
         </form>
@@ -443,6 +450,15 @@
                                 if (item.DetailsView.First().EstimateViewModelDrawnings.First().DrawingsDate > new DateTime(1, 1, 1))
                                 {
                                     @val
+                                    
+                    <div class="icon file-store" title="Добавить изменения по смете">
+                    <a asp-action="GetType"
+                    asp-route-contractId="@ViewData["contractId"]"
+                    asp-route-isChange=true
+                    asp-route-estimateId="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id">
+                    </a>
+                    </div>
+                    
                                 }
                             }
                         </td>
@@ -487,7 +503,7 @@
                                 }
                             </td>
                             <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
-                            class="text-end align-middle">
+                                class="text-end align-middle">
                                 @{
                                     val = item.DetailsView.First().EstimateViewModelDrawnings.First().LaborCost?.ToString("N2");
                                     if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
@@ -497,7 +513,7 @@
                                 }
                             </td>
                             <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
-                            class="text-end align-middle">
+                                class="text-end align-middle">
                                 @{
                                     val = item.DetailsView.First().EstimateViewModelDrawnings.First().DoneSmrCost?.ToString("N2");
                                     if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
@@ -517,7 +533,7 @@
                                 }
                             </td>
                             <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]"
-                                 class="text-end align-middle">
+                                class="text-end align-middle">
                                 @{
                                     val = item.DetailsView.First().EstimateViewModelDrawnings.First().RemainsSmrCost?.ToString("N2");
                                     if (item.DetailsView.First().EstimateViewModelDrawnings.First().Number is not null)
@@ -537,20 +553,21 @@
                                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                             </div>
 
-                            <div class="icon file-store" title="Файлы">
+                            <div class="icon file-store" title="Просмотр файлов">
                                 <a asp-action="ShowFiles" asp-route-estimateId="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
                                    asp-route-contractId="@ViewData["contractId"]"
                                    asp-route-buildingCode="@item.BuildingCode"
                                    asp-route-estimateNumber="@item.DetailsView.First().EstimateViewModelDrawnings.First().Number"
                                    asp-route-isDrawing="false"></a>
                             </div>
-
-                            <div class="icon file-add" title="Добавить  изменения по смете">
-                                <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
-                                   asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
-                            </div>
+                            @*
+                    <div class="icon file-add" title="Добавить  изменения по смете">
+                    <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                    </div>
+                    *@
                             <div class="icon drawing-add" title="Добавить чертежи">
-                                <a asp-action="CreateByEstimate" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                <a asp-action="AddDrawings" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
                                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                             </div>
 
@@ -595,7 +612,7 @@
                                         }
                                     }
                                 </td>
-                                <td rowspan ="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
+                                <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-center align-middle">
                                 </td>
                                 <td rowspan="@item.DetailsView.First().NumberEntriesByEstimate[indexNumber]" class="text-end align-middle">
                                     @{
@@ -647,11 +664,21 @@
                             <td class="text-center align-middle">
                                 @draw.SubContractor
                             </td>
-                           
                             <td>
                                 <div class="icon edit" title="Редактировать смету">
                                     <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]"
                                        asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                </div>
+                                <div class="icon file-store" title="Просмотр файлов">
+                                    <a asp-action="ShowFiles" asp-route-estimateId="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                       asp-route-contractId="@ViewData["contractId"]"
+                                       asp-route-buildingCode="@item.BuildingCode"
+                                       asp-route-estimateNumber="@item.DetailsView.First().EstimateViewModelDrawnings.First().Number"
+                                       asp-route-isDrawing="false"></a>
+                                </div>
+                                <div class="icon drawing-add" title="Добавить чертежи">
+                                    <a asp-action="AddDrawings" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                       asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                                 </div>
                                 <div class="icon delete" title="Удалить запись">
                                     <a onclick="DeleteEstimate(@draw.Id)"></a>
@@ -762,10 +789,23 @@
                                     <a asp-action="Edit" asp-route-id="@detail.EstimateViewModelDrawnings.First().Id"
                                        asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                                 </div>
-                                <div class="icon file-add" title="Добавить смету с такими данными">
-                                    <a asp-action="CreateByEstimate" asp-route-id="@detail.EstimateViewModelDrawnings.First().Id"
+                                <div class="icon file-store" title="Просмотр файлов">
+                                    <a asp-action="ShowFiles" asp-route-estimateId="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                       asp-route-contractId="@ViewData["contractId"]"
+                                       asp-route-buildingCode="@item.BuildingCode"
+                                       asp-route-estimateNumber="@item.DetailsView.First().EstimateViewModelDrawnings.First().Number"
+                                       asp-route-isDrawing="false"></a>
+                                </div>
+                                <div class="icon drawing-add" title="Добавить чертежи">
+                                    <a asp-action="AddDrawings" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
                                        asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                                 </div>
+                                @*
+                    <div class="icon file-add" title="Добавить смету с такими данными">
+                    <a asp-action="CreateByEstimate" asp-route-id="@detail.EstimateViewModelDrawnings.First().Id"
+                    asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                    </div>
+                    *@
                                 <div class="icon delete" title="Удалить запись">
                                     <a onclick="DeleteEstimate(@detail.EstimateViewModelDrawnings.First().Id)"></a>
                                 </div>
@@ -857,17 +897,28 @@
                                 <td class="text-center align-middle">
                                     @draw.SubContractor
                                 </td>
-
+                              
                                 <td>
                                     <div class="icon edit" title="Редактировать смету">
                                         <a asp-action="Edit" asp-route-id="@draw.Id" asp-route-contractId="@ViewData["contractId"]"
                                            asp-route-returnContractId="@ViewData["returnContractId"]"></a>
+                                    </div> <div class="icon file-store" title="Просмотр файлов">
+                                        <a asp-action="ShowFiles" asp-route-estimateId="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                           asp-route-contractId="@ViewData["contractId"]"
+                                           asp-route-buildingCode="@item.BuildingCode"
+                                           asp-route-estimateNumber="@item.DetailsView.First().EstimateViewModelDrawnings.First().Number"
+                                           asp-route-isDrawing="false"></a>
+                                    </div>
+                                    <div class="icon drawing-add" title="Добавить чертежи">
+                                        <a asp-action="AddDrawings" asp-route-id="@item.DetailsView.First().EstimateViewModelDrawnings.First().Id"
+                                           asp-route-contractId="@ViewData["contractId"]" asp-route-returnContractId="@ViewData["returnContractId"]"></a>
                                     </div>
 
                                     <div class="icon delete" title="Удалить запись">
                                         <a onclick="DeleteEstimate(@draw.Id)"></a>
                                     </div>
                                 </td>
+                               
                             </tr>
                         }
                     }
@@ -918,8 +969,8 @@
                             @sumBuilding.RemainsSmrCost?.ToString("N2")
                         </td>
                         <td colspan="2">
-                        </td>  
-                        
+                        </td>
+
                     </tr>
                     <tr>
                         <td class="text-end" colspan="9">
@@ -950,7 +1001,7 @@
                                 @result.Value.RemainsSmrCost?.ToString("N2")
                             </td>
                             <td colspan="2">
-                            </td>                           
+                            </td>
                         </tr>
                     }
                 }
@@ -981,7 +1032,7 @@
                     <td class="text-end align-middle">
                         @totalResult.RemainsSmrCost?.ToString("N2")
                     </td>
-                    <td colspan="2"></td>                    
+                    <td colspan="2"></td>
                 </tr>
                 <tr>
                     <td class="text-end" colspan="9">

@@ -1,10 +1,8 @@
 ﻿@using DatabaseLayer.Models.PRO
-@* 
-@model List<Estimate> 
-    *@
+
 @{
-    bool isChange = ViewBag.isChange == true? true : false;
-    int estimateId = ViewBag.estimateId??0;
+    bool isChange = ViewBag.IsChange == true ? true : false;
+    int estimateId = ViewBag.EstimateId ?? 0;
 
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
@@ -33,9 +31,9 @@
                 <hr class="modal-line">
                 <div id="divForm" class="divForm_modal">
                     <form id="files" method="post" enctype="multipart/form-data">
-                        <input name="isChange" id="isChangeId" value="@isChange" hidden/>
-                        <input name="estimateParentId" id="estimateParentId" value="@estimateId" hidden />
-
+                        <input name="isChange" id="isChangeId" value="@ViewBag?.IsChange" hidden />
+                        <input name="estimateParentId" id="estimateParentId" value="@ViewBag?.EstimateId" hidden />
+                        
                         <div id="example" style="min-width:400px; max-width: 800px;">
                             <div class="demo-section input-group mb-3 mt-2">
                                 <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
@@ -68,16 +66,17 @@
                             </div>
                             <div class="name-point box">Сметы</div>
                         </div>
-                        <div class="line-item unactive-step">
-                            <div class="empty box"></div>
-                            <div class="line-step box">
-                                <div class="line"></div>
-                                <div class="point">
-                                    <div class="inside-point"></div>
-                                </div>
-                            </div>
-                            <div class="name-point box">Чертежи</div>
+                        @* <div class="line-item unactive-step">
+                        <div class="empty box"></div>
+                        <div class="line-step box">
+                        <div class="line"></div>
+                        <div class="point">
+                        <div class="inside-point"></div>
                         </div>
+                        </div>
+                        <div class="name-point box">Чертежи</div>
+                        </div>
+                        *@
                         <div class="line-item unactive-step">
                             <div class="empty box"></div>
                             <div class="line-step box">
@@ -98,22 +97,24 @@
                             </div>
                             <div class="name-point box">График производства</div>
                         </div>
+                        @*
                         <div class="line-item unactive-step">
-                            <div class="empty box"></div>
-                            <div class="line-step box">
-                                <div class="line"></div>
-                                <div class="point">
-                                    <div class="inside-point"></div>
-                                </div>
-                            </div>
-                            <div class="name-point box">Форма С-2Б</div>
+                        <div class="empty box"></div>
+                        <div class="line-step box">
+                        <div class="line"></div>
+                        <div class="point">
+                        <div class="inside-point"></div>
                         </div>
+                        </div>
+                        <div class="name-point box">Акт С-2Б</div>
+                        </div>
+                        
                         <div class="next-step">
                             <button id="NextStep" class="btn btn-outline-primary" type="button" disabled>
                                 <img src="~/icons/box-arrow-in-right.svg" />
                                 Пропустить
                             </button>
-                        </div>
+                        </div>*@
                     </div>
                 </div>
             </div>
@@ -132,6 +133,7 @@
             toggleActive: true
         });
 
+        /*  ************** стилизация этапов загрузки данных ********************* */
         $("#dateEstimateId").change((e) => {
             e.target.classList.remove("underline-green");
             let element = document.querySelector("div.box-hidden");
@@ -145,101 +147,14 @@
         });
         changeClassByClickButton("button.btn-success", "button.btn-success", 'btn-success', 'btn-clicked');
         changeClassByClickButton("#GetDataFromFile", "button.btn-success", 'btn-success', 'btn-clicked');
-
-        // $("#NumberEstimate").on('change', function (e) {
-        //     var number = this.value;
-        //     $("#EstimateId").val(number);
-        //     $.ajax({
-        //         type: 'POST',
-        //         data: { EstimateId: number },
-        //         url: '@Url.Action("GetDrawingsFiles", "Estimate")',
-        //         success: function (viewData) {
-        //             $("#divForm").html(viewData)
-        //             $("#ListOfSheet").html("")
-        //             $("#HeaderLabel").text("Загрузка чертежей")
-        //             GoNextStep();
-        //         },
-        //         error: function (error) {
-        //             var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-        //             $.ajax({
-        //                 type: 'POST',
-        //                 url: '@Url.Action("ShowError", "Parse")',
-        //                 data: { message: errorMes },
-        //                 dataType: 'html',
-        //                 success: function (data) {
-        //                     showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
-        //                 }
-        //             });
-        //         }
-        //     });
-        // });
-
-        // function AddCopyEstimate() {
-        //     var drawKit = $("#drawKit").val();
-        //     if (drawKit == "") {
-        //         $.ajax({
-        //             type: 'POST',
-        //             url: '@Url.Action("ShowError", "Parse")',
-        //             data: { message: "Введите наименование комплекта чертежей." },
-        //             dataType: 'html',
-        //             success: function (data) {
-        //                 showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
-        //             }
-        //         });
-        //     }
-        //     else {
-        //         var number = $('#NumberEstimateAdd').val();
-        //         console.log(number)
-        //         $.ajax({
-        //             type: 'POST',
-        //             data: { EstimateId: number, DrawningKit: drawKit },
-        //             url: '@Url.Action("AddCopyEstimate", "Estimate")',
-        //             success: function (estimateNumber) {
-        //                 $("#EstimateId").val(estimateNumber);
-        //                 $.ajax({
-        //                     type: 'POST',
-        //                     data: { EstimateId: estimateNumber },
-        //                     url: '@Url.Action("GetDrawingsFiles", "Estimate")',
-        //                     success: function (viewData) {
-        //                         $("#divForm").html(viewData)
-        //                         $("#ListOfSheet").html("");
-        //                         $("#HeaderLabel").text("Загрузка чертежей");
-        //                     },
-        //                     error: function (error) {
-        //                         var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-        //                         $.ajax({
-        //                             type: 'POST',
-        //                             url: '@Url.Action("ShowError", "Parse")',
-        //                             data: { message: errorMes },
-        //                             dataType: 'html',
-        //                             success: function (data) {
-        //                                 showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
-        //                             }
-        //                         });
-        //                     }
-        //                 });
-        //             },
-        //             error: function (error) {
-        //                 var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-        //                 $.ajax({
-        //                     type: 'POST',
-        //                     url: '@Url.Action("ShowError", "Parse")',
-        //                     data: { message: errorMes },
-        //                     dataType: 'html',
-        //                     success: function (data) {
-        //                         showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
-        //                     }
-        //                 });
-        //             }
-        //         });
-        //     }
-        // }
+        /*                                                                         */
 
         $("form#files").submit(function () {
             let contractId = $("#contractId").val();
             let dateEstimate = $("#dateEstimateId").val();
             let formData = new FormData(files);
             event.preventDefault();
+
             function setProgress(e) {
                 if (e.lengthComputable) {
                     $("#container_progress").removeAttr('style');
@@ -262,152 +177,53 @@
                 data: formData,
                 success: function (data) {
                     let path = data;
-                    let isChange = $("#isChangeId").val();
-                    let estimateParentId = $("#estimateParentId").val();
+                    let typeId = $("#typeId").val();
+                    let isChange = $('#isChangeId').val();
+                    let estimateParentId = $('#estimateParentId').val();
+                    let buildingsCodeId = $('#buildingsCodeId').val();
 
                     $.ajax({
+                        xhr: function () {
+                            var xhr = new window.XMLHttpRequest();
+                            xhr.upload.addEventListener("progress", setProgress, false);
+                            xhr.addEventListener("progress", setProgress, false);
+                            return xhr;
+                        },
                         type: 'POST',
-                        url: '@Url.Action("GetCountPagesInExcel", "Parse")',
-                        data: { path: path, isEstimate: true, isChange: isChange, estimateId: estimateParentId },
-                        dataType: 'html',
+                        url: '@Url.Action("GetEstimateData", "Estimate")',
+                        data: { path: path, contractId: contractId, date: dateEstimate, type: typeId, isChange: isChange, estimateId: estimateParentId },
                         success: function (data) {
-                            $("#ListOfSheet").html(data);
+                            let dataArr = data.split(',');
 
-                            $('#btnChooseAllId').click(function () {
-                                let pages = $("#countDocumentPages").val();
-                                let typeId = $("#typeId").val();
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '@Url.Action("GetEstimateData", "Estimate")',
-                                    data: { path: path, contractId: contractId, page: pages, date: dateEstimate, type: typeId, isAllDoc: true },
-                                    success: function (data) {
+                            showResultMessage("#result", `<div class="alert alert-success" role="alert"><span><h3>Загружены данные из ${dataArr[0]} локальной смет(ы)</h3></span></div>`);
 
-                                       console.log(data);
-                                        window.location.href = data;
-                                    },
-                                    error: function (error) {
-                                        var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-                                        $.ajax({
-                                            type: 'POST',
-                                            url: '@Url.Action("ShowError", "Parse")',
-                                            data: { message: errorMes },
-                                            dataType: 'html',
-                                            success: function (data) {
-                                                showResultMessage("#result", data);
-                                            }
-                                        });
-                                    }
-                                });
+                            $.ajax({                               
+                                type: 'GET',
+                                url: '@Url.Action("RedirectToView", "Estimate")',
+                                data: { path: path, type: typeId, contractId: contractId, updateByType: 'laborCost', buildingsCode: dataArr[1] },
+                                success: function (viewData) {
+                                    $("#divForm").html(viewData);
+                                    $("#HeaderLabel").text("Загрузка расчета стоимости/ведомости объемов работ");
+                                    GoNextStep();
+                                },
+                                error: function (error) {
+                                    handleError(error, '@Url.Action("ShowError", "Parse")')
+                                },
                             });
-                           
-                            $('#GetDataFromFile').click(function () {
-                                let ex = $("#ex").val();
-                                let typeId = $("#typeId").val();
-                                let changeEstimateId = $("#changeEstimateId").val();
-
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '@Url.Action("GetEstimateData", "Estimate")',
-                                    data: { path: path, contractId: contractId, page: ex, date: dateEstimate, type: typeId, isAllDoc: false, changeEstimateId: changeEstimateId },
-                                    success: function (data) {
-
-                                        const datas = data.split('-');
-                                        $("#EstimateId").val(datas[0]);
-                                        $("#typeId").val(datas[1]);
-                                        showResultMessage("#result", `<div class="alert alert-success" role="alert"><span><h3>Загружены данные из локальной сметы</h3></span></div>`);
-
-                                        $.ajax({
-                                            type: 'POST',
-                                            url: '@Url.Action("GetDrawingsFiles", "Estimate")',
-                                            data: { EstimateId: datas[0], type: datas[1] },
-                                            success: function (viewData) {
-                                                $("#divForm").html(viewData)
-                                                $("#ListOfSheet").html("")
-                                                GoNextStep();
-                                                $("#NextStep").prop('disabled', false);
-                                                $("#HeaderLabel").text("Загрузка чертежей");
-                                            },
-                                            error: function (error) {
-                                                var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-                                                $.ajax({
-                                                    type: 'POST',
-                                                    url: '@Url.Action("ShowError", "Parse")',
-                                                    data: { message: errorMes },
-                                                    dataType: 'html',
-                                                    success: function (data) {
-                                                        showResultMessage("#result", data);
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    },
-                                    error: function (error) {
-                                        var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-                                        $.ajax({
-                                            type: 'POST',
-                                            url: '@Url.Action("ShowError", "Parse")',
-                                            data: { message: errorMes },
-                                            dataType: 'html',
-                                            success: function (data) {
-                                                showResultMessage("#result", data);
-                                            }
-                                        });
-                                    }
-                                });
-                            });
+                        
                         },
                         error: function (error) {
-                            var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-                            $.ajax({
-                                type: 'POST',
-                                url: '@Url.Action("ShowError", "Parse")',
-                                data: { message: errorMes },
-                                dataType: 'html',
-                                success: function (data) {
-                                    showResultMessage("#result", data);
-                                }
-                            });
-                        }
+                            handleError(error, '@Url.Action("ShowError", "Parse")')
+                        },
                     });
                     $("#container_progress").attr('style', `display:none`);
                 },
-                error: function (errorFile) {
-                    console.log('ошибка')
-                    var errorMes = errorFile.responseText;//.substring(18, errorFile.responseText.indexOf("\r"));
-                    console.log(errorMes)
-                    $.ajax({
-                        type: 'GET',
-                        url: '@Url.Action("ShowError", "Parse")',
-                        data: { message: errorMes },
-                        dataType: 'html',
-                        success: function (data) {
-                            showResultMessage("#result", data);
-                            $("#container_progress").attr('style', `display:none`);
-                        }
-                    });
+                error: function (error) {
+                    handleError(error, '@Url.Action("ShowError", "Parse")', "#container_progress")
                 },
                 contentType: false,
                 processData: false
             });
         });
-
-        function ChangeView(flag) {
-            if (flag === 1) {
-                document.getElementById('files').removeAttribute("hidden");
-                document.getElementById('Edit').setAttribute("hidden", true);
-                document.getElementById('AddToEstimate').setAttribute("hidden", true);
-            }
-            else if (flag === 2) {
-                document.getElementById('Edit').removeAttribute("hidden");
-                document.getElementById('files').setAttribute("hidden", true);
-                document.getElementById('AddToEstimate').setAttribute("hidden", true);
-            }
-            else if (flag === 3) {
-                document.getElementById('AddToEstimate').removeAttribute("hidden");
-                document.getElementById('files').setAttribute("hidden", true);
-                document.getElementById('Edit').setAttribute("hidden", true);
-
-            }
-        }
     </script>
 }

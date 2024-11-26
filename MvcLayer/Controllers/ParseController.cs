@@ -126,22 +126,26 @@ public class ParseController : Controller
         return PartialView("CheckCountPagesInScoworkExcel", workSheets);
     }
 
-    /// <summary>
-    /// Выбор страницы для СМЕТЫ
-    /// </summary>
-    /// <param name="path"></param>
-    /// <returns></returns>
-    public ActionResult GetCountPagesInExcel(string path, bool isEstimate = false, bool isChange = false, int? estimateId = null)
-    {
-        var workSheets = _excelReader.GetListOfBook(path);            
-        ViewData["path"] = path;
-        ViewBag.IsEstimate = isEstimate;
+    ///// <summary>
+    ///// Выбор страницы для СМЕТЫ
+    ///// </summary>
+    ///// <param name="path"></param>
+    ///// <returns></returns>
+    //public ActionResult GetCountPagesInExcel(string path /*, bool isEstimate = false, bool isChange = false, int? estimateId = null*/)
+    //{
+    //    var workSheets = _excelReader.GetListOfBook(path);
+    //    if (workSheets.Count() == 0)
+    //    {
+    //        return BadRequest("Документ не содержит страниц");
+    //    }
+    //    ViewData["path"] = path;
+    //    //ViewBag.IsEstimate = isEstimate;
 
-        ViewBag.IsChange = isChange;
-        ViewBag.EstimateId = estimateId;
+    //    //ViewBag.IsChange = isChange;
+    //    //ViewBag.EstimateId = estimateId;
 
-        return PartialView("_ListOfSheets",  workSheets);
-    }
+    //    return PartialView("_ListOfSheets",  workSheets);
+    //}
  #endregion
 
 }

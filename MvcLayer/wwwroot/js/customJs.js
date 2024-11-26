@@ -18,7 +18,7 @@
 }
 
 function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, buttonId, styleName = 'same_value_chosen') {
-   
+
     $(firstId).change(function () {
         changeStatusSelectValue(firstId, secondId, thirdId, buttonId, styleName);
     });
@@ -32,7 +32,7 @@ function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, butto
 
 function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleName) {
     const button = $(buttonId);
-    
+
     const selectObjOne = $(`${selectId}_chosen`);
     const selectObjTwo = $(`${secondId}_chosen`);
     const selectObjThree = $(`${thirdId}_chosen`);
@@ -156,4 +156,22 @@ function confirmDelete() {
     else {
         return false;
     }
+}
+
+
+function handleError(error, urlRequest, progressObjID = null) {
+    var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+    $.ajax({
+        type: 'GET',
+        url: urlRequest,
+        data: { message: errorMes },
+        dataType: 'html',
+        success: function (data) {
+            showResultMessage("#result", data);
+            if (progressObjID) {
+                $(progressObjID).attr('style', `display:none`);
+            }
+
+        }
+    });
 }

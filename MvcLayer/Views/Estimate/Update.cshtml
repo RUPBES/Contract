@@ -1,0 +1,144 @@
+﻿@using DatabaseLayer.Models.PRO
+
+@{
+    int backId = 0;
+    if (ViewBag.ReturnContractId == 0)
+        backId = ViewBag.ContractId;
+    else backId = ViewBag.ReturnContractId;
+    string name = ViewBag?.UpdateByType?.ToString();
+    
+    ViewData["Title"] = string.Empty;
+    string redirectAction = string.Empty;
+    string pointName = string.Empty;
+
+    switch (name)
+    {
+        case "laborCost":
+            pointName = "Расчет стоимости";
+            redirectAction = "UpdateByLaborCost";
+            ViewData["Title"] = "по трудозатратам";
+            break;
+        case "contractCost":
+            pointName = "График производства";
+            redirectAction = "UpdateByContractCost";
+            ViewData["Title"] = "по договорной стоимости";
+            break;
+        case "doneSMR":
+            pointName = "Акт С-2Б";
+            redirectAction = "UpdateByDoneSmrCost";
+            ViewData["Title"] = "по выполнению СМР";
+            break;
+    };
+}
+
+<input id="contractId" value="@ViewBag.ContractId" hidden />
+<input id="updateByTypeId" value="@ViewBag.UpdateByType" hidden />
+<input id="typeId" value="@ViewBag.Type" hidden />
+<input id="redirectActionId" name="redirectAction" value="@redirectAction" hidden />
+<input id="buildingsCodeId" name="buildingsCode" value="@ViewBag.BuildingsCode" hidden />
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="position:relative;min-width:40vw;max-width:80vw;min-height:20vh;">
+                <div class="top-modal-block">
+                    <label id="HeaderLabel" class="my-modal-title">Обновление данных @ViewData["Title"]</label>
+                    @if (backId > 0)
+                    {
+                        <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" asp-route-contractId="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line">
+                <form id="files" method="post" enctype="multipart/form-data">
+                    <div id="example" style="min-width:400px; max-width: 800px;">
+                        <div class="input-group mb-3">
+                            <input class="form-control underline-green" name="files" type="file" aria-label="files" multiple="multiple" />
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-success btn-hidden">Загрузить файл</button>
+                            </div>
+                        </div>
+                        <div class="progress" id="container_progress" role="progressbar" aria-label="Default striped example" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100" style="display:none">
+                            <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" id="pBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </form>
+                <div id="result"></div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        /*  ************** стилизация этапов загрузки данных ********************* */
+        $("input[type=file]").change((e) => {
+            e.target.classList.remove("underline-green");
+            let btnHidden = document.querySelector('button.btn-hidden');
+            btnHidden.classList.remove('btn-hidden');
+        });
+        changeClassByClickButton("button.btn-success", "button.btn-success", 'btn-success', 'btn-clicked');
+        changeClassByClickButton("#GetDataFromFile", "button.btn-success", 'btn-success', 'btn-clicked');
+        /*                                                                         */
+
+        $("form#files").submit(function () {
+            let contractId = $("#contractId").val();
+            let formData = new FormData(files);
+            event.preventDefault();
+            function setProgress(e) {
+                if (e.lengthComputable) {
+                    $("#container_progress").removeAttr('style');
+                    var complete = e.loaded / e.total;
+                    var completeFloor = Math.floor(complete * 100)
+                    $("#pBar").attr('style', `width:${completeFloor}%`);
+                    $("#pBar").text(`${completeFloor}%`);
+                }
+            }
+
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", setProgress, false);
+                    xhr.addEventListener("progress", setProgress, false);
+                    return xhr;
+                },
+                type: 'POST',
+                url: '@Url.Action("DownloadFile", "Parse")',
+                data: formData,
+                success: function (data) {
+                    let path = data;
+                    let typeId = $("#typeId").val();
+                    let updateType = $('#updateByTypeId').val();
+                    let buildingsCodeId = $('#buildingsCodeId').val();
+                    $.ajax({
+                        xhr: function () {
+                            var xhr = new window.XMLHttpRequest();
+                            xhr.upload.addEventListener("progress", setProgress, false);
+                            xhr.addEventListener("progress", setProgress, false);
+                            return xhr;
+                        },
+                        type: 'POST',
+                        url: '@Url.Action(redirectAction, "Estimate")',
+                        data: { path: path, type: typeId, contractId: contractId, updateByType: updateType, buildingsCode: buildingsCodeId },
+                        success: function (viewData) {
+                            showResultMessage("#result", `<div class="alert alert-success" role="alert"><span><h3>${viewData}</h3></span></div>`);
+
+                            window.location.href = '@Url.Action("Index", "Estimate")?contractId=' + contractId;
+                        },
+                        error: function (error) {
+                            handleError(error, '@Url.Action("ShowError", "Parse")')
+                        },
+                    });
+                    $("#container_progress").attr('style', `display:none`);
+                },
+                error: function (error) {
+                    handleError(error, '@Url.Action("ShowError", "Parse")', "#container_progress")
+                },
+                contentType: false,
+                processData: false
+            });
+        });
+    </script>
+}

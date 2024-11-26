@@ -415,9 +415,9 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<FileDTO> GetByBuildingCode(string buildingCode, string keyFolder)
+        public IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder)
         {
-            return _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(x => x.FilePath.Contains($@"\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\")));
+            return _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\")));
         }
     }
 }

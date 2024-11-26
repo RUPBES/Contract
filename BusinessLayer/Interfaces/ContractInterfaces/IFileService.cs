@@ -17,6 +17,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         IEnumerable<FileDTO> GetFilesOfEntity(int entityId, FolderEnum folder);
         void AttachFileToEntity(int fileId, int entityId, FolderEnum folder);
 
-        IEnumerable<FileDTO> GetByBuildingCode(string buildingCode, string keyFolder);
+        IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder);
     }
 }

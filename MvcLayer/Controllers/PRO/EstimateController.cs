@@ -6,12 +6,8 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
-using DatabaseLayer.Models.PRO;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
-using System.Security.Cryptography;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MvcLayer.Controllers.PRO;
 
@@ -21,25 +17,27 @@ public class EstimateController : Controller
     private readonly IWebHostEnvironment _env;
     private readonly IParseService _pars;
     private readonly IContractService _contractService;
-    //private readonly IMapper _mapper;
+    private readonly IMapper _mapper;
     private readonly IEstimateService _estimateService;
     private readonly IAbbreviationKindOfWorkService _abbreviationKindOfWorkService;
     private readonly IKindOfWorkService _kindOfWorkService;
     private readonly ITextSearcher _textSearcher;
+    private readonly IExcelReader _excelReader;
 
     public EstimateController(IFileService file, IWebHostEnvironment env, IParseService pars, ITextSearcher textSearcher,
-        IContractService contractService, /*IMapper mapper,*/ IEstimateService estimateService,
-        IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService)
+        IContractService contractService, IMapper mapper, IEstimateService estimateService,
+        IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService, IExcelReader excelReader)
     {
         _file = file;
         _env = env;
         _pars = pars;
         _contractService = contractService;
-        //_mapper = mapper;
+        _mapper = mapper;
         _estimateService = estimateService;
         _abbreviationKindOfWorkService = abbreviationKindOfWorkService;
         _kindOfWorkService = kindOfWorkService;
         _textSearcher = textSearcher;
+        _excelReader = excelReader;
     }
 
     public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
@@ -183,189 +181,293 @@ public class EstimateController : Controller
         return View(answer);
     }
 
-    public ActionResult GetType(int contractId, int returnContractId = 0, bool isChange = false, int? estimateId = null)
+    public ActionResult GetType(int contractId, int returnContractId = 0, /*bool isChange = false,*/ bool isUpdate = false, int? estimateId = null)
     {
         ViewData["contractId"] = contractId;
-        ViewData["estimateId"] = estimateId;
-        ViewData["isChange"] = isChange;
+        ViewBag.EstimateId = estimateId;
+        //ViewBag.IsChange = isChange;
         ViewData["returnContractId"] = returnContractId;
+        ViewBag.IsUpdate = isUpdate;
         return View();
     }
 
-    public ActionResult Create(int contractId, int returnContractId = 0, bool isChange = false, string? type = null, int? estimateId = null)
+    public ActionResult Create(int contractId, int returnContractId = 0,/* bool isChange = false,*/ string? type = null, int? estimateId = null)
     {
-        //var list = _estimateService.Find(x => x.Id != 0).Select(x => new Estimate
-        //{
-        //    Id = x.Id,
-        //    Number = x.Number,
-        //    BuildingName = x.BuildingName,
-        //    DrawingsName = x.DrawingsName,
-        //    DrawingsKit = x.DrawingsKit
-        //}).ToList();
-
         ViewData["contractId"] = contractId;
         ViewData["returnContractId"] = returnContractId;
         ViewData["type"] = type;
-        ViewData["isChange"] = isChange;
-        ViewData["estimateId"] = estimateId;
-        return View(/*list*/);
+        //ViewBag.IsChange = isChange;
+        ViewBag.EstimateId = estimateId;
+        return View();
     }
 
-    public ActionResult GetEstimateData(string path, int contractId, DateTime date, int page = 0, 
-        bool isAllDoc = false,bool? isChange = false, string? type = null, int? changeEstimateId = null)
+    public ActionResult GetEstimateData(string path, int contractId, DateTime date, bool isChange = false, string? type = null, int? estimateId = null)
     {
         try
         {
             var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
             var contract = _contractService.GetById(contractId);
+            int page = _excelReader.GetListOfBook(path).Count();
+            int index = 0;
+            string? buildingCode = null;
+            int countPages = 0;
+            isChange = estimateId is not null && estimateId> 0? true:false;
 
-            if (isAllDoc)
+            //todo: 1) остановить цикл, при добавлении изма, при первом же нахождении сметы
+            while (index < page)
+            {
+                var answerAll = _pars.ParseEstimate(path, index, type);
+                if (answerAll is not null)
+                {
+                    var newEstimateId = AddEstimate(answerAll, contract, date, organizationName, type, estimateId);
+                    if (newEstimateId is not null)
+                    {
+                        CopyDocumentToFolder(answerAll.BuildingCode, answerAll.Number, path, false, contractId, newEstimateId ?? 0);
+                        countPages++;                        
+                    } 
+                }
+                if (buildingCode is null)
+                {
+                    buildingCode = answerAll.BuildingCode;
+                }
+                if (isChange == true && countPages > 0)
+                {
+                    break;
+                } 
+
+                index++;
+            }
+
+            _file.DeleteByPath(path);
+
+            return Content((countPages).ToString()+$",{buildingCode}");
+            //}
+            //else
+            //{
+            //    var answer = _pars.ParseEstimate(path, page, type);
+            //    if (_estimateService.Find(x => x.DrawingsKit == answer.DrawingsKit && x.DrawingsName == answer.DrawingsKit
+            //              && x.BuildingCode == answer.BuildingCode && x.BuildingName == answer.BuildingName
+            //              && x.Number == answer.Number).FirstOrDefault() != null)
+            //    {
+            //        return BadRequest($"Локальная смета №{answer.Number} уже загружена.");
+            //    }
+
+            //    var estimateId = AddEstimate(answer, contract, date, organizationName, type, changeEstimateId);
+            //    CopyDocumentToFolder(answer.BuildingCode, answer.Number, path, false, estimateId ?? 0);
+            //    _file.DeleteByPath(path);
+
+            //    ViewData["estimateId"] = estimateId;
+            //    return Content(estimateId.ToString() + '-' + type);
+            //}
+        }
+        catch (Exception ex)
+        {
+            _file.DeleteByPath(path);
+            return BadRequest("Загрузка данных смет(ы) прервана");
+        }
+    }
+
+
+    #region Методы для работы с одной сметой **НЕ ИСПОЛЬЗУЮТСЯ УЖЕ
+
+
+
+    //[HttpGet]
+    //public ActionResult GetEstimateLaborCost(int EstimateId, string type)
+    //{
+    //    var LaborCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.LaborCost).FirstOrDefault();
+    //    ViewData["Type"] = type;
+    //    return PartialView("_GetEstimateLaborCost", LaborCost);
+    //}
+
+    //[HttpPost]
+    //public ActionResult GetEstimateLaborCost(string path, int? estimateId, int page = 0, string type = null)
+    //{
+    //    try
+    //    {
+    //        if (estimateId is not null)
+    //        {
+    //            var estimate = _estimateService.GetById((int)estimateId);
+    //            CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, estimateId ?? 0);
+
+    //            _pars.ParseAndReturnLaborCosts(path, page, (int)estimateId, type);
+    //            _file.DeleteByPath(path);
+
+    //            return PartialView("_ResultMessage", "Трудозатраты чел/час загружены");
+    //        }
+    //        else
+    //        {
+    //            return BadRequest("Ошибка при передаче данных о смете.");
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _file.DeleteByPath(path);
+    //        return BadRequest(ex.Message);
+    //    }
+    //}
+
+
+
+    //[HttpGet]
+    //public ActionResult GetEstimateContractCost(int EstimateId, string type)
+    //{
+    //    ViewData["Type"] = type;
+    //    var ContractCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.ContractsCost).FirstOrDefault();
+    //    return PartialView("_GetContractCost", ContractCost);
+    //}
+
+    //[HttpPost]
+    //public ActionResult GetEstimateContractCost(string path, int? estimateId, int page = 0, string type = null)
+    //{
+    //    try
+    //    {
+    //        if (estimateId is not null)
+    //        {
+    //            ViewData["Type"] = type;
+    //            _pars.ParseAndReturnContractCosts(path, page, (int)estimateId, type);
+    //            var estimate = _estimateService.GetById((int)estimateId);
+    //            CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, estimateId ?? 0);
+    //            _file.DeleteByPath(path);
+
+    //            return PartialView("_ResultMessage", "Стоимость по договору загружена");
+    //        }
+    //        else
+    //        {
+    //            return BadRequest("Произошла ошибка при передаче данных о смете");
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _file.DeleteByPath(path);
+    //        return BadRequest("Ошибка считывания документа Excel");
+    //    }
+    //}
+
+
+    ////todo: 3) delete this method
+    //public ActionResult ChangeDrawningKit(int EstimateId, string DrawningKit)
+    //{
+    //    var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
+    //    estimate.DrawingsKit = DrawningKit;
+    //    _estimateService.Update(estimate);
+    //    return Content("OK");
+    //}
+
+    #endregion
+
+
+  
+
+    public ActionResult RedirectToView(string path, int contractId, string updateByType, string type = null, string? buildingsCode = null)
+    {
+        ViewBag.Type = type;
+        ViewBag.ContractId = contractId;
+        ViewBag.BuildingsCode = buildingsCode;
+
+        switch (updateByType)
+        {
+            case "laborCost":
+                return PartialView("_GetEstimateLaborCost");
+            case "contractCost":
+                return PartialView("_GetContractCost");
+            case "doneSMR":
+                return PartialView("_GetEstimateLaborCost");
+            default: return BadRequest("Произошло обращение к несуществующей странице");
+        }
+    }
+
+    [HttpGet]
+    public ActionResult Update(int contractId, string updateByType, int returnContractId = 0, string? type = null, string? buildingsCode = null)
+    {
+        ViewBag.ContractId = contractId;
+        ViewBag.ReturnContractId = returnContractId;
+        ViewBag.UpdateByType = updateByType;
+        ViewBag.Type = type;
+        ViewBag.BuildingsCode = buildingsCode;
+
+        return View();
+    }
+
+    [HttpPost]
+    public ActionResult UpdateByLaborCost(string path, int contractId, string type = null, string? buildingsCode = null)
+    {
+        try
+        {
+            if (path is not null)
             {
                 int index = 0;
-                //string? buildingCode = null;
-
-                while (index < page)
+                int countUpdated = 0;
+                int pages = _excelReader.GetListOfBook(path).Count();
+                while (index < pages)
                 {
-                    var answerAll = _pars.ParseEstimate(path, index, type);
-                    if (answerAll is not null)
+                    var listEstNumbWithLaborCost = _pars.GetEstimatesWithLaborCosts(path, index, type);
+
+                    foreach (var item in listEstNumbWithLaborCost)
                     {
-                        var estimateId = AddEstimate(answerAll, contract, date, organizationName, type);
-                        CopyDocumentToFolder(answerAll.BuildingCode, answerAll.Number, path, false, estimateId ?? 0);
+                        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+                        var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+                        if (estimate is not null)
+                        {
+                            estimate.LaborCost = Convert.ToDouble(item.cost);
+                            _estimateService.Update(estimate);
+                            CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
+                            countUpdated++;
+                        }
                     }
-                    //if (buildingCode is null)
-                    //{
-                    //    buildingCode = answerAll.BuildingCode;
-                    //}
 
                     index++;
                 }
-
                 _file.DeleteByPath(path);
+                return Ok($"Обновлены трудозатраты {countUpdated} смет(ы)");
 
-                return Content(Url.Action(nameof(Index), "Estimate", new { contractId = contractId }).ToString());
             }
             else
             {
-                var answer = _pars.ParseEstimate(path, page, type);
-                if (_estimateService.Find(x => x.DrawingsKit == answer.DrawingsKit && x.DrawingsName == answer.DrawingsKit
-                          && x.BuildingCode == answer.BuildingCode && x.BuildingName == answer.BuildingName
-                          && x.Number == answer.Number).FirstOrDefault() != null)
+                return BadRequest("Неверно указан путь к файлу");
+            }
+        }
+        catch (Exception ex)
+        {
+            _file.DeleteByPath(path);
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpPost]
+    public ActionResult UpdateByContractCost(string path, int contractId, string type = null, string? buildingsCode = null)
+    {
+        try
+        {
+            if (path is not null)
+            {
+                int index = 0;
+                int countUpdated = 0;
+                int pages = _excelReader.GetListOfBook(path).Count();
+                while (index < pages)
                 {
-                    return BadRequest($"Локальная смета №{answer.Number} уже загружена.");
+                    var costs = _pars.GetEstimatesWithContractCosts(path, index, type);                  
+
+                    foreach (var item in costs)
+                    {
+                        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+                        var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+                        if (estimate is not null)
+                        {
+                            estimate.ContractsCost = item.cost;
+                            _estimateService.Update(estimate);
+                            CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
+                            countUpdated++;
+                        }
+                    }
+
+                    index++;
                 }
-
-                var estimateId = AddEstimate(answer, contract, date, organizationName, type, changeEstimateId);
-                CopyDocumentToFolder(answer.BuildingCode, answer.Number, path, false, estimateId ?? 0);
                 _file.DeleteByPath(path);
-
-                ViewData["estimateId"] = estimateId;
-                return Content(estimateId.ToString() + '-' + type);
+                return Ok($"Обновлены cтоимости по договору, {countUpdated}  смет(ы)");
             }
-        }
-        catch (Exception ex)
-        {
-            _file.DeleteByPath(path);
-            return BadRequest(ex.Message);
-        }
-    }
+            return BadRequest("Ошибка считывания документа Excel");
 
-    [HttpGet]
-    public ActionResult GetEstimateLaborCost(int EstimateId, string type)
-    {
-        var LaborCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.LaborCost).FirstOrDefault();
-        ViewData["Type"] = type;
-        return PartialView("_GetEstimateLaborCost", LaborCost);
-    }
-
-    [HttpPost]
-    public ActionResult GetEstimateLaborCost(string path, int? estimateId, int page = 0, string type = null)
-    {
-        try
-        {
-            if (estimateId is not null)
-            {
-                var estimate = _estimateService.GetById((int)estimateId);
-                CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, estimateId ?? 0);
-
-                _pars.ParseAndReturnLaborCosts(path, page, (int)estimateId, type);
-                _file.DeleteByPath(path);
-
-                return PartialView("_ResultMessage", "Трудозатраты чел/час загружены");
-            }
-            else
-            {
-                return BadRequest("Ошибка при передаче данных о смете.");
-            }
-        }
-        catch (Exception ex)
-        {
-            _file.DeleteByPath(path);
-            return BadRequest(ex.Message);
-        }
-    }
-
-    public ActionResult ShowFiles(string buildingCode, int? estimateId, string? estimateNumber, int contractId, 
-        bool isDrawing = false, int returnContractId = 0, int? pageNum = 1)
-    {
-        var viewModel = new Dictionary<string, IEnumerable<FileDTO>>();
-        //если ID пустое, ищем по объекту
-        if (estimateId == null)
-        {
-            viewModel.Add("draw", _file.GetByBuildingCode(buildingCode, "draw").DistinctBy(x => x.FileName));
-            viewModel.Add("doc", _file.GetByBuildingCode(buildingCode, "doc").DistinctBy(x => x.FileName));
-        }
-        //иначе -> по смете
-        else
-        {
-            var fileAll = _file.GetFilesOfEntity((int)estimateId, FolderEnum.Estimate);
-            viewModel.Add("draw", fileAll.Where(x => x.FilePath.Contains(@"\draw\")));
-            viewModel.Add("doc", fileAll.Where(x => x.FilePath.Contains(@"\doc\")));
-        }
-
-        ViewBag.contractId = contractId;
-        ViewBag.returnContractId = returnContractId == 0 ? contractId : 0;
-
-        return View(viewModel);
-    }
-
-
-
-    //todo: 3) delete this method
-    public ActionResult ChangeDrawningKit(int EstimateId, string DrawningKit)
-    {
-        var estimate = _estimateService.Find(x => x.Id == EstimateId).FirstOrDefault();
-        estimate.DrawingsKit = DrawningKit;
-        _estimateService.Update(estimate);
-        return Content("OK");
-    }
-
-    [HttpGet]
-    public ActionResult GetEstimateContractCost(int EstimateId, string type)
-    {
-        ViewData["Type"] = type;
-        var ContractCost = _estimateService.Find(x => x.Id == EstimateId).Select(x => x.ContractsCost).FirstOrDefault();
-        return PartialView("_GetContractCost", ContractCost);
-    }
-
-    [HttpPost]
-    public ActionResult GetEstimateContractCost(string path, int? estimateId, int page = 0, string type = null)
-    {
-        try
-        {
-            if (estimateId is not null)
-            {
-                ViewData["Type"] = type;
-                _pars.ParseAndReturnContractCosts(path, page, (int)estimateId, type);
-                var estimate = _estimateService.GetById((int)estimateId);
-                CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, estimateId ?? 0);
-                _file.DeleteByPath(path);
-
-                return PartialView("_ResultMessage", "Стоимость по договору загружена");
-            }
-            else
-            {
-                return BadRequest("Произошла ошибка при передаче данных о смете");
-            }
         }
         catch (Exception ex)
         {
@@ -373,6 +475,52 @@ public class EstimateController : Controller
             return BadRequest("Ошибка считывания документа Excel");
         }
     }
+
+    [HttpPost]
+    public ActionResult UpdateByDoneSmrCost(string path, int contractId, string type = null, string? buildingsCode = null)
+    {
+        try
+        {
+            if (path is not null)
+            {
+                int index = 0;
+                int countUpdated = 0;
+                int pages = _excelReader.GetListOfBook(path).Count();
+                while (index < pages)
+                {
+                    var costs = _pars.GetEstimatesWithDoneSmrCosts(path, index, type);
+
+                    foreach (var item in costs)
+                    {
+                        var fullNumber = type == ConstantsApp.SMR_PRO_APP? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+                        
+                        var estimate = _estimateService.Find(x => x.FullNumber == fullNumber
+                                        && x.ContractId == contractId 
+                                        && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+
+                        if (estimate is not null)
+                        {
+                            estimate.DoneSmrCost = item.cost;
+                            _estimateService.Update(estimate);
+                            CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
+                            countUpdated++;
+                        }
+                    }
+                    index++;
+                }
+                _file.DeleteByPath(path);
+                return Ok($"Обновлены cтоимости выполненных СМР, у {countUpdated}  смет(ы)");
+            }
+            return BadRequest("Ошибка считывания документа Excel");
+
+        }
+        catch (Exception ex)
+        {
+            _file.DeleteByPath(path);
+            return BadRequest("Ошибка считывания документа Excel");
+        }
+    }
+
 
     [HttpGet]
     public ActionResult GetEstimateDoneSmrCost(int EstimateId, string type)
@@ -392,7 +540,8 @@ public class EstimateController : Controller
                 ViewData["Type"] = type;
                 _pars.ParseAndReturnDoneSmrCost(path, page, (int)estimateId, type);
                 var estimate = _estimateService.GetById((int)estimateId);
-                CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, estimateId ?? 0);
+                //todo: добавить contractId для создания файла
+                CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, 0, estimateId ?? 0);
                 _file.DeleteByPath(path);
 
                 return PartialView("_ResultMessage", "Стоимость выполненных работ по СМР загружена");
@@ -416,27 +565,13 @@ public class EstimateController : Controller
         return PartialView("_GetEstimateResult", estimate);
     }
 
-    public ActionResult CreateByEstimate(int id, int contractId, int returnContractId = 0)
-    {
-        ViewData["contractId"] = contractId;
-        ViewData["returnContractId"] = returnContractId;
-        var estimate = _estimateService.Find(x => x.Id == id).FirstOrDefault();
-        if (estimate != null)
-        {
-            var estimateNew = new EstimateDTO();
-            estimateNew.BuildingCode = estimate.BuildingCode;
-            estimateNew.BuildingName = estimate.BuildingName;
-            estimateNew.SubContractor = estimate.SubContractor;
-            estimateNew.DrawingsName = estimate.DrawingsName;
-            estimateNew.KindOfWorkId = estimate.KindOfWorkId;
-            estimateNew.ContractId = estimate.ContractId;
-            estimateNew.Owner = estimate.Owner;
-            var idNew = _estimateService.Create(estimateNew);
-            return View(idNew);
-        }
-        else throw new Exception("Не найдена смета.");
-    }
-
+    /// <summary>
+    /// РЕДАКТИРОВАНИЕ СМЕТЫ
+    /// </summary>
+    /// <param name="id">ID сметы</param>
+    /// <param name="contractId">ID договора</param>
+    /// <param name="returnContractId">ID договора с страницы которого пришел пользователь, если = 0, берется contractId</param>
+    /// <returns></returns>
     public ActionResult Edit(int id, int contractId, int returnContractId = 0)
     {
         ViewData["contractId"] = contractId;
@@ -449,27 +584,37 @@ public class EstimateController : Controller
     public ActionResult Edit(EstimateDTO estimate)
     {
         _estimateService.Update(estimate);
-        return RedirectToAction(nameof(Index),"Estimate", new { contractId = estimate.ContractId});
+        return RedirectToAction(nameof(Index), "Estimate", new { contractId = estimate.ContractId });
     }
 
     public ActionResult Delete(int id)
     {
+
         _estimateService.Delete(id);
         ViewData["reload"] = "Yes";
         return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
     }
 
+    [HttpGet]
+    public ActionResult AddDrawings(int id, int contractId, int returnContractId = 0)
+    {
+        ViewBag.ReturnContractId = returnContractId;
+        ViewBag.ContractId = contractId;
+        return View(id);
+    }
+    
+    [HttpPost]
     public ActionResult AddDrawings(IFormCollection collection, int estimateId, DateTime dateStart)
     {
         try
         {
             var estimate = _estimateService.GetById(estimateId);
-            var neestedFolderName = $"{estimate.BuildingCode}\\{estimate.Number}\\draw";
+            var neestedFolderName = $"{estimate.ContractId}\\{estimate.BuildingCode}\\{estimate.Number}\\draw";
             _file.Create(collection.Files, FolderEnum.Estimate, estimateId, neestedFolderName);
             estimate.DrawingsDate = dateStart;
             _estimateService.Update(estimate);
 
-            return Ok("Чертежи загружены");
+            return RedirectToAction(nameof(Index), new { contractId = estimate.ContractId });// Ok("Чертежи загружены");
         }
         catch (Exception)
         {
@@ -478,6 +623,57 @@ public class EstimateController : Controller
     }
 
 
+    //public ActionResult AddChange(int estimateId)
+    //{
+    //    ViewData["estimateId"] = estimateId;
+
+    //    var estimate = _estimateService.Find(x => x.Id == estimateId).FirstOrDefault();
+       
+    //    return View();
+    //}
+
+    public ActionResult ShowFiles(string buildingCode, int? estimateId, int contractId,int returnContractId = 0)
+    {
+        var viewModel = new Dictionary<string, IEnumerable<FileDTO>>();
+        //если ID пустое, ищем по объекту
+        if (estimateId == null)
+        {
+            viewModel.Add("draw", _file.GetByBuildingCode(contractId,buildingCode, "draw").DistinctBy(x => x.FileName));
+            viewModel.Add("doc", _file.GetByBuildingCode(contractId,buildingCode, "doc").DistinctBy(x => x.FileName));
+        }
+        //иначе -> по смете
+        else
+        {
+            var fileAll = _file.GetFilesOfEntity((int)estimateId, FolderEnum.Estimate);
+            viewModel.Add("draw", fileAll.Where(x => x.FilePath.Contains(@"\draw\")));
+            viewModel.Add("doc", fileAll.Where(x => x.FilePath.Contains(@"\doc\")));
+        }
+
+        ViewBag.contractId = contractId;
+        ViewBag.returnContractId = returnContractId == 0 ? contractId : 0;
+
+        return View(viewModel);
+    }
+
+    /// <summary>
+    /// ВОЗВРАЩАЕТ ВСЕ СМЕТЫ ПО ДОГОВОРУ В ФОРМАТЕ - JSON, ДЛЯ ВЫБОРА ПО КАКОМУ ЗДАНИЮ (ШИФРУ) БУДЕТ ИДТИ ОБНОВЛЕНИЕ СМЕТ
+    /// </summary>
+    /// <param name="contractId"></param>
+    /// <returns></returns>
+    public ActionResult GetEstimatesByContractId(int contractId)
+    {
+        var estmt = _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x=>x.BuildingCode).Select(x => new {id = x.Id, code = x.BuildingCode, contractId = x.ContractId});
+        return Json(estmt);
+    }
+
+
+    /*Дополнительные 
+     * 
+     *      
+     *             
+     * 
+     * методы
+     */
 
     /// <summary>
     /// Создает сметы из Excel
@@ -510,13 +706,13 @@ public class EstimateController : Controller
             answer.FullNumber = answer.Number;
         }
 
-        //if (changeEstimateId is not null && changeEstimateId > 0)
-        //{
-        //    answer.IsChange = true;
-        //    answer.ChangeEstimateId = changeEstimateId;
-        //    int number = _estimateService.Find(x => x.ChangeEstimateId == changeEstimateId)?.LastOrDefault()?.ChangeNumber ?? 0;
-        //    answer.ChangeNumber = ++number;
-        //}
+        if (changeEstimateId is not null && changeEstimateId > 0)
+        {
+            answer.IsChange = true;
+            answer.ChangeEstimateId = changeEstimateId;
+            int number = _estimateService.Find(x => x.ChangeEstimateId == changeEstimateId)?.LastOrDefault()?.ChangeNumber ?? 0;
+            answer.ChangeNumber = ++number;
+        }
         answer.ContractId = contract.Id;
         answer.SubContractor = contract?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.Organization?.Name;
         answer.Owner = organizationName;
@@ -530,9 +726,9 @@ public class EstimateController : Controller
     /// <param name="number">Номер сметы</param>
     /// <param name="path">Абсолютный путь</param>
     /// <param name="isDrawings">Файл является чертежом?</param>
-    private void CopyDocumentToFolder(string buildingCode, string number, string path, bool isDrawings, int estimateId = 0, bool? isModified = null)
+    private void CopyDocumentToFolder(string buildingCode, string number, string path, bool isDrawings, int contractId, int estimateId = 0, bool? isModified = null)
     {
-        string neestedFolderName = @$"\{buildingCode}\{number}";
+        string neestedFolderName = @$"\{contractId}\{buildingCode}\{number}";
 
         if (number != null)
         {

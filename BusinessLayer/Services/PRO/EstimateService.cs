@@ -17,15 +17,13 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly ILoggerContract _logger;
-        private readonly IHttpHelper _httpHelper;
         private readonly IHostingEnvironment _env;
 
-        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpHelper http, IHostingEnvironment env)
+        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger,IHostingEnvironment env)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _httpHelper = http;
             _env = env;
         }
 
@@ -33,7 +31,7 @@ namespace BusinessLayer.Services
         {
             if (item is not null)
             {
-                if (_database.Estimates.GetById(item.Id) is null)
+                if (_database.Estimates.GetById(item.Id) is null && _database.Estimates.Find(x=>x.FullNumber == item.FullNumber && x.ContractId == item.ContractId)?.FirstOrDefault() is null)
                 {
                     var estimate = _mapper.Map<Estimate>(item);
                     _database.Estimates.Create(estimate);
@@ -82,7 +80,7 @@ namespace BusinessLayer.Services
                                     _logger.WriteLog(logLevel: LogLevel.Information, message: $"file has been removed from folder {filePath}",
                                        nameSpace: typeof(FileService).Name, methodName: MethodBase.GetCurrentMethod().Name);
                                 }
-                                _database.EstimateFiles.Delete(item.EstimateId, item.FileId);
+                                _database.Files.Delete(item.FileId);
                             }
                         }
                         _database.Estimates.Delete(id);
@@ -139,19 +137,17 @@ namespace BusinessLayer.Services
                 _database.Estimates.Update(_mapper.Map<Estimate>(item));
                 _database.Save();
 
-                _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"update Estimate, ID={item.Id}",
-                            nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                _logger.WriteLog(logLevel: LogLevel.Information,
+                                message: $"update Estimate, ID={item.Id}",
+                                nameSpace: typeof(EstimateService).Name,
+                                methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
             {
-                _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not update Estimate, object is null",
-                            nameSpace: typeof(EstimateService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                _logger.WriteLog(logLevel: LogLevel.Warning,
+                                message: $"not update Estimate, object is null",
+                                nameSpace: typeof(EstimateService).Name,
+                                methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
@@ -435,7 +431,7 @@ namespace BusinessLayer.Services
 
             #region BELSMETA
 
-            else if (type.Equals(ConstantsApp.SXW_SINKEVICH_APP, StringComparison.OrdinalIgnoreCase))
+            else if (type.Equals(ConstantsApp.BELSMETA_APP, StringComparison.OrdinalIgnoreCase))
             {
                 keyStore.Add(ConstantsApp.BELSMETA_APP, new Finding());
                 keyStore[ConstantsApp.BELSMETA_APP].Estimate = new SearchEstimateObject();

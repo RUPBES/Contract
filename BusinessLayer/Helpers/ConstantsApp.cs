@@ -67,7 +67,7 @@ namespace BusinessLayer.Helpers
 
         public static List<string> SMR_DONE_SMR_COST_DOC_NAME = new List<string> { "СДАЧИ - ПРИЕМКИ ВЫПОЛНЕННЫХ СТРОИТЕЛЬНЫХ И ИНЫХ СПЕЦИАЛЬНЫХ МОНТАЖНЫХ РАБОТ" };
         public static List<string> SMR_DONE_SMR_COST_COL_NAME = new List<string> { "с начала строительства" };
-        public static List<string> SMR_DONE_SMR_COST_ROW_NAME = new List<string> { "в с е г о по смете №", "всего по смете №", "Итого по смете ", $"итого по смете " };
+        public static List<string> SMR_DONE_SMR_COST_ROW_NAME = new List<string> { "Итого по смете ", "в с е г о по смете №", "всего по смете №",  "итого по смете " };
         public static List<string> SMR_DONE_SMR_COST_EXTRA_COL_NAME = new List<string> { "стоимость", "стоимост" };
 
         #endregion

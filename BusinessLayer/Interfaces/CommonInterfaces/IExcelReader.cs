@@ -13,7 +13,7 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
         ExcelWorksheet GetExcelWorksheet(string path, int page);
         double GetValueDouble(ExcelWorksheet worksheet, int row, int col);
         string GetValueString(ExcelWorksheet worksheet, int row, int col);
-        IEnumerable<(int, int)> FindCellByQuery(ExcelWorksheet worksheet, params string[] query);
+        IEnumerable<(int Row, int Col)> FindCellByQuery(ExcelWorksheet worksheet, params string[] query);
         Boolean FindByWords(string target, params string[] query);
     }
 }

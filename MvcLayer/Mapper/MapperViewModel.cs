@@ -4,6 +4,7 @@ using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
 using MvcLayer.Controllers;
 using MvcLayer.Models;
+using MvcLayer.Models.Data;
 
 namespace MvcLayer.Mapper
 {
@@ -19,7 +20,8 @@ namespace MvcLayer.Mapper
             CreateMap<CommissionActDTO, CommissionActViewModel>().ReverseMap();
             CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
             CreateMap<AmendmentViewModel, AmendmentDTO>().ReverseMap();
-            CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();            
+            CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();
+            CreateMap<EstimateDTO, EstimateJsonViewModel>().ReverseMap();
             CreateMap<EstimateDocDTO, EstimateDocViewModel>().ReverseMap();
             CreateMap<FileDTO, FileViewModel>().ReverseMap();
             CreateMap<FormDTO, FormViewModel>().ForMember(t => t.CostStatisticReportOfContractor, o => o.MapFrom(s => s.CostStatisticReportOfContractor))

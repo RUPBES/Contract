@@ -4,7 +4,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
-using Microsoft.AspNetCore.Http;
+using DatabaseLayer.Models.PRO;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using System.Reflection;
@@ -401,6 +401,17 @@ namespace BusinessLayer.ServicesCOM
             return estimate;
         }
 
+        /// <summary>
+        /// ДЛЯ ОДНОЙ СМЕТЫ
+        /// -- Ищет в одном документе, в конкретной странице стоимость одной сметы, которая находится по estimateId
+        /// </summary>
+        /// <param name="path">путь к Excel</param>
+        /// <param name="page">страница Excel, где искать трудозатраты</param>
+        /// <param name="estimateId">Сметы ID, чтобы взять номер сметы</param>
+        /// <param name="type">Тип программного комплекса, откуда извлечен Excel</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Если эта страница (PAGE), не содержит ключевое название 
+        /// документа (Расчет стоимости или Ведомость..), выбрасывает ошибку, </exception>
         public bool ParseAndReturnLaborCosts(string path, int page, int estimateId, string? type)
         {
             if (string.IsNullOrEmpty(path))
@@ -435,14 +446,6 @@ namespace BusinessLayer.ServicesCOM
             _estimateService.Update(estimate);
 
             return true;
-            //}
-            //catch (Exception e)
-            //{
-            //    _logger.WriteLog(
-            //                   logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
-            //                   methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
-            //    return false;
-            //}
         }
 
         public bool ParseAndReturnContractCosts(string path, int page, int estimateId, string? type)
@@ -451,8 +454,6 @@ namespace BusinessLayer.ServicesCOM
             {
                 return false;
             }
-            //try
-            //{
             var estimate = _estimateService.GetById(estimateId);
             var searchingKeys = _estimateService.ReturnKeysSearch(type);
             var excel = _excelReader.GetExcelWorksheet(path, page);
@@ -475,13 +476,6 @@ namespace BusinessLayer.ServicesCOM
             _estimateService.Update(estimate);
 
             return true;
-            //}
-            //catch (Exception e)
-            //{
-            //    _logger.WriteLog(logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
-            //                   methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
-            //    return false;
-            //}
         }
 
         public bool ParseAndReturnDoneSmrCost(string path, int page, int estimateId, string? type)
@@ -513,16 +507,116 @@ namespace BusinessLayer.ServicesCOM
 
             _estimateService.Update(estimate);
             return true;
-            //}
-            //catch (Exception e)
-            //{
-            //    _logger.WriteLog(logLevel: LogLevel.Warning, message: e.Message, nameSpace: typeof(ParseService).Name,
-            //                   methodName: MethodBase.GetCurrentMethod().Name, userName: _httpHelper.GetUserName(new HttpContextAccessor()));
-            //    return false;
-            //}
         }
 
 
+        /// <summary>
+        /// ДЛЯ МНОГО СМЕТ НА ОДНОЙ СТРАНИЦЕ
+        /// -- Ищет в Excel, по определенной странице, с заглавием содержащее ключевое слово (Расчет стоимости или Ведомость..), 
+        ///  стоимость трудоемкости с номером сметы и возвращает массив картежей (номер сметы, стоимость трудоемкости работ)
+        /// </summary>
+        /// <param name="path">путь к Excel</param>
+        /// <param name="page">страница Excel, где искать трудозатраты</param>
+        /// <param name="type">Тип программного комплекса, откуда извлечен Excel</param>
+        /// <returns>Возвращает массив картежей (номер сметы, стоимость трудоемкости работ)</returns>
+        public List<(string estimateNumber, decimal cost)>? GetEstimatesWithLaborCosts(string path, int page, string? type)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+
+            var searchingKeys = _estimateService.ReturnKeysSearch(type);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
+            var shiftRow = 0;
+
+            if (type != ConstantsApp.SMR_PRO_APP)
+            {
+                shiftRow += 2;
+            }
+
+            if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.LaborCost.DocName.ToArray()) == string.Empty)
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+            var column = _excelReader.FindCellByQuery(excel, searchingKeys.LaborCost.ColName.ToArray())?.FirstOrDefault();
+
+            if (column is null)
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+            return ReturnListEstNumbersWithCosts(excel, (column?.Item2 ?? 0), searchingKeys.LaborCost.RowName, shiftRow);
+        }
+
+        /// <summary>
+        /// ДЛЯ МНОГО СМЕТ НА ОДНОЙ СТРАНИЦЕ
+        /// -- Ищет в Excel, по определенной странице, с заглавием содержащее ключевое слово (Расчет стоимости или Ведомость..), 
+        ///  стоимость трудоемкости с номером сметы и возвращает массив картежей (номер сметы, стоимость трудоемкости работ)
+        /// </summary>
+        /// <param name="path">путь к Excel</param>
+        /// <param name="page">страница Excel, где искать трудозатраты</param>
+        /// <param name="type">Тип программного комплекса, откуда извлечен Excel</param>
+        /// <returns>Возвращает массив картежей (номер сметы, стоимость трудоемкости работ)</returns>
+        public List<(string estimateNumber, decimal cost)>? GetEstimatesWithContractCosts(string path, int page, string? type)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+
+            var searchingKeys = _estimateService.ReturnKeysSearch(type);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
+
+            if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.ContractCost.DocName.ToArray()) == string.Empty)
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+
+            var columnCoordinate = _excelReader.FindCellByQuery(excel, searchingKeys.ContractCost.ColName.ToArray())?.FirstOrDefault();
+            return ReturnListEstNumbersWithCosts(excel, (columnCoordinate?.Col ?? 0), searchingKeys.ContractCost.RowName, shiftRow: 0);
+
+        }
+
+        /// <summary>
+        /// ДЛЯ МНОГО СМЕТ НА ОДНОЙ СТРАНИЦЕ
+        /// -- Ищет в Excel, по определенной странице, с заглавием содержащее ключевое слово (Расчет стоимости или Ведомость..), 
+        ///  стоимость трудоемкости с номером сметы и возвращает массив картежей (номер сметы, стоимость трудоемкости работ)
+        /// </summary>
+        /// <param name="path">путь к Excel</param>
+        /// <param name="page">страница Excel, где искать трудозатраты</param>
+        /// <param name="type">Тип программного комплекса, откуда извлечен Excel</param>
+        /// <returns>Возвращает массив картежей (номер сметы, стоимость трудоемкости работ)</returns>
+        public List<(string estimateNumber, decimal cost)>? GetEstimatesWithDoneSmrCosts(string path, int page, string? type)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+
+            var searchingKeys = _estimateService.ReturnKeysSearch(type);
+            var excel = _excelReader.GetExcelWorksheet(path, page);
+
+            if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.DoneSmrCost.DocName.ToArray()) == string.Empty)
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+
+            var shiftRow = 0;
+            if (type == ConstantsApp.SXW_SINKEVICH_APP)
+            {
+                shiftRow += 1;
+            }
+
+            var columnCoordinate = _excelReader.FindCellByQuery(excel, searchingKeys.DoneSmrCost.ColName.ToArray())?.FirstOrDefault();
+            if (columnCoordinate == null)
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+
+            return ReturnListEstNumbersWithCosts(excel, (columnCoordinate?.Col ?? 0), searchingKeys.DoneSmrCost.RowName,
+                                                    shiftRow, searchingKeys.DoneSmrCost.ExtraColName.FirstOrDefault(),
+                                                    searchingKeys.DoneSmrCost.ExtraRowName, (columnCoordinate?.Row ?? 0));
+        }
 
 
         private string GetCellValue(ExcelWorksheet excel, int shiftRow, int shiftCol, params string[] names)
@@ -609,6 +703,62 @@ namespace BusinessLayer.ServicesCOM
             return Convert.ToDecimal(result);
         }
 
+
+        private List<(string estimateNumber, decimal cost)>? ReturnListEstNumbersWithCosts(ExcelWorksheet excel, int columnValue,
+            List<string> rowName, int shiftRow = 0, string? extraCol = null, List<string>? extraRow = null, int? rowStart = null)
+        {
+
+            var listResult = new List<(string estimateNumber, decimal cost)>();
+            var nameRowEstimate = _excelReader.FindCellByQuery(excel, rowName.ToArray());
+
+            int columnCostValue = extraCol != null && nameRowEstimate?.FirstOrDefault() != null ?
+                                   SearchExtraColumn(excel, columnValue, rowStart ?? 1, extraCol) : columnValue;
+            int rowCostValue = extraRow != null ? SearchExtraRow(excel, rowStart ?? 1, extraRow) : 0;
+            
+            try
+            {
+                foreach (var estCoordinate in nameRowEstimate)
+                {
+                    var row = extraRow == null ? (estCoordinate.Row + shiftRow) : rowCostValue;
+                    var columnName = estCoordinate.Col;
+
+                    /* 
+                     * Находим и конвертируем стоимости по смете
+                     *  -- columnCostValue - столбец где стоимость;
+                     *  -- row - строка стоимости
+                     *  -- shiftRow - количество строк (для смещения), которые добаляем, если в документе стоимость указана 
+                      *  на несколько или одну строку ниже, чем название сметы  
+                    */
+                    var costObj = (columnName == 0 || row == 0) ? 0M : excel.Cells[row, columnCostValue].Value ?? 0M;
+                    var cost = Convert.ToDecimal(costObj);
+
+                    /* 
+                     * Находим название сметы, и парсим из нее номер сметы
+                     *  -- columnName - столбец где название сметы;                    
+                     *  -- estCoordinate.Row - строка (без смещения), где находится наименование сметы
+                     */
+                    var estimateName = (columnName == 0 || row == 0) ? "" : excel.Cells[estCoordinate.Row, columnName].Value ?? "";
+                    var numberEstimate = _textSearcher.SearchNumberWithStart(estimateName?.ToString());
+
+                    listResult.Add((numberEstimate, cost));
+                }
+                return listResult;
+            }
+            catch (Exception)
+            {
+                return Array.Empty<(string, decimal)>().ToList();
+            }
+        }
+
+
+        /// <summary>
+        /// Проверяет, есть ли на странице смета с необходимым номером
+        /// </summary>
+        /// <param name="excel"></param>
+        /// <param name="drawingsName"></param>
+        /// <param name="numberEstimate"></param>
+        /// <param name="IsSplite"></param>
+        /// <returns></returns>
         private bool ExistEstmtNumberIntoSheet(ExcelWorksheet excel, string drawingsName, string? numberEstimate, bool? IsSplite = null)
         {
             var coordinatesLineWithEstNumber = _excelReader.FindCellByQuery(excel, drawingsName).FirstOrDefault();
@@ -620,6 +770,58 @@ namespace BusinessLayer.ServicesCOM
                 return true;
             }
             return false;
+        }
+
+        private int SearchExtraColumn(ExcelWorksheet excel, int startColIndex, int startRowIndex, string extraCol)
+        {
+            int result = startColIndex;
+            if (startRowIndex > 0 && startColIndex > 0)
+            {
+                var indexRow = startRowIndex + 1;
+                for (int indexCol = result; indexCol <= excel.Dimension.End.Column; indexCol++)
+                {
+                    var text = excel.Cells[indexRow, indexCol].Value?.ToString();
+
+                    if (!string.IsNullOrEmpty(text) && text.Equals(extraCol, StringComparison.OrdinalIgnoreCase))
+                    {
+                        result = indexCol;
+                        break;
+                    }
+                    if (indexCol == excel.Dimension.End.Column)
+                    {
+                        indexCol = result;
+                        if (indexRow != excel.Dimension.End.Row)
+                        {
+                            indexRow++;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private int SearchExtraRow(ExcelWorksheet excel, int startRowIndex, List<string>? extraRow)
+        {
+            /* 
+             Находим первый индекс строки, который больше стартового значения
+            (стартовое значение -- расположение название сметы, 
+            следующее должно содержать строку с итоговой стоимостью)
+             */
+            int result = startRowIndex;
+            if (extraRow != null)
+            {
+                var nameRowEstimate2 = _excelReader.FindCellByQuery(excel, extraRow.ToArray());
+
+                foreach (var item in nameRowEstimate2)
+                {
+                    if (result < item.Item1)
+                    {
+                        result = item.Item1;
+                        break;
+                    }
+                }
+            }
+            return result;
         }
     }
 }
