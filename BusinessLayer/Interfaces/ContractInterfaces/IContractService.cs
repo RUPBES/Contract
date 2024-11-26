@@ -13,7 +13,9 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         void AddFile(int contractId, int fileId);
         void DeleteScopeWorks(int id);
-        void DeleteAfterScopeWork(int id);
+        IEnumerable<ContractDTO> GetSubObjects(int id);
+        IEnumerable<ContractDTO> GetSubContracts(int id);
+        IEnumerable<ContractDTO> GetbranchAgreements(int id);
         public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org);
         public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org);
         //////////////////////////////////////////
@@ -25,6 +27,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         (bool isExistChild, int id) IsHaveChild(int id);
         Dictionary<int, ContractType>? GetParentsList(ContractDTO? contract);
 
-        ContractType GetContractType(ContractDTO? contract, out int parentContrId);
+        ContractType GetContractType(int contractId, out int parentContrId);
     }
 }

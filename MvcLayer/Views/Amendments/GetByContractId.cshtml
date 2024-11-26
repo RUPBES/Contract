@@ -23,7 +23,6 @@
     var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
 }
 
-
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
@@ -39,103 +38,106 @@
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
-                <hr class="modal-line" /> 
+                <hr class="modal-line" />
                 @if (Model.Any())
                 {
-                    <table class="table table-main table-striped table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th class="text-center" rowspan="3">
-                                    @Html.DisplayNameFor(model => model.Number)
-                                    и
-                                    @Html.DisplayNameFor(model => model.Date)
-                                </th>
-                                <th class="text-center" rowspan="3">
-                                    @Html.DisplayNameFor(model => model.Reason)
-                                </th>
-                                <th class="text-center" rowspan="3">
-                                    @Html.DisplayNameFor(model => model.ContractPrice)
-                                </th>
-                                <th class="text-center align-middle" colspan="3">Сроки</th>
-                                <th class="text-center" rowspan="3">
-                                    @Html.DisplayNameFor(model => model.ContractChanges)
-                                </th>
-                                <th class="text-center" rowspan="3">Файлы ДС</th>
-                                <th rowspan="3">                                    
-                                </th>
-                            </tr>
-                            <tr>
-                                <th class="text-center align-middle" colspan="2">выполнения работ</th>
-                                <th class="text-center align-middle" rowspan="2">ввода объекта</th>
-                            </tr>
-                            <tr>
-                                <th class="text-center align-middle" colspan="1">начало</th>
-                                <th class="text-center align-middle" colspan="1">окончание</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
+                    <div class="modal-overflow-70" style="max-height: 80vh;">
+                        <table class="table table-main table-striped table-bordered table-hover">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Number)
-                                        от
-                                        @item.Date?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.Reason)
-                                    </td>
-                                    <td class="text-end">
-                                        @item.ContractPrice?.ToString("N2")
-                                    </td>
-                                    <td>
-                                        @item.DateBeginWork?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item.DateEndWork?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @item.DateEntryObject?.ToShortDateString()
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.ContractChanges)
-                                    </td>
-                                    <td>
-                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
-                                        {
-                                            <div>
-                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
-                                                {
-                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
-                                                }
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
-                                        {
-                                            <span class="icon file-add" title="Добавить файл к изменению">
-                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                        }
-                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                                        {
-                                            <span class="icon edit" title="Редактировать изменение по договору">
-                                                <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                                            </span>
-                                        }
-                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
-                                        {
-                                            <span class="icon delete" title="Удалить изменение по договору">
-                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
-                                            </span>
-                                        }
-                                    </td>
+                                    <th class="text-center" rowspan="3">
+                                        @Html.DisplayNameFor(model => model.Number)
+                                        и
+                                        @Html.DisplayNameFor(model => model.Date)
+                                    </th>
+                                    <th class="text-center" rowspan="3">
+                                        @Html.DisplayNameFor(model => model.Reason)
+                                    </th>
+                                    <th class="text-center" rowspan="3">
+                                        @Html.DisplayNameFor(model => model.ContractPrice)
+                                    </th>
+                                    <th class="text-center align-middle" colspan="3">Сроки</th>
+                                    <th class="text-center" rowspan="3">
+                                        @Html.DisplayNameFor(model => model.ContractChanges)
+                                    </th>
+                                    <th class="text-center" rowspan="3">Файлы ДС</th>
+                                    <th rowspan="3">
+                                    </th>
                                 </tr>
-                            }
-                        </tbody>
-                    </table>
+                                <tr>
+                                    <th class="text-center align-middle" colspan="2">выполнения работ</th>
+                                    <th class="text-center align-middle" rowspan="2">ввода объекта</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-center align-middle" colspan="1">начало</th>
+                                    <th class="text-center align-middle" colspan="1">окончание</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <b>@Html.DisplayFor(modelItem => item.Number)</b>                                            
+                                            от
+                                            <br />
+                                            @item.Date?.ToString("dd MMMM yyyy")
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.Reason)
+                                        </td>
+                                        <td class="text-end">
+                                            @item.ContractPrice?.ToString("N2")
+                                        </td>
+                                        <td>
+                                            @item.DateBeginWork?.ToShortDateString()
+                                        </td>
+                                        <td>
+                                            @item.DateEndWork?.ToShortDateString()
+                                        </td>
+                                        <td>
+                                            @item.DateEntryObject?.ToShortDateString()
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.ContractChanges)
+                                        </td>
+                                        <td>
+                                            @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
+                                            {
+                                                <div>
+                                                    <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                    @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
+                                                    {
+                                                        @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                                    }
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
+                                            {
+                                                <span class="icon file-add" title="Добавить файл к изменению">
+                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                </span>
+                                            }
+                                            @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
+                                            {
+                                                <span class="icon edit" title="Редактировать изменение по договору">
+                                                    <a asp-action="Edit" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                </span>
+                                            }
+                                            @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
+                                            {
+                                                <span class="icon delete" title="Удалить изменение по договору">
+                                                    <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 }
                 else
                 {

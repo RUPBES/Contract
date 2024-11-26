@@ -221,7 +221,7 @@ namespace MvcLayer.Controllers
                     ViewData["IsEngin"] = true;
                 ViewData["returnContractId"] = returnContractId;
                 ViewData["contractId"] = contractId;
-                var amendment = _amendmentService.Find(x => x.ContractId == contractId).OrderBy(o => o.Date).LastOrDefault();
+                var amendment = _amendmentService.GetById((int)scope?.AmendmentId);
                 var contract = _contractService.GetById(contractId);
                 if (amendment != null)
                 {
@@ -255,11 +255,19 @@ namespace MvcLayer.Controllers
             {
                 int parentContrId = 0;
                 var contract = scopeWork?.ContractId is not null ? _contractService.GetById((int)scopeWork?.ContractId) : null;
-                var contractType = _contractService.GetContractType(contract, out parentContrId);
+                if (contract == null) return BadRequest("Не найден контракт");
+                var contractType = _contractService.GetContractType(contract.Id, out parentContrId);
                 int operationSign = ((contractType == ContractType.GenСontract) || (contractType == ContractType.MultipleContract)) == true ? 1 : -1;
 
                 if (contract is not null)
                 {
+                    var isScope = _scopeWork.Find(x => x.ContractId == contract.Id).Any();
+                    var isOtherContracts = _contractService.Find(x => x.SubContractId == contract.Id ||
+                                                                    x.AgreementContractId == contract.Id).Any();
+                    if (!isScope && isOtherContracts)
+                    {
+                        CreateOwnScopeFromSubandAgrContracts(contract.Id);
+                    }
                     var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
 
                     if (scopeWork?.AmendmentId is not null && scopeWork?.AmendmentId > 0)
@@ -267,30 +275,41 @@ namespace MvcLayer.Controllers
                         _scopeWork.AddAmendmentToScopeWork((int)scopeWork?.AmendmentId, (int)newScpId);
                     }
 
+
                     //comments
                     /*
                        1) если генконтракт -> создаем дополнительно объем собст. силами
                        2) если подобъект -> создаем дополнительно объем собст. силами, а также обновляем данные генконтракта (объем, объем соб.силами)
                        3) если субподряд или соглашение -> проверяем на наличие родительского договора (подобъект или генконтракт), и обновляем их объемы соб.силами (вычетаем значения)
                     */
+                    var lastAmendment = _scopeWork.GetLastAmendmentWithScope(contract.Id);
+                    DateTime? lastAmendmentDate;
 
-                    if ((contractType == ContractType.GenСontract) || (contractType == ContractType.MultipleContract) && newScpId.HasValue)
+                    var AmendmentDate = _amendmentService.Find(x => x.Id == scopeWork?.AmendmentId).Select(x => x.Date).FirstOrDefault();
+                    if (lastAmendment == null)
+                        lastAmendmentDate = AmendmentDate;
+                    else lastAmendmentDate = lastAmendment.Date;
+                    if (lastAmendmentDate == AmendmentDate)
                     {
-                        _scopeWork.AddOwnForcesCostsByScopeId(_mapper.Map<ScopeWorkDTO>(scopeWork), operationSign);
-
-                        if (contractType == ContractType.MultipleContract)
+                        if ((contractType == ContractType.GenСontract || contractType == ContractType.MultipleContract) && newScpId.HasValue)
                         {
-                            _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, false, operationSign, scopeWork?.ChangeScopeWorkId);
-                            _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, true, operationSign, scopeWork?.ChangeScopeWorkId);
+                            _scopeWork.AddOwnForcesCostsByScopeId(_mapper.Map<ScopeWorkDTO>(scopeWork), operationSign);
+
+                            if (contractType == ContractType.MultipleContract)
+                            {
+                                _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, false, operationSign, scopeWork?.ChangeScopeWorkId);
+                                _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, true, operationSign, scopeWork?.ChangeScopeWorkId);
+                            }
                         }
-                    }
-                    else
-                    {
-                        while (parentContrId != 0)
+                        else
                         {
-                            _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, true, operationSign, scopeWork?.ChangeScopeWorkId);
-                            contract = parentContrId > 0 ? _contractService.GetById(parentContrId) : null;
-                            contractType = _contractService.GetContractType(contract, out parentContrId);
+                            while (parentContrId != 0)
+                            {
+                                _scopeWork.UpdateParentCosts(parentContrId, scopeWork?.SWCosts, true, operationSign, scopeWork?.ChangeScopeWorkId);
+                                contract = parentContrId > 0 ? _contractService.GetById(parentContrId) : null;
+                                if (contract == null) return BadRequest("Не найден контракт");
+                                contractType = _contractService.GetContractType(contract.Id, out parentContrId);
+                            }
                         }
                     }
                 }
@@ -309,6 +328,69 @@ namespace MvcLayer.Controllers
                 }
             }
             return View(scopeWork);
+
+            void CreateOwnScopeFromSubandAgrContracts(int id)
+            {
+                var subContracts = _contractService.GetSubContracts(id);
+                var agrContracts = _contractService.GetbranchAgreements(id);
+                var scope = new ScopeWorkDTO();
+                scope.ContractId = id;
+                scope.IsOwnForces = true;                            
+                foreach (var item in subContracts)
+                {
+                    var subScope = _scopeWork.GetLastScope(item.Id);
+                    foreach(var swcost in _swCostService.Find(x => x.ScopeWorkId == subScope.Id).ToList())
+                    {
+                        var swmain = scope.SWCosts.Where(x =>Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
+                        if (swmain != null)
+                        {
+                            swmain = SubstractCosts(swmain,swcost,-1);                            
+                        }
+                        else
+                        {
+                            var sw = new SWCostDTO();
+                            sw.ScopeWork = scope;
+                            sw.Period = swcost.Period;
+                            sw = SubstractCosts(sw, swcost, -1);
+                            scope.SWCosts.Add(sw);
+                        }
+                    }
+                }
+                foreach (var item in agrContracts)
+                {
+                    var subScope = _scopeWork.GetLastScope(item.Id);
+                    foreach (var swcost in _swCostService.Find(x => x.ScopeWorkId == subScope.Id).ToList())
+                    {
+                        var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
+                        if (swmain != null)
+                        {
+                            swmain = SubstractCosts(swmain, swcost, -1);                            
+                        }
+                        else
+                        {
+                            var sw = new SWCostDTO();
+                            sw.ScopeWork = scope;
+                            sw.Period = swcost.Period;
+                            sw = SubstractCosts(sw, swcost, -1);
+                            scope.SWCosts.Add(sw);
+                        }
+                    }
+                }
+                _scopeWork.Create(scope);
+            }
+
+            SWCostDTO SubstractCosts(SWCostDTO firstCosts, SWCostDTO secondCosts, int opr)
+            {
+                firstCosts.PnrCost = firstCosts.PnrCost + opr * (secondCosts?.PnrCost ?? 0);
+                firstCosts.SmrCost = firstCosts.SmrCost + opr * (secondCosts?.SmrCost ?? 0);
+                firstCosts.EquipmentCost = firstCosts.EquipmentCost + opr * (secondCosts?.EquipmentCost ?? 0);
+                firstCosts.OtherExpensesCost = firstCosts.OtherExpensesCost + opr * (secondCosts?.OtherExpensesCost ?? 0);
+                firstCosts.AdditionalCost = firstCosts.AdditionalCost + opr * (secondCosts?.AdditionalCost ?? 0);
+                firstCosts.GenServiceCost = firstCosts.GenServiceCost + opr * (secondCosts?.GenServiceCost ?? 0);
+                firstCosts.MaterialCost = firstCosts.MaterialCost + opr * (secondCosts?.MaterialCost ?? 0);
+
+                return firstCosts;
+            }
         }
 
         [Authorize(Policy = "DeletePolicy")]
@@ -327,7 +409,8 @@ namespace MvcLayer.Controllers
                 var contrId = scopeWork.ContractId;
                 int parentContrId = 0;
                 var contract = contrId.HasValue ? _contractService.GetById((int)contrId) : null;
-                var contractType = _contractService.GetContractType(contract, out parentContrId);
+                if (contract == null) return BadRequest("Не найден контракт");
+                var contractType = _contractService.GetContractType(contract.Id, out parentContrId);
                 var parents = _contractService.GetParentsList(contract);
                 int oper = (contractType == ContractType.Agreement) || (contractType == ContractType.SubContract) ? 1 : -1;
                 foreach (var cost in scopeWork.SWCosts)
@@ -754,7 +837,8 @@ namespace MvcLayer.Controllers
             costs.AddRange(_mapper.Map<List<SWCostDTO>>(model.SWCosts));
             int parentContrId = 0;
             var contract = _contractService.GetById(contractId);
-            var contractType = _contractService.GetContractType(contract, out parentContrId);
+            if (contract == null) return BadRequest("Не найден контракт");
+            var contractType = _contractService.GetContractType(contract.Id, out parentContrId);
 
             if (contractType == ContractType.GenСontract)
             {
@@ -772,7 +856,8 @@ namespace MvcLayer.Controllers
                 {
                     _scopeWork.UpdateParentCosts(parentContrId, costs, true, -1, model?.Id);
                     contract = parentContrId > 0 ? _contractService.GetById(parentContrId) : null;
-                    contractType = _contractService.GetContractType(contract, out parentContrId);
+                    if (contract == null) return BadRequest("Не найден контракт");
+                    contractType = _contractService.GetContractType(contract.Id, out parentContrId);
                 }
             }
 

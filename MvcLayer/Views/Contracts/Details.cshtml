@@ -16,9 +16,9 @@
 
     var http = new HttpContextAccessor();
     var permissions = HttpHelper.GetPermissionForUser(http);
-    var branchAgreement = Contracts.Find(x => x.AgreementContractId == Model?.Id && x.IsAgreementContract == true);
-    var subContract = Contracts.Find(x => x.SubContractId == Model?.Id && x.IsSubContract == true);
-    var subObjectsOfContract = Contracts.Find(x => x.MultipleContractId == Model?.Id && x.IsOneOfMultiple == true);
+    var branchAgreement = Contracts.GetbranchAgreements(Model.Id).ToList();
+    var subContract = Contracts.GetSubContracts(Model.Id).ToList();
+    var subObjectsOfContract = Contracts.GetSubObjects(Model.Id).ToList();
     var isEngineering = Model.IsEngineering == true ? true : false;
     var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple != true ? true : false;
     string redirectAction = "Details";
@@ -46,6 +46,18 @@
             font-weight: bold;
         }
     </style>
+    @if ((Model.AgreementContractId != 0 && Model.AgreementContractId != null) ||
+              (Model.SubContractId != 0 && Model.SubContractId != null) ||
+                 (Model.MultipleContractId != 0 && Model.MultipleContractId != null))
+    {
+        var ContractMainid = 0;
+        if (Model.AgreementContractId != 0 && Model.AgreementContractId != null) ContractMainid = (int)Model.AgreementContractId;
+        if (Model.SubContractId != 0 && Model.SubContractId != null) ContractMainid = (int)Model.SubContractId;
+        if (Model.MultipleContractId != 0 && Model.MultipleContractId != null) ContractMainid = (int)Model.MultipleContractId;
+        <span>
+            <a class="btn btn-info" asp-action="Details" asp-controller="Contracts" asp-route-id="@ContractMainid">К главному контракту</a>
+        </span>
+    }
     <table class="table table-main table-main-full table-bordered table-hover table-condensed" id="contractTable">
         <thead>
             <tr class="tr-head-main-table">
@@ -279,7 +291,7 @@
                 <td>
                     <span>
                         <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@Model.Id">@Model?.SelectionProcedures?.FirstOrDefault(x => x.ContractId == Model.Id)?.TypeProcedure</a>
-                    </span>
+                    </span>                
                 </td>
                 <td>
                     <span class="table_span-signer">

@@ -46,7 +46,7 @@ namespace BusinessLayer.ServicesCOM
             var rowTotalSumSMR = _excelReader.FindCellByQuery(excel, "И Т О Г О СМР:", "итого смр", "итогосмр:");
             var rowTotalSumPNR = _excelReader.FindCellByQuery(excel, "И Т О Г О ПНР:", "итого пнр", "итогопнр:");
 
-            var costs = new List<SWCost>();
+            var costs = new List<SWCostDTO>();
 
             try
             {
@@ -69,7 +69,7 @@ namespace BusinessLayer.ServicesCOM
                         }
                     }
 
-                    costs.Add(new SWCost
+                    costs.Add(new SWCostDTO
                     {
                         Period = costPeriod,
                         SmrCost = (decimal)valueSMR,

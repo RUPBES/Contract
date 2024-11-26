@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Enums;
 
 namespace MvcLayer.Controllers
 {
@@ -57,7 +58,7 @@ namespace MvcLayer.Controllers
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             //_admin.GetListActivity(7);
-            
+
             if (pageNum < 1)
             {
                 pageNum = 1;
@@ -219,12 +220,35 @@ namespace MvcLayer.Controllers
             if (id == null)
             {
                 return NotFound();
-            }
+            }            
 
             ContractViewModel contract = new ContractViewModel();
             contract.IsAgreementContract = true;
             contract.AgreementContractId = id;
             contract.NameObject = nameObject;
+
+            var mainContract = _contractService.GetById((int)id);
+            contract.EnteringTerm = mainContract.EnteringTerm;
+            contract.DateBeginWork = mainContract.DateBeginWork;
+            contract.DateEndWork = mainContract.DateEndWork;
+
+            if (mainContract.Date == null)
+            {
+                contract.Date = mainContract.DateBeginWork;
+            }
+            else
+            {
+                contract.Date = mainContract.Date;
+            }
+
+            if (mainContract.ContractTerm == null)
+            {
+                contract.ContractTerm = mainContract.EnteringTerm.Value.AddDays(1);
+            }
+            else
+            {
+                contract.ContractTerm = mainContract.ContractTerm;
+            }
 
             for (int i = 0; i < 3; i++)
             {
@@ -287,6 +311,29 @@ namespace MvcLayer.Controllers
             contract.IsSubContract = true;
             contract.SubContractId = id;
             contract.NameObject = nameObject;
+
+            var mainContract = _contractService.GetById((int)id);
+            contract.EnteringTerm = mainContract.EnteringTerm;
+            contract.DateBeginWork = mainContract.DateBeginWork;
+            contract.DateEndWork = mainContract.DateEndWork;
+
+            if (mainContract.Date == null)
+            {
+                contract.Date = mainContract.DateBeginWork;
+            }
+            else
+            {
+                contract.Date = mainContract.Date;
+            }
+
+            if (mainContract.ContractTerm == null)
+            {
+                contract.ContractTerm = mainContract.EnteringTerm.Value.AddDays(1);
+            }
+            else
+            {
+                contract.ContractTerm = mainContract.ContractTerm;
+            }
 
             for (int i = 0; i < 3; i++)
             {
@@ -650,34 +697,34 @@ namespace MvcLayer.Controllers
             {
                 return View();
             }
-
-            var contract = _contractService.GetById(id);
+            Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == id;
+            Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
+            {
+                Id = s.Id,
+                IsOneOfMultiple = s.IsOneOfMultiple,
+                MultipleContractId = s.MultipleContractId
+            };
+            var contract = _contractService.Find(where, select).FirstOrDefault();
 
             if (contract != null)
             {
                 int mainContractId = 0;
-                var isNotGenContract = _contractService.IsNotGenContract(contract.Id, out mainContractId);
-
-                if (isNotGenContract)
+                var typeContract = _contractService.GetContractType(id, out mainContractId);
+                if (mainContractId != 0)
                 {
-                    if (contract.IsOneOfMultiple)
+                    _scopeWorkService.EditCostMainContract(mainContractId, id, typeContract);
+                    if (typeContract == ContractType.MultipleContract)
                     {
-                        //вычитаем стоимости работ подобъекта из глав.договора
-                        _scopeWorkService.RemoveCostsOfMainContract(mainContractId, contract.Id);
                         _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true);
                         _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true, !true);
                     }
                     else
                     {
-                        var scpId = _scopeWorkService.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
-                        var costs = scpId.HasValue ? _swCostService.Find(x => x.ScopeWorkId == scpId) : new List<SWCostDTO>();
-
-                        _scopeWorkService.AddOrSubstractCostsOwnForceMnContract(mainContractId, (List<SWCostDTO>)costs, 1);
                         _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, false);
                     }
 
                     //удаляем объемы работ подобъектов, после чего удаляем подобъект
-                    _contractService.DeleteAfterScopeWork(id);
+                    _contractService.Delete(id);
 
                     //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
                     //проверить на нулевые значения у главного договора
@@ -914,43 +961,40 @@ namespace MvcLayer.Controllers
             }
             #endregion
             #region Заполнение данными из объема работ(Собственными силами)
-            foreach (var docOwn in subDoc)
+            var lastScopeOwn = _scopeWorkService.GetLastScope(id, true);            
+            if (lastScopeOwn != null)
             {
-                var lastScopeOwn = _scopeWorkService.GetLastScope(docOwn);
-                if (lastScopeOwn != null)
+                lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
+                foreach (var item in lastScopeOwn.SWCosts)
                 {
-                    lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
-                    foreach (var item in lastScopeOwn.SWCosts)
-                    {
-                        var ob = new ItemScopeWorkContract();
-                        ob.PnrCost = item.PnrCost;
-                        ob.SmrCost = item.SmrCost;
-                        ob.EquipmentCost = item.EquipmentCost;
-                        ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
-                        ob.AdditionalCost = item.AdditionalCost;
-                        ob.Period = item.Period;
-                        ob.TotalCost = item.CostNds;
-                        ob.TotalWithoutNds = item.CostNoNds;
-                        viewModel.scopesOwn.Add(ob);
+                    var ob = new ItemScopeWorkContract();
+                    ob.PnrCost = item.PnrCost;
+                    ob.SmrCost = item.SmrCost;
+                    ob.EquipmentCost = item.EquipmentCost;
+                    ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
+                    ob.AdditionalCost = item.AdditionalCost;
+                    ob.Period = item.Period;
+                    ob.TotalCost = item.CostNds;
+                    ob.TotalWithoutNds = item.CostNoNds;
+                    viewModel.scopesOwn.Add(ob);
 
-                        viewModel.contractPriceOwn.SmrCost += item.SmrCost;
-                        viewModel.contractPriceOwn.PnrCost += item.PnrCost;
-                        viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
-                        viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
-                        viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
-                        viewModel.contractPriceOwn.TotalCost += item.CostNds;
-                        viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
-                        if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
-                            Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
-                        {
-                            viewModel.todayScopeOwn.SmrCost += item.SmrCost;
-                            viewModel.todayScopeOwn.PnrCost += item.PnrCost;
-                            viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
-                            viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
-                            viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
-                            viewModel.todayScopeOwn.TotalCost += item.CostNds;
-                            viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
-                        }
+                    viewModel.contractPriceOwn.SmrCost += item.SmrCost;
+                    viewModel.contractPriceOwn.PnrCost += item.PnrCost;
+                    viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
+                    viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
+                    viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
+                    viewModel.contractPriceOwn.TotalCost += item.CostNds;
+                    viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
+                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
+                    {
+                        viewModel.todayScopeOwn.SmrCost += item.SmrCost;
+                        viewModel.todayScopeOwn.PnrCost += item.PnrCost;
+                        viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
+                        viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
+                        viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
+                        viewModel.todayScopeOwn.TotalCost += item.CostNds;
+                        viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
                     }
                 }
             }
