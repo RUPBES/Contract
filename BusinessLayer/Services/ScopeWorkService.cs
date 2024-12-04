@@ -321,7 +321,7 @@ namespace BusinessLayer.Services
             if (contractId <= 0) return false;
             if (type == ContractType.MultipleContract)
             {
-                var scopeContractId = GetLastScope(contractId)?.Id;                
+                var scopeContractId = GetLastScope(contractId)?.Id;
                 if (scopeContractId.HasValue)
                 {
                     RemoveCostsFromMain(mainContractId, contractId, true);
@@ -339,7 +339,7 @@ namespace BusinessLayer.Services
                 var scopeMainContractId = GetLastScope(mainContractId, true)?.Id;
                 var mainCosts = _database.SWCosts.Find(x => x.ScopeWorkId == scopeMainContractId).ToList();
                 if (mainCosts.Count > 0)
-                {                    
+                {
                     foreach (var cost in costs)
                     {
                         var costMain = mainCosts.FirstOrDefault(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)cost.Period));
@@ -381,7 +381,7 @@ namespace BusinessLayer.Services
                 }
                 _database.Save();
                 return true;
-            }            
+            }
 
             void RemoveCostsFromMain(int parentContractId, int contractId, bool isOwnForces)
             {
@@ -391,8 +391,8 @@ namespace BusinessLayer.Services
                 {
                     foreach (var item in _database.SWCosts.Find(x => x.ScopeWorkId == mainScpId))
                     {
-                        var removeCost = _database.SWCosts.Find(x => 
-                                    Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)item.Period) && 
+                        var removeCost = _database.SWCosts.Find(x =>
+                                    Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)item.Period) &&
                                     x.ScopeWorkId == contractScopeId).LastOrDefault();
 
                         _database.SWCosts.Update(SubstractCosts(item, removeCost, -1));
@@ -419,31 +419,32 @@ namespace BusinessLayer.Services
         {
             if (parentContrId != 0)
             {
-                var parentScpId = _database.ScopeWorks.Find(x => x.ContractId == parentContrId && x.IsOwnForces == isOwnForces).FirstOrDefault()?.Id;
+                var parentScope = GetLastScope(parentContrId, isOwnForces);
+                int parentScopeId = 0;
+                if (parentScope != null)
+                    parentScopeId = parentScope.Id;
 
                 /******  По ID объема работ, который изменяется по доп.соглашению, берем старые данные объемов   */
-                var oldChaildCosts = changeScopeId.HasValue && changeScopeId > 0 ? _database.SWCosts.Find(x => x.ScopeWorkId == changeScopeId) : null;
+                var oldChildCosts = changeScopeId.HasValue && changeScopeId > 0 ? _database.SWCosts.Find(x => x.ScopeWorkId == changeScopeId) : null;
 
-                if (parentScpId.HasValue && parentScpId > 0)
+                if (parentScopeId > 0)
                 {
-                    foreach (var newChaildCosts in costs)
+                    foreach (var newChildCosts in costs)
                     {
-                        var parentCosts = _mapper.Map<SWCostDTO>( _database.SWCosts.Find(x => x.ScopeWorkId == parentScpId &&
-                                                                x.Period?.Year == newChaildCosts.Period?.Year &&
-                                                                x.Period?.Month == newChaildCosts.Period?.Month).FirstOrDefault());
+                        var parentCost = _mapper.Map<SWCostDTO>(_database.SWCosts.Find(x => x.ScopeWorkId == parentScopeId &&
+                                                                Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)newChildCosts.Period)).FirstOrDefault());
 
-                        var oldChaildCost = oldChaildCosts?.FirstOrDefault(x =>
-                                                   x.Period?.Year == newChaildCosts.Period?.Year &&
-                                                   x.Period?.Month == newChaildCosts.Period?.Month);
+                        var oldChildCost = oldChildCosts?.FirstOrDefault(x =>
+                                                                Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)newChildCosts.Period));
 
-                        if (parentCosts is not null)   /****** обновляем стоимость конкретного периода родительского объема работ   */
+                        if (parentCost is not null)   /****** обновляем стоимость конкретного периода родительского объема работ   */
                         {
-                            parentCosts = SubstractOldAndAddNewCosts(parentCosts, _mapper.Map<SWCostDTO>(oldChaildCost), newChaildCosts, operatorSign);
-                            _database.SWCosts.Update(_mapper.Map<SWCost>(parentCosts));
+                            parentCost = SubstractOldAndAddNewCosts(parentCost, _mapper.Map<SWCostDTO>(oldChildCost), newChildCosts, operatorSign);
+                            _database.SWCosts.Update(_mapper.Map<SWCost>(parentCost));
                         }
                         else
                         {
-                            CreateCostsByScopeId((int)parentScpId, _mapper.Map<SWCost>(newChaildCosts), isOwnForces); /*  добавление стоимости за конкретный период   */
+                            CreateCostsByScopeId((int)parentScopeId, _mapper.Map<SWCost>(newChildCosts), isOwnForces); /*  добавление стоимости за конкретный период   */
                         }
                     }
                     _database.Save();
@@ -452,7 +453,9 @@ namespace BusinessLayer.Services
                 {
                     //   создаем новый и добавляем стоимости для него!!!!!!!!!!!!!!!!!!!!
                     if (isOwnForces)
-                    CreateOwnScopeFromSubandAgrContracts(parentContrId, _mapper.Map<List<SWCost>>(costs));
+                    {
+                        CreateOwnScopeFromSubandAgrContracts(parentContrId);
+                    }
                     else
                     {
                         var scope = new ScopeWork();
@@ -474,68 +477,76 @@ namespace BusinessLayer.Services
                 }
             }
 
-            void CreateOwnScopeFromSubandAgrContracts(int id, List<SWCost> costs)
+            void CreateOwnScopeFromSubandAgrContracts(int id)
             {
                 var subContracts = _database.Contracts.Find(x => x.SubContractId == id).ToList();
                 var agrContracts = _database.Contracts.Find(x => x.AgreementContractId == id).ToList();
+                var multiContracts = _database.Contracts.Find(x => x.MultipleContractId == id).ToList();
                 var scope = new ScopeWork();
                 scope.ContractId = id;
                 scope.IsOwnForces = true;
                 foreach (var item in subContracts)
                 {
                     var subScope = GetLastScope(item.Id);
-                    foreach (var swcost in _database.SWCosts.Find(x => x.ScopeWorkId == subScope.Id).ToList())
-                    {
-                        var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
-                        if (swmain != null)
+                    if (subScope != null)
+                        foreach (var swcost in _database.SWCosts.Find(x => x.ScopeWorkId == subScope.Id).ToList())
                         {
-                            swmain = SubstractCosts(swmain, swcost, -1);
+                            var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
+                            if (swmain != null)
+                            {
+                                swmain = SubstractCosts(swmain, swcost, -1);
+                            }
+                            else
+                            {
+                                var sw = new SWCost();
+                                sw.ScopeWork = scope;
+                                sw.Period = swcost.Period;
+                                sw = SubstractCosts(sw, swcost, -1);
+                                scope.SWCosts.Add(sw);
+                            }
                         }
-                        else
-                        {
-                            var sw = new SWCost();
-                            sw.ScopeWork = scope;
-                            sw.Period = swcost.Period;
-                            sw = SubstractCosts(sw, swcost, -1);
-                            scope.SWCosts.Add(sw);
-                        }
-                    }
                 }
                 foreach (var item in agrContracts)
                 {
-                    var subScope = GetLastScope(item.Id);
-                    foreach (var swcost in _database.SWCosts.Find(x => x.ScopeWorkId == subScope.Id).ToList())
-                    {
-                        var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
-                        if (swmain != null)
+                    var agrScope = GetLastScope(item.Id);
+                    if (agrScope != null)
+                        foreach (var swcost in _database.SWCosts.Find(x => x.ScopeWorkId == agrScope.Id).ToList())
                         {
-                            swmain = SubstractCosts(swmain, swcost, -1);
+                            var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
+                            if (swmain != null)
+                            {
+                                swmain = SubstractCosts(swmain, swcost, -1);
+                            }
+                            else
+                            {
+                                var sw = new SWCost();
+                                sw.ScopeWork = scope;
+                                sw.Period = swcost.Period;
+                                sw = SubstractCosts(sw, swcost, -1);
+                                scope.SWCosts.Add(sw);
+                            }
                         }
-                        else
-                        {
-                            var sw = new SWCost();
-                            sw.ScopeWork = scope;
-                            sw.Period = swcost.Period;
-                            sw = SubstractCosts(sw, swcost, -1);
-                            scope.SWCosts.Add(sw);
-                        }
-                    }
                 }
-                foreach (var item in costs)
+                foreach (var item in multiContracts)
                 {
-                    var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)item.Period)).FirstOrDefault();
-                    if (swmain != null)
-                    {
-                        swmain = SubstractCosts(swmain, item, 1);
-                    }
-                    else
-                    {
-                        var sw = new SWCost();
-                        sw.ScopeWork = scope;
-                        sw.Period = item.Period;
-                        sw = SubstractCosts(sw, item, 1);
-                        scope.SWCosts.Add(sw);
-                    }                    
+                    var multiScope = GetLastScope(item.Id, true);
+                    if (multiScope != null)
+                        foreach (var swcost in _database.SWCosts.Find(x => x.ScopeWorkId == multiScope.Id).ToList())
+                        {
+                            var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
+                            if (swmain != null)
+                            {
+                                swmain = SubstractCosts(swmain, swcost, 1);
+                            }
+                            else
+                            {
+                                var sw = new SWCost();
+                                sw.ScopeWork = scope;
+                                sw.Period = swcost.Period;
+                                sw = SubstractCosts(sw, swcost, 1);
+                                scope.SWCosts.Add(sw);
+                            }
+                        }
                 }
                 _database.ScopeWorks.Create(scope);
                 foreach (var item in scope.SWCosts)
@@ -571,18 +582,18 @@ namespace BusinessLayer.Services
             {
                 var existCosts = _database?.SWCosts?.Find(x => x.ScopeWorkId == scope.Id);
 
-                foreach (var newCosts in scopeWork.SWCosts)
+                foreach (var newCost in scopeWork.SWCosts)
                 {
-                    var existCost = _mapper.Map<SWCostDTO>(existCosts?.FirstOrDefault(x => x.Period?.Year == newCosts.Period?.Year && x.Period?.Month == newCosts.Period?.Month));
+                    var existCost = _mapper.Map<SWCostDTO>(existCosts?.FirstOrDefault(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)newCost.Period)));
 
                     if (existCost is not null)   /*****  обновляем стоимость конкретного периода родительского объема работ      */
                     {
-                        existCost = SubstractOldAndAddNewCosts(existCost, new SWCostDTO(), newCosts, operatorSign);
+                        existCost = SubstractOldAndAddNewCosts(existCost, new SWCostDTO(), newCost, operatorSign);
                         _database?.SWCosts.Update(_mapper.Map<SWCost>(existCost));
                     }
                     else
                     {
-                        CreateCostsByScopeId(scope.Id, _mapper.Map<SWCost>(newCosts), true); /****  добавление стоимости за конкретный период   */
+                        CreateCostsByScopeId(scope.Id, _mapper.Map<SWCost>(newCost), true); /****  добавление стоимости за конкретный период   */
                     }
                 }
                 _database?.Save();
@@ -627,7 +638,7 @@ namespace BusinessLayer.Services
                 var childrenContracts = _database.Contracts.Find(x => x.AgreementContractId == contractId || x.SubContractId == contractId || x.MultipleContractId == contractId).Count();
                 return childrenContracts > 0 ? true : false;
             }
-        }       
+        }
 
         private void CreateCostsByScopeId(int scopeId, SWCost cost, bool isOwnForces)
         {
@@ -649,20 +660,20 @@ namespace BusinessLayer.Services
 
                 _database.Save();
             }
-        }   
+        }
 
-        private SWCostDTO SubstractOldAndAddNewCosts(SWCostDTO scpMain, SWCostDTO oldSwCost, SWCostDTO scpNew, int opr)
+        private SWCostDTO SubstractOldAndAddNewCosts(SWCostDTO mainSwCost, SWCostDTO oldSwCost, SWCostDTO newSwCost, int opr)
         {
-            scpMain.PnrCost = (scpMain.PnrCost ?? 0) + opr * ((scpNew?.PnrCost ?? 0) - (oldSwCost?.PnrCost ?? 0));
-            scpMain.SmrCost = (scpMain.SmrCost ?? 0) + opr * ((scpNew?.SmrCost ?? 0) - (oldSwCost?.SmrCost ?? 0));
-            scpMain.EquipmentCost = (scpMain.EquipmentCost ?? 0) + opr * ((scpNew?.EquipmentCost ?? 0) - (oldSwCost?.EquipmentCost ?? 0));
-            scpMain.OtherExpensesCost = (scpMain.OtherExpensesCost ?? 0) + opr * ((scpNew?.OtherExpensesCost ?? 0) - (oldSwCost?.OtherExpensesCost ?? 0));
-            scpMain.AdditionalCost = (scpMain.AdditionalCost ?? 0) + opr * ((scpNew?.AdditionalCost ?? 0) - (oldSwCost?.AdditionalCost ?? 0));
-            scpMain.GenServiceCost = (scpMain.GenServiceCost ?? 0) + opr * ((scpNew?.GenServiceCost ?? 0) - (oldSwCost?.GenServiceCost ?? 0));
-            scpMain.MaterialCost = (scpMain.MaterialCost ?? 0) + opr * ((scpNew?.MaterialCost ?? 0) - (oldSwCost?.MaterialCost ?? 0));
+            mainSwCost.PnrCost = (mainSwCost.PnrCost ?? 0) + opr * ((newSwCost?.PnrCost ?? 0) - (oldSwCost?.PnrCost ?? 0));
+            mainSwCost.SmrCost = (mainSwCost.SmrCost ?? 0) + opr * ((newSwCost?.SmrCost ?? 0) - (oldSwCost?.SmrCost ?? 0));
+            mainSwCost.EquipmentCost = (mainSwCost.EquipmentCost ?? 0) + opr * ((newSwCost?.EquipmentCost ?? 0) - (oldSwCost?.EquipmentCost ?? 0));
+            mainSwCost.OtherExpensesCost = (mainSwCost.OtherExpensesCost ?? 0) + opr * ((newSwCost?.OtherExpensesCost ?? 0) - (oldSwCost?.OtherExpensesCost ?? 0));
+            mainSwCost.AdditionalCost = (mainSwCost.AdditionalCost ?? 0) + opr * ((newSwCost?.AdditionalCost ?? 0) - (oldSwCost?.AdditionalCost ?? 0));
+            mainSwCost.GenServiceCost = (mainSwCost.GenServiceCost ?? 0) + opr * ((newSwCost?.GenServiceCost ?? 0) - (oldSwCost?.GenServiceCost ?? 0));
+            mainSwCost.MaterialCost = (mainSwCost.MaterialCost ?? 0) + opr * ((newSwCost?.MaterialCost ?? 0) - (oldSwCost?.MaterialCost ?? 0));
 
-            return scpMain;
-        }     
+            return mainSwCost;
+        }
         #endregion
     }
 }

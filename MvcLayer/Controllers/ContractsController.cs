@@ -697,6 +697,7 @@ namespace MvcLayer.Controllers
             {
                 return View();
             }
+            var deleteId = id;
             Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == id;
             Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
             {
@@ -712,19 +713,24 @@ namespace MvcLayer.Controllers
                 var typeContract = _contractService.GetContractType(id, out mainContractId);
                 if (mainContractId != 0)
                 {
-                    _scopeWorkService.EditCostMainContract(mainContractId, id, typeContract);
-                    if (typeContract == ContractType.MultipleContract)
+                    while (mainContractId != 0)
                     {
-                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true);
-                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, true, !true);
-                    }
-                    else
-                    {
-                        _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, contract.Id, false);
+                        _scopeWorkService.EditCostMainContract(mainContractId, deleteId, typeContract);
+                        if (typeContract == ContractType.MultipleContract)
+                        {
+                            _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, deleteId, true);
+                            _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, deleteId, true, !true);
+                        }
+                        else
+                        {
+                            _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, deleteId, false);
+                        }
+                        id = mainContractId;
+                        _contractService.GetContractType(id, out mainContractId);
                     }
 
                     //удаляем объемы работ подобъектов, после чего удаляем подобъект
-                    _contractService.Delete(id);
+                    _contractService.Delete(deleteId);
 
                     //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
                     //проверить на нулевые значения у главного договора
@@ -917,6 +923,7 @@ namespace MvcLayer.Controllers
             viewModel.AmendmentInfo = _amendmentService.IsThereScopeWorkWitnLastAmendmentByContractId(id) == false ? ConstantsApp.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : String.Empty;
             var amendmentId = _amendmentService?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
             var lastScope = _scopeWorkService.GetLastScope(id);
+            var lastScopeOwn = _scopeWorkService.GetLastScope(id, true);
             var subDoc = _contractService.Find(x => x.SubContractId == id || x.AgreementContractId == id || x.MultipleContractId == id).Select(x => x.Id).ToList();
             #region Заполнение данными из объема работ(План)
             if (lastScope != null)
@@ -955,13 +962,48 @@ namespace MvcLayer.Controllers
                     }
                 }
             }
+            else if (lastScope == null && lastScopeOwn != null)
+            {
+                lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
+                foreach (var item in lastScopeOwn.SWCosts)
+                {
+                    var ob = new ItemScopeWorkContract();
+                    ob.PnrCost = 0;
+                    ob.SmrCost = 0;
+                    ob.EquipmentCost = 0;
+                    ob.OtherExpensesCost = 0;
+                    ob.AdditionalCost = 0;
+                    ob.Period = item.Period;
+                    ob.TotalCost = 0;
+                    ob.TotalWithoutNds = 0;
+                    viewModel.scopes.Add(ob);
+
+                    viewModel.contractPrice.SmrCost += ob.SmrCost;
+                    viewModel.contractPrice.PnrCost += ob.PnrCost;
+                    viewModel.contractPrice.EquipmentCost += ob.EquipmentCost;
+                    viewModel.contractPrice.OtherExpensesCost += ob.OtherExpensesCost;
+                    viewModel.contractPrice.AdditionalCost += ob.AdditionalCost;
+                    viewModel.contractPrice.TotalCost += ob.TotalCost;
+                    viewModel.contractPrice.TotalWithoutNds += ob.TotalWithoutNds;
+                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
+                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
+                    {
+                        viewModel.todayScope.SmrCost += ob.SmrCost;
+                        viewModel.todayScope.PnrCost += ob.PnrCost;
+                        viewModel.todayScope.EquipmentCost += ob.EquipmentCost;
+                        viewModel.todayScope.OtherExpensesCost += ob.OtherExpensesCost;
+                        viewModel.todayScope.AdditionalCost += ob.AdditionalCost;
+                        viewModel.todayScope.TotalCost += ob.TotalCost;
+                        viewModel.todayScope.TotalWithoutNds += ob.TotalWithoutNds;
+                    }
+                }
+            }
             else
             {
                 return PartialView("_Message", new ModalViewModel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
             }
             #endregion
-            #region Заполнение данными из объема работ(Собственными силами)
-            var lastScopeOwn = _scopeWorkService.GetLastScope(id, true);            
+            #region Заполнение данными из объема работ(Собственными силами)                     
             if (lastScopeOwn != null)
             {
                 lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
