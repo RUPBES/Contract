@@ -1,9 +1,6 @@
 ﻿@using DatabaseLayer.Models.PRO
-
 @{
-    bool isChange = ViewBag.IsChange == true ? true : false;
     int estimateId = ViewBag.EstimateId ?? 0;
-
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
         backId = (int)ViewData["contractId"];
@@ -21,17 +18,22 @@
                     <label id="HeaderLabel" class="my-modal-title">Загрузка данных из сметы</label>
                     @if (backId > 0)
                     {
-                        <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" asp-route-contractId="@backId" class="close-btn"></a>
+                        <a asp-controller="Estimate" 
+                        asp-action="Index" 
+                        asp-route-contractId="@backId" 
+                        asp-route-contractId="@backId" class="close-btn">
+                        </a>
                     }
                     @if (backId == 0)
                     {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        <a asp-controller="Contracts" 
+                        asp-action="" class="close-btn">
+                        </a>
                     }
                 </div>
                 <hr class="modal-line">
                 <div id="divForm" class="divForm_modal">
                     <form id="files" method="post" enctype="multipart/form-data">
-                        <input name="isChange" id="isChangeId" value="@ViewBag?.IsChange" hidden />
                         <input name="estimateParentId" id="estimateParentId" value="@ViewBag?.EstimateId" hidden />
                         
                         <div id="example" style="min-width:400px; max-width: 800px;">
@@ -178,7 +180,6 @@
                 success: function (data) {
                     let path = data;
                     let typeId = $("#typeId").val();
-                    let isChange = $('#isChangeId').val();
                     let estimateParentId = $('#estimateParentId').val();
                     let buildingsCodeId = $('#buildingsCodeId').val();
 
@@ -191,25 +192,33 @@
                         },
                         type: 'POST',
                         url: '@Url.Action("GetEstimateData", "Estimate")',
-                        data: { path: path, contractId: contractId, date: dateEstimate, type: typeId, isChange: isChange, estimateId: estimateParentId },
+                        data: { path: path, contractId: contractId, date: dateEstimate, type: typeId, estimateId: estimateParentId },
                         success: function (data) {
                             let dataArr = data.split(',');
 
                             showResultMessage("#result", `<div class="alert alert-success" role="alert"><span><h3>Загружены данные из ${dataArr[0]} локальной смет(ы)</h3></span></div>`);
-
-                            $.ajax({                               
-                                type: 'GET',
-                                url: '@Url.Action("RedirectToView", "Estimate")',
-                                data: { path: path, type: typeId, contractId: contractId, updateByType: 'laborCost', buildingsCode: dataArr[1] },
-                                success: function (viewData) {
-                                    $("#divForm").html(viewData);
-                                    $("#HeaderLabel").text("Загрузка расчета стоимости/ведомости объемов работ");
-                                    GoNextStep();
-                                },
-                                error: function (error) {
-                                    handleError(error, '@Url.Action("ShowError", "Parse")')
-                                },
-                            });
+                            
+                            if (dataArr.length < 3 && +dataArr[0] > 0) {
+                                $.ajax({
+                                    type: 'GET',
+                                    url: '@Url.Action("RedirectToView", "Estimate")',
+                                    data: { path: path, type: typeId, contractId: contractId, updateByType: 'laborCost', buildingsCode: dataArr[1] },
+                                    success: function (viewData) {
+                                        $("#divForm").html(viewData);
+                                        $("#HeaderLabel").text("Загрузка расчета стоимости/ведомости объемов работ");
+                                        GoNextStep();
+                                    },
+                                    error: function (error) {
+                                        handleError(error, '@Url.Action("ShowError", "Parse")')
+                                    },
+                                });
+                            }
+                            if (dataArr.length > 2 && +dataArr[0] > 0) {
+                                window.location.href = '@Url.Action("AddDrawings", "Estimate")?' + `id=${dataArr[2]}&contractId=${contractId}`;                               
+                            }
+                            if (+dataArr[0] === 0) {
+                                window.location.href = '@Url.Action("Index", "Estimate")?' + `contractId=${contractId}`;
+                            }
                         
                         },
                         error: function (error) {

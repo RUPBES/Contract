@@ -72,6 +72,8 @@ namespace BusinessLayer.Models.PRO
         [DisplayName("Номер изменения")]
         public int? ChangeNumber { get; set; }
 
+        public DateTime CreationTime { get; set; }
+
         public virtual AbbreviationKindOfWorkDTO AbbreviationKindOfWorkDTO { get; set; }
         public int ContractId { get; set; }
         public ContractDTO Contract { get; set; }

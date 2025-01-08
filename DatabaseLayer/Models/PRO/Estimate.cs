@@ -18,8 +18,8 @@ namespace DatabaseLayer.Models.PRO
         public DateTime? EstimateDate { get; set; }
         public string BuildingCode { get; set; }
         public string BuildingName { get; set; }
-        public DateTime? DrawingsDate { get; set; }       
-        public string DrawingsKit { get; set; }        
+        public DateTime? DrawingsDate { get; set; }
+        public string DrawingsKit { get; set; }
         public string DrawingsName { get; set; }
         public decimal? ContractsCost { get; set; }
         public double? LaborCost { get; set; }
@@ -35,6 +35,7 @@ namespace DatabaseLayer.Models.PRO
         public DateTime? ChangeEstimateDate { get; set; }
         public DateTime? ChangeDrawingDate { get; set; }
         public int? ChangeNumber { get; set; }
+        public DateTime CreationTime { get; set; }
 
         public virtual AbbreviationKindOfWork AbbreviationKindOfWork { get; set; }
         public int ContractId { get; set; }

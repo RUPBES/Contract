@@ -1,22 +1,21 @@
 ﻿using BusinessLayer.Models.PRO;
-using BusinessLayer.Models;
 
 namespace MvcLayer.Models
 {
     public class EstimateViewModel
-    {        
+    {
         public string BuildingCode { get; set; }
         public string BuildingName { get; set; }
-        public Dictionary<string, EstimateViewResultBuilding> report { get; set; } = new Dictionary<string, EstimateViewResultBuilding>();
-        public List<EstimateViewModelItem> DetailsView { get; set; } = new List<EstimateViewModelItem>();
+        public Dictionary<string, EstimateViewResultBuilding> report { get; set; } = new();
+        public List<EstimateViewModelItem> DetailsView { get; set; } = new();
     }
 
     public class EstimateViewModelItem
     {
         public string DrawingsName { get; set; }
         public int EstimateCount { get; set; } = 0;
-        public List<int> NumberEntriesByEstimate { get; set; } = new List<int>();
-        public List<EstimateViewModelDrawning> EstimateViewModelDrawnings { get; set; } = new List<EstimateViewModelDrawning>();
+        public List<int> NumberEntriesByEstimate { get; set; } = new();
+        public List<EstimateViewModelDrawning> EstimateViewModelDrawnings { get; set; } = new();
     }
 
     public class EstimateViewModelDrawning
@@ -43,24 +42,17 @@ namespace MvcLayer.Models
         public DateTime? ChangeDrawingDate { get; set; }
         public int? ChangeNumber { get; set; }
 
-        public List<EstimateFileDTO> EstimateFiles { get; set; } = new List<EstimateFileDTO>();
+        public DateTime CreationTime { get; set; }
+
+        public List<EstimateFileDTO> EstimateFiles { get; set; } = new();
     }
 
     public class EstimateViewResultBuilding
     {
-        public EstimateViewResultBuilding()
-        {
-            ContractsCost = 0;
-            LaborCost = 0;
-            DoneSmrCost = 0;
-            PercentOfContrPrice = 0;
-            RemainsSmrCost = 0;
-        }
-
-        public decimal? ContractsCost { get; set; }
-        public double? LaborCost { get; set; }
-        public decimal? DoneSmrCost { get; set; }
-        public decimal? PercentOfContrPrice { get; set; }
-        public decimal? RemainsSmrCost { get; set; }
+        public decimal? ContractsCost { get; set; } = 0;
+        public double? LaborCost { get; set; } = 0;
+        public decimal? DoneSmrCost { get; set; } = 0;
+        public decimal? PercentOfContrPrice { get; set; } = 0;
+        public decimal? RemainsSmrCost { get; set; } = 0;
     }
 }

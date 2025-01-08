@@ -242,15 +242,15 @@ namespace BusinessLayer.Services
             string value;
             SearchString.TryGetValue("Шифр здания", out value);
             if (value != null)
-                items = items.Where(x => x.BuildingCode.Contains(value)).ToList();
+                items = items.Where(x => x.BuildingCode != null && x.BuildingCode.ToLower().Contains(value.ToLower())).ToList();
 
             SearchString.TryGetValue("Название здания", out value);
             if (value != null)
-                items = items.Where(x => x.BuildingName.Contains(value)).ToList();
+                items = items.Where(x => x.BuildingName != null && x.BuildingName.ToLower().Contains(value.ToLower())).ToList();
 
             SearchString.TryGetValue("Подрядчик", out value);
             if (value != null)
-                items = items.Where(x => x.SubContractor.Contains(value)).ToList();
+                items = items.Where(x => x.SubContractor != null && x.SubContractor.ToLower().Contains(value.ToLower())).ToList();
 
             SearchString.TryGetValue("Начало периода получения чертежа", out value);
             if (value != null)
@@ -285,7 +285,8 @@ namespace BusinessLayer.Services
             }
             #endregion
 
-            #region ListSearchString            
+            #region ListSearchString        
+            
             List<int> listItems;
             ListSearchString.TryGetValue("Буквенный индекс чертежей", out listItems);
             if (listItems != null && listItems.Count > 0)

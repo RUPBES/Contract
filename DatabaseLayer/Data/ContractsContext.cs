@@ -102,8 +102,8 @@ public partial class ContractsContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
         }
     }
 
@@ -119,6 +119,9 @@ public partial class ContractsContext : DbContext
 
             entity.Property(e => e.ContractsCost)
                 .HasColumnType("money");
+            entity.Property(e => e.CreationTime)
+           //.HasDefaultValueSql("(getDate())")
+           .HasComputedColumnSql();
 
             entity.Property(e => e.PercentOfContrPrice)
             .HasDefaultValueSql("(0)")
@@ -1063,8 +1066,10 @@ public partial class ContractsContext : DbContext
                 .HasColumnType("money")
                 .HasComment("стоимость СМР");
 
-            entity.HasOne(d => d.ScopeWork).WithMany(p => p.SWCosts)
+            entity.HasOne(d => d.ScopeWork)
+                .WithMany(p => p.SWCosts)
                 .HasForeignKey(d => d.ScopeWorkId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_SWCosts_ScopeWork_Id");
         });
 

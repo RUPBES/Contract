@@ -29,11 +29,17 @@
                     <label class="my-modal-title">@ViewData["Title"]</label>
                     @if (backId != null && backId > 0)
                     {
-                        <a asp-controller="Estimate" asp-action="Index" asp-route-contractId="@backId" class="close-btn"></a>
+                        <a 
+                            asp-controller="Estimate" 
+                            asp-action="Index" 
+                            asp-route-contractId="@backId" class="close-btn">
+                        </a>
                     }
                     @if (backId == null || backId == 0)
                     {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
+                        <a asp-controller="Contracts" 
+                            asp-action="" class="close-btn">
+                        </a>
                     }
                 </div>
                 <hr class="modal-line" />
@@ -41,7 +47,7 @@
                     <div>
                         <input id="contractId" name="contractId" value="@ViewBag.contractId" hidden />
                         <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
-                        <input name="isChange" value="@ViewBag.IsChange" hidden />
+                        @*<input name="isChange" value="@ViewBag.IsChange" hidden />*@
                         <input name="estimateId" value="@ViewBag.EstimateId" hidden />
                         <input name="isUpdate" id="isUpdateId" value="@ViewBag.IsUpdate" hidden />
                         <select name="type" class="form-select" id="selectTypeId">

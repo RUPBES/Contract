@@ -7,7 +7,9 @@ using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using MvcLayer.Models;
+using System.Diagnostics;
 
 namespace MvcLayer.Controllers.PRO;
 
@@ -40,146 +42,326 @@ public class EstimateController : Controller
         _excelReader = excelReader;
     }
 
+    //public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
+    //{
+    //    //Stopwatch stopwatch = new Stopwatch();
+    //    //stopwatch.Start();
+    //    ///////////////////////
+    //    ViewData["contractNumber"] = _contractService.Find(x => x.Id == contractId).Select(x => x.Number).FirstOrDefault();
+    //    ViewData["contractId"] = contractId;
+    //    ViewData["returnContractId"] = returnContractId;
+    //    var pageSize = 1000;
+    //    if (pageNum < 1)
+    //    {
+    //        pageNum = 1;
+    //    }
+    //    var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId, SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
+    //    var answer = new IndexViewModel();
+    //    answer.PageViewModel = list.PageViewModel;
+    //    var listEstimate = new List<EstimateViewModel>();
+    //    var listEstimateSum = new List<EstimateDTO>();
+    //    foreach (EstimateDTO item in list.Objects)
+    //    {
+    //        var estimateView = listEstimate.Where(x => x.BuildingName == item.BuildingName && x.BuildingCode == item.BuildingCode).FirstOrDefault();
+    //        EstimateViewModelItem estimateViewItem;
+
+    //        var estimateViewDrawning = new EstimateViewModelDrawning();
+    //        estimateViewDrawning.Id = item.Id;
+    //        estimateViewDrawning.Number = item.Number;
+    //        estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice ?? 0M;
+    //        estimateViewDrawning.EstimateDate = item.EstimateDate ?? new DateTime(1, 1, 1);
+    //        estimateViewDrawning.DrawingsDate = item.DrawingsDate;
+    //        estimateViewDrawning.ContractsCost = item.ContractsCost ?? 0M;
+    //        estimateViewDrawning.DoneSmrCost = item.DoneSmrCost ?? 0M;
+    //        estimateViewDrawning.DrawingsKit = item.DrawingsKit;
+    //        estimateViewDrawning.LaborCost = item.LaborCost ?? 0;
+    //        estimateViewDrawning.RemainsSmrCost = item.RemainsSmrCost ?? 0M;
+    //        estimateViewDrawning.SubContractor = item.SubContractor;
+    //        var IsInList = listEstimateSum.Where(x => x.Number == item.Number && x.BuildingCode == item.BuildingCode
+    //        && x.BuildingName == item.BuildingName).FirstOrDefault();
+    //        if (estimateView is null)
+    //        {
+    //            estimateView = new EstimateViewModel();
+    //            estimateView.BuildingName = item.BuildingName;
+    //            estimateView.BuildingCode = item.BuildingCode;
+
+    //            estimateViewItem = new EstimateViewModelItem();
+    //            estimateViewItem.DrawingsName = item.DrawingsName;
+    //            estimateView.DetailsView.Add(estimateViewItem);
+    //            listEstimate.Add(estimateView);
+    //        }
+    //        else
+    //        {
+    //            estimateViewItem = estimateView.DetailsView.Where(x => x.DrawingsName == item.DrawingsName).FirstOrDefault();
+    //            if (estimateViewItem == null)
+    //            {
+    //                estimateViewItem = new EstimateViewModelItem();
+    //                estimateViewItem.DrawingsName = item.DrawingsName;
+    //                estimateView.DetailsView.Add(estimateViewItem);
+    //            }
+    //        }
+    //        if (IsInList == null)
+    //        {
+    //            listEstimateSum.Add(item);
+    //            var kindId = _abbreviationKindOfWorkService.Find(x => x.Id == item.KindOfWorkId).Select(x => x.KindOfWorkId).FirstOrDefault();
+    //            var KindName = _kindOfWorkService.Find(x => x.Id == kindId).Select(x => x.name).FirstOrDefault();
+    //            EstimateViewResultBuilding report;
+    //            if (!estimateView.report.TryGetValue(KindName, out report))
+    //            {
+    //                var estimateViewResultBuilding = new EstimateViewResultBuilding();
+    //                estimateViewResultBuilding.RemainsSmrCost = item.RemainsSmrCost ?? 0;
+    //                estimateViewResultBuilding.DoneSmrCost = item.DoneSmrCost ?? 0;
+    //                estimateViewResultBuilding.ContractsCost = item.ContractsCost ?? 0;
+    //                estimateViewResultBuilding.PercentOfContrPrice = item.PercentOfContrPrice ?? 0;
+    //                estimateViewResultBuilding.LaborCost = item.LaborCost ?? 0;
+    //                estimateView.report.Add(KindName, estimateViewResultBuilding);
+    //            }
+    //            else
+    //            {
+    //                report.ContractsCost += item.ContractsCost ?? 0;
+    //                report.RemainsSmrCost += item.RemainsSmrCost ?? 0;
+    //                report.DoneSmrCost += item.DoneSmrCost ?? 0;
+    //                report.PercentOfContrPrice += item.PercentOfContrPrice ?? 0;
+    //                report.LaborCost += item.LaborCost ?? 0;
+    //            }
+    //        }
+    //        estimateViewItem.EstimateViewModelDrawnings.Add(estimateViewDrawning);
+    //    }
+    //    //var i1 = stopwatch.ElapsedMilliseconds;
+    //    foreach (var detailsView in listEstimate)
+    //    {
+    //        foreach (var item in detailsView.DetailsView)
+    //        {
+    //            var listOrder = item.EstimateViewModelDrawnings;
+    //            for (int i = 0; i < listOrder.Count - 1; i++)
+    //                for (int j = i + 1; j < listOrder.Count; j++)
+    //                {
+    //                    if (listOrder[i].DrawingsDate != null)
+    //                    {
+    //                        if (listOrder[j].DrawingsDate != null && listOrder[i].DrawingsDate > listOrder[j].DrawingsDate)
+    //                        {
+    //                            var obj = listOrder[i];
+    //                            listOrder[i] = listOrder[j];
+    //                            listOrder[j] = obj;
+    //                        }
+    //                    }
+    //                    else if (listOrder[j].DrawingsDate != null)
+    //                    {
+    //                        var obj = listOrder[i];
+    //                        listOrder[i] = listOrder[j];
+    //                        listOrder[j] = obj;
+    //                    }
+    //                }
+    //            item.EstimateViewModelDrawnings = listOrder;
+    //        }
+    //    }
+    //    //var i2 = stopwatch.ElapsedMilliseconds;
+    //    foreach (var detailsView in listEstimate)
+    //    {
+    //        foreach (var item in detailsView.DetailsView)
+    //        {
+    //            var index = -1;
+    //            foreach (var drawning in item.EstimateViewModelDrawnings)
+    //            {
+    //                if (drawning.Number != null)
+    //                {
+    //                    item.NumberEntriesByEstimate.Add(1);
+    //                    index++;
+    //                }
+    //                else if (item.NumberEntriesByEstimate.Count >= 1 && item.NumberEntriesByEstimate[index] >= 0)
+    //                {
+    //                    item.NumberEntriesByEstimate[index]++;
+    //                }
+    //            }
+    //        }
+    //    }
+    //    //var i3 = stopwatch.ElapsedMilliseconds;
+    //    answer.Objects = listEstimate;
+    //    ViewBag.CurrentSearchString = SearchString;
+    //    ViewBag.CurrentListSearchString = ListSearchString;
+    //    //var i4 = stopwatch.ElapsedMilliseconds;
+    //    return View(answer);
+    //}
+
+
     public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
     {
-        //Stopwatch stopwatch = new Stopwatch();
-        //stopwatch.Start();
-        ///////////////////////
+        #region НОМЕР_1
+
+
         ViewData["contractNumber"] = _contractService.Find(x => x.Id == contractId).Select(x => x.Number).FirstOrDefault();
-        ViewData["contractId"] = contractId;
+        ViewBag.ContractId = contractId;
         ViewData["returnContractId"] = returnContractId;
         var pageSize = 1000;
         if (pageNum < 1)
         {
             pageNum = 1;
         }
-        var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId, SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
+
+        #endregion
+
+        var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder,contractId,
+                                 SearchString, CurrentSearchString,ListSearchString, CurrentListSearchString);
+        
+        //Stopwatch st = new Stopwatch();
+        //st.Start();
         var answer = new IndexViewModel();
-        answer.PageViewModel = list.PageViewModel;
-        var listEstimate = new List<EstimateViewModel>();
-        var listEstimateSum = new List<EstimateDTO>();
-        foreach (EstimateDTO item in list.Objects)
-        {
-            var estimateView = listEstimate.Where(x => x.BuildingName == item.BuildingName && x.BuildingCode == item.BuildingCode).FirstOrDefault();
-            EstimateViewModelItem estimateViewItem;
+        //answer.PageViewModel = list.PageViewModel;
+        var estimateDTOs = (List<EstimateDTO>)list.Objects;
+        
+        //var estimateViewModel = new EstimateViewModel2();
+        var estimateItemsModel = new List<EstimateItemModel>();
+        var totalCostResultModel = new Dictionary<string, EstimateCostResultModel>();
 
-            var estimateViewDrawning = new EstimateViewModelDrawning();
-            estimateViewDrawning.Id = item.Id;
-            estimateViewDrawning.Number = item.Number;
-            estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice ?? 0M;
-            estimateViewDrawning.EstimateDate = item.EstimateDate ?? new DateTime(1, 1, 1);
-            estimateViewDrawning.DrawingsDate = item.DrawingsDate;
-            estimateViewDrawning.ContractsCost = item.ContractsCost ?? 0M;
-            estimateViewDrawning.DoneSmrCost = item.DoneSmrCost ?? 0M;
-            estimateViewDrawning.DrawingsKit = item.DrawingsKit;
-            estimateViewDrawning.LaborCost = item.LaborCost ?? 0;
-            estimateViewDrawning.RemainsSmrCost = item.RemainsSmrCost ?? 0M;
-            estimateViewDrawning.SubContractor = item.SubContractor;
-            var IsInList = listEstimateSum.Where(x => x.Number == item.Number && x.BuildingCode == item.BuildingCode
-            && x.BuildingName == item.BuildingName).FirstOrDefault();
-            if (estimateView is null)
-            {
-                estimateView = new EstimateViewModel();
-                estimateView.BuildingName = item.BuildingName;
-                estimateView.BuildingCode = item.BuildingCode;
+        //Debug.WriteLine((st.ElapsedMilliseconds) + "sec");
 
-                estimateViewItem = new EstimateViewModelItem();
-                estimateViewItem.DrawingsName = item.DrawingsName;
-                estimateView.DetailsView.Add(estimateViewItem);
-                listEstimate.Add(estimateView);
-            }
-            else
-            {
-                estimateViewItem = estimateView.DetailsView.Where(x => x.DrawingsName == item.DrawingsName).FirstOrDefault();
-                if (estimateViewItem == null)
-                {
-                    estimateViewItem = new EstimateViewModelItem();
-                    estimateViewItem.DrawingsName = item.DrawingsName;
-                    estimateView.DetailsView.Add(estimateViewItem);
-                }
-            }
-            if (IsInList == null)
-            {
-                listEstimateSum.Add(item);
-                var kindId = _abbreviationKindOfWorkService.Find(x => x.Id == item.KindOfWorkId).Select(x => x.KindOfWorkId).FirstOrDefault();
-                var KindName = _kindOfWorkService.Find(x => x.Id == kindId).Select(x => x.name).FirstOrDefault();
-                EstimateViewResultBuilding report;
-                if (!estimateView.report.TryGetValue(KindName, out report))
-                {
-                    var estimateViewResultBuilding = new EstimateViewResultBuilding();
-                    estimateViewResultBuilding.RemainsSmrCost = item.RemainsSmrCost ?? 0;
-                    estimateViewResultBuilding.DoneSmrCost = item.DoneSmrCost ?? 0;
-                    estimateViewResultBuilding.ContractsCost = item.ContractsCost ?? 0;
-                    estimateViewResultBuilding.PercentOfContrPrice = item.PercentOfContrPrice ?? 0;
-                    estimateViewResultBuilding.LaborCost = item.LaborCost ?? 0;
-                    estimateView.report.Add(KindName, estimateViewResultBuilding);
-                }
-                else
-                {
-                    report.ContractsCost += item.ContractsCost ?? 0;
-                    report.RemainsSmrCost += item.RemainsSmrCost ?? 0;
-                    report.DoneSmrCost += item.DoneSmrCost ?? 0;
-                    report.PercentOfContrPrice += item.PercentOfContrPrice ?? 0;
-                    report.LaborCost += item.LaborCost ?? 0;
-                }
-            }
-            estimateViewItem.EstimateViewModelDrawnings.Add(estimateViewDrawning);
-        }
-        //var i1 = stopwatch.ElapsedMilliseconds;
-        foreach (var detailsView in listEstimate)
+        var totalSumByKindWork = estimateDTOs.Select(x => new
         {
-            foreach (var item in detailsView.DetailsView)
-            {
-                var listOrder = item.EstimateViewModelDrawnings;
-                for (int i = 0; i < listOrder.Count - 1; i++)
-                    for (int j = i + 1; j < listOrder.Count; j++)
-                    {
-                        if (listOrder[i].DrawingsDate != null)
-                        {
-                            if (listOrder[j].DrawingsDate != null && listOrder[i].DrawingsDate > listOrder[j].DrawingsDate)
-                            {
-                                var obj = listOrder[i];
-                                listOrder[i] = listOrder[j];
-                                listOrder[j] = obj;
-                            }
-                        }
-                        else if (listOrder[j].DrawingsDate != null)
-                        {
-                            var obj = listOrder[i];
-                            listOrder[i] = listOrder[j];
-                            listOrder[j] = obj;
-                        }
-                    }
-                item.EstimateViewModelDrawnings = listOrder;
-            }
-        }
-        //var i2 = stopwatch.ElapsedMilliseconds;
-        foreach (var detailsView in listEstimate)
+            x.LaborCost,
+            x.ContractsCost,
+            x.DoneSmrCost,
+            x.RemainsSmrCost,
+            x.PercentOfContrPrice,
+            KindWorkName = _abbreviationKindOfWorkService.Find(a => a.Id == x.KindOfWorkId)
+                                                         .Select(a => a.KindOfWork.name)
+                                                         .FirstOrDefault()
+        }).GroupBy(x => x.KindWorkName);
+        var estimateByBuildingCode = estimateDTOs.Select(x => new
         {
-            foreach (var item in detailsView.DetailsView)
+            x.BuildingCode,
+            x.BuildingName,
+            x.Number,
+            x.EstimateDate,
+            x.ChangeEstimateDate,
+            x.Id,
+            x.DrawingsDate,
+            x.DrawingsName,
+            x.ChangeDrawingDate,
+            x.DrawingsKit,
+            x.SubContractor,
+            x.IsChange,
+            x.ChangeEstimateId,
+            x.ChangeNumber,
+
+            x.LaborCost,
+            x.ContractsCost,
+            x.DoneSmrCost,
+            x.RemainsSmrCost,
+            x.PercentOfContrPrice,
+            KindWorkName = _abbreviationKindOfWorkService.Find(a => a.Id == x.KindOfWorkId)
+                                                         .Select(a => a.KindOfWork.name)
+                                                         .FirstOrDefault()
+        }).GroupBy(x => x.BuildingCode);
+
+        //Debug.WriteLine((st.ElapsedMilliseconds ) + "sec before total sum");
+        var contrCostTotal = 0M;
+        var doneSmrCostTotal = 0M;
+        var laborCostTotal = 0.0;
+        var remainsSmrCost = 0M;
+
+        foreach (var resultItem in totalSumByKindWork)
+        {
+            totalCostResultModel.Add(resultItem.Key, new EstimateCostResultModel
             {
-                var index = -1;
-                foreach (var drawning in item.EstimateViewModelDrawnings)
-                {
-                    if (drawning.Number != null)
-                    {
-                        item.NumberEntriesByEstimate.Add(1);
-                        index++;
-                    }
-                    else if (item.NumberEntriesByEstimate.Count >= 1 && item.NumberEntriesByEstimate[index] >= 0)
-                    {
-                        item.NumberEntriesByEstimate[index]++;
-                    }
-                }
-            }
+                ContractsCost = resultItem.Sum(x => x.ContractsCost),
+                DoneSmrCost = resultItem.Sum(x => x.DoneSmrCost),
+                LaborCost = resultItem.Sum(x => x.LaborCost),
+                RemainsSmrCost = resultItem.Sum(x => x.RemainsSmrCost),
+            });
+
+            contrCostTotal += resultItem.Sum(x => x.ContractsCost) ?? 0M;
+            doneSmrCostTotal += resultItem.Sum(x => x.DoneSmrCost) ?? 0M;
+            laborCostTotal += resultItem.Sum(x => x.LaborCost) ?? 0.0;
+            remainsSmrCost += resultItem.Sum(x => x.RemainsSmrCost) ?? 0M;
         }
-        //var i3 = stopwatch.ElapsedMilliseconds;
-        answer.Objects = listEstimate;
+
+        totalCostResultModel.Add("totalSum", new EstimateCostResultModel
+        {
+            ContractsCost = contrCostTotal,
+            DoneSmrCost = doneSmrCostTotal,
+            LaborCost = laborCostTotal,
+            RemainsSmrCost = remainsSmrCost,
+        });
+
+        //Debug.WriteLine((st.ElapsedMilliseconds ) + "sec after total sum");
+            
+
+        foreach (var resultItem in estimateByBuildingCode)
+        {
+            contrCostTotal = 0M;
+            doneSmrCostTotal = 0M;
+            laborCostTotal = 0.0;
+            remainsSmrCost = 0M;
+
+            var newEstItem = new EstimateItemModel();
+            newEstItem.BuildingCode = resultItem.Key;
+
+            foreach (var item in resultItem)
+            {
+                newEstItem.Estimates.Add(new EstimateItem
+                {
+                    BuildingCode = item.BuildingCode,
+                    BuildingName = item.BuildingName,
+                    Number = item.Number,
+                    EstimateDate = item.EstimateDate,
+                    ChangeEstimateDate = item.ChangeEstimateDate,
+                    Id = item.Id,
+                    DrawingsDate = item.DrawingsDate,
+                    DrawingsName = item.DrawingsName,
+                    ChangeDrawingDate = item.ChangeDrawingDate,
+                    DrawingsKit = item.DrawingsKit,
+                    SubContractor = item.SubContractor,
+                    IsChange = item.IsChange,
+                    ChangeEstimateId = item.ChangeEstimateId,
+                    ChangeNumber = item.ChangeNumber,
+
+                    LaborCost = item.LaborCost,
+                    ContractsCost = item.ContractsCost,
+                    DoneSmrCost = item.DoneSmrCost,
+                    RemainsSmrCost = item.RemainsSmrCost,
+                    PercentOfContrPrice = item.PercentOfContrPrice,
+
+                });
+            }
+
+            foreach (var costs in resultItem.GroupBy(x => x.KindWorkName))
+            {
+                newEstItem.CostResults.Add(costs?.Key, new EstimateCostResultModel
+                {
+                    ContractsCost = costs.Sum(x => x.ContractsCost),
+                    DoneSmrCost = costs.Sum(x => x.DoneSmrCost),
+                    LaborCost = costs.Sum(x => x.LaborCost),
+                    RemainsSmrCost = costs.Sum(x => x.RemainsSmrCost),
+                });
+
+                contrCostTotal += costs.Sum(x => x.ContractsCost) ?? 0M;
+                doneSmrCostTotal += costs.Sum(x => x.DoneSmrCost) ?? 0M;
+                laborCostTotal += costs.Sum(x => x.LaborCost) ?? 0.0;
+                remainsSmrCost += costs.Sum(x => x.RemainsSmrCost) ?? 0M;
+
+            }
+            
+            newEstItem.CostResults.Add("totalSum", new EstimateCostResultModel
+            {
+                ContractsCost = contrCostTotal,
+                DoneSmrCost = doneSmrCostTotal,
+                LaborCost = laborCostTotal,
+                RemainsSmrCost = remainsSmrCost,
+            });
+           
+            estimateItemsModel.Add(newEstItem);
+        }
+
+        //Debug.WriteLine((st.ElapsedMilliseconds ) + "sec all");
+        //st.Stop();
+        
+        ViewBag.TotalSumObject = totalCostResultModel;
+        answer.Objects = estimateItemsModel;
         ViewBag.CurrentSearchString = SearchString;
         ViewBag.CurrentListSearchString = ListSearchString;
-        //var i4 = stopwatch.ElapsedMilliseconds;
         return View(answer);
     }
+
 
     public ActionResult GetType(int contractId, int returnContractId = 0, /*bool isChange = false,*/ bool isUpdate = false, int? estimateId = null)
     {
@@ -201,19 +383,17 @@ public class EstimateController : Controller
         return View();
     }
 
-    public ActionResult GetEstimateData(string path, int contractId, DateTime date, bool isChange = false, string? type = null, int? estimateId = null)
+    public ActionResult GetEstimateData(string path, int contractId, DateTime date, string? type = null, int? estimateId = null)
     {
         try
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != ConstantsApp.ORG_MAJOR)?.Value ?? ConstantsApp.ORG_BES;
             var contract = _contractService.GetById(contractId);
             int page = _excelReader.GetListOfBook(path).Count();
             int index = 0;
             string? buildingCode = null;
-            int countPages = 0;
-            isChange = estimateId is not null && estimateId> 0? true:false;
-
-            //todo: 1) остановить цикл, при добавлении изма, при первом же нахождении сметы
+            int countEstimates = 0;
+            int? createdEstmtId = null;
             while (index < page)
             {
                 var answerAll = _pars.ParseEstimate(path, index, type);
@@ -223,24 +403,35 @@ public class EstimateController : Controller
                     if (newEstimateId is not null)
                     {
                         CopyDocumentToFolder(answerAll.BuildingCode, answerAll.Number, path, false, contractId, newEstimateId ?? 0);
-                        countPages++;                        
-                    } 
+                        countEstimates++;
+                        createdEstmtId = newEstimateId;                       
+                    }
                 }
                 if (buildingCode is null)
                 {
-                    buildingCode = answerAll.BuildingCode;
+                    buildingCode = answerAll?.BuildingCode;
                 }
-                if (isChange == true && countPages > 0)
+                //проверка если это добавление изменения по смете, и смета по изму добавлена, прерываем работу
+                if ((estimateId != null && estimateId > 0) && countEstimates > 0)
                 {
+                    //если изменение по смете, обновляем эту смету как имененную
+                    var estUpdate = _estimateService.GetById(estimateId.Value); 
+                    estUpdate.IsChange = true;
+                    _estimateService.Update(estUpdate);
                     break;
-                } 
+                }
 
                 index++;
             }
 
             _file.DeleteByPath(path);
+            var additionParams = countEstimates == 1 && estimateId > 0? $",{buildingCode},{createdEstmtId}" : $",{buildingCode}";
 
-            return Content((countPages).ToString()+$",{buildingCode}");
+            return Content((countEstimates).ToString() + additionParams);
+
+            #region DELETE-AFTER
+
+
             //}
             //else
             //{
@@ -259,6 +450,7 @@ public class EstimateController : Controller
             //    ViewData["estimateId"] = estimateId;
             //    return Content(estimateId.ToString() + '-' + type);
             //}
+            #endregion
         }
         catch (Exception ex)
         {
@@ -356,9 +548,6 @@ public class EstimateController : Controller
 
     #endregion
 
-
-  
-
     public ActionResult RedirectToView(string path, int contractId, string updateByType, string type = null, string? buildingsCode = null)
     {
         ViewBag.Type = type;
@@ -446,7 +635,7 @@ public class EstimateController : Controller
                 int pages = _excelReader.GetListOfBook(path).Count();
                 while (index < pages)
                 {
-                    var costs = _pars.GetEstimatesWithContractCosts(path, index, type);                  
+                    var costs = _pars.GetEstimatesWithContractCosts(path, index, type);
 
                     foreach (var item in costs)
                     {
@@ -492,10 +681,10 @@ public class EstimateController : Controller
 
                     foreach (var item in costs)
                     {
-                        var fullNumber = type == ConstantsApp.SMR_PRO_APP? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-                        
+                        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+
                         var estimate = _estimateService.Find(x => x.FullNumber == fullNumber
-                                        && x.ContractId == contractId 
+                                        && x.ContractId == contractId
                                         && x.BuildingCode == buildingsCode)?.FirstOrDefault();
 
                         if (estimate is not null)
@@ -520,7 +709,6 @@ public class EstimateController : Controller
             return BadRequest("Ошибка считывания документа Excel");
         }
     }
-
 
     [HttpGet]
     public ActionResult GetEstimateDoneSmrCost(int EstimateId, string type)
@@ -602,7 +790,7 @@ public class EstimateController : Controller
         ViewBag.ContractId = contractId;
         return View(id);
     }
-    
+
     [HttpPost]
     public ActionResult AddDrawings(IFormCollection collection, int estimateId, DateTime dateStart)
     {
@@ -611,7 +799,15 @@ public class EstimateController : Controller
             var estimate = _estimateService.GetById(estimateId);
             var neestedFolderName = $"{estimate.ContractId}\\{estimate.BuildingCode}\\{estimate.Number}\\draw";
             _file.Create(collection.Files, FolderEnum.Estimate, estimateId, neestedFolderName);
-            estimate.DrawingsDate = dateStart;
+            if (estimate.IsChange)
+            {
+                estimate.ChangeDrawingDate = dateStart;
+            }
+            else
+            {
+                estimate.DrawingsDate = dateStart;
+            }
+            
             _estimateService.Update(estimate);
 
             return RedirectToAction(nameof(Index), new { contractId = estimate.ContractId });// Ok("Чертежи загружены");
@@ -628,18 +824,18 @@ public class EstimateController : Controller
     //    ViewData["estimateId"] = estimateId;
 
     //    var estimate = _estimateService.Find(x => x.Id == estimateId).FirstOrDefault();
-       
+
     //    return View();
     //}
 
-    public ActionResult ShowFiles(string buildingCode, int? estimateId, int contractId,int returnContractId = 0)
+    public ActionResult ShowFiles(string buildingCode, int? estimateId, int contractId, int returnContractId = 0)
     {
         var viewModel = new Dictionary<string, IEnumerable<FileDTO>>();
         //если ID пустое, ищем по объекту
         if (estimateId == null)
         {
-            viewModel.Add("draw", _file.GetByBuildingCode(contractId,buildingCode, "draw").DistinctBy(x => x.FileName));
-            viewModel.Add("doc", _file.GetByBuildingCode(contractId,buildingCode, "doc").DistinctBy(x => x.FileName));
+            viewModel.Add("draw", _file.GetByBuildingCode(contractId, buildingCode, "draw").DistinctBy(x => x.FileName));
+            viewModel.Add("doc", _file.GetByBuildingCode(contractId, buildingCode, "doc").DistinctBy(x => x.FileName));
         }
         //иначе -> по смете
         else
@@ -662,9 +858,15 @@ public class EstimateController : Controller
     /// <returns></returns>
     public ActionResult GetEstimatesByContractId(int contractId)
     {
-        var estmt = _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x=>x.BuildingCode).Select(x => new {id = x.Id, code = x.BuildingCode, contractId = x.ContractId});
+        var estmt = _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x => x.BuildingCode).Select(x => new { id = x.Id, code = x.BuildingCode, contractId = x.ContractId });
         return Json(estmt);
     }
+
+    //public ActionResult GetBuildingCodeByContractId(int contractId)
+    //{
+    //    var estmt = _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x => x.BuildingCode).Select(x => new { id = x.Id, code = x.BuildingCode, contractId = x.ContractId });
+    //    return Json(estmt);
+    //}
 
 
     /*Дополнительные 
@@ -696,7 +898,23 @@ public class EstimateController : Controller
             answer.KindOfWorkId = 59;
         }
 
-        answer.EstimateDate = date;
+        if (changeEstimateId is not null && changeEstimateId > 0)
+        {
+            if (answer.BuildingCode != _estimateService.GetById((int)changeEstimateId).BuildingCode)
+            {
+                return null;
+            }
+            answer.ChangeEstimateDate = date;
+            //answer.IsChange = true;
+            answer.ChangeEstimateId = changeEstimateId;
+            int number = _estimateService.Find(x => x.ChangeEstimateId == changeEstimateId)?.LastOrDefault()?.ChangeNumber ?? 0;
+            answer.ChangeNumber = ++number;
+        }
+        else
+        {
+            answer.EstimateDate = date;
+        }
+        
         if (type == ConstantsApp.SMR_PRO_APP)
         {
             answer.FullNumber = answer.BuildingCode + "." + answer.Number;
@@ -706,13 +924,7 @@ public class EstimateController : Controller
             answer.FullNumber = answer.Number;
         }
 
-        if (changeEstimateId is not null && changeEstimateId > 0)
-        {
-            answer.IsChange = true;
-            answer.ChangeEstimateId = changeEstimateId;
-            int number = _estimateService.Find(x => x.ChangeEstimateId == changeEstimateId)?.LastOrDefault()?.ChangeNumber ?? 0;
-            answer.ChangeNumber = ++number;
-        }
+
         answer.ContractId = contract.Id;
         answer.SubContractor = contract?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.Organization?.Name;
         answer.Owner = organizationName;
