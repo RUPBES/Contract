@@ -24,6 +24,6 @@ namespace BusinessLayer.Models
         public virtual ContractDTO Contract { get; set; }
         public virtual List<ScopeWorkDTO> InverseChangeScopeWork { get; set; } = new List<ScopeWorkDTO>();
         public virtual List<ScopeWorkAmendmentDTO> ScopeWorkAmendments { get; set; } = new List<ScopeWorkAmendmentDTO>();
-        public virtual List<SWCost> SWCosts { get; set; } = new List<SWCost>();
+        public virtual List<SWCostDTO> SWCosts { get; set; } = new List<SWCostDTO>();
     }
 }

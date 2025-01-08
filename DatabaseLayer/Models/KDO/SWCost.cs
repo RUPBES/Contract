@@ -4,6 +4,18 @@ namespace DatabaseLayer.Models.KDO
 {
     public class SWCost
     {
+        public SWCost()
+        {   
+            SmrCost = 0;
+            PnrCost = 0;
+            EquipmentCost = 0;
+            OtherExpensesCost = 0;
+            AdditionalCost = 0;
+            MaterialCost = 0;
+            GenServiceCost = 0;
+            IsOwnForces = false;            
+        }
+
         public int Id { get; set; }
         public DateTime? Period { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]

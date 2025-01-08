@@ -63,6 +63,174 @@ namespace BusinessLayer.Services
                 {
                     try
                     {
+                        #region Дочерние контракты
+                        var contracts = _database.Contracts.Find(x => x.MultipleContractId == id ||
+                        x.SubContractId == id ||
+                        x.AgreementContractId == id).ToList();
+                        foreach (var item in contracts)
+                            Delete(item.Id);
+                        #endregion
+                        #region Процедура выбора
+                        var selectProcedure = _database.SelectionProcedures.Find(x => x.ContractId == id).ToList();
+                        foreach (var item in selectProcedure)
+                            _database.SelectionProcedures.Delete(item.Id);
+                        #endregion
+                        #region Сметы
+                        var estimates = _database.Estimates.Find(x => x.ContractId == id).ToList();
+                        #region Файлы сметы
+                        foreach (var item in estimates)
+                        {
+                            var filesId = _database.EstimateFiles.Find(x => x.EstimateId == item.Id).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in estimates)
+                            _database.Estimates.Delete(item.Id);
+                        #endregion
+                        #region Переписка с заказчиком
+                        var correspondences = _database.Correspondences.Find(x => x.ContractId == id).ToList();
+                        #region Файлы перепискы с заказчиком
+                        foreach (var item in correspondences)
+                        {
+                            var filesId = _database.CorrespondenceFiles.Find(x => x.CorrespondenceId == item.Id).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in correspondences)
+                            _database.Correspondences.Delete(item.Id);
+                        #endregion
+                        #region Проектно-сметная документация
+                        var estimateDocs = _database.EstimateDocs.Find(x => x.ContractId == id).ToList();
+                        #region Файлы псд
+                        foreach (var item in estimateDocs)
+                        {
+                            var filesId = _database.EstimateDocFiles.Find(x => x.EstimateDocId == item.Id).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in estimateDocs)
+                            _database.EstimateDocs.Delete(item.Id);
+                        #endregion
+                        #region Акт приостановки/возобновления работ
+                        var acts = _database.Acts.Find(x => x.ContractId == id).ToList();
+                        #region Файлы акта приост./возобн. работ
+                        foreach (var item in acts)
+                        {
+                            var filesId = _database.ActFiles.Find(x => x.ActId == item.Id).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in acts)
+                            _database.Acts.Delete(item.Id);
+                        #endregion
+                        #region Формы С3А
+                        var forms = _database.Forms.Find(x => x.ContractId == id).ToList();
+                        #region Файлы формы С3А
+                        foreach (var item in forms)
+                        {
+                            var filesId = _database.FormFiles.Find(x => x.FormId == item.Id).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in forms)
+                            _database.Forms.Delete(item.Id);
+                        #endregion
+                        #region Акт ввода
+                        var commissionActs = _database.CommissionActs.Find(x => x.ContractId == id).ToList();
+                        #region Файлы акта ввода
+                        foreach (var item in commissionActs)
+                        {
+                            var filesId = _database.CommissionActFiles.Find(x => x.СommissionActId == item.Id).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in commissionActs)
+                            _database.CommissionActs.Delete(item.Id);
+                        #endregion
+                        #region Услуги генподряда
+                        var serviceGCs = _database.ServiceGCs.Find(x => x.ContractId == id).ToList();
+                        #region Связь изменнений и услуг
+                        foreach (var item in serviceGCs)
+                        {
+                            var amends = _database.ServiceAmendments.Find(x => x.ServiceId == item.Id).ToList();
+                            foreach (var file in amends)
+                                _database.ServiceAmendments.Delete(file.ServiceId, file.AmendmentId);
+                        }
+                        #endregion
+                        foreach (var item in serviceGCs)
+                            _database.ServiceGCs.Delete(item.Id);
+                        #endregion
+                        #region Объем работы
+                        var scopeWorks = _database.ScopeWorks.Find(x => x.ContractId == id).ToList();
+                        #region Связь изменений и объема работ
+                        foreach (var item in scopeWorks)
+                        {
+                            var amends = _database.ScopeWorkAmendments.Find(x => x.ScopeWorkId == item.Id).ToList();
+                            foreach (var file in amends)
+                                _database.ScopeWorkAmendments.Delete(file.ScopeWorkId, file.AmendmentId);
+                        }
+                        #endregion
+                        foreach (var item in scopeWorks)
+                        {
+                            var swcosts = _database.SWCosts.Find(x => x.ScopeWorkId == item.Id).ToList();
+                            foreach (var swcost in swcosts)
+                            _database.SWCosts.Delete(swcost.Id);
+                            _database.ScopeWorks.Delete(item.Id);
+                        }
+                        #endregion
+                        #region Материалы генподрядчика
+                        var materials = _database.Materials.Find(x => x.ContractId == id).ToList();
+                        #region Связь изменений и материалов генподрядчика
+                        foreach (var item in materials)
+                        {
+                            var amends = _database.MaterialAmendments.Find(x => x.MaterialId == item.Id).ToList();
+                            foreach (var file in amends)
+                                _database.MaterialAmendments.Delete(file.MaterialId, file.AmendmentId);
+                        }
+                        #endregion
+                        foreach (var item in materials)
+                            _database.Materials.Delete(item.Id);
+                        #endregion
+                        #region Авансы
+                        var prepayments = _database.Prepayments.Find(x => x.ContractId == id).ToList();
+                        #region Связь изменений и авансов, файлы аввнсов
+                        foreach (var item in prepayments)
+                        {
+                            var amends = _database.PrepaymentAmendments.Find(x => x.PrepaymentId == item.Id).ToList();
+                            foreach (var file in amends)
+                                _database.PrepaymentAmendments.Delete(file.PrepaymentId, file.AmendmentId);
+                            var prepaymentTakes = _database.PrepaymentTakes.Find(x => x.PrepaymentId == item.Id).ToList();
+                            foreach (var prepayment in prepaymentTakes)
+                                _database.Files.Delete((int)prepayment.FileId);
+                        }
+                        #endregion
+                        foreach (var item in prepayments)
+                            _database.Prepayments.Delete(item.Id);
+                        #endregion
+                        #region Изменения к договору                        
+                        var amendsId = _database.Amendments.Find(x => x.ContractId == id).Select(x => x.Id).ToList();
+                        #region Файлы изменений к договору  
+                        foreach (var item in amendsId)
+                        {
+                            var filesId = _database.FormFiles.Find(x => x.FormId == item).Select(x => x.FileId).ToList();
+                            foreach (var file in filesId)
+                                _database.Files.Delete(file);
+                        }
+                        #endregion
+                        foreach (var item in amendsId)
+                            _database.Amendments.Delete(item);
+                        #endregion
+                        #region Файлы к договору 
+                        var files = _database.ContractFiles.Find(x => x.ContractId == id).Select(x => x.FileId).ToList();
+                        foreach (var file in files)
+                            _database.Files.Delete(file);
+                        #endregion
                         _database.Contracts.Delete(id);
                         _database.Save();
 
@@ -92,52 +260,72 @@ namespace BusinessLayer.Services
             }
         }
 
-        public void DeleteAfterScopeWork(int id)
+        public IEnumerable<ContractDTO> GetSubObjects(int id)
         {
-            if (id > 0)
+            var contracts = _database.Contracts.Find(x => x.MultipleContractId == id && x.IsOneOfMultiple == true).ToList();
+
+            if (contracts is not null)
             {
-                var contract = _database.Contracts.GetById(id);
-
-                if (contract is not null)
+                foreach (var item in contracts)
                 {
-                    try
+                    var amend = _database.Amendments.Find(x => x.ContractId == item.Id ).ToList();
+                    if (amend.Count > 0)
                     {
-                        var scopes = _database.ScopeWorks.Find(x => x.ContractId == id);
-                        foreach (var item in scopes)
-                        {
-                            foreach (var item1 in item.SWCosts)
-                            {
-                                _database.SWCosts.Delete(item1.Id);
-                            }
-                            _database.Save();
-                        }
-
-                        _database.Contracts.Delete(id);
-                        _database.Save();
-
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"delete contract, ID={id}",
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Error,
-                            message: e.Message,
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                        amend = amend.OrderBy(x => x.Date).ToList();
+                        item.ContractPrice = amend.Last().ContractPrice;
                     }
                 }
+                return _mapper.Map<IEnumerable<ContractDTO>>(contracts);
             }
             else
             {
-                _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not delete contract, ID is not more than zero",
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                return null;
+            }
+        }
+
+        public IEnumerable<ContractDTO> GetSubContracts(int id)
+        {
+            var contracts = _database.Contracts.Find(x => x.SubContractId == id && x.IsSubContract == true);
+
+            if (contracts is not null)
+            {
+                foreach (var item in contracts)
+                {
+                    var amend = _database.Amendments.Find(x => x.ContractId == item.Id).ToList();
+                    if (amend.Count > 0)
+                    {
+                        amend = amend.OrderBy(x => x.Date).ToList();
+                        item.ContractPrice = amend.Last().ContractPrice;
+                    }
+                }
+                return _mapper.Map<IEnumerable<ContractDTO>>(contracts);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public IEnumerable<ContractDTO> GetbranchAgreements(int id)
+        {
+            var contracts = _database.Contracts.Find(x => x.AgreementContractId == id && x.IsAgreementContract == true);
+
+            if (contracts is not null)
+            {
+                foreach (var item in contracts)
+                {
+                    var amend = _database.Amendments.Find(x => x.ContractId == item.Id).ToList();
+                    if (amend.Count > 0)
+                    {
+                        amend = amend.OrderBy(x => x.Date).ToList();
+                        item.ContractPrice = amend.Last().ContractPrice;
+                    }
+                }
+                return _mapper.Map<IEnumerable<ContractDTO>>(contracts);
+            }
+            else
+            {
+                return null;
             }
         }
 
@@ -456,8 +644,19 @@ namespace BusinessLayer.Services
             return (contract?.IsOneOfMultiple ?? false) || (contract?.IsSubContract ?? false) || (contract?.IsAgreementContract ?? false);
         }
 
-        public ContractType GetContractType(ContractDTO? contract, out int parentContrId)
+        public ContractType GetContractType(int contractId, out int parentContrId)
         {
+            Func<Contract, bool> where = w => w.Id == contractId;
+            Func<Contract, Contract> select = s => new Contract
+            {
+                IsOneOfMultiple = s.IsOneOfMultiple,
+                MultipleContractId = s.MultipleContractId,
+                IsSubContract = s.IsSubContract,
+                SubContractId = s.SubContractId,
+                IsAgreementContract = s.IsAgreementContract,
+                AgreementContractId = s.AgreementContractId
+            };
+            var contract = Find(where, select).FirstOrDefault();
             parentContrId = 0;
 
             if ((contract?.IsAgreementContract ?? false))

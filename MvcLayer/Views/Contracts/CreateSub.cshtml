@@ -207,7 +207,7 @@
                                 <label asp-for="Date" class="control-label" for="DateDC"></label>
                                 <div class="input-group">
                                     <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                                    <input asp-for="Date" type="text" class="form-control" required id="DateDC">
+                                    <input asp-for="Date" type="text" value="@Model.Date.Value.ToString("d-MM-yyyy")" class="form-control" required id="DateDC">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -305,19 +305,19 @@
                             <fieldset class="border rounded-3 p-3">
                                 <legend class="float-none w-auto px-3">Сроки</legend>
                                 <label class="control-label" asp-for="DateBeginWork"></label>
-                                <input asp-for="DateBeginWork" type="text" class="form-control" required id="DateBeginWork">
+                                <input asp-for="DateBeginWork" type="text" value="@Model.DateBeginWork.Value.ToString("d-MM-yyyy")" class="form-control" required id="DateBeginWork">
                                 <label class="form-label" id="labelBeginWork" style="display:none"></label>
 
                                 <label class="control-label" asp-for="DateEndWork"></label>
-                                <input asp-for="DateEndWork" type="text" class="form-control" required id="DateEndWork">
+                                <input asp-for="DateEndWork" type="text" value="@Model.DateEndWork.Value.ToString("d-MM-yyyy")" class="form-control" required id="DateEndWork">
                                 <label class="form-label" id="labelEndWork" style="display:none"></label>
 
                                 <label class="control-label" asp-for="EnteringTerm"></label>
-                                <input asp-for="EnteringTerm" type="text" class="form-control" required id="EnteringTerm">
+                                <input asp-for="EnteringTerm" type="text" value="@Model.EnteringTerm.Value.ToString("d-MM-yyyy")" class="form-control" required id="EnteringTerm">
                                 <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
 
                                 <label class="control-label" asp-for="ContractTerm"></label>
-                                <input asp-for="ContractTerm" type="text" class="form-control" required id="ContractTerm">
+                                <input asp-for="ContractTerm" type="text" value="@Model.ContractTerm.Value.ToString("d-MM-yyyy")" class="form-control" required id="ContractTerm">
                                 <label class="form-label" id="labelContractTerm" style="display:none"></label>
                             </fieldset>
                             <fieldset class="border rounded-3 p-3">
@@ -408,6 +408,13 @@
             window.onload = function () {
                 $("#messageInput").trigger('click');
             }
+
+            let contractDate = $('#DateDC').val();
+            let startDate = $('#DateBeginWork').val();
+            let endDate = $('#DateEndWork').val();
+            let enterDate = $('#EnteringTerm').val();
+            let termDate = $('#ContractTerm').val();
+
             function MessageError(val) {
                 $.ajax({
                     type: 'POST',
@@ -501,6 +508,12 @@
                     changeContractTm()
                 });
 
+                $("#DateDC").datepicker('setDate', contractDate);
+                $("#DateBeginWork").datepicker('setDate', startDate);
+                $("#DateEndWork").datepicker('setDate', endDate);
+                $("#EnteringTerm").datepicker('setDate', enterDate);
+                $("#ContractTerm").datepicker('setDate', termDate);
+
                 function changeDateContract() {
                     let date = $("#DateDC").datepicker('getDate');
                     let dateBeg = $("#DateBeginWork").datepicker('getDate');
@@ -581,8 +594,8 @@
                         if (dateEnter && (!dateBeg || dateEnter <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
                         if (dateEnter && (!dateEnd || dateEnter < dateEnd)) { $("#DateEndWork").datepicker('update', dateEnter); }
                         if (dateEnter && (!dateTerm || dateEnter >= dateTerm)) { $("#ContractTerm").datepicker('update', datePlusOne); }
-                    }
-                    if (dateEnter) $("#ContractTerm").datepicker('setStartDate', datePlusOne);
+                        if (dateEnter) $("#ContractTerm").datepicker('setStartDate', datePlusOne);
+                    }                    
                     showHideMin()
                 }
                 function changeContractTm() {

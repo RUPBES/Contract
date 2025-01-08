@@ -38,7 +38,7 @@ namespace MvcLayer.Controllers
         {
             ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
-            return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id)));
+            return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(_amendment.Find(x => x.ContractId == id).OrderByDescending(x => x.Date)));
         }
 
         [HttpGet]
@@ -57,7 +57,7 @@ namespace MvcLayer.Controllers
             ViewData["isScope"] = isScope.ToString();
             ViewData["isPrepament"] = isPrepament.ToString();
             var model = new AmendmentViewModel();
-            var prevAmend = _amendment.Find(a => a.ContractId == contractId).LastOrDefault();
+            var prevAmend = _amendment.Find(a => a.ContractId == contractId).OrderBy(x => x.Date).LastOrDefault();
             if (prevAmend == null)
             {
                 var contract = _contract.GetById(contractId);
@@ -65,6 +65,8 @@ namespace MvcLayer.Controllers
                 model.DateBeginWork = contract.DateBeginWork;
                 model.DateEndWork = contract.DateEndWork;
                 model.DateEntryObject = contract.EnteringTerm;
+                if (contract.ContractPrice.HasValue)
+                    model.ContractPrice = contract.ContractPrice.Value;
             }
             else
             {
@@ -72,6 +74,8 @@ namespace MvcLayer.Controllers
                 model.DateBeginWork = prevAmend.DateBeginWork;
                 model.DateEndWork = prevAmend.DateEndWork;
                 model.DateEntryObject = prevAmend.DateEntryObject;
+                if (prevAmend.ContractPrice.HasValue)
+                model.ContractPrice = prevAmend.ContractPrice.Value;
             }
             model.Type = typeName;
             return View(model);
@@ -110,9 +114,9 @@ namespace MvcLayer.Controllers
                         PeriodEnd = amendment?.DateEndWork?? default,
                         ChangeScopeWorkId = scopes?.Id
                     };
-
-                    return RedirectToAction("CreatePeriods", "ScopeWorks", scopeWork);
-                    //return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                    TempData["returnContractId"] = returnContractId;
+                    TempData["contractId"] = amendment.ContractId;
+                    return RedirectToAction("CreatePeriods", "ScopeWorks", scopeWork);                    
                 }
 
                 if (isPrepament || amendment.Type == "prepayment")

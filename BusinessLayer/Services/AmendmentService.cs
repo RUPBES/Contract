@@ -191,7 +191,7 @@ namespace BusinessLayer.Services
 
         public bool? IsThereScopeWorkWitnLastAmendmentByContractId(int contractId)
         {
-            var amendmentId = _database.Amendments.Find(x => x.ContractId == contractId && x.Type == "scope")?.LastOrDefault()?.Id;
+            var amendmentId = _database.Amendments.Find(x => x.ContractId == contractId && x.Type == "scope")?.OrderBy(x => x.Date).LastOrDefault()?.Id;
             
             if (amendmentId is null)
             {
