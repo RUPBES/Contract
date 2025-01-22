@@ -46,7 +46,7 @@ namespace MvcLayer.Controllers
 
             if (redirectAction.Equals("Details", StringComparison.OrdinalIgnoreCase) && redirectController.Equals("Contracts", StringComparison.OrdinalIgnoreCase))
             {
-                return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");                
+                return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");
             }
             else
             {
@@ -96,6 +96,11 @@ namespace MvcLayer.Controllers
                 _file.Delete(id);
                 if (redirectController is not null && redirectAction is not null)
                 {
+                    if (fileCategory == FolderEnum.SelectionProcedures)
+                    {
+                        return Redirect($@"~/{redirectController}/{redirectAction}?contractId={contractId}");
+
+                    }
                     //if (redirectAction.Equals("GetByContractId", StringComparison.OrdinalIgnoreCase) && redirectAction.Equals("Files", StringComparison.OrdinalIgnoreCase))
                     //{
                     return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
@@ -136,7 +141,7 @@ namespace MvcLayer.Controllers
                 var path = _env.WebRootPath + file.FilePath;
                 var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
                 var fsResult = new FileStreamResult(fileStream, fileType);
-                return fsResult; 
+                return fsResult;
             }
             else
             {

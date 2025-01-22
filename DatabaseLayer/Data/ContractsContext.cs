@@ -91,6 +91,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<MaterialAmendment> MaterialAmendments { get; set; }
     public virtual DbSet<ScopeWorkAmendment> ScopeWorkAmendments { get; set; }
     public virtual DbSet<ServiceAmendment> ServiceAmendments { get; set; }
+    public virtual DbSet<SlctnProcedureFile> SlctnProcedureFiles { get; set; }
     public virtual DbSet<PrepaymentAmendment> PrepaymentAmendments { get; set; }
     #endregion
 
@@ -98,12 +99,13 @@ public partial class ContractsContext : DbContext
     {
         configurationBuilder.Conventions.Add(_ => new BlankTriggerAddingConvention());
     }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
         }
     }
 
@@ -1199,6 +1201,27 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.ServiceGC).WithMany(p => p.ServiceCosts)
                 .HasForeignKey(d => d.ServiceGCId)
                 .HasConstraintName("FK_ServiceCost_ServiceGC_Id");
+        });
+
+        modelBuilder.Entity<SlctnProcedureFile>(entity =>
+        {
+            entity.HasKey(e => new { e.SlctnProcedureId, e.FileId });
+
+            entity.ToTable("SlctnProcedureFile");
+
+            entity.HasComment("Файлы-Процедура выбора");
+
+            entity.HasOne(d => d.SlctnProcedure)
+                .WithMany(p => p.SlctnProcedureFiles)
+                .HasForeignKey(d => d.SlctnProcedureId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_EstimateFile_Estimate_Id");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.SlctnProcedureFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_EstimateFile_File_Id");
         });
 
         modelBuilder.Entity<TypeWork>(entity =>

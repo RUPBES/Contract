@@ -1,11 +1,5 @@
 ﻿using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
-using DatabaseLayer.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DatabaseLayer.Interfaces
 {
@@ -13,6 +7,7 @@ namespace DatabaseLayer.Interfaces
     {
         IEntityWithPagingRepository<Estimate> Estimates { get; }
         IRepository<EstimateFile> EstimateFiles { get; }
+        IRepository<SlctnProcedureFile> SlctnProcedureFiles { get; }
         IRepository<KindOfWork> KindOfWorks { get; }
         IRepository<AbbreviationKindOfWork> AbbreviationKindOfWorks { get; }
 

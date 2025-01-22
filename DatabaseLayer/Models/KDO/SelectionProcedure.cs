@@ -19,5 +19,7 @@ namespace DatabaseLayer.Models.KDO
         public int? ContractId { get; set; }
 
         public virtual Contract Contract { get; set; }
+
+        public virtual ICollection<SlctnProcedureFile> SlctnProcedureFiles { get; set; }
     }
 }

@@ -302,6 +302,15 @@ namespace BusinessLayer.Services
                 case FolderEnum.PrepaymentTake:
                     result.AddRange(_database.Files.Find(x => x.Id == entityId));
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
+
+                case FolderEnum.SelectionProcedures:
+
+                    var filesProcedure = _database.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId);
+                    foreach (var file in filesProcedure)
+                    {
+                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                    }
+                    return _mapper.Map<IEnumerable<FileDTO>>(result);
             }
 
             return _mapper.Map<IEnumerable<FileDTO>>(result);
@@ -397,6 +406,17 @@ namespace BusinessLayer.Services
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"attach file to estimate",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+                        break;
+                    
+                    case FolderEnum.SelectionProcedures:
+                        _database.SlctnProcedureFiles.Create(new SlctnProcedureFile { FileId = fileId, SlctnProcedureId = entityId });
+                        _database.Save();
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to selection of procedure",
                             nameSpace: typeof(FileService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;

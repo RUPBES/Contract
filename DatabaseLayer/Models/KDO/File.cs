@@ -33,6 +33,7 @@ namespace DatabaseLayer.Models.KDO
         public virtual ICollection<EstimateDocFile> EstimateDocFiles { get; set; }
         public virtual ICollection<ContractFile> ContractFiles { get; set; }
         public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
+        public virtual ICollection<SlctnProcedureFile> SlctnProcedureFiles { get; set; }
         public virtual ICollection<PrepaymentTake> PrepaymentTakesFiles { get; set; }
     }
 }

@@ -13,6 +13,7 @@ namespace DatabaseLayer
         #region valueRepo
         private readonly ContractsContext _context;
 
+        
         private EstimateRepository estimateRepository;
         private EstimateFileRepository estimateFileRepository;
         private AddressRepository addressRepository;
@@ -64,9 +65,11 @@ namespace DatabaseLayer
         private VContractRepository vContractRepository;
         private VContractEnginRepository vContractEnginRepository;
         private LogRepository logRepository;
+        private SlctnProcedureFileRepository slctnProcedureFileRepository;
 
         private KindOfWorkRepository kindOfWorkRepository;
         private AbbreviationKindOfWorkRepository abbreviationKindOfWorkRepository;
+
         #endregion
         public ContractUoW()
         {
@@ -101,6 +104,18 @@ namespace DatabaseLayer
         #endregion
 
         #region tables
+
+        public IRepository<SlctnProcedureFile> SlctnProcedureFiles
+        {
+            get
+            {
+                if (slctnProcedureFileRepository is null)
+                {
+                    slctnProcedureFileRepository = new SlctnProcedureFileRepository(_context);
+                }
+                return slctnProcedureFileRepository;
+            }
+        }
 
         public IEntityWithPagingRepository<Estimate> Estimates
         {

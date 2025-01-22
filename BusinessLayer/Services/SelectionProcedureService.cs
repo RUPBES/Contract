@@ -141,5 +141,33 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
+
+        public void AddFile(int procedureId, int fileId)
+        {
+            if (fileId > 0 && procedureId > 0)
+            {
+                if (_database.SlctnProcedureFiles.GetById(procedureId, fileId) is null)
+                {
+                    _database.SlctnProcedureFiles.Create(new SlctnProcedureFile
+                    {
+                        SlctnProcedureId = procedureId,
+                        FileId = fileId
+                    });
+
+                    _database.Save();
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create file of the procedures selection",
+                            nameSpace: typeof(SelectionProcedureService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+                }
+            }
+
+            _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create file of the procedures selection, object is null",
+                            nameSpace: typeof(SelectionProcedureService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+        }
     }
 }

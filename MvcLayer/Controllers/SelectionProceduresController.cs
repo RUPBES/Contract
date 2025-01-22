@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +16,14 @@ namespace MvcLayer.Controllers
         private readonly ISelectionProcedureService _selectProcedureService;
         private readonly IMapper _mapper;
 
-        public SelectionProceduresController(IContractService contractService, IMapper mapper, ISelectionProcedureService selectionProcedureService)
+        private readonly IFileService _fileService;
+        public SelectionProceduresController(IContractService contractService, IMapper mapper, ISelectionProcedureService selectionProcedureService,
+            IFileService fileService)
         {
             _selectProcedureService = selectionProcedureService;
             _contractService = contractService;
             _mapper = mapper;
-
+            _fileService = fileService;
         }
 
         public IActionResult Index()
@@ -53,7 +56,7 @@ namespace MvcLayer.Controllers
         {
             if (selectProcedure is not null)
             {
-                 _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
+                _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
 
                 //если запрос пришел с детальной инфы по договору, тогда редиректим проц.выбора для этого договора, если нет - на список всех проц.выбора
                 if (selectProcedure.ContractId is not null)
@@ -78,13 +81,18 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> Edit(SelectionProcedureViewModel selectProcedure)
+        public IActionResult Edit(SelectionProcedureViewModel selectProcedure)
         {
             if (selectProcedure is not null)
             {
                 try
                 {
                     _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
+                    if (selectProcedure.FilesEntity != null && selectProcedure.FilesEntity.Count() > 0)
+                    {
+                        int fileId = (int)_fileService.Create(selectProcedure.FilesEntity, FolderEnum.SelectionProcedures, selectProcedure.Id);
+                        _selectProcedureService.AddFile(selectProcedure.Id, fileId);
+                    }
                 }
                 catch
                 {

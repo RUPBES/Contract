@@ -11,5 +11,6 @@ public enum FolderEnum
     Contracts,
     PrepaymentTake,
     Other,
-    Estimate
+    Estimate,
+    SelectionProcedures
 }

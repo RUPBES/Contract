@@ -49,6 +49,8 @@ namespace BusinessLayer.Mapper
             CreateMap<PrepaymentAmendmentDTO, PrepaymentAmendment>().ReverseMap();
             CreateMap<Phone, PhoneDTO>().ReverseMap();
             CreateMap<SelectionProcedure, SelectionProcedureDTO>().ReverseMap();
+            CreateMap<SlctnProcedureFile, SlctnProcedureFileDTO>().ReverseMap();
+
             CreateMap<ServiceAmendmentDTO, ServiceAmendment>().ReverseMap();
             CreateMap<ServiceGCDTO, ServiceGc>().ReverseMap();
             CreateMap<ServiceCostDTO, ServiceCost>().ReverseMap();

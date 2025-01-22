@@ -1,8 +1,10 @@
-﻿@using BusinessLayer.Helpers
+﻿@using BusinessLayer.Enums
+@using BusinessLayer.Helpers
+@using BusinessLayer.Models
 @model IEnumerable<MvcLayer.Models.SelectionProcedureViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
-
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 
 @{
     var http = new HttpContextAccessor();
@@ -56,6 +58,7 @@
                                 @Html.DisplayNameFor(model => model.AcceptanceNumber),
                                 @Html.DisplayNameFor(model => model.DateAcceptance)
                             </th>
+                            <th rowspan="2">Файлы</th>
                             <th rowspan="2"></th>
                         </tr>
                         <tr>
@@ -97,8 +100,37 @@
                                 </td>
                                 <td>
                                     @Html.DisplayFor(modelItem => item.AcceptanceNumber)
-                                    от
-                                    @item.DateAcceptance?.ToShortDateString()
+                                    @if (@item.DateAcceptance != null)
+                                    {
+                                        <span>
+                                            от
+                                        </span>
+                                        @item.DateAcceptance?.ToShortDateString()
+                                    }
+                                </td>
+                                <td>
+
+                                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.SelectionProcedures))
+                                    {
+                                        <div>
+                                            <a href="~/Files/OpenFile?id=@item2.Id&fileType=@item2.FileType" target="_blank">@item2.FileName</a>
+                                            @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
+                                            {
+                                                @Html.ActionLink("×", "Delete", "Files", new
+                                                    {
+                                                        id = item2.Id,
+                                                        fileCategory = FolderEnum.SelectionProcedures,
+                                                        redirectAction = redirectAction,
+                                                        redirectController = redirectController,
+                                                        contractId = item.ContractId
+                                                    }, new
+                                                    {
+                                                        @class = "del-btn",
+                                                        @onclick = "return confirmDelete();"
+                                                    })
+                                            }
+                                        </div>
+                                    }
                                 </td>
                                 <td>
                                     @if (permissions is not null && permissions.IsEditor && isGRP_Contract)

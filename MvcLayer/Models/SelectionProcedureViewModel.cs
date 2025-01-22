@@ -1,4 +1,6 @@
 ﻿using BusinessLayer.Models;
+using BusinessLayer.Models.PRO;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Models
@@ -12,6 +14,7 @@ namespace MvcLayer.Models
         /// Название
         /// </summary>
         [Display(Name ="Наименование закупки")]
+        //[Required(ErrorMessage = "Обязательное поле")]
         public string? Name { get; set; }
 
         [Display(Name = "Вид закупки")]
@@ -58,6 +61,12 @@ namespace MvcLayer.Models
 
         public int? ContractId { get; set; }
 
+
+        [Required(ErrorMessage = "Обязательное поле")]
+        [DisplayName("Файл")]
+        public IFormFileCollection FilesEntity { get; set; }
+
         public virtual ContractViewModel? Contract { get; set; }
+        public List<SlctnProcedureFileDTO> ProcedureFiles { get; set; } = new();
     }
 }

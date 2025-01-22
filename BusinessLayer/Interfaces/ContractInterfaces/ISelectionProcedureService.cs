@@ -6,5 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface ISelectionProcedureService : IService<SelectionProcedureDTO, SelectionProcedure>
     {
+        void AddFile(int procedureId, int fileId);
     }
 }

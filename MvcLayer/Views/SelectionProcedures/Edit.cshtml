@@ -30,7 +30,7 @@
                 </div>
                 <hr class="modal-line" />
                 <div class="row">
-                    <form asp-action="Edit" class="row">
+                    <form asp-action="Edit" class="row" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ContractId" value="@contract?.Id" />
@@ -73,7 +73,12 @@
                             <label asp-for="DateAcceptance" class="control-label"></label>
                             <input asp-for="DateAcceptance" type="datetime" class="form-control datepickersNull" />
                             <span asp-validation-for="DateAcceptance" class="text-danger"></span>
-                        </div>                       
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="FilesEntity" class="control-label"></label>
+                            <input asp-for="FilesEntity" class="form-control" required multiple />
+                            <span asp-validation-for="FilesEntity" class="text-danger"></span>
+                        </div>
                         <div class="text_input form-group btn_block">
                             <a class="btn btn-success mt-3" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId">Вернуться</a>
                             <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
