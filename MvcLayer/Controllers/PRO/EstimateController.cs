@@ -200,21 +200,21 @@ public class EstimateController : Controller
 
         #endregion
 
-        var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder,contractId,
-                                 SearchString, CurrentSearchString,ListSearchString, CurrentListSearchString);
-        
+        var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId,
+                                 SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
+
         //Stopwatch st = new Stopwatch();
         //st.Start();
         var answer = new IndexViewModel();
         //answer.PageViewModel = list.PageViewModel;
         var estimateDTOs = (List<EstimateDTO>)list.Objects;
-        
+
         //var estimateViewModel = new EstimateViewModel2();
         var estimateItemsModel = new List<EstimateItemModel>();
         var totalCostResultModel = new Dictionary<string, EstimateCostResultModel>();
 
         //Debug.WriteLine((st.ElapsedMilliseconds) + "sec");
-
+        //todo: переделать вывод сумм за все сметы
         var totalSumByKindWork = estimateDTOs.Select(x => new
         {
             x.LaborCost,
@@ -226,7 +226,7 @@ public class EstimateController : Controller
                                                          .Select(a => a.KindOfWork.name)
                                                          .FirstOrDefault()
         }).GroupBy(x => x.KindWorkName);
-        var estimateByBuildingCode = estimateDTOs.Select(x => new
+        var estimateByBuildingCode = estimateDTOs.Where(x => x.IsChange != true).Select(x => new
         {
             x.BuildingCode,
             x.BuildingName,
@@ -284,8 +284,8 @@ public class EstimateController : Controller
         });
 
         //Debug.WriteLine((st.ElapsedMilliseconds ) + "sec after total sum");
-            
 
+        //todo: или здесь => переделать вывод сумм за все сметы
         foreach (var resultItem in estimateByBuildingCode)
         {
             contrCostTotal = 0M;
@@ -340,7 +340,7 @@ public class EstimateController : Controller
                 remainsSmrCost += costs.Sum(x => x.RemainsSmrCost) ?? 0M;
 
             }
-            
+
             newEstItem.CostResults.Add("totalSum", new EstimateCostResultModel
             {
                 ContractsCost = contrCostTotal,
@@ -348,13 +348,13 @@ public class EstimateController : Controller
                 LaborCost = laborCostTotal,
                 RemainsSmrCost = remainsSmrCost,
             });
-           
+
             estimateItemsModel.Add(newEstItem);
         }
 
         //Debug.WriteLine((st.ElapsedMilliseconds ) + "sec all");
         //st.Stop();
-        
+
         ViewBag.TotalSumObject = totalCostResultModel;
         answer.Objects = estimateItemsModel;
         ViewBag.CurrentSearchString = SearchString;
@@ -404,7 +404,7 @@ public class EstimateController : Controller
                     {
                         CopyDocumentToFolder(answerAll.BuildingCode, answerAll.Number, path, false, contractId, newEstimateId ?? 0);
                         countEstimates++;
-                        createdEstmtId = newEstimateId;                       
+                        createdEstmtId = newEstimateId;
                     }
                 }
                 if (buildingCode is null)
@@ -415,7 +415,7 @@ public class EstimateController : Controller
                 if ((estimateId != null && estimateId > 0) && countEstimates > 0)
                 {
                     //если изменение по смете, обновляем эту смету как имененную
-                    var estUpdate = _estimateService.GetById(estimateId.Value); 
+                    var estUpdate = _estimateService.GetById(estimateId.Value);
                     estUpdate.IsChange = true;
                     _estimateService.Update(estUpdate);
                     break;
@@ -425,7 +425,7 @@ public class EstimateController : Controller
             }
 
             _file.DeleteByPath(path);
-            var additionParams = countEstimates == 1 && estimateId > 0? $",{buildingCode},{createdEstmtId}" : $",{buildingCode}";
+            var additionParams = countEstimates == 1 && estimateId > 0 ? $",{buildingCode},{createdEstmtId}" : $",{buildingCode}";
 
             return Content((countEstimates).ToString() + additionParams);
 
@@ -594,8 +594,14 @@ public class EstimateController : Controller
 
                     foreach (var item in listEstNumbWithLaborCost)
                     {
-                        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-                        var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+                        //var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+                        //if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
+                        //{
+                        //    fullNumber = item.estimateNumber;
+                        //}
+                        //var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+
+                        var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);
                         if (estimate is not null)
                         {
                             estimate.LaborCost = Convert.ToDouble(item.cost);
@@ -609,7 +615,6 @@ public class EstimateController : Controller
                 }
                 _file.DeleteByPath(path);
                 return Ok($"Обновлены трудозатраты {countUpdated} смет(ы)");
-
             }
             else
             {
@@ -639,8 +644,15 @@ public class EstimateController : Controller
 
                     foreach (var item in costs)
                     {
-                        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-                        var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+                        //var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+                        //if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
+                        //{
+                        //    fullNumber = item.estimateNumber;
+                        //}
+
+                        //var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+
+                        var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);
                         if (estimate is not null)
                         {
                             estimate.ContractsCost = item.cost;
@@ -681,11 +693,12 @@ public class EstimateController : Controller
 
                     foreach (var item in costs)
                     {
-                        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-
-                        var estimate = _estimateService.Find(x => x.FullNumber == fullNumber
-                                        && x.ContractId == contractId
-                                        && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+                        //var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
+                        //if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
+                        //{
+                        //    fullNumber = item.estimateNumber;
+                        //}
+                        var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);// _estimateService.Find(x => x.FullNumber == fullNumber     && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
 
                         if (estimate is not null)
                         {
@@ -807,7 +820,7 @@ public class EstimateController : Controller
             {
                 estimate.DrawingsDate = dateStart;
             }
-            
+
             _estimateService.Update(estimate);
 
             return RedirectToAction(nameof(Index), new { contractId = estimate.ContractId });// Ok("Чертежи загружены");
@@ -904,8 +917,8 @@ public class EstimateController : Controller
             {
                 return null;
             }
+
             answer.ChangeEstimateDate = date;
-            //answer.IsChange = true;
             answer.ChangeEstimateId = changeEstimateId;
             int number = _estimateService.Find(x => x.ChangeEstimateId == changeEstimateId)?.LastOrDefault()?.ChangeNumber ?? 0;
             answer.ChangeNumber = ++number;
@@ -914,7 +927,7 @@ public class EstimateController : Controller
         {
             answer.EstimateDate = date;
         }
-        
+
         if (type == ConstantsApp.SMR_PRO_APP)
         {
             answer.FullNumber = answer.BuildingCode + "." + answer.Number;
@@ -928,7 +941,14 @@ public class EstimateController : Controller
         answer.ContractId = contract.Id;
         answer.SubContractor = contract?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.Organization?.Name;
         answer.Owner = organizationName;
-        return _estimateService.Create(answer);
+        var newEstimateId = _estimateService.Create(answer);
+        if (changeEstimateId != null)
+        {
+            var oldEstimate = _estimateService.GetById((int)changeEstimateId);
+            oldEstimate.IsChange = true;
+            _estimateService.Update(oldEstimate);
+        }
+        return newEstimateId;
     }
 
     /// <summary>
@@ -988,4 +1008,15 @@ public class EstimateController : Controller
         //    }
         //}
     }
+
+    private EstimateDTO? GetEstimateForUpdating(string estimateNumber, int contractId, string type = null, string? buildingsCode = null)
+    {
+        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{estimateNumber}" : estimateNumber;
+        if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
+        {
+            fullNumber = estimateNumber;
+        }
+        return _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+    }
+
 }

@@ -14,10 +14,11 @@ namespace MvcLayer.Models
         /// Название
         /// </summary>
         [Display(Name ="Наименование закупки")]
-        //[Required(ErrorMessage = "Обязательное поле")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? Name { get; set; }
 
         [Display(Name = "Вид закупки")]
+        [Required(ErrorMessage = "Обязательное поле")]
         /// <summary>
         /// Вид закупки
         /// </summary>
@@ -27,36 +28,42 @@ namespace MvcLayer.Models
         /// Срок проведения начало
         /// </summary>
         [Display(Name = "Срок проведения начало")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public DateTime? DateBegin { get; set; }
 
         /// <summary>
         /// Срок проведения окончание
         /// </summary>
         [Display(Name = "Срок проведения окончание")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public DateTime? DateEnd { get; set; }
 
         /// <summary>
         /// Стартовая цена
         /// </summary>
         [Display(Name = "Стартовая цена")]
-        public decimal? StartPrice { get; set; }
+        [Required(ErrorMessage = "Обязательное поле")]
+        public string? StartPrice { get; set; }
 
         /// <summary>
         /// Цена акцента
         /// </summary>
         [Display(Name = "Цена акцепта")]
-        public decimal? AcceptancePrice { get; set; }
+        [Required(ErrorMessage = "Обязательное поле")]
+        public string? AcceptancePrice { get; set; }
 
         /// <summary>
         /// Номер акцента
         /// </summary>
         [Display(Name = "Номер акцепта")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? AcceptanceNumber { get; set; }
 
         /// <summary>
         /// Дата акцента
         /// </summary>
         [Display(Name = "Дата акцепта")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public DateTime? DateAcceptance { get; set; }
 
         public int? ContractId { get; set; }

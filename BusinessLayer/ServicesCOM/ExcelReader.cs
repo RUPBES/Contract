@@ -58,21 +58,25 @@ namespace BusinessLayer.ServicesCOM
 
         public IEnumerable<(int, int)> FindCellByQuery(ExcelWorksheet worksheet, params string[] query)
         {
-            var start = worksheet.Dimension.Start;
-            var end = worksheet.Dimension.End;
+            var start = worksheet.Dimension?.Start;
+            var end = worksheet.Dimension?.End;
             var listAnswer = new List<(int row, int col)>();
-            for (int row = start.Row; row <= end.Row; row++)
-                for (int col = start.Column; col <= end.Column; col++)
-                {
-                    string cellValue = worksheet.Cells[row, col].Text.ToString().Trim();
-                    if (FindByWords(cellValue, query))
+            if (start != null && end != null)
+            {
+                for (int row = start.Row; row <= end.Row; row++)
+                    for (int col = start.Column; col <= end.Column; col++)
                     {
-                        (int row, int col) answer;
-                        answer.row = row;
-                        answer.col = col;
-                        listAnswer.Add(answer);
+                        string cellValue = worksheet.Cells[row, col].Text.ToString().Trim();
+                        if (FindByWords(cellValue, query))
+                        {
+                            (int row, int col) answer;
+                            answer.row = row;
+                            answer.col = col;
+                            listAnswer.Add(answer);
+                        }
                     }
-                }
+            }
+
             return listAnswer;
         }
 

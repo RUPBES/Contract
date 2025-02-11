@@ -87,16 +87,16 @@
                                     @Html.DisplayFor(modelItem => item.Name)
                                 </td>
                                 <td class="text-end">
-                                    @item.StartPrice?.ToString("N2")
+                                    @Convert.ToDecimal(item.StartPrice).ToString("N2")
                                 </td>
                                 <td class="text-end">
-                                    @item.AcceptancePrice?.ToString("N2")
+                                    @Convert.ToDecimal(item.AcceptancePrice).ToString("N2")
                                 </td>
                                 <td class="text-end">
                                     @{
-                                        var discont = item.StartPrice - item.AcceptancePrice;
+                                        var discont = Convert.ToDecimal(item.StartPrice) - Convert.ToDecimal(item.AcceptancePrice);
                                     }
-                                    @discont?.ToString("N2")
+                                    @discont.ToString("N2")
                                 </td>
                                 <td>
                                     @Html.DisplayFor(modelItem => item.AcceptanceNumber)

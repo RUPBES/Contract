@@ -1,13 +1,20 @@
-﻿
+﻿@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
+@{
+    var http = new HttpContextAccessor();
+    var permissions = HttpHelper.GetPermissionForUser(http);
+}
 <style>
- 
+
     a {
         font-weight: normal !important;
         font-size: 16px !important;
     }
+
     .nav-item {
         border-radius: 15px;
     }
+
     .user_name {
         line-height: 35px;
         margin-right: 7px;
@@ -15,6 +22,7 @@
         font-weight: bold;
         font-family: Georgia, serif;
     }
+
     .img_user {
         margin-right: 5px;
         margin-bottom: 3%;
@@ -54,7 +62,8 @@
         height: 20px;
         margin-left: 3px;
     }
-    .log_flex{
+
+    .log_flex {
         display: flex;
         flex-direction: row;
     }
@@ -66,9 +75,6 @@
     .link_a {
         color: black !important;
     }
-
-
-    
 
 </style>
 
@@ -87,16 +93,19 @@
                 <li class="nav-item dropdown">
 
                     <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Справочники
-                        </a>
-                        <ul class="dropdown-menu drop_margin">
-                            <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                        Справочники
+                    </a>
+                    <ul class="dropdown-menu drop_margin">
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Organizations" asp-action="Index">Организации</a></li>
+                        <li><hr class="dropdown-divider"></li>
 
-                            <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a></li>
-                        @* <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="CreateReport" asp-route-daysCount="7">Отчет</a></li> *@
-                        <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="SendReport" asp-route-daysCount="7">Отчет отправить</a></li>
-                        </ul>
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a></li>
+                        @if (permissions is not null && (permissions.IsAdmin && permissions.IsCreator && permissions.IsDeleter))
+                        {
+                            <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="CreateReport" asp-route-daysCount="7">Сформировать отчет</a></li>
+                            <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="SendReport" asp-route-daysCount="7">Отправить сформированный отчет</a></li>
+                        }
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="Index">
@@ -110,9 +119,9 @@
                 </li>
                 <li class="nav-item dropdown">
                     <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Анализ/Мониторинг
-                        </a>
-                        <ul class="dropdown-menu">
+                        Анализ/Мониторинг
+                    </a>
+                    <ul class="dropdown-menu">
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a></li>
                         <li><hr class="dropdown-divider"></li>
 
@@ -121,27 +130,27 @@
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Payments" asp-action="GetPayableCash">Денежные средства по договорам, подлежащие к оплате</a></li>
 
-                    </ul>                    
-                </li>                
+                    </ul>
+                </li>
             </ul>
-           @*  <ul class="navbar-nav flex-grow-1">
-                @if (User?.Identity is { IsAuthenticated: true })
-                {
-                    <li style="line-height:35px; margin-right:30px;">Пользователь - @User.Identity.Name</li>
-                    <li class="nav-item">
-                        <form asp-action="Logout" asp-controller="Authentication" method="post">
-                            <button class="btn btn-danger" type="submit">Sign out</button>
-                        </form>
-                    </li>
-                }
-                @if (User?.Identity is { IsAuthenticated: false })
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-white btn btn-sm btn-primary" asp-area="" asp-controller="Authentication" asp-action="Login">Войти</a>
-                    </li>
-                }
+            @*  <ul class="navbar-nav flex-grow-1">
+            @if (User?.Identity is { IsAuthenticated: true })
+            {
+            <li style="line-height:35px; margin-right:30px;">Пользователь - @User.Identity.Name</li>
+            <li class="nav-item">
+            <form asp-action="Logout" asp-controller="Authentication" method="post">
+            <button class="btn btn-danger" type="submit">Sign out</button>
+            </form>
+            </li>
+            }
+            @if (User?.Identity is { IsAuthenticated: false })
+            {
+            <li class="nav-item">
+            <a class="nav-link text-white btn btn-sm btn-primary" asp-area="" asp-controller="Authentication" asp-action="Login">Войти</a>
+            </li>
+            }
             </ul> *@
-            
+
         </div>
         <ul class="navbar-nav log_flex">
             @if ((User.Identity == null) || (!(User.Identity.IsAuthenticated)))
@@ -153,12 +162,12 @@
             }
             else
             {
-                <li class="user_name"><img class="img_user" src="~/icons/icons-user.png" />@User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x=>x.Type == "given_name")?.Value</li>
+                <li class="user_name"><img class="img_user" src="~/icons/icons-user.png" />@User?.Identities?.FirstOrDefault()?.Claims?.FirstOrDefault(x => x.Type == "given_name")?.Value</li>
                 <li class="nav-item" style="box-shadow: none !important">
                     <a class="nav-link  text-white btn btn-sm btn-danger log_btn" asp-controller="Account" asp-action="Logout">Выйти <img src="~/icons/logout-icon.png" class="img_icon-logout" /></a>
                 </li>
             }
         </ul>
-   
+
     </div>
 </nav>
