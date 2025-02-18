@@ -25,6 +25,7 @@
     decimal? sumPnr = 0;
     decimal? sumEquip = 0;
     decimal? sumOther = 0;
+    decimal? sumAdditional = 0;
 }
 
 <style>
@@ -38,7 +39,7 @@
     }
 
     .dm-modal {
-        width: 1400px;       
+        width: 1400px;
     }
 
     .form-group {
@@ -46,15 +47,32 @@
     }
 
     .input-group {
-        width: auto !important;
+        flex: 1; /* Блоки занимают равное пространство */
+        display: flex;
+        flex-direction: column; /* Элементы внутри блока располагаются вертикально */
     }
+        /* Стили для span и input */
+        .input-group span {
+            font-weight: bold; /* Жирный текст для метки */
+            margin-bottom: 5px; /* Отступ снизу */
+            font-size: 1.25rem;
+        }
+
+        .input-group input {
+            width: 100%; /* Занимает 100% ширины блока */
+            padding: 8px; /* Внутренний отступ */
+            box-sizing: border-box; /* Учитываем padding в ширине */
+        }
 
     .input_result {
         width: 150px;
     }
 
     .input_block--result {
-        display: flex
+        display: flex; /* Располагаем блоки в строку */
+        justify-content: space-between; /* Равные промежутки между блоками */
+        width: 100%; /* Ширина контейнера */
+        gap: 20px; /* Расстояние между блоками */
     }
 
     .result_block {
@@ -62,9 +80,43 @@
         justify-content: space-between;
     }
 
+    .text_error {
+        color: red; /* Красный цвет текста */
+        font-weight: bold; /* Жирный текст */
+        margin: auto; /* Отступ снизу */
+        text-align: center;
+    }
+
     .table-main tr:nth-child(2n) {
         background-color: #ecf2f9 !important;
     }
+
+    .button-block {
+        display: flex;
+        gap: 10px; /* Расстояние между кнопками */
+        height: max-content;
+        margin-top: auto; /* Прижимаем к нижней части */
+    }
+
+        .button-block a {
+            text-align: center; /* Центрирование текста */
+            flex: 1;
+            cursor: pointer; /* Курсор в виде указателя */
+        }
+
+            .button-block a:hover {
+                opacity: 0.7;
+            }
+
+        .button-block button {
+            text-align: center; /* Центрирование текста */
+            flex: 1;
+            cursor: pointer; /* Курсор в виде указателя */
+        }
+
+            .button-block button:hover {
+                opacity: 0.7;
+            }
 </style>
 
 <div class="dm-overlay">
@@ -104,7 +156,7 @@
                                 }
                             </tr>
                             <tr>
-                                <th>Стоимость СМР</th>
+                                <th>Стоимость неизменной цены СМР</th>
                                 @foreach (var item in costs)
                                 {
                                     if (item.SmrCost != null)
@@ -185,11 +237,12 @@
                                 {
                                     if (item.AdditionalCost != null)
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="@item.AdditionalCost" /></td>
+                                        sumAdditional += item.OtherExpensesCost;
+                                        <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost AdditionalCost" value="@item.AdditionalCost" /></td>
                                     }
                                     else
                                     {
-                                        <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost" value="" /></td>
+                                        <td class="text-end"><input name="SWCosts[@index].AdditionalCost" type="text" class="form-control cost AdditionalCost" value="" /></td>
                                     }
                                     index++;
                                 }
@@ -233,11 +286,11 @@
                     <div class="form-group mt-3 result_block">
                         @{
                             var contractPrice = (decimal)ViewData["contractPrice"];
-                            var sum = sumSmr + sumPnr + sumEquip + sumOther;
+                            var sum = sumSmr + sumPnr + sumEquip + sumOther + sumAdditional;
                             var result = contractPrice - sum;
                             <div class="input_block--result">
                                 <div class="input-group">
-                                    <span class="input-group-text">Контрактная цена:</span>
+                                    <span class="input-group-text">Всего по договору с НДС:</span>
 
                                     <input class="input_result" id="sumTarget" value="@contractPrice.ToString("N2")" readonly />
                                 </div>
@@ -247,13 +300,15 @@
                                 </div>
                                 <div class="input-group">
                                     <span class="input-group-text">Разница </span>
-                                    <input class=" input_result" id="result" value="@result?.ToString("N2")" readonly />
+                                    <input class=" input_result" id="resultValue" value="@result?.ToString("N2")" readonly />
                                 </div>
 
                             </div>
                         }
-                        <span id="text_error" class="text_error"></span>
-                        <input type="submit" value="Создать" id="createButton" class="btn btn-primary" />
+                        <div class="button-block">
+                            <span id="text_error" class="text_error"></span>
+                            <button type="submit" id="createButton" class="btn btn-primary">Создать</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -288,6 +343,10 @@
         $('body').on('input', '.OtherExpensesCost', function (e) {
             check();
         });
+        $('body').on('input', '.AdditionalCost', function (e) {
+            digits_float(this);
+            check();
+        });
 
         function check() {
             let btn = document.getElementById("createButton");
@@ -296,6 +355,7 @@
             let PnrCost = $(".PnrCost");
             let EquipmentCost = $(".EquipmentCost");
             let OtherExpensesCost = $(".OtherExpensesCost");
+            let AdditionalCost = $(".AdditionalCost");
             let sum = 0;
             let result = 0;
             for (let item of SmrCost) {
@@ -318,6 +378,11 @@
                 let num = item.value.replaceAll(' ', '').replace(regExp, '.')
                 sum += +num;
             }
+             for (let item of AdditionalCost) {
+                const regExp = /,/g;
+                let num = item.value.replaceAll(' ', '').replace(regExp, '.')
+                sum += +num;
+            }
             const regExp = /,/g;
             let o = document.querySelector("#sumTarget").value.replace(regExp, '.');
             o = o.replace(/\s+/g, '');
@@ -325,7 +390,7 @@
 
             result = contractPrice - sum;
             if (result === 0) {
-                $("#result").focus(function () { $(this).addClass("focused") });
+                $("#resultValue").focus(function () { $(this).addClass("focused") });
                 btn.removeAttribute('disabled')
                 $('#text_error').text('')
 
@@ -337,7 +402,7 @@
 
             }
             $("#sumTargetWork").val(sum);
-            $("#result").val(result.toFixed(2));
+            $("#resultValue").val(result.toFixed(2));
         }
     </script>
 }
