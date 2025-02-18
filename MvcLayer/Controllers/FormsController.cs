@@ -184,8 +184,7 @@ namespace MvcLayer.Controllers
                 formViewModel.CostStatisticReportOfContractor = formViewModel.CostStatisticReportOfContractor ?? 0;
                 formViewModel.CostToConstructionIndustryFund = formViewModel.CostToConstructionIndustryFund ?? 0;
 
-                var formDTO = _mapper.Map<FormDTO>(formViewModel);
-                formDTO.CostStatisticReportOfContractor = formViewModel.CostStatisticReportOfContractor;
+                var formDTO = _mapper.Map<FormDTO>(formViewModel);                
                 int formId = (int)_formService.Create(formDTO);
                 int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
                 _formService.AddFile(formId, fileId);
