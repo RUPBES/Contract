@@ -227,10 +227,10 @@ namespace MvcLayer.Controllers
 
                 #endregion
                 #region Лист. Факт значений
-                Func<FormC3a, bool> where = w => w.ContractId == contract.Id;
+                Func<FormC3a, bool> where = w => w.ContractId == contract.Id && w.IsOwnForces == false;
                 Func<FormC3a, FormC3a> select = s => new FormC3a
                 {
-                    TotalCost = s.TotalCost
+                    TotalCost = s.SmrContractCost + s.SmrNdsCost + s.PnrNdsCost + s.PnrContractCost + s.AdditionalCost + s.EquipmentCost
                 };
                 itemViewModel.factWorkByC3A = _formService.Find(where, select).Sum(x => x.TotalCost);
                 #endregion
@@ -274,7 +274,7 @@ namespace MvcLayer.Controllers
                 {
                     itemViewModel.currentYearScopeWork = listScope.Sum(x => x.CostNds);
                 }
-                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();                
+                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();
                 #region Нахождение клиента и генподрядчика
                 var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
                     .Select(x => x.OrganizationId).FirstOrDefault();
@@ -351,10 +351,10 @@ namespace MvcLayer.Controllers
 
                 #endregion
                 #region Лист. Факт значений
-                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id;
+                Func<FormC3a, bool> whereF = w => w.ContractId == contract.Id && w.IsOwnForces == false;
                 Func<FormC3a, FormC3a> selectF = s => new FormC3a
                 {
-                    TotalCost = s.TotalCost
+                    TotalCost = s.SmrContractCost + s.SmrNdsCost + s.PnrNdsCost + s.PnrContractCost + s.AdditionalCost + s.EquipmentCost
                 };
                 itemViewModel.factWorkByC3A = _formService.Find(whereF, selectF).Sum(x => x.TotalCost);
                 #endregion
