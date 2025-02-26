@@ -1023,7 +1023,7 @@ namespace MvcLayer.Controllers
                     viewModel.contractPriceOwn.SmrCost += item.SmrCost;
                     viewModel.contractPriceOwn.PnrCost += item.PnrCost;
                     viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
-                    viewModel.contractPriceOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
+                    viewModel.contractPriceOwn.OtherExpensesCost += ob.OtherExpensesCost;
                     viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
                     viewModel.contractPriceOwn.TotalCost += item.CostNds;
                     viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
@@ -1033,7 +1033,7 @@ namespace MvcLayer.Controllers
                         viewModel.todayScopeOwn.SmrCost += item.SmrCost;
                         viewModel.todayScopeOwn.PnrCost += item.PnrCost;
                         viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
-                        viewModel.todayScopeOwn.OtherExpensesCost += item.OtherExpensesCost + item.MaterialCost;
+                        viewModel.todayScopeOwn.OtherExpensesCost += ob.OtherExpensesCost;
                         viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
                         viewModel.todayScopeOwn.TotalCost += item.CostNds;
                         viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
@@ -1047,15 +1047,15 @@ namespace MvcLayer.Controllers
             {
                 var ob = new ItemScopeWorkContract();
                 ob.PnrCost = item.PnrCost;
-                ob.SmrCost = item.SmrContractCost + item.SmrNdsCost;
+                ob.SmrCost = item.SmrCost;
                 ob.EquipmentCost = item.EquipmentCost;
                 ob.EquipmentClientCost = item.EquipmentClientCost;
                 ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
                 ob.AdditionalCost = item.AdditionalCost;
                 ob.MaterialCost = item.MaterialClientCost;
                 ob.Period = item.Period;
-                ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost + item.MaterialCost;
-                ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.OtherExpensesCost + item.MaterialCost + item.AdditionalContractCost - item.OtherExpensesNdsCost;
+                ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + ob.OtherExpensesCost;
+                ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.AdditionalContractCost + ob.OtherExpensesCost - item.OtherExpensesNdsCost;
                 viewModel.facts.Add(ob);
 
                 viewModel.remainingScope.SmrCost += ob.SmrCost;
@@ -1090,15 +1090,15 @@ namespace MvcLayer.Controllers
                 {
                     var ob = new ItemScopeWorkContract();
                     ob.PnrCost = item.PnrCost;
-                    ob.SmrCost = item.SmrContractCost + item.SmrNdsCost;
+                    ob.SmrCost = item.SmrCost;
                     ob.EquipmentCost = item.EquipmentCost;
                     ob.EquipmentClientCost = item.EquipmentClientCost;
                     ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
                     ob.AdditionalCost = item.AdditionalCost;
                     ob.MaterialCost = item.MaterialClientCost;
                     ob.Period = item.Period;
-                    ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + item.OtherExpensesCost + item.MaterialCost;
-                    ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.OtherExpensesCost + item.MaterialCost + item.AdditionalContractCost - item.OtherExpensesNdsCost;
+                    ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + ob.OtherExpensesCost;
+                    ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.AdditionalContractCost + ob.OtherExpensesCost  - item.OtherExpensesNdsCost;
                     viewModel.factsOwn.Add(ob);
 
                     viewModel.remainingScopeOwn.SmrCost += ob.SmrCost;
