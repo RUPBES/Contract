@@ -20,7 +20,9 @@ namespace MvcLayer.Models
         [Required(ErrorMessage ="Не указана причина")]
         public string Reason { get; set; }
 
-        [DisplayName("Договорная (контрактная) цена, с НДС")]
+        //[DisplayName("Договорная (контрактная) цена, с НДС")]
+        [DisplayName("Всего по договору с НДС")]
+
         public decimal? ContractPrice { get; set; }
 
         [DisplayName("Срок выполнения работ (начало)")]

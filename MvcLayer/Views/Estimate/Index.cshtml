@@ -108,10 +108,10 @@
                                     if (item.Key == "Шифр здания")
                                     {
                                         @*
-                                        isWrite = true;
-                                        <input class="form-control" name="SearchString[Шифр здания]"  id="inputGroupSearch01" />
+                            isWrite = true;
+                            <input class="form-control" name="SearchString[Шифр здания]"  id="inputGroupSearch01" />
 
-                                        break;*@
+                            break;*@
 
                                         isWrite = true;
                                         <select name="SearchString[Шифр здания]" id="inputGroupSearch01">
@@ -121,7 +121,7 @@
                                 }
                                 @if (!isWrite)
                                 {
-                                   @*  <input class="form-control" name="SearchString[Шифр здания]" value="" id="inputGroupSearch01" /> *@
+                                    @*  <input class="form-control" name="SearchString[Шифр здания]" value="" id="inputGroupSearch01" /> *@
                                     <select name="SearchString[Шифр здания]" id="inputGroupSearch01">
                                         <option value="" selected disabled></option>
                                     </select>
@@ -132,24 +132,24 @@
                                 }
                             </div>
                             @* <div class="input-group mb-3">
-                                <label class="input-group-text" for="inputGroupSearch02">Название здания</label>
-                                @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
-                                {
-                                    if (item.Key == "Название здания")
-                                    {
-                                        isWrite = true;
-                                        <input class="form-control" name="SearchString[Название здания]" value="@item.Value" id="inputGroupSearch02" />
-                                        break;
-                                    }
-                                }
-                                @if (!isWrite)
-                                {
-                                    <input class="form-control" name="SearchString[Название здания]" value="" id="inputGroupSearch02" />
-                                }
-                                else
-                                {
-                                    isWrite = false;
-                                }
+                        <label class="input-group-text" for="inputGroupSearch02">Название здания</label>
+                        @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
+                        {
+                        if (item.Key == "Название здания")
+                        {
+                        isWrite = true;
+                        <input class="form-control" name="SearchString[Название здания]" value="@item.Value" id="inputGroupSearch02" />
+                        break;
+                        }
+                        }
+                        @if (!isWrite)
+                        {
+                        <input class="form-control" name="SearchString[Название здания]" value="" id="inputGroupSearch02" />
+                        }
+                        else
+                        {
+                        isWrite = false;
+                        }
                         </div>*@
                             <div class="input-group mb-3">
 
@@ -447,14 +447,15 @@
             ** отрисовка по сметам      **
             *@
                     @foreach (EstimateItem estimate in estimateItemModel?.Estimates)
-                    {                       
-                        <tr >
-                                @if (estimateItemModel?.Estimates[0] == estimate)
-                                {
-                                    int rowspanCount = estimateItemModel?.Estimates?.Count() ?? 0;
-                                <td rowspan="@rowspanCount" class="text-center align-middle">
-                                        @estimateItemModel.BuildingCode
-                                        @*         TODO: ПЕРЕСМОТРЕТЬ ВСЕ ССЫЛКИ В ССЫЛКАХ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*@
+                    {
+                        var classes = estimate.IsChange ? "toggle-sub-rows" : string.Empty;
+                        <tr class="@classes">
+                            @if (estimateItemModel?.Estimates[0] == estimate)
+                            {
+                                int rowspanCount = estimateItemModel?.Estimates?.Count() ?? 0;
+                                <td rowspan="@rowspanCount" class="text-center align-middle common-col">
+                                    @estimateItemModel.BuildingCode
+                                    @*         TODO: ПЕРЕСМОТРЕТЬ ВСЕ ССЫЛКИ В ССЫЛКАХ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*@
                                     <div class="icon file-store" title="Файлы">
                                         <a asp-action="ShowFiles"
                                            asp-route-contractId="@contractId"
@@ -462,22 +463,20 @@
                                         </a>
                                     </div>
                                 </td>
-                                <td rowspan="@rowspanCount" class="text-center align-middle">
-                                        @estimateItemModel.Estimates?.FirstOrDefault()?.BuildingName
+                                <td rowspan="@rowspanCount" class="text-center align-middle common-col">
+                                    @estimateItemModel.Estimates?.FirstOrDefault()?.BuildingName
                                 </td>
-                                }
-
-
+                            }
                             <td>
-                                    @estimate?.DrawingsKit
+                                @estimate?.DrawingsKit
                             </td>
                             <td>
-                                    @estimate?.DrawingsName
+                                @estimate?.DrawingsName
                             </td>
                             <td class="text-center align-middle">
-                                    @if (estimate?.DrawingsDate != default)
-                                    {
-                                        @estimate?.DrawingsDate?.ToString("dd MMMM yyyy")
+                                @if (estimate?.DrawingsDate != default)
+                                {
+                                    @estimate?.DrawingsDate?.ToString("dd MMMM yyyy")
 
                                     <div class="icon file-add" title="Добавить изменения по смете">
                                         <a asp-action="GetType"
@@ -486,44 +485,40 @@
                                            asp-route-estimateId="@estimate?.Id">
                                         </a>
                                     </div>
-                                    }
+                                }
                             </td>
                             <td class="text-center align-middle">
-                                    @estimate?.ChangeDrawingDate
+                                @estimate?.ChangeDrawingDate
                             </td>
                             <td class="text-center align-middle">
-                                    @estimate?.Number
+                                @estimate?.Number
                             </td>
                             <td class="text-center align-middle">
-                                    @estimate?.EstimateDate?.ToString("dd MMMM yyyy")
+                                @estimate?.EstimateDate?.ToString("dd MMMM yyyy")
                             </td>
                             <td class="text-center align-middle">
-                                    @estimate?.ChangeEstimateDate?.ToString("dd MMMM yyyy")
+                                @estimate?.ChangeEstimateDate?.ToString("dd MMMM yyyy")
                             </td>
                             <td class="text-end align-middle">
-                                    @estimate?.ContractsCost?.ToString("N2")
+                                @estimate?.ContractsCost?.ToString("N2")
                             </td>
                             <td class="text-end align-middle">
-                                    @estimate?.LaborCost?.ToString("N2")
+                                @estimate?.LaborCost?.ToString("N2")
                             </td>
                             <td class="text-end align-middle">
-                                    @estimate?.DoneSmrCost?.ToString("N2")
+                                @estimate?.DoneSmrCost?.ToString("N2")
                             </td>
                             <td class="text-end align-middle">
-                                    @estimate?.PercentOfContrPrice?.ToString("N2")
+                                @estimate?.PercentOfContrPrice?.ToString("N2")
                             </td>
                             <td class="text-end align-middle">
-                                    @estimate?.RemainsSmrCost?.ToString("N2")
+                                @estimate?.RemainsSmrCost?.ToString("N2")
                             </td>
                             <td class="text-center align-middle">
-                                    @estimate?.SubContractor
+                                @estimate?.SubContractor
                             </td>
-
-                                @*
-                *
-                *
+                            @*
                 * Действия по смете
-                *
                 *
                 *@
                             <td>
@@ -551,141 +546,135 @@
                                     <a onclick="DeleteEstimate(@estimate?.Id)"></a>
                                 </div>
                             </td>
-
-
-
                         </tr>
-           
+
                     }
-
                     @*
-            ** отрисовка итоговых стоимостей (согласно видам работ) по сметам       **
+            ** отрисовка итоговых стоимостей (согласно видам работ) по сметам   **
             *@
-
-        <tr>
-            <td class="text-end" colspan="9">
-                Итого по зданию, сооружению:
-            </td>
-            <td class="text-end align-middle">
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            Итого по зданию, сооружению:
+                        </td>
+                        <td class="text-end align-middle">
                             @estimateItemModel?.CostResults["totalSum"].ContractsCost?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @estimateItemModel?.CostResults["totalSum"].LaborCost?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @estimateItemModel?.CostResults["totalSum"].DoneSmrCost?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @estimateItemModel?.CostResults["totalSum"].PercentOfContrPrice?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @estimateItemModel?.CostResults["totalSum"].RemainsSmrCost?.ToString("N2")
-            </td>
-            <td colspan="2">
-            </td>
-        </tr>
-        <tr>
-            <td class="text-end" colspan="9">
-                в том числе:
-            </td>
-            <td colspan="7">
-            </td>
-        </tr>
+                        </td>
+                        <td colspan="2">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-end" colspan="9">
+                            в том числе:
+                        </td>
+                        <td colspan="7">
+                        </td>
+                    </tr>
                     foreach (var result in @estimateItemModel?.CostResults.Where(x => x.Key != "totalSum"))
                     {
-            <tr>
-                <td class="text-end" colspan="9">
+                        <tr>
+                            <td class="text-end" colspan="9">
                                 @result.Key
-                </td>
-                <td class="text-end align-middle">
+                            </td>
+                            <td class="text-end align-middle">
                                 @result.Value?.ContractsCost?.ToString("N2")
-                </td>
-                <td class="text-end align-middle">
+                            </td>
+                            <td class="text-end align-middle">
                                 @result.Value?.LaborCost?.ToString("N2")
-                </td>
-                <td class="text-end align-middle">
+                            </td>
+                            <td class="text-end align-middle">
                                 @result.Value?.DoneSmrCost?.ToString("N2")
-                </td>
-                <td class="text-end align-middle">
+                            </td>
+                            <td class="text-end align-middle">
                                 @result.Value?.PercentOfContrPrice?.ToString("N2")
-                </td>
-                <td class="text-end align-middle">
+                            </td>
+                            <td class="text-end align-middle">
                                 @result.Value?.RemainsSmrCost?.ToString("N2")
-                </td>
-                <td colspan="2">
-                </td>
-            </tr>
+                            </td>
+                            <td colspan="2">
+                            </td>
+                        </tr>
                     }
 
-        <tr>
-            <td colspan="16" style="background-color:white;">
-            </td>
-        </tr>
+                    <tr>
+                        <td colspan="16" style="background-color:white;">
+                        </td>
+                    </tr>
                 }
-
                 @*
             ** отрисовка итоговых стоимостей (согласно видам работ) по ОБЪЕКТУ       **
             *@
-    <tr>
-        <td colspan="16">
-        </td>
-    </tr>
-    <tr>
-        <td class="text-end" colspan="9">
-            ВСЕГО по объекту:
-        </td>
-        <td class="text-end align-middle">
+                <tr>
+                    <td colspan="16">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-end" colspan="9">
+                        ВСЕГО по объекту:
+                    </td>
+                    <td class="text-end align-middle">
                         @totalSumObj["totalSum"].ContractsCost?.ToString("N2")
-        </td>
-        <td class="text-end align-middle">
+                    </td>
+                    <td class="text-end align-middle">
                         @totalSumObj["totalSum"].LaborCost?.ToString("N2")
-        </td>
-        <td class="text-end align-middle">
+                    </td>
+                    <td class="text-end align-middle">
                         @totalSumObj["totalSum"].DoneSmrCost?.ToString("N2")
-        </td>
-        <td class="text-end align-middle">
+                    </td>
+                    <td class="text-end align-middle">
                         @totalSumObj["totalSum"].PercentOfContrPrice?.ToString("N2")
-        </td>
-        <td class="text-end align-middle">
+                    </td>
+                    <td class="text-end align-middle">
                         @totalSumObj["totalSum"].RemainsSmrCost?.ToString("N2")
-        </td>
-        <td colspan="2"></td>
-    </tr>
-    <tr>
-        <td class="text-end" colspan="9">
-            в том числе:
-        </td>
-        <td colspan="7">
-        </td>
-    </tr>
+                    </td>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td class="text-end" colspan="9">
+                        в том числе:
+                    </td>
+                    <td colspan="7">
+                    </td>
+                </tr>
                 @foreach (var item in totalSumObj.Where(x => x.Key != "totalSum"))
                 {
-        <tr>
-            <td class="text-end" colspan="9">
+                    <tr>
+                        <td class="text-end" colspan="9">
                             @item.Key
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @item.Value.ContractsCost?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @item.Value.LaborCost?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @item.Value.DoneSmrCost?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @item.Value.PercentOfContrPrice?.ToString("N2")
-            </td>
-            <td class="text-end align-middle">
+                        </td>
+                        <td class="text-end align-middle">
                             @item.Value.RemainsSmrCost?.ToString("N2")
-            </td>
-            <td colspan="2">
-            </td>
-        </tr>
+                        </td>
+                        <td colspan="2">
+                        </td>
+                    </tr>
                 }
-                </tbody>
-            </table>
-        </div>
+            </tbody>
+        </table>
+    </div>
 }
 
 @section Scripts {
@@ -779,15 +768,14 @@
             })
         }
 
-
-        $(document).ready(function () {            
+        $(document).ready(function () {
             $.ajax({
                 type: 'POST',
                 url: '@Url.Action("GetEstimatesByContractId", "Estimate")',
                 dataType: 'json',
                 data: { contractId: $("#contrctId").val() },
                 success: function (estimate) {
-                   
+
                     if (estimate.length == 0)
                         return;
                     $.each(estimate, function (r, emp) {
@@ -801,10 +789,81 @@
 
         });
 
-        $(function () {
-            $("#accordion").accordion({
-                collapsible: true
+
+        const onClickOpen = function () {
+            const target = event.target;            
+            let parentROW = target.parentElement;
+
+            if (!parentROW.firstElementChild.classList.contains('common-col')) {
+                ///ищем строку, которая содержит два первых, общих для всех строк, столбца
+                while (parentROW) {
+                    if (parentROW?.previousElementSibling.firstElementChild.classList.contains('common-col')) {
+                        parentROW = parentROW?.previousElementSibling;
+                        break;
+                    }
+                    parentROW = parentROW?.previousElementSibling;
+                }
+            }
+
+            const firstROW = parentROW.firstElementChild;
+            const secondROW = firstROW.nextElementSibling;
+            const rowspans = firstROW.getAttribute("rowspan");
+            firstROW.setAttribute("rowspan", +rowspans + 1);
+            secondROW.setAttribute("rowspan", +rowspans + 1);
+
+            ////////////
+            ///
+            ///
+
+            const newTR = document.createElement("tr");
+            newTR.className = 'sub-row text-center align-middle';
+            for (let index = 0; index < 14; index++) {
+                const newTD = document.createElement("td");
+                newTD.innerHTML = `test ${index}`;
+                newTR.appendChild(newTD);
+            }
+
+            target.parentElement.after(newTR);
+            target.parentElement.removeEventListener('click', onClickOpen);
+            target.parentElement.addEventListener('click', onClickClose);
+        };
+
+        const onClickClose = function () {
+            const target = event.target;
+            let parentROW = target.parentElement;
+            if (!parentROW.firstElementChild.classList.contains('common-col')) {
+                ///ищем строку, которая содержит два первых, общих для всех строк, столбца
+                while (parentROW) {
+                    if (parentROW?.previousElementSibling.firstElementChild.classList.contains('common-col')) {
+                        parentROW = parentROW?.previousElementSibling;
+                        break;
+                    }
+                    parentROW = parentROW?.previousElementSibling;
+                }
+            }
+            const firstROW = parentROW.firstElementChild;
+            const secondROW = firstROW.nextElementSibling;
+
+            const rowspans = firstROW.getAttribute("rowspan");
+
+            firstROW.setAttribute("rowspan", +rowspans - 1);
+            secondROW.setAttribute("rowspan", +rowspans - 1);
+            target.parentElement.nextSibling.remove();
+            ////////////
+            ///
+            ///        
+            target.parentElement.removeEventListener('click', onClickClose);
+            target.parentElement.addEventListener('click', onClickOpen);
+        };
+
+
+        function onClickRow() {
+            document.querySelectorAll(".toggle-sub-rows")?.forEach((value) => {
+                value.addEventListener("click", onClickOpen);
             });
-        });
+        };
+
+        //onClickRow();
+
     </script>
 }

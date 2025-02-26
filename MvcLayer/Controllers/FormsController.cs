@@ -160,31 +160,9 @@ namespace MvcLayer.Controllers
             try
             {
                 int mainContrId;
+                formViewModel.AdditionalCost = (formViewModel.AdditionalContractCost) + (formViewModel.AdditionalNdsCost);
 
-                formViewModel.AdditionalCost = (formViewModel.AdditionalContractCost ?? 0) + (formViewModel.AdditionalNdsCost ?? 0);
-                formViewModel.AdditionalContractCost = formViewModel.AdditionalContractCost ?? 0;
-                formViewModel.AdditionalNdsCost = formViewModel.AdditionalNdsCost ?? 0;
-                formViewModel.SmrContractCost = formViewModel.SmrContractCost ?? 0;
-                formViewModel.SmrNdsCost = formViewModel.SmrNdsCost ?? 0;
-                formViewModel.SmrCost = formViewModel.SmrCost ?? 0;
-                formViewModel.PnrCost = formViewModel.PnrCost ?? 0;
-                formViewModel.PnrContractCost = formViewModel.PnrContractCost ?? 0;
-                formViewModel.PnrNdsCost = formViewModel.PnrNdsCost ?? 0;
-                formViewModel.EquipmentCost = formViewModel.EquipmentCost ?? 0;
-                formViewModel.EquipmentClientCost = formViewModel.EquipmentClientCost ?? 0;
-                formViewModel.EquipmentNdsCost = formViewModel.EquipmentNdsCost ?? 0;
-                formViewModel.EquipmentContractCost = formViewModel.EquipmentContractCost ?? 0;
-                formViewModel.OtherExpensesCost = formViewModel.OtherExpensesCost ?? 0;
-                formViewModel.OtherExpensesNdsCost = formViewModel.OtherExpensesNdsCost ?? 0;
-                formViewModel.GenServiceCost = formViewModel.GenServiceCost ?? 0;
-                formViewModel.MaterialCost = formViewModel.MaterialCost ?? 0;
-                formViewModel.MaterialClientCost = formViewModel.MaterialClientCost ?? 0;
-                formViewModel.OffsetCurrentPrepayment = formViewModel.OffsetCurrentPrepayment ?? 0;
-                formViewModel.OffsetTargetPrepayment = formViewModel.OffsetTargetPrepayment ?? 0;
-                formViewModel.CostStatisticReportOfContractor = formViewModel.CostStatisticReportOfContractor ?? 0;
-                formViewModel.CostToConstructionIndustryFund = formViewModel.CostToConstructionIndustryFund ?? 0;
-
-                var formDTO = _mapper.Map<FormDTO>(formViewModel);
+                var formDTO = _mapper.Map<FormDTO>(formViewModel);  
                 formDTO.CostStatisticReportOfContractor = formViewModel.CostStatisticReportOfContractor;
                 int formId = (int)_formService.Create(formDTO);
                 int fileId = (int)_fileService.Create(formViewModel.FilesEntity, FolderEnum.Form3C, formId);
@@ -429,36 +407,36 @@ namespace MvcLayer.Controllers
                 fileInf.Delete();
             }
 
-            var viewForm = new FormViewModel
-            {
-                SmrCost = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost,
-                SmrContractCost = form.SmrContractCost,
-                SmrNdsCost = form.SmrNdsCost,
-                PnrCost = form.PnrContractCost + form.PnrNdsCost,
-                PnrContractCost = form.PnrContractCost,
-                PnrNdsCost = form.PnrNdsCost,
-                EquipmentCost = form.EquipmentContractCost + form.EquipmentNdsCost,
-                EquipmentContractCost = form.EquipmentContractCost,
-                EquipmentNdsCost = form.EquipmentNdsCost,
-                EquipmentClientCost = form.EquipmentClientCost,
-                OtherExpensesCost = form.OtherExpensesCost,
-                OtherExpensesNdsCost = form.OtherExpensesNdsCost,
-                AdditionalCost = form.AdditionalContractCost + form.AdditionalNdsCost,
-                AdditionalContractCost = form.AdditionalContractCost,
-                AdditionalNdsCost = form.AdditionalNdsCost,
-                MaterialCost = form.MaterialCost,
-                MaterialClientCost = form.MaterialClientCost,
-                CostToConstructionIndustryFund = form.CostToConstructionIndustryFund,                
-                GenServiceCost = form.GenServiceCost,
-                OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
-                OffsetTargetPrepayment = form.OffsetTargetPrepayment,
-                CostStatisticReportOfContractor = form.CostStatisticReportOfContractor,
-                TotalCostToBePaid = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost+
-                form.PnrContractCost + form.PnrNdsCost + form.EquipmentContractCost + form.EquipmentNdsCost + form.OtherExpensesCost+
-                form.MaterialCost + form.GenServiceCost - form.OffsetCurrentPrepayment - form.OffsetTargetPrepayment,
-                Period = ChoosePeriod,
-                ContractId = contractId
-            };
+            var viewForm = _mapper.Map<FormViewModel>(form); //new FormViewModel
+            //{
+            viewForm.SmrCost = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost;
+            //    SmrContractCost = form.SmrContractCost,
+            //    SmrNdsCost = form.SmrNdsCost,
+            viewForm.PnrCost = form.PnrContractCost + form.PnrNdsCost;
+            //    PnrContractCost = form.PnrContractCost,
+            //    PnrNdsCost = form.PnrNdsCost,
+            viewForm.EquipmentCost = form.EquipmentContractCost + form.EquipmentNdsCost;
+            //    EquipmentContractCost = form.EquipmentContractCost,
+            //    EquipmentNdsCost = form.EquipmentNdsCost,
+            //    EquipmentClientCost = form.EquipmentClientCost,
+            //    OtherExpensesCost = form.OtherExpensesCost,
+            //    OtherExpensesNdsCost = form.OtherExpensesNdsCost,
+            viewForm.AdditionalCost = form.AdditionalContractCost + form.AdditionalNdsCost;
+            //    AdditionalContractCost = form.AdditionalContractCost,
+            //    AdditionalNdsCost = form.AdditionalNdsCost,
+            //    MaterialCost = form.MaterialCost,
+            //    MaterialClientCost = form.MaterialClientCost,
+            //    CostToConstructionIndustryFund = form.CostToConstructionIndustryFund,                
+            //    GenServiceCost = form.GenServiceCost,
+            //    OffsetCurrentPrepayment = form.OffsetCurrentPrepayment,
+            //    OffsetTargetPrepayment = form.OffsetTargetPrepayment,
+            viewForm.CostStatisticReportOfContractor = form.CostStatisticReportOfContractor;
+            viewForm.TotalCostToBePaid = form.SmrContractCost + form.SmrNdsCost + form.AdditionalContractCost + form.AdditionalNdsCost +
+                form.PnrContractCost + form.PnrNdsCost + form.EquipmentContractCost + form.EquipmentNdsCost + form.OtherExpensesCost +
+                form.MaterialCost + form.GenServiceCost - form.OffsetCurrentPrepayment - form.OffsetTargetPrepayment - form.Reserve;
+            viewForm.Period = ChoosePeriod;
+            viewForm.ContractId = contractId;
+            //};
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
 

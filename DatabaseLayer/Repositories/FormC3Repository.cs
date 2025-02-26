@@ -66,25 +66,26 @@ namespace DatabaseLayer.Repositories
                 if (form is not null)
                 {                    
                     //form.DateSigning = entity.DateSigning;
-                    form.SmrContractCost = entity.SmrContractCost ?? 0;
-                    form.SmrCost = entity.SmrCost ?? 0;
-                    form.PnrCost = entity.PnrCost ?? 0;
-                    form.EquipmentCost = entity.EquipmentCost ?? 0;
-                    form.OtherExpensesCost = entity.OtherExpensesCost ?? 0;
-                    form.AdditionalCost = entity.AdditionalCost ?? 0;
-                    form.MaterialCost = entity.MaterialCost??0;
-                    form.GenServiceCost = entity.GenServiceCost ?? 0;
+                    form.SmrContractCost = entity.SmrContractCost ;
+                    form.SmrCost = entity.SmrCost ;
+                    form.PnrCost = entity.PnrCost;
+                    form.EquipmentCost = entity.EquipmentCost ;
+                    form.OtherExpensesCost = entity.OtherExpensesCost;
+                    form.AdditionalCost = entity.AdditionalCost;
+                    form.MaterialCost = entity.MaterialCost;
+                    form.GenServiceCost = entity.GenServiceCost;
                     
-                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment??0;
-                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment??0;
+                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment;
+                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment;
 
                     form.IsExemptFromVAT = entity.IsExemptFromVAT ?? false;
-                    form.MaterialClientCost = entity.MaterialClientCost ?? 0;
-                    form.EquipmentClientCost = entity.EquipmentClientCost??0;
-                    form.CostToConstructionIndustryFund = entity.CostToConstructionIndustryFund ?? 0;
-                    form.CostStatisticReportOfContractor = entity.CostStatisticReportOfContractor ?? 0;
-                    form.SmrNdsCost = entity.SmrNdsCost ?? 0;
-                    form.AdditionalNdsCost = entity.AdditionalNdsCost ?? 0;
+                    form.MaterialClientCost = entity.MaterialClientCost;
+                    form.EquipmentClientCost = entity.EquipmentClientCost;
+                    form.CostToConstructionIndustryFund = entity.CostToConstructionIndustryFund;
+                    form.CostStatisticReportOfContractor = entity.CostStatisticReportOfContractor;
+                    form.SmrNdsCost = entity.SmrNdsCost;
+                    form.AdditionalNdsCost = entity.AdditionalNdsCost;
+                    form.Reserve = entity.Reserve;
 
                     _context.FormC3as.Update(form);
                 }

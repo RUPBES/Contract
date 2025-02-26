@@ -393,6 +393,37 @@
                             }
                             <span asp-validation-for="MaterialClientCost" class="text-danger"></span>
                         </div>
+
+                        @*
+                        <div class="form-group">
+                            <label class="control-label">Итого</label>
+                            @if (Model.TotalCostToBePaid != null)
+                            {
+                                <input type="text" value="@Model.TotalCostToBePaid" class="form-control cost" readonly id="Total" />
+                            }
+                            else
+                            
+                                <input type="text" class="form-control cost" readonly id="Total" />
+                            }
+                            <span asp-validation-for="CostStatisticReportOfContractor" class="text-danger"></span>
+                        </div>
+                        *@
+
+                        @*Резервирование средств*@
+                        <div class="form-group">
+                            <label asp-for="Reserve" class="control-label"></label>
+                            @if (Model.Reserve != null)
+                            {
+                                <input name="Reserve" type="text" value="@Model.Reserve" class="form-control cost totalDec-index" id="reserve" />
+                            }
+                            else
+                            {
+                                <input name="Reserve" type="text" class="form-control cost totalDec-index" id="reserve" />
+                            }
+                            <span asp-validation-for="Reserve" class="text-danger"></span>
+                        </div>
+
+
                         <div class="form-group">
                             <label asp-for="TotalCostToBePaid" class="control-label"></label>
                             @if (Model.TotalCostToBePaid != null)
