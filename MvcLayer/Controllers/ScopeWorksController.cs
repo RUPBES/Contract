@@ -217,8 +217,18 @@ namespace MvcLayer.Controllers
 
             var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
             NotificationHelper.SetNotification(TempData, "Объем работ добавлен", NotificationType.Info);
-            viewModel.Id = newScpId ?? 0;
-            _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), parentContracts, CrudOp.CREATE, oldScope?.SWCosts);
+            if (thisContractType != ContractType.GenСontract)
+            {
+                viewModel.Id = newScpId ?? 0;
+                _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), parentContracts, CrudOp.CREATE, oldScope?.SWCosts);
+            }
+            else
+            {
+                viewModel.IsOwnForces = true;
+                _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
+            }
+
+
 
 
             if (newScpId.HasValue && viewModel.AmendmentId.HasValue)
