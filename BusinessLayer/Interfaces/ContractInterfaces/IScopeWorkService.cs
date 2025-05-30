@@ -7,17 +7,14 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IScopeWorkService : IService<ScopeWorkDTO, ScopeWork>
     {
-        void AddAmendmentToScopeWork(int amendmentId, int scopeworkId);
-        (DateTime, DateTime)? GetPeriodRangeScopeWork(int contractId);
+        void AddAmendment(int amendmentId, int scopeworkId);
+        (DateTime StartDate, DateTime EndDate)? GetScopeWorkPeriodRange(int contractId);
         AmendmentDTO? GetAmendmentByScopeId(int scopeId);
         IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId);
         ScopeWorkDTO GetLastScope(int contractId, bool isOwnForces = false);
-        ScopeWorkDTO GetScopeByAmendment(int amendmentId);
-        AmendmentDTO GetLastAmendmentWithScope(int contractId);
-
-        void AddOwnForcesCostsByScopeId(ScopeWorkDTO scopeWork, int operatorSign = 1);      
-        bool EditCostMainContract(int multipleContractId, int subObjId, ContractType type);                
-        void UpdateParentCosts(int parentContrId, List<SWCostDTO> costs, bool isOwnForces, int operatorSign, int? changeScopeId = null);
-        void RemoveSubContractCost(int costId, int contractId, Dictionary<int, ContractType> parentContracts, int operatorSign = -1);
+        ScopeWorkDTO GetByAmendmentId(int amendmentId);       
+        ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type = ScopeType.NoOwn);
+        bool? HasNewAmendment(int contractId);
+        bool TryUpdateParentsScopeCosts(ScopeWorkDTO scope, Dictionary<int, ContractType>? parentContracts, CrudOp method, List<SWCostDTO>? previousScopeId = null, bool isOneOfMultipleDelete = false);
     }
 }

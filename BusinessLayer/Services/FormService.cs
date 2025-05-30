@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
@@ -8,445 +9,424 @@ using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 
-namespace BusinessLayer.Services
+namespace BusinessLayer.Services;
+
+public class FormService : IFormService
 {
-    public class FormService : IFormService
+    private IMapper _mapper;
+    private readonly IContractUoW _database;
+    private readonly ILoggerContract _logger;
+
+    public FormService(IContractUoW database, IMapper mapper, ILoggerContract logger)
     {
-        private IMapper _mapper;
-        private readonly IContractUoW _database;
-        private readonly ILoggerContract _logger;
+        _database = database;
+        _mapper = mapper;
+        _logger = logger;
+    }
 
-        public FormService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+    public int? Create(FormDTO item)
+    {
+        if (item is not null)
         {
-            _database = database;
-            _mapper = mapper;
-            _logger = logger;
-        }
-
-        public int? Create(FormDTO item)
-        {
-            if (item is not null)
+            if (_database.Forms.GetById(item.Id) is null)
             {
-                if (_database.Forms.GetById(item.Id) is null)
-                {
-                    var form = _mapper.Map<FormC3a>(item);
+                var form = _mapper.Map<FormC3a>(item);
 
-                    _database.Forms.Create(form);
-                    _database.Save();
+                _database.Forms.Create(form);
+                _database.Save();
 
-                    _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"create form C3a, ID={form.Id}",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-
-                    return form.Id;
-                }
-            }
-
-            _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not create form C3a, object is null",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-
-            return null;
-        }
-
-        public void Delete(int id, int? secondId = null)
-        {
-            if (id > 0)
-            {
-                var form = _database.Forms.GetById(id);
-
-                if (form is not null)
-                {
-                    try
-                    {
-                        _database.Forms.Delete(id);
-                        _database.Save();
-
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"delete form C3a, ID={id}",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Error,
-                            message: e.Message,
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-                    }
-                }
-            }
-            else
-            {
                 _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not delete form C3a, ID is not more than zero",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                        logLevel: LogLevel.Information,
+                        message: $"create form C3a, ID={form.Id}",
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
+
+                return form.Id;
             }
         }
 
-        public IEnumerable<FormDTO> Find(Func<FormC3a, bool> predicate)
-        {
-            return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(predicate));
-        }
+        _logger.WriteLog(
+                        logLevel: LogLevel.Warning,
+                        message: $"not create form C3a, object is null",
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
 
-        public IEnumerable<FormDTO> Find(Func<FormC3a, bool> where, Func<FormC3a, FormC3a> select)
-        {
-            return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(where, select));
-        }
+        return null;
+    }
 
-        public IEnumerable<FormDTO> GetAll()
-        {
-            return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.GetAll());
-        }
-
-        public FormDTO GetById(int id, int? secondId = null)
+    public void Delete(int id, int? secondId = null)
+    {
+        if (id > 0)
         {
             var form = _database.Forms.GetById(id);
 
             if (form is not null)
             {
-                return _mapper.Map<FormDTO>(form);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public void Update(FormDTO item)
-        {
-            if (item is not null)
-            {
-                _database.Forms.Update(_mapper.Map<FormC3a>(item));
-                _database.Save();
-
-                _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"update form C3a, ID={item.Id}",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-            }
-            else
-            {
-                _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not update form C3a, object is null",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-            }
-        }
-
-        public void DeleteNestedFormsByContrId(int contrId)
-        {
-            if (contrId > 0)
-            {
-
-                var forms = _database.Forms.Find(x => x.ContractId == contrId);
-
-                foreach (var item in forms)
+                try
                 {
-                    _database.Forms.Delete(item.Id);
-                }
-                _database.Save();
-            }
-        }
-
-        public void AddFile(int formId, int fileId)
-        {
-            if (fileId > 0 && formId > 0)
-            {
-                if (_database.FormFiles.GetById(formId, fileId) is null)
-                {
-                    _database.FormFiles.Create(new FormFile
-                    {
-                        FormId = formId,
-                        FileId = fileId
-                    });
-
+                    _database.Forms.Delete(id);
                     _database.Save();
 
                     _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"create file of form",
-                            nameSpace: typeof(FormService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
+                        logLevel: LogLevel.Information,
+                        message: $"delete form C3a, ID={id}",
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
+                }
+                catch (Exception e)
+                {
+                    _logger.WriteLog(
+                        logLevel: LogLevel.Error,
+                        message: e.Message,
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
                 }
             }
+        }
+        else
+        {
+            _logger.WriteLog(
+                        logLevel: LogLevel.Warning,
+                        message: $"not delete form C3a, ID is not more than zero",
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
+        }
+    }
+
+    public IEnumerable<FormDTO> Find(Func<FormC3a, bool> predicate)
+    {
+        return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(predicate));
+    }
+
+    public IEnumerable<FormDTO> Find(Func<FormC3a, bool> where, Func<FormC3a, FormC3a> select)
+    {
+        return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(where, select));
+    }
+
+    public IEnumerable<FormDTO> GetAll()
+    {
+        return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.GetAll());
+    }
+
+    public FormDTO GetById(int id, int? secondId = null)
+    {
+        var form = _database.Forms.GetById(id);
+
+        if (form is not null)
+        {
+            return _mapper.Map<FormDTO>(form);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public void Update(FormDTO item)
+    {
+        if (item is not null)
+        {
+            _database.Forms.Update(_mapper.Map<FormC3a>(item));
+            _database.Save();
 
             _logger.WriteLog(
-                           logLevel: LogLevel.Warning,
-                           message: $"not create file of form, object is null",
-                           nameSpace: typeof(FormService).Name,
-                           methodName: MethodBase.GetCurrentMethod().Name);
+                        logLevel: LogLevel.Information,
+                        message: $"update form C3a, ID={item.Id}",
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
+        }
+        else
+        {
+            _logger.WriteLog(
+                        logLevel: LogLevel.Warning,
+                        message: $"not update form C3a, object is null",
+                        nameSpace: typeof(FormService).Name,
+                        methodName: MethodBase.GetCurrentMethod().Name);
+        }
+    }
+
+    public IEnumerable<DateTime> GetFreeForms(int contractId)
+    {
+        var list = _database.Forms.Find(a => a.ContractId == contractId && a.IsOwnForces != true).ToList();
+        DateTime start, end;
+        var amend = _database.Amendments.Find(a => a.ContractId == contractId).OrderBy(a => a.Date).LastOrDefault();
+
+        if (amend == null)
+        {
+            var contract = _database?.Contracts?.GetById(contractId);
+            if (!contract.DateBeginWork.HasValue || !contract.DateEndWork.HasValue)
+            {
+                return new List<DateTime>();
+            }
+            start = (DateTime)contract?.DateBeginWork;
+            end = (DateTime)contract?.DateEndWork;
+        }
+        else
+        {
+            start = (DateTime)amend?.DateBeginWork;
+            end = (DateTime)amend?.DateEndWork;
         }
 
-        public IEnumerable<DateTime> GetFreeForms(int contractId)
+        List<DateTime> answer = new();
+
+        for (var i = start; DateComparer.IsLessOrSameYearAndMonth(i, end); i = i.AddMonths(1))
         {
-            var list = _database.Forms.Find(a => a.ContractId == contractId && a.IsOwnForces != true).ToList();
-            DateTime start, end;
-            var amend = _database.Amendments.Find(a => a.ContractId == contractId).OrderBy(a => a.Date).LastOrDefault();
-
-            if (amend == null)
-            {
-                var contract = _database?.Contracts?.GetById(contractId);
-                if (!contract.DateBeginWork.HasValue || !contract.DateEndWork.HasValue)
-                {
-                    return new List<DateTime>();
-                }
-                start = (DateTime)contract?.DateBeginWork;
-                end = (DateTime)contract?.DateEndWork;
-            }
-            else
-            {
-                start = (DateTime)amend?.DateBeginWork;
-                end = (DateTime)amend?.DateEndWork;
-            }
-
-            List<DateTime> answer = new List<DateTime>();
-
-            for (var i = start; Checker.LessOrEquallyFirstDateByMonth(i, end); i = i.AddMonths(1))
-            {
-                var ob = list.Where(l => Checker.EquallyDateByMonth((DateTime)l.Period, i)).FirstOrDefault();
-                if (ob == null)
-                    answer.Add(i);
-            }
-            return _mapper.Map<IEnumerable<DateTime>>(answer);
+            var ob = list.Where(l => l.Period != null && DateComparer.IsSameYearAndMonth(l.Period ?? default, i)).FirstOrDefault();
+            if (ob == null)
+                answer.Add(i);
         }
+        return _mapper.Map<IEnumerable<DateTime>>(answer);
+    }
 
-        public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period)
+    public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period)
+    {
+        List<FormDTO> formList = new ();
+
+        if (contractId > 0 && period != null && period != default)
         {
-            List<FormDTO> formList = new List<FormDTO>();
+            var subContr = _database.Contracts.Find(x => x.SubContractId == contractId && x.IsSubContract == true);
+            var agrContr = _database.Contracts.Find(x => x.AgreementContractId == contractId && x.IsAgreementContract == true);
 
-            if (contractId > 0 && period != default)
+            foreach (var item in agrContr)
             {
-                var subContr = _database.Contracts.Find(x => x.SubContractId == contractId && x.IsSubContract == true);
-                var agrContr = _database.Contracts.Find(x => x.AgreementContractId == contractId && x.IsAgreementContract == true);
+                var formAgr = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
 
-                foreach (var item in agrContr)
+                if (formAgr is not null)
                 {
-                    var formAgr = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
-
-                    if (formAgr is not null)
-                    {
-                        formList.Add(formAgr);
-                    }
-
+                    formList.Add(formAgr);
                 }
-                foreach (var item in subContr)
-                {
-                    var formSub = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
-                    //formSub.OrganizationName = _database.ContractOrganizations.Find(x=>x.ContractId == item.Id).FirstOrDefault()?.Organization?.Name;
-                    if (formSub is not null)
-                    {
-                        formList.Add(formSub);
-                    }
 
-                }
             }
-            return formList;
-        }
-
-        public void RemoveAllOwnCostsFormFromMnForm(int mnContrId, int contractId, bool isMultiple, bool? isOwn = true)
-        {
-            var mnForms = _database.Forms.Find(x => x.ContractId == mnContrId && x.IsOwnForces == isOwn);
-            var formsRemove = _database.Forms.Find(x => x.ContractId == contractId);
-            int opertr = isMultiple ? -1 : 1;
-
-            foreach (var item in formsRemove)
+            foreach (var item in subContr)
             {
-                var mnForm = mnForms.Where(x => x.Period?.Year == item.Period?.Year && x.Period?.Month == item.Period?.Month);
-                foreach (var item1 in mnForm)
+                var formSub = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
+                //formSub.OrganizationName = _database.ContractOrganizations.Find(x=>x.ContractId == item.Id).FirstOrDefault()?.Organization?.Name;
+                if (formSub is not null)
                 {
-                    var mnFrm = SubstractCosts(item1, item, opertr);
-                    _database.Forms.Update(mnFrm);
-                }
-            }
-            _database.Save();
-        }
-
-        public void RemoveFromOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr, bool? isOwn = true)
-        {
-            if (mnContrId > 0 && newForm is not null)
-            {
-                var formOwnForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                                                    && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces == isOwn)
-                                                   .FirstOrDefault();
-
-                if (formOwnForce is not null)
-                {
-                    formOwnForce = SubstractCosts(formOwnForce, _mapper.Map<FormC3a>(newForm), opertr);
-                    _database.Forms.Update(formOwnForce);
+                    formList.Add(formSub);
                 }
 
-                _database.Save();
             }
         }
+        return formList;
+    }
 
-        public void UpdateOwnForceMnForm(FormDTO newForm, int mnContrId, int opertr, bool? isMulty = null)
+
+    /*     
+    *     
+    *    
+    *    CRUD операции для "родительских" договоров
+    *     
+    *           
+    */
+
+
+    public bool TryUpdateParentsForms(FormDTO form, Dictionary<int, ContractType>? parentContracts, CrudOp method, FormDTO? previousStateForm, bool isOneOfMultipleDelete)
+    {
+        if (form == null || parentContracts?.Count < 1)
         {
-            if (mnContrId > 0 && newForm is not null)
+            return false;
+        }
+
+        //определяем тип договора, к которому относится добавленная справка С3-а
+        var contractType = _database?.Contracts?.Find(x => x.Id == form.ContractId)
+            ?.Select(s => new { IsSubContract = s.IsSubContract, IsAgreementContract = s.IsAgreementContract, })
+            ?.FirstOrDefault();
+
+        //определяем, договор - не генподрядный и не подобъект
+        bool isSubContracts = (contractType?.IsSubContract == true) || (contractType?.IsAgreementContract == true) ? true : false;
+
+        //если операции создания или обновления справки у субподрядных договоров или
+        //удаление справки у подобъекта,то вычетаем соответствующие данные у "родительских" договоров
+        var operation = (isSubContracts && (method == CrudOp.CREATE || method == CrudOp.UPDATE)) ||
+                        (!isSubContracts && method == CrudOp.DELETE)
+                            ? MathOp.SUBTRACT : MathOp.ADD;
+
+        if (isOneOfMultipleDelete) // если удаляется подобъект
+        {
+            foreach (var parentContrId in parentContracts)
             {
-                var formOwnForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                                                    && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces == true)
-                                                   .FirstOrDefault();
-                if (isMulty == true)
-                {
-                    var formForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                                                     && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces != true)
-                                                    .FirstOrDefault();
-
-                    if (formForce is not null)
-                    {
-                        formForce = SubstractCosts(formForce, _mapper.Map<FormC3a>(newForm), opertr);
-                        _database.Forms.Update(formForce);
-                    }
-                    else
-                    {
-                        var form = SubstractCosts(new FormC3a(), _mapper.Map<FormC3a>(newForm), opertr);
-                        form.ContractId = mnContrId;
-                        form.Period = newForm.Period;
-                        form.DateSigning = newForm.DateSigning;
-                        form.IsOwnForces = false;
-                        _database.Forms.Create(form);
-                    }
-                }
-
-                if (formOwnForce is not null)
-                {
-                    formOwnForce = SubstractCosts(formOwnForce, _mapper.Map<FormC3a>(newForm), opertr);
-                    _database.Forms.Update(formOwnForce);
-                }
-                else
-                {
-                    var form = SubstractCosts(new FormC3a(), _mapper.Map<FormC3a>(newForm), opertr);
-                    form.ContractId = mnContrId;
-                    form.Period = newForm.Period;
-                    form.DateSigning = newForm.DateSigning;
-                    form.IsOwnForces = true;
-                    _database.Forms.Create(form);
-                }
-
-                _database.Save();
+                UpdateFormByContractId(form, operation, parentContrId.Key, isOwnForceUpdate: form.IsOwnForces.Value, previousStateForm, isNotCreateNew: true);
             }
         }
 
-        public void SubstractOwnForceAndMnForm(FormDTO newForm, int mnContrId, int opertr)
+        if (!isOneOfMultipleDelete) // если не удаляется подобъект
         {
-            if (mnContrId > 0 && newForm is not null)
+            if (method == CrudOp.UPDATE && !isSubContracts) 
             {
-                var formOwnForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                                                    && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces == true)
-                                                   .FirstOrDefault();
+                UpdateFormByContractId(form, operation, form.ContractId ?? 0, isOwnForceUpdate: true, previousStateForm);
+            }
 
-                var oldForm = _database.Forms.GetById(newForm.Id);
-                if (opertr > 0)
+            foreach (var parentContrId in parentContracts)
+            {
+                UpdateFormByContractId(form, operation, parentContrId.Key, isOwnForceUpdate: true, previousStateForm);
+
+                //если подобъект, то основные данные по стоимостям тоже обновляем. проверяем, чтобы не обнолялась запись основн
+                if (!isSubContracts && (parentContrId.Key != form.ContractId))
                 {
-                    var formForce = _database.Forms.Find(x => x.ContractId == mnContrId && x.Period?.Year == newForm.Period?.Year
-                                                     && x.Period?.Month == newForm.Period?.Month && x.IsOwnForces != true).FirstOrDefault();
-
-
-                    if (formForce is not null)
-                    {
-                        formForce = SubstractCosts(formForce, oldForm, _mapper.Map<FormC3a>(newForm), opertr);
-                        _database.Forms.Update(formForce);
-                    }
-                    else
-                    {
-                        var form = SubstractCosts(new FormC3a(), oldForm, _mapper.Map<FormC3a>(newForm), opertr);
-                        form.ContractId = mnContrId;
-                        form.Period = newForm.Period;
-                        form.DateSigning = newForm.DateSigning;
-                        form.IsOwnForces = false;
-                        _database.Forms.Create(form);
-                    }
+                    UpdateFormByContractId(form, operation, parentContrId.Key, isOwnForceUpdate: false, previousStateForm);
                 }
-                if (formOwnForce is not null)
-                {
-                    formOwnForce = SubstractCosts(formOwnForce, oldForm, _mapper.Map<FormC3a>(newForm), opertr);
-                    _database.Forms.Update(formOwnForce);
-                }
-                else
-                {
-                    var form = SubstractCosts(new FormC3a(), oldForm, _mapper.Map<FormC3a>(newForm), opertr);
-                    form.ContractId = mnContrId;
-                    form.Period = newForm.Period;
-                    form.DateSigning = newForm.DateSigning;
-                    form.IsOwnForces = true;
-                    _database.Forms.Create(form);
-                }
-
-                _database.Save();
             }
         }
+        return false;
+    }
 
-        private FormC3a SubstractCosts(FormC3a oldForm, FormC3a newForm, int opr)
+    private void UpdateFormByContractId(FormDTO form, MathOp operation, int parentContrId, bool isOwnForceUpdate, FormDTO? previousStateForm, bool isNotCreateNew = false)
+    {
+        if (parentContrId > 0 && form is not null)
         {
-            oldForm.PnrCost = (oldForm.PnrCost) + (opr * (newForm?.PnrCost ?? 0));
-            oldForm.PnrContractCost = (oldForm.PnrContractCost) + (opr * (newForm?.PnrContractCost ?? 0));
-            oldForm.PnrNdsCost = (oldForm.PnrNdsCost ) + (opr * (newForm?.PnrNdsCost ?? 0));
-            oldForm.SmrCost = (oldForm.SmrCost) + (opr * (newForm?.SmrCost ?? 0));
-            oldForm.SmrContractCost = (oldForm.SmrContractCost) + (opr * (newForm?.SmrContractCost ?? 0));
-            oldForm.SmrNdsCost = (oldForm.SmrNdsCost) + (opr * (newForm?.SmrNdsCost ?? 0));
-            oldForm.EquipmentCost = (oldForm.EquipmentCost) + (opr * (newForm?.EquipmentCost ?? 0));
-            oldForm.EquipmentContractCost = (oldForm.EquipmentContractCost) + (opr * (newForm?.EquipmentContractCost ?? 0));
-            oldForm.EquipmentNdsCost = (oldForm.EquipmentNdsCost) + (opr * (newForm?.EquipmentNdsCost ?? 0));
-            oldForm.EquipmentClientCost = (oldForm.EquipmentClientCost) + (opr * (newForm?.EquipmentClientCost ?? 0));
-            oldForm.OtherExpensesCost = (oldForm.OtherExpensesCost) + (opr * (newForm?.OtherExpensesCost ?? 0));
-            oldForm.OtherExpensesNdsCost = (oldForm.OtherExpensesNdsCost) + (opr * (newForm?.OtherExpensesNdsCost ?? 0));
-            oldForm.AdditionalCost = (oldForm.AdditionalCost    ) + (opr * (newForm?.AdditionalCost ?? 0));
-            oldForm.AdditionalContractCost = (oldForm.AdditionalContractCost) + (opr * (newForm?.AdditionalContractCost ?? 0));
-            oldForm.AdditionalNdsCost = (oldForm.AdditionalNdsCost) + (opr * (newForm?.AdditionalNdsCost ?? 0));
-            oldForm.GenServiceCost = (oldForm.GenServiceCost) + (opr * (newForm?.GenServiceCost ?? 0));
-            oldForm.MaterialCost = (oldForm.MaterialCost) + (opr * (newForm?.MaterialCost ?? 0));
-            oldForm.MaterialClientCost = (oldForm.MaterialClientCost) + (opr * (newForm?.MaterialClientCost ?? 0));
-            oldForm.Reserve = (oldForm.Reserve) + (opr * (newForm?.Reserve ?? 0));
+            var formParent = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == parentContrId
+                                                && x.Period?.Year == form.Period?.Year
+                                                && x.Period?.Month == form.Period?.Month
+                                                && x.IsOwnForces == isOwnForceUpdate)
+                                              .FirstOrDefault());
 
-            oldForm.CostToConstructionIndustryFund = (oldForm.CostToConstructionIndustryFund) + (opr * (newForm?.CostToConstructionIndustryFund ?? 0));
-            oldForm.CostStatisticReportOfContractor = (oldForm.CostStatisticReportOfContractor) + (opr * (newForm?.CostStatisticReportOfContractor ?? 0));
+            int opertr = operation == MathOp.SUBTRACT ? -1 : 1;
 
-            oldForm.OffsetCurrentPrepayment = (oldForm.OffsetCurrentPrepayment) + (opr * (newForm?.OffsetCurrentPrepayment ?? 0));
-            oldForm.OffsetTargetPrepayment = (oldForm.OffsetTargetPrepayment) + (opr * (newForm?.OffsetTargetPrepayment ?? 0));
+            if (formParent is null && !isNotCreateNew)
+            {
+                // добавляем новую запись
+                formParent = new FormDTO();
+                formParent += opertr * (form - previousStateForm);
+                formParent.ContractId = parentContrId;
+                formParent.IsOwnForces = isOwnForceUpdate;
+                formParent.Period = form.Period;
+                formParent.DateSigning = form.DateSigning;
+                Create(formParent);
+                return;
+            }
 
-            return oldForm;
+            formParent += opertr * (form - previousStateForm);
+            Update(formParent);
+        }
+    }
+
+
+
+    /*     
+     *     
+     *    
+     *    Получения данных для общей таблицы Объема работ и Фактически полученных средсвт по справка С3-а
+     *     
+     *     
+     *           
+     */
+
+    /// <summary>
+    /// Возвращает данные факта и (или) факта соб.силами для таблицы объема работ, детальной инфы по договору
+    /// </summary>
+    /// <param name="contractId"></param>
+    /// <param name="type">Тип данных, 1- и факт и факт соб.силами, 2- факт, 3- факт собственными силами</param>
+    /// <returns>Модель с фактическими данными согласно справок С3-а</returns>
+    public ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type)
+    {
+        var report = new ScopeWorkReportModel();
+
+        if (type == ScopeType.Both)
+        {
+            var forms = GetForms(contractId);
+            var group = CreateTableGroup(forms);
+            report.Scopes.Add("form", group);
+
+            var formsOwn = GetForms(contractId, true);
+            var groupOwn = CreateTableGroup(formsOwn);
+            report.Scopes.Add("formOwn", groupOwn);
+        }
+        if (type == ScopeType.NoOwn)
+        {
+            var forms = GetForms(contractId);
+            var group = CreateTableGroup(forms);
+            report.Scopes.Add("form", group);
+        }
+        if (type == ScopeType.Own)
+        {
+            var formsOwn = GetForms(contractId, true);
+            var groupOwn = CreateTableGroup(formsOwn);
+            report.Scopes.Add("formOwn", groupOwn);
         }
 
-        private FormC3a SubstractCosts(FormC3a formMain, FormC3a oldFormCost, FormC3a formNew, int opr)
+        return report;
+    }
+
+    /// <summary>
+    /// Возвращает все фактически внесенные справки С3-а или факт собственными силами
+    /// соответствующего договора
+    /// </summary>
+    /// <param name="contractId">ID договора</param>
+    /// <param name="isOwnForces">Флаг, какие данные найти, FALSE - факт, TRUE - факт собственными силами</param>
+    /// <returns>Список справок С3-а</returns>
+    private List<FormDTO> GetForms(int contractId, bool isOwnForces = false)
+    {
+        var forms = _database.Forms
+            .Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces)
+            .Select(forms =>
+            {
+                return new FormDTO
+                {
+                    Period = forms.Period,
+                    SmrCost = forms.SmrCost,
+                    PnrCost = forms.PnrCost,
+
+                    EquipmentCost = forms.EquipmentCost,
+                    OtherExpensesCost = forms.OtherExpensesCost,
+                    AdditionalCost = forms.AdditionalCost,
+
+                    MaterialCost = forms.MaterialCost,
+                    GenServiceCost = forms.GenServiceCost,
+                    TotalCost = forms.TotalCost,
+                    TotalNoNdsCost = (forms.TotalCost / 1.2m),
+                };
+            })
+            .OrderBy(x => x.Period)
+            .ToList();
+
+        return forms;
+    }
+
+    /// <summary>
+    /// Создает из списка справок С3-а группу фактически выполненных работ 
+    /// по определенному шаблону ввиде списка ScopeWorkGroup
+    /// для таблицы объема работ детальной информации по договору
+    /// </summary>
+    /// <param name="forms">Список справок для преобразования их в список сгруппированных данных для таблицы</param>
+    /// <returns>Список сгруппированных данных по шаблону ScopeWorkGroup</returns>
+    private List<ScopeWorkGroup> CreateTableGroup(List<FormDTO> forms)
+    {
+        var group = new List<ScopeWorkGroup>();
+        var currentYear = DateTime.Now.Year;
+
+        // Создаем группы для разных типов затрат
+        (string type, Func<FormDTO, decimal?> selector)[] costGroups = {
+            (Constants.NDS_TP, (FormDTO x) => x.TotalCost),
+            (Constants.SMR_TP, (FormDTO x) => x.SmrCost),
+            (Constants.PNR_TP, (FormDTO x) => x.PnrCost),
+            (Constants.ADD_TP, (FormDTO x) => x.AdditionalCost),
+            (Constants.EQPT_TP, (FormDTO x) => x.EquipmentCost),
+            (Constants.OTHER_TP, (FormDTO x) => x.OtherExpensesCost + x.GenServiceCost +x.MaterialCost),
+            (Constants.NoNDS_TP, (FormDTO x) => x.TotalNoNdsCost),
+
+            (Constants.MATRL_CLIENT_TP, (FormDTO x) => x.MaterialClientCost),
+            (Constants.EQPT_CLIENT_TP, (FormDTO x) => x.EquipmentClientCost),
+
+        };
+
+        // Для каждого типа затрат создаем группу с расчетами
+        foreach ((string type, Func<FormDTO, decimal?> selector) in costGroups)
         {
-            formMain.PnrCost = (formMain.PnrCost    ) + (opr * ((formNew?.PnrCost ?? 0) - (oldFormCost?.PnrCost ?? 0)));
-            formMain.PnrContractCost = (formMain.PnrContractCost) + (opr * ((formNew?.PnrContractCost ?? 0) - (oldFormCost?.PnrContractCost ?? 0)));
-            formMain.PnrNdsCost = (formMain.PnrNdsCost) + (opr * ((formNew?.PnrNdsCost ?? 0) - (oldFormCost?.PnrNdsCost ?? 0)));
-            formMain.SmrCost = (formMain.SmrCost) + opr * ((formNew?.SmrCost ?? 0) - (oldFormCost?.SmrCost ?? 0));
-            formMain.SmrContractCost = (formMain.SmrContractCost) + opr * ((formNew?.SmrContractCost ?? 0) - (oldFormCost?.SmrContractCost ?? 0));
-            formMain.SmrNdsCost = (formMain.SmrNdsCost) + opr * ((formNew?.SmrNdsCost ?? 0) - (oldFormCost?.SmrNdsCost ?? 0));
-            formMain.EquipmentCost = (formMain.EquipmentCost) + opr * ((formNew?.EquipmentCost ?? 0) - (oldFormCost?.EquipmentCost ?? 0));
-            formMain.EquipmentContractCost = (formMain.EquipmentContractCost) + opr * ((formNew?.EquipmentContractCost ?? 0) - (oldFormCost?.EquipmentContractCost ?? 0));
-            formMain.EquipmentNdsCost = (formMain.EquipmentNdsCost) + opr * ((formNew?.EquipmentNdsCost ?? 0) - (oldFormCost?.EquipmentNdsCost ?? 0));
-            formMain.EquipmentClientCost = (formMain.EquipmentClientCost) + opr * ((formNew?.EquipmentClientCost ?? 0) - (oldFormCost?.EquipmentClientCost ?? 0));
-            formMain.OtherExpensesCost = (formMain.OtherExpensesCost) + opr * ((formNew?.OtherExpensesCost ?? 0) - (oldFormCost?.OtherExpensesCost ?? 0));
-            formMain.OtherExpensesNdsCost = (formMain.OtherExpensesNdsCost) + opr * ((formNew?.OtherExpensesNdsCost ?? 0) - (oldFormCost?.OtherExpensesNdsCost ?? 0));
-            formMain.AdditionalCost = (formMain.AdditionalCost) + opr * ((formNew?.AdditionalCost ?? 0) - (oldFormCost?.AdditionalCost ?? 0));
-            formMain.AdditionalContractCost = (formMain.AdditionalContractCost) + opr * ((formNew?.AdditionalContractCost ?? 0) - (oldFormCost?.AdditionalContractCost ?? 0));
-            formMain.AdditionalNdsCost = (formMain.AdditionalNdsCost) + opr * ((formNew?.AdditionalNdsCost ?? 0) - (oldFormCost?.AdditionalNdsCost ?? 0));
-            formMain.GenServiceCost = (formMain.GenServiceCost) + opr * ((formNew?.GenServiceCost ?? 0) - (oldFormCost?.GenServiceCost ?? 0));
-            formMain.MaterialCost = (formMain.MaterialCost) + opr * ((formNew?.MaterialCost ?? 0) - (oldFormCost?.MaterialCost ?? 0));
-            formMain.MaterialClientCost = (formMain.MaterialClientCost) + opr * ((formNew?.MaterialClientCost ?? 0) - (oldFormCost?.MaterialClientCost ?? 0));
-            formMain.Reserve = (formMain.Reserve) + opr * ((formNew?.Reserve ?? 0) - (oldFormCost?.Reserve ?? 0));
-
-            formMain.OffsetCurrentPrepayment = (formMain.OffsetCurrentPrepayment) + (opr * (formNew?.OffsetCurrentPrepayment ?? 0) - (oldFormCost?.OffsetCurrentPrepayment ?? 0));
-            formMain.OffsetTargetPrepayment = (formMain.OffsetTargetPrepayment) + (opr * (formNew?.OffsetTargetPrepayment ?? 0) - (oldFormCost?.OffsetTargetPrepayment ?? 0));
-
-            formMain.CostToConstructionIndustryFund = (formMain.CostToConstructionIndustryFund) + opr * ((formNew?.CostToConstructionIndustryFund ?? 0) - (oldFormCost?.CostToConstructionIndustryFund ?? 0));
-            formMain.CostStatisticReportOfContractor = (formMain.CostStatisticReportOfContractor) + opr * ((formNew?.CostStatisticReportOfContractor ?? 0) - (oldFormCost?.CostStatisticReportOfContractor ?? 0));
-            return formMain;
+            group.Add(new ScopeWorkGroup
+            {
+                WorkType = type,
+                Price = forms.Sum(x => selector(x)) ?? 0,
+                Remaining = forms.Where(x => x.Period?.Year >= currentYear).Sum(x => selector(x)) ?? 0,
+                CompletedBeforeYear = forms.Where(x => x.Period?.Year < currentYear).Sum(x => selector(x)) ?? 0,
+                VolumeThisYear = forms.Where(x => x.Period?.Year == currentYear).Sum(x => selector(x)) ?? 0,
+                Costs = forms.Select(x => new Cost
+                {
+                    Period = x.Period != null ? x.Period.Value : default,
+                    Value = selector(x)
+                }).ToList()
+            });
         }
-
+        return group;
     }
 }

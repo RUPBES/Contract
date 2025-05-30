@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models.KDO;
@@ -56,6 +57,7 @@ namespace MvcLayer.Controllers
 
                 _commissionActService.AddFile(commissionActId, fileId);
 
+                NotificationHelper.SetNotification(TempData, "Создан акт ввода", NotificationType.Info);
                 //если запрос пришел с детальной инфы по договору, тогда редиректим туда же, если нет - на список всех
                 if (commissionAct.ContractId is not null && commissionAct.ContractId > 0)
                 {                    
@@ -68,6 +70,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка создания", NotificationType.Error);
                 return View();
             }
         }
@@ -115,6 +118,7 @@ namespace MvcLayer.Controllers
                 }
 
                 _commissionActService.Delete(id);
+                NotificationHelper.SetNotification(TempData, "Удален акт ввода", NotificationType.Info);
 
                 if (contractId is not null && contractId > 0)
                 {
@@ -127,6 +131,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления", NotificationType.Error);
                 return View();
             }
         }

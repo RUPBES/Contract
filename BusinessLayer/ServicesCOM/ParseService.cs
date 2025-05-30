@@ -444,7 +444,7 @@ namespace BusinessLayer.ServicesCOM
                 var searchingKeys = _estimateService.ReturnKeysSearch(type);
                 var excel = _excelReader.GetExcelWorksheet(path, page);
                 string estimateNumber = string.Empty;
-                if (type == ConstantsApp.SXW_SINKEVICH_APP)
+                if (type == Constants.SXW_SINKEVICH_APP)
                 {
                     estimateNumber = GetCellValue(excel, shiftRow: 0, shiftCol: 1, searchingKeys.Estimate.DocName.ToArray());
                     estimate.Number = estimateNumber ?? string.Empty;
@@ -534,7 +534,7 @@ namespace BusinessLayer.ServicesCOM
             var excel = _excelReader.GetExcelWorksheet(path, page);
             var shiftRow = 0;
 
-            if (type != ConstantsApp.SMR_PRO_APP)
+            if (type != Constants.SMR_PRO_APP)
             {
                 shiftRow += 2;
             }
@@ -605,7 +605,7 @@ namespace BusinessLayer.ServicesCOM
             }
 
             var shiftRow = 0;
-            if (type == ConstantsApp.SXW_SINKEVICH_APP)
+            if (type == Constants.SXW_SINKEVICH_APP)
             {
                 shiftRow += 1;
             }
@@ -640,7 +640,7 @@ namespace BusinessLayer.ServicesCOM
             var excel = _excelReader.GetExcelWorksheet(path, page);
             var shiftRow = 0;
 
-            if (type != ConstantsApp.SMR_PRO_APP)
+            if (type != Constants.SMR_PRO_APP)
             {
                 shiftRow += 2;
             }
@@ -712,7 +712,7 @@ namespace BusinessLayer.ServicesCOM
             }
 
             var shiftRow = 0;
-            if (type == ConstantsApp.SXW_SINKEVICH_APP)
+            if (type == Constants.SXW_SINKEVICH_APP)
             {
                 shiftRow += 1;
             }

@@ -28,43 +28,59 @@ namespace BusinessLayer.ServicesCOM
             }
             else
             {
-                _excelWorksheet = _excelWorkbook.Worksheets.Add(ConstantsApp.WORKSHEET_NAME_DEFAULT);
+                _excelWorksheet = _excelWorkbook.Worksheets.Add(Constants.WORKSHEET_NAME_DEFAULT);
             }
-
+            _excelWorksheet.DefaultColWidth = 15;
             _excelWorksheet.TabColor = Color.Black;
             _excelWorksheet.DefaultRowHeight = 14;
 
             return _excelWorksheet;
         }
 
-        public bool WriteLine(ExcelWorksheet sheet, int rowLine, string path, bool isHeader = false, params RowItem[] values)
+        public bool WriteLine(ExcelWorksheet sheet, int rowLine, string path, bool isHeader = false, double? width = null, bool? isTextWrap = null, ExcelHorizontalAlignment? align = null, params RowItem[] values)
         {
             if (rowLine > 0 && values.Length != 0)
             {
                 if (isHeader)
                 {
                     sheet.Row(rowLine).Height = 20;
-                    sheet.Row(rowLine).Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    sheet.Row(rowLine).Style.HorizontalAlignment = (align == null) ? ExcelHorizontalAlignment.Center : align.Value;
                     sheet.Row(rowLine).Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                     sheet.Row(rowLine).Style.Font.Bold = true;
                 }
-                
+                sheet.Row(rowLine).Style.VerticalAlignment = ExcelVerticalAlignment.Top;
                 foreach (var value in values)
                 {
                     sheet.Cells[rowLine, value.Col].Style.Font.Size = value.FontSize;
                     sheet.Cells[rowLine, value.Col].Style.Font.Color.SetColor(value.FontColor);
+
+                    if (isTextWrap.HasValue)
+                    {
+                        sheet.Cells[rowLine, value.Col].Style.WrapText = isTextWrap.Value;
+                    }
+
                     if (!value.BgColor.IsEmpty)
                     {
                         sheet.Cells[rowLine, value.Col].Style.Fill.SetBackground(value.BgColor);
                     }
-                    
+
                     sheet.Cells[rowLine, value.Col].Value = value.Value;
-                    sheet.Column(value.Col).AutoFit();
+
+                    if (width.HasValue)
+                    {
+                        double currentWidth = sheet.Column(value.Col).Width;
+
+                        sheet.Column(value.Col).Width = currentWidth > width.Value ? width.Value : currentWidth;
+                    }
+                    else
+                    {
+                        sheet.Column(value.Col).AutoFit();
+                    }
                 }
 
                 try
-                {                    
-                     File.WriteAllBytes(path,  _excelPackage.GetAsByteArray());
+                {
+                    File.WriteAllBytes(path, _excelPackage.GetAsByteArray());
                     _excelPackage.SaveAsync();
                     return true;
                 }

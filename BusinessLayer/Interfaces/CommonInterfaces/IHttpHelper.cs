@@ -5,9 +5,11 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
 {
     public interface IHttpHelper
     {
-        Permission GetPermissionForUser(HttpContextAccessor http);
+        Permission GetUserPermissions();
         string GetUserName();
         (string enterprise, string position)? GetUserOrganization(string user);
+        string GetUserOrganizationFirstCode();
+        string GetUserOrganizationCodes();
         string? GetUserIdentifierOid();
     }
 }

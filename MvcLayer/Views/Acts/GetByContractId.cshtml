@@ -7,9 +7,8 @@
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
 
-@{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
+@{   
+    var permissions = HttpHelper.GetUserPermissions();
 
     var contract = Contract.GetById((int)ViewBag.contractId);
     ViewData["Title"] = "Акты приостановления/возобновления работ (услуг)";
@@ -22,10 +21,10 @@
     { 
         backId = ViewBag.returnContractId; 
     }
-    bool isAdmin = true;
+    // bool isAdmin = true;
     string redirectAction = "GetByContractId";
     string redirectController = "Acts";
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 }
 
 <div class="dm-overlay">
@@ -110,7 +109,7 @@
                                             // </div>
 
                                             <div>
-                                                <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                                                 @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                                                 {
                                                     @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})

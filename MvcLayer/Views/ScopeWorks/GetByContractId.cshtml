@@ -6,11 +6,10 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var permissions = HttpHelper.GetUserPermissions();
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 
-    if (ViewBag.IsEngin != null)
+    if (ViewBag.IsEngin == true)
     {
         ViewData["Title"] = "Объем услуг";
     }
@@ -18,7 +17,7 @@
     {
         ViewData["Title"] = "Объем работ";
     }
-    var actionReturn = ViewBag.IsEngin != null ? "Engineerings" : null;
+    var actionReturn = ViewBag.IsEngin == true ? "Engineerings" : null;
     var contractId = ViewBag.contractId;
     int backId = 0;
     if (ViewBag.returnContractId == 0)
@@ -37,29 +36,29 @@
                             var amendment = ScopeWork.GetAmendmentByScopeId(Model.Id);
                             if (amendment != null)
                             {
-                                <span style="font-weight:bold">@amendment.Number от @amendment.Date.Value.ToString("dd MMMM yyyy")</span>
-                            }
-                            else
-                            {
-                                <span style="font-weight:bold">По контракту</span>
+                                    <span style="font-weight:bold">@amendment.Number от @amendment?.Date?.ToString("dd MMMM yyyy")</span>
                             }
                         }
-                        <div id="DivEdit" class="icon edit" title="Редактировать">
-                            <a asp-action="EditSWCostByScopeWorkId" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"
-                               asp-route-returnContractId="@ViewBag.returnContractId"></a>
-                        </div>
+                        @if (permissions?.IsEditor == true && isGRP_Contract)
+                        {
+
+                            <div id="DivEdit" class="icon edit" title="Редактировать">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"
+                                   asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                            </div>
+                        }
                         @if (amendment != null)
                         {
                             <div id="DivDelete" class="icon delete" title="Удалить">
-                                <a onclick="confirm(@Model.Id)"></a>
+                                <a onclick="deleteScope(@Model.Id)"></a>
                             </div>
                         }
                     </div>
-                    @if (backId != null && backId > 0)
+                    @if (backId > 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (backId == null || backId == 0)
+                    @if (backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
                     }
@@ -73,7 +72,7 @@
                                 <th>
                                     @Html.DisplayNameFor(model => model.Period)
                                 </th>
-                                @if (ViewBag.IsEngin == null)
+                                @if (ViewBag.IsEngin == false)
                                 {
                                     <th>
                                         @Html.DisplayNameFor(model => model.CostNds)
@@ -118,7 +117,7 @@
                                     <td>
                                         @item.Period?.ToString("MMMM yyyy")
                                     </td>
-                                    @if (ViewBag.IsEngin == null)
+                                    @if (ViewBag.IsEngin == false)
                                     {
 
                                         <td class="text-end">
@@ -165,11 +164,12 @@
     </div>
 </div>
 @section Scripts {
-    <script>        
-        function confirm(id) {
+
+    <script>
+        function deleteScope(id) {
             $.ajax({
                 type: 'POST',
-                url: '@Url.Action("ShowDelete", "ScopeWorks")',
+                url: '@Url.Action("ShowDeleteMessage", "Home")',
                 contentType: "application/html; charset=utf-8",
                 dataType: 'html',
                 success: function (result) {
@@ -177,36 +177,25 @@
                     $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('show');
 
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')                    
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
                     elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
-                            type: 'POST',
-                            url: '@Url.Action("ShowResultDelete", "ScopeWorks")',
-                            dataType: 'html',
+                            type: 'GET',
+                            url: '@Url.Action("Delete", "ScopeWorks")',
                             data: { id: id },
                             success: function (result) {
-                                let buttonElement = document.querySelectorAll('#dialogContent')
-                                $('#dialogContent').html(result);
+                                window.location.reload();
                             },
                             error: function (result) {
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '@Url.Action("Message", "Home")',
-                                    dataType: 'html',
-                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
-                                    success: function (result) {
-                                        $('#dialogContent').html(result);
-                                    }
-                                });
+                                window.location.reload();
                             }
                         });
-                    })
+                    });
                 },
                 error: function (result) {
-                    alert("Ошибка отображения");
+                    // alert("Ошибка отображения");
                 }
-            })
-
+            });
         }
     </script>
 }

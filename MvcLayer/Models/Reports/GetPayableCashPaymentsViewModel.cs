@@ -36,6 +36,10 @@ namespace MvcLayer.Models.Reports
         public decimal? currentYearScopeWork { get; set; }
         [DisplayName("Фактическое выполнение по справке C-3A, в т.ч.")]
         public decimal? factWorkByC3A { get; set; }
+
+        [DisplayName("Резервирование средств")]
+        public decimal? Reserve { get; set; }
+
         [DisplayName("СМР и Авансы")]
         public List<ItemPaymentDeviationReport>? listPayments { get; set; }
         [DisplayName("Тип контракта")]

@@ -2,18 +2,20 @@
 {
     public interface IConverter
     {
-        string? GetTypeOfFundingSource(int number);
-        string? GetTypeOfProcedure(int number);
-        string? GetTypeOfPrepaymentCondition(int number);
-        string? GetTypeOfPaymentForWork(int number);
-        string? GetTypeOfContract(int number);
+        string? ToFundingSourceTerm(int number);
+        string? ToProcedureType(int number);
+        string? ToPrepaymentConditionTerm(int number);
+        string? ToPaymentTerm(int number, bool isEngineering);
+        string? ToContractType(int number);
         string GetFileClass(string type);
-        string? GetTypeOfAmendment(int number);
+        string? ToScopesTableCategory(string type);
+        string? ToAmendmentType(int number);
         DateTime? GetDateFromString(string str);
         string? GetNameOrganizationByCode(string code);
-        string? GetTypeOfEstimateApp(int number);
-        string ConvertMethodNameToRussian(string name);
-        string ConvertNameSpaceToRussian(string name);
+        string? GetEstimateAppType(int number);
+        string ToRussianMethodName(string name);
+        string ToRussianNameSpace(string name);
+        string ToRussianContractProps(string name);
 
     }
 }

@@ -12,13 +12,14 @@ namespace MvcLayer.Models
         /// Полное название
         /// </summary>
         [DisplayName("Полное название")]
-        [Required(ErrorMessage = "Заполните полное название организации")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? Name { get; set; }
 
         /// <summary>
         /// Аббревиатура
         /// </summary>
         [DisplayName("Аббревиатура")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? Abbr { get; set; }
 
         /// <summary>
@@ -27,7 +28,7 @@ namespace MvcLayer.Models
         [DisplayName("УНП организации")]
         [RegularExpression("^[ 0-9]+$", ErrorMessage = "Только цифры")]
         [StringLength(15, MinimumLength = 9, ErrorMessage = "Длина строки должна быть от 9 до 15 символов")]
-        [Required(ErrorMessage = "Необходимо заполнить УНП")]
+        //[Required(ErrorMessage = "Необходимо заполнить УНП")]
         public string? Unp { get; set; }
 
         /// <summary>
@@ -41,15 +42,17 @@ namespace MvcLayer.Models
         /// </summary
         [DisplayName("Расчетный счет")]
         [RegularExpression("[A-Z]{2}[0-9]{2}-[A-Z0-9]{4}-[0-9]{4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}", ErrorMessage = "28 - разрядов; 1,2 - буквы;  3,4,9-12  - цифры; 5-8,13-28 латиница и цифры")]
-        [Required(ErrorMessage = "Необходимо заполнить расчетный счет")]
+        //[Required(ErrorMessage = "Необходимо заполнить расчетный счет")]
         public string? PaymentAccount { get; set; }
 
         public List<AddressViewModel> Addresses { get; set; } = new List<AddressViewModel>();
 
         public List<ContractOrganizationDTO> ContractOrganizations { get; set; } = new List<ContractOrganizationDTO>();
 
+        [DisplayName("Отделы")]
         public List<DepartmentViewModel> Departments { get; set; } = new List<DepartmentViewModel>();
-        
+
+        [DisplayName("Телефоны")]
         public List<PhoneViewModel> Phones { get; set; } = new List<PhoneViewModel>();
     }
 }

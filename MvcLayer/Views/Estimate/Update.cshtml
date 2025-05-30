@@ -105,7 +105,7 @@
                     return xhr;
                 },
                 type: 'POST',
-                url: '@Url.Action("DownloadFile", "Parse")',
+                url: '@Url.Action("UploadAndReturnPath", "Files")',
                 data: formData,
                 success: function (data) {
                     let path = data;
@@ -128,13 +128,13 @@
                             window.location.href = '@Url.Action("Index", "Estimate")?contractId=' + contractId;
                         },
                         error: function (error) {
-                            handleError(error, '@Url.Action("ShowError", "Parse")')
+                            handleError(error)
                         },
                     });
                     $("#container_progress").attr('style', `display:none`);
                 },
                 error: function (error) {
-                    handleError(error, '@Url.Action("ShowError", "Parse")', "#container_progress")
+                    handleError(error)
                 },
                 contentType: false,
                 processData: false

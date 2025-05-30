@@ -166,7 +166,7 @@
                                 <th rowspan="2">
                                     <span>Аванс</span>
                                 </th>
-                                @for (var item = Model.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)item, (DateTime)Model.endPeriod);
+                                @for (var item = Model.startPeriod; DateComparer.IsLessOrSameYearAndMonth(item, Model.endPeriod);
                                 item = item.Value.AddMonths(1))
                                 {
                                     <th colspan="2">
@@ -181,7 +181,7 @@
                                 <th>
                                     <span>Текущего</span>
                                 </th>
-                                @for (var item = Model.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)item, (DateTime)Model.endPeriod);
+                                @for (var item = Model.startPeriod; DateComparer.IsLessOrSameYearAndMonth(item, Model.endPeriod);
                                 item = item.Value.AddMonths(1))
                                 {
                                     <th>
@@ -245,7 +245,7 @@
                                         @foreach (var item in Model.listFiles)
                                         {
                                             <span>
-                                                <a href="~/Files/GetFile?id=@item.file.FirstOrDefault().Id" target="_blank">@item.date.Value.ToString("MMMM yy")</a>
+                                                <a href="~/Files/OpenFile?id=@item.file.FirstOrDefault().Id" target="_blank">@item.date.Value.ToString("MMMM yy")</a>
                                             </span>
                                             <br>
                                         }
@@ -413,11 +413,11 @@
                                 <td colspan="3"></td>
                                 @foreach (var item in Model.listSmrWithPrepaymentByAmendment.FirstOrDefault().listSmrWithAvans)
                                 {
-                                    var fileT = Model.listFiles.Where(x => Checker.EquallyDateByMonth((DateTime)x.date, (DateTime)item.Period)).FirstOrDefault();
+                                    var fileT = Model.listFiles.Where(x => DateComparer.IsSameYearAndMonth(x.date,item.Period)).FirstOrDefault();
                                     <td colspan="2" class="text-center">
                                         @if (fileT is not null && fileT.file.Count() > 0)
                                         {
-                                            <a href="~/Files/GetFile?id=@fileT.file.FirstOrDefault().Id" target="_blank">@fileT.date.Value.ToString("MMMM yy")</a>
+                                            <a href="~/Files/OpenFile?id=@fileT.file.FirstOrDefault().Id" target="_blank">@fileT.date.Value.ToString("MMMM yy")</a>
                                         }
                                     </td>
                                 }

@@ -15,12 +15,6 @@
     else backId = (int)ViewData["returnContractId"];
 }
 <style>
-
-    .control-label:before {
-        content: "*";
-        color: red;
-        font-size: 20px;
-    }
     .form_container {
         overflow: auto;
         max-height: 700px;
@@ -37,12 +31,12 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    
+
                     @if ((int)ViewData["returnContractId"] != 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    else if (ViewBag.IsEngin != null)
+                    else if (Model.IsEngineering == true)
                     {
                         <a asp-action="Engineerings" class="close-btn"></a>
                     }
@@ -86,7 +80,7 @@
                                 <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
                                 <span asp-validation-for="ContractPrice" class="text-danger"></span>
                             </div>
-                            @if (ViewBag.IsEngin != null)
+                            @if (Model.IsEngineering == true)
                             {
                                 <div class="col-4">
                                     <label asp-for="PaymentСonditionsPrice" class="control-label">Условия дог. цены, %</label>
@@ -114,11 +108,11 @@
                                 <label class="control-label" asp-for="DateBeginWork"></label>
                                 @if (ViewData["IsAmendment"] == null)
                                 {
-                                    <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
+                                    <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("dd MMM yyyy")" type="text" class="form-control" required id="DateBeginWork">
                                 }
                                 else
                                 {
-                                    <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" readonly id="DateBeginWork">
+                                    <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("dd MMM yyyy")" type="text" class="form-control" readonly id="DateBeginWork">
                                 }
                                 <label class="form-label" id="labelBeginWork" style="display:none"></label>
                             </div>
@@ -126,33 +120,33 @@
                                 <label class="control-label" asp-for="DateEndWork"></label>
                                 @if (ViewData["IsAmendment"] == null)
                                 {
-                                    <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
+                                    <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("dd MMM yyyy")" type="text" class="form-control" required id="DateEndWork">
                                 }
                                 else
                                 {
-                                    <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" readonly id="DateEndWork">
-                                }                                
+                                    <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("dd MMM yyyy")" type="text" class="form-control" readonly id="DateEndWork">
+                                }
                                 <label class="form-label" id="labelEndWork" style="display:none"></label>
                             </div>
                         </div>
                         <div class="row">
-                            @if (ViewBag.IsEngin == null)
+                            @if (Model.IsEngineering != true)
                             {
                                 <div class="col-4">
                                     <label class="control-label" asp-for="EnteringTerm"></label>
                                     @if (ViewData["IsAmendment"] == null)
                                     {
-                                        <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
+                                        <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("dd MMM yyyy")" type="text" class="form-control" required id="EnteringTerm">
                                     }
                                     else
                                     {
-                                        <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" readonly id="EnteringTerm">
+                                        <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("dd MMM yyyy")" type="text" class="form-control" readonly id="EnteringTerm">
                                     }
                                     <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
                                 </div>
                                 <div class="col-4">
                                     <label class="control-label" asp-for="ContractTerm"></label>
-                                    <input asp-for="ContractTerm" value="@Model.ContractTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="ContractTerm">
+                                    <input asp-for="ContractTerm" value="@Model.ContractTerm?.ToString("dd MMM yyyy")" type="text" class="form-control" required id="ContractTerm">
                                     <label class="form-label" id="labelContractTerm" style="display:none"></label>
                                 </div>
                             }
@@ -355,12 +349,15 @@
                             <input name="TypeWorkContracts[0].TypeWork" hidden />
                             <input name="TypeWorkContracts[0].ContractId" type="checkbox" value="@Model.Id" checked selected hidden>
                             <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
-                                @if (Model?.TypeWorkContracts[0].TypeWorkId != 0)
-                                {
-                                    var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
-                                    <option disabled selected value="@item?.Id">@item?.Name</option>
+                                @{
+                                    var typeContr = TypeWork.GetByContractId((int)Model?.Id);
                                 }
-                                @if (Model?.TypeWorkContracts[0].TypeWorkId == 0)
+                                @if (typeContr?.Id != 0)
+                                {
+
+                                    <option disabled selected value="@typeContr?.Id">@typeContr?.Name</option>
+                                }
+                                @if (typeContr?.Id == 0)
                                 {
                                     <option selected>Выберите вид работ</option>
                                 }
@@ -386,7 +383,7 @@
                                 <legend class="float-none w-auto px-3">Источник финансирования</legend>
                                 @foreach (var item in Enum.GetValues<FundingSourceEnum>())
                                 {
-                                    var value = $"{Converter.GetTypeOfFundingSource((int)item)}";
+                                    var value = $"{Converter.ToFundingSourceTerm((int)item)}";
                                     var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
 
                                     <div>
@@ -415,7 +412,7 @@
                                 }
                                 @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
                                 {
-                                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                    var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                     var valueArray = Model?.PaymentСonditionsAvans;
                                     if (valueArray == null) { valueArray = ""; }
                                     string idCh = "check" + @numberCheckbox;
@@ -443,32 +440,31 @@
                         </div>
                         <fieldset class="border rounded-1 p-3">
                             <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
-                            @foreach (var item in Enum.GetValues<PaymentForWorkPerformed>())
+                            @foreach (var item in Enum.GetValues<PaymentEnum>())
                             {
-                                var name = $"{Converter.GetTypeOfPaymentForWork((int)item)}";
-                                var sub = name.Split(" ");
-                                var subName = $"{sub[0]} {sub[1]}";
-                                bool? isValueValid = Model?.PaymentСonditionsRaschet?.Contains(subName, StringComparison.OrdinalIgnoreCase);
-                                bool isDayValid = isValueValid == true ? true : false;
-                                var number = Contract.GetDayOfRaschet(Model.Id);
+                                var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";                                
+                                var number = Contract.GetPaymentDueDate(Model?.PaymentСonditionsRaschet, name);
+
                                 ViewBag.Days = number;
+
+
                                 <div class="input-group mb-2">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text" style="display: block;">
-                                            @if (@Model?.PaymentСonditionsRaschet is not null && isValueValid == true)
+                                            @if (@Model?.PaymentСonditionsRaschet is not null && number.HasValue)
                                             {
                                                 <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
                                             }
-                                            @if (@Model?.PaymentСonditionsRaschet is null || isValueValid == false)
+                                            @if (@Model?.PaymentСonditionsRaschet is null || !number.HasValue)
                                             {
                                                 <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name">
                                             }
 
                                         </div>
                                     </div>
-                                    @if (number.HasValue == true && isValueValid == true)
+                                    @if (number.HasValue == true)
                                     {
-                                        <div class="col-2"><input id="dayInput" type="number" name="PaymentСonditionsDaysRaschet" class="form-control" value="@number" min="1"></div>
+                                        <div class="col-2"><input id="dayInput" type="number" name="PaymentConditionsDaysRaschet" class="form-control" value="@number" min="1"></div>
                                     }
                                     <div class="col-9">
                                         <input type="text" class="form-control" value="@name" disabled>
@@ -478,7 +474,7 @@
                         </fieldset>
                     </div>
                     <div class="form-group mt-3 btn_position">
-                        <input type="submit" id="subBtn" value="Редактировать" class="btn btn-primary" />
+                        <input type="submit" id="subBtn" value="Сохранить" class="btn btn-primary" />
                     </div>
                 </form>
             </div>
@@ -487,6 +483,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/creationContractFunc.js"></script>
     <script>
         $(function ($) {
             var allCost = $(".cost")
@@ -499,346 +496,8 @@
         });
 
 
-        ////    проверка вводимых дат ////
-        //dateContract(a) - Дата контракта
-        //beginWork(b) - Дата начало работы
-        //endWork(c) - Дата окончания работы
-        //enteringTm(d) - Дата ввода объекта
-        //contractTm(e) - Дата дествия договора
-        //a <= b < c <= d < e
-        //////********/
-        let dateContract = document.querySelector("#DateDC");
-        let beginWork = document.querySelector("#DateBeginWork");
-        let endWork = document.querySelector("#DateEndWork");
-        let enteringTm = document.querySelector("#EnteringTerm");
-        let contractTm = document.querySelector("#ContractTerm");
-        let dateContractVal = dateContract.value;
-        let beginWorkVal = beginWork.value;
-        let endWorkVal = endWork.value;
-        let enteringTmVal
-        let contractTmVal
-        if (enteringTm != null && contractTm != null) {
-            enteringTmVal = enteringTm.value;
-            contractTmVal = contractTm.value;
-        }
-
-        $("#DateDC").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeDateContract()
-        });
-        $("#DateBeginWork").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeBeginWork()
-        });
-        $("#DateEndWork").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeEndWork()
-        });
-        if (enteringTm != null && contractTm != null) {
-            $("#EnteringTerm").datepicker({
-                format: "d MM yyyy",
-                language: "ru",
-                calendarWeeks: true,
-                autoclose: true,
-                keyboardNavigation: false,
-                assumeNearbyYear: true,
-                toggleActive: true
-            }).on('changeDate', function () {
-                changeEnteringTm()
-            });
-            $("#ContractTerm").datepicker({
-                format: "d MM yyyy",
-                language: "ru",
-                calendarWeeks: true,
-                autoclose: true,
-                keyboardNavigation: false,
-                assumeNearbyYear: true,
-                toggleActive: true
-            }).on('changeDate', function () {
-                changeContractTm()
-            });
-        }
-
-        $("#DateDC").datepicker('setDate', new Date(dateContractVal));
-        $("#DateBeginWork").datepicker('setDate', new Date(beginWorkVal));
-        $("#DateEndWork").datepicker('setDate', new Date(endWorkVal));
-        if (enteringTm != null && contractTm != null) {
-            $("#EnteringTerm").datepicker('setDate', new Date(enteringTmVal));
-            $("#ContractTerm").datepicker('setDate', new Date(contractTmVal));
-        }
-
-        function changeDateContract() {
-            let date = $("#DateDC").datepicker('getDate');
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-            let dateTerm = $("#ContractTerm").datepicker('getDate');
-
-            if (date != null) {
-                let datePlusOne = addDays(new Date(date.toDateString('d-MM-yyyy')), 1);
-                let datePlusTwo = addDays(new Date(date.toDateString('d-MM-yyyy')), 2);
-
-                if (date && (!dateBeg || date > dateBeg)) { $("#DateBeginWork").datepicker('update', date); }
-                if (date && (!dateEnd || date >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
-                if (date && (!dateEnter || date >= dateEnter)) { $("#EnteringTerm").datepicker('update', datePlusOne); }
-                if (date && (!dateTerm || date >= dateTerm)) { $("#ContractTerm").datepicker('update', datePlusTwo); }
-
-
-                if (date) $("#DateBeginWork").datepicker('setStartDate', date);
-                if (date) $("#DateEndWork").datepicker('setStartDate', datePlusOne);
-                if (date) $("#EnteringTerm").datepicker('setStartDate', datePlusOne);
-                if (date) $("#ContractTerm").datepicker('setStartDate', datePlusTwo);
-            }
-            showHideMin()
-        }
-        function changeBeginWork() {
-            let date = $("#DateDC").datepicker('getDate');
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-            let dateTerm = $("#ContractTerm").datepicker('getDate');
-            if (dateBeg != null) {
-                let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
-                let datePlusTwo = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 2);
-
-                if (dateBeg && (!date || dateBeg < date)) { $("#DateDC").datepicker('update', dateBeg); }
-                if (dateBeg && (!dateEnd || dateBeg >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
-                if (dateBeg && (!dateEnter || dateBeg >= dateEnter)) { $("#EnteringTerm").datepicker('update', datePlusOne); }
-                if (dateBeg && (!dateTerm || dateBeg >= dateTerm)) { $("#ContractTerm").datepicker('update', datePlusTwo); }
-
-                if (dateBeg) $("#DateEndWork").datepicker('setStartDate', datePlusOne);
-                if (dateBeg) $("#EnteringTerm").datepicker('setStartDate', datePlusOne);
-                if (dateBeg) $("#ContractTerm").datepicker('setStartDate', datePlusTwo);
-            }
-            showHideMin()
-        }
-        function changeEndWork() {
-            let date = $("#DateDC").datepicker('getDate');
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-            let dateTerm = $("#ContractTerm").datepicker('getDate');
-            if (dateEnd != null) {
-                let datePlusOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), 1);
-                let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
-
-                if (dateEnd && (!date || dateEnd <= date)) { $("#DateDC").datepicker('update', dateDecOne); }
-                if (dateEnd && (!dateBeg || dateEnd <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
-                if (dateEnd && (!dateEnter || dateEnd > dateEnter)) { $("#EnteringTerm").datepicker('update', dateEnd); }
-                if (dateEnd && (!dateTerm || dateEnd >= dateTerm)) { $("#ContractTerm").datepicker('update', datePlusOne); }
-
-                if (dateEnd) $("#EnteringTerm").datepicker('setStartDate', dateEnd);
-                if (dateEnd) $("#ContractTerm").datepicker('setStartDate', datePlusOne);
-            }
-            showHideMin()
-        }
-        function changeEnteringTm() {
-            let date = $("#DateDC").datepicker('getDate');
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-            let dateTerm = $("#ContractTerm").datepicker('getDate');
-            let datePlusOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), 1);
-            if (dateEnter != null) {
-
-                let dateDecOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), -1);
-
-                if (dateEnter && (!date || dateEnter <= date)) { $("#DateDC").datepicker('update', dateDecOne); }
-                if (dateEnter && (!dateBeg || dateEnter <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
-                if (dateEnter && (!dateEnd || dateEnter < dateEnd)) { $("#DateEndWork").datepicker('update', dateEnter); }
-                if (dateEnter && (!dateTerm || dateEnter >= dateTerm)) { $("#ContractTerm").datepicker('update', datePlusOne); }
-            }
-            if (dateEnter) $("#ContractTerm").datepicker('setStartDate', datePlusOne);
-            showHideMin()
-        }
-        function changeContractTm() {
-            let date = $("#DateDC").datepicker('getDate');
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-            let dateTerm = $("#ContractTerm").datepicker('getDate');
-
-            if (dateTerm != null) {
-                let dateDecOne = addDays(new Date(dateTerm.toDateString('d-MM-yyyy')), -1);
-                let dateDecTwo = addDays(new Date(dateTerm.toDateString('d-MM-yyyy')), -2);
-
-                if (dateTerm && (!date || dateTerm <= date)) { $("#DateDC").datepicker('update', dateDecTwo); }
-                if (dateTerm && (!dateBeg || dateTerm <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecTwo); }
-                if (dateTerm && (!dateEnd || dateTerm <= dateEnd)) { $("#DateEndWork").datepicker('update', dateDecOne); }
-                if (dateTerm && (!dateEnter || dateTerm <= dateEnter)) { $("#EnteringTerm").datepicker('update', dateDecOne); }
-            }
-            showHideMin()
-        }
-        function showHideMin() {
-            let min = $("#DateBeginWork").datepicker('getStartDate');
-            if (min != null && min != -Infinity)
-                var minBeginWork = min.toLocaleDateString();
-            if ((!beginWork.value || beginWork.value === null || beginWork.value === '') && minBeginWork) {
-                $('#labelBeginWork').html(`Минимальная дата: ${minBeginWork}`);
-                $('#labelBeginWork').show();
-            }
-            else {
-                $('#labelBeginWork').hide();
-            }
-
-            min = $("#DateEndWork").datepicker('getStartDate');
-            if (min != null && min != -Infinity)
-                var minEndWork = min.toLocaleDateString();
-            if ((!endWork.value || endWork.value === null || endWork.value === '') && minEndWork) {
-                $('#labelEndWork').html(`Минимальная дата: ${minEndWork}`);
-                $('#labelEndWork').show();
-            }
-            else {
-                $('#labelEndWork').hide();
-            }
-
-            min = $("#EnteringTerm").datepicker('getStartDate');
-            if (min != null && min != -Infinity)
-                var minEnteringTerm = min.toLocaleDateString();
-            if ((!enteringTm.value || enteringTm.value === null || enteringTm.value === '') && minEnteringTerm) {
-                $('#labelEnteringTerm').html(`Минимальная дата: ${minEnteringTerm}`);
-                $('#labelEnteringTerm').show();
-            }
-            else {
-                $('#labelEnteringTerm').hide();
-            }
-
-            min = $("#ContractTerm").datepicker('getStartDate');
-            if (min != null && min != -Infinity)
-                var minContractTm = min.toLocaleDateString();
-            if ((!contractTm.value || contractTm.value === null || contractTm.value === '') && minContractTm) {
-                $('#labelContractTerm').html(`Минимальная дата: ${minContractTm}`);
-                $('#labelContractTerm').show();
-            }
-            else {
-                $('#labelContractTerm').hide();
-            }
-        }
-
-        dateContract.addEventListener("change", (e) => {
-            changeDateContract();
-        });
-        beginWork.addEventListener('change', (e) => {
-            changeBeginWork();
-        });
-        endWork.addEventListener('change', (e) => {
-            changeEndWork();
-        });
-        if (enteringTm != null && contractTm != null) {
-            enteringTm.addEventListener('change', (e) => {
-                changeEnteringTm();
-            });
-            contractTm.addEventListener('change', (e) => {
-                changeContractTm();
-            });
-        }
-
-        function addDays(date, countDays) {
-            let newDateOfyear = date.getFullYear() + ""; // год
-            let day = date.getDate() + countDays; // текущий день
-            let month = date.getMonth() + 1; //текущий месяц
-            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
-            if (day > maxDateToday) {
-                month = month + 1;
-                if (month > 12) {
-                    newDateOfyear = +newDateOfyear + 1;
-                    month = 1;
-                    day = (day - 31);
-                }
-                else {
-                    day = (day - maxDateToday);
-                }
-            }
-            if (day < 1) {
-                month = month - 1;
-                if (month < 1) {
-                    newDateOfyear = +newDateOfyear - 1;
-                    month = 12;
-                    day = 31 + day;
-                }
-                else {
-                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
-                    day = maxDate + day;
-                }
-            }
-
-            let dayStr = day < 10 ? "0" + String(day) : String(day);
-            let monthStr = month < 10 ? "0" + String(month) : String(month);
-            return dayStr + '-' + monthStr + '-' + newDateOfyear;
-        }
-        //проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
-
-        let ch1 = document.querySelector("#check0");
-        let ch2 = document.querySelector("#check1");
-        let ch3 = document.querySelector("#check2");
-
-        let mod = @Html.Raw(Json.Serialize(Model.PaymentСonditionsAvans))
-
-            window.onload = function () {
-                if (mod != null) {
-                    if (ch1.checked) {
-                        ch2.setAttribute("disabled", true);
-                        ch3.setAttribute("disabled", true);
-                    }
-                    else {
-                        ch1.setAttribute("disabled", true)
-                    }
-                }
-            }
-        ch1.addEventListener('change', (e) => {
-            if (e.currentTarget.checked) {
-                ch2.setAttribute("disabled", true);
-                ch3.setAttribute("disabled", true);
-            }
-
-            if (!e.currentTarget.checked) {
-                ch2.removeAttribute("disabled");
-                ch3.removeAttribute("disabled");
-            }
-        });
-
-        ch2.addEventListener('change', (e) => {
-            if (e.currentTarget.checked) {
-                ch1.setAttribute("disabled", true);
-            }
-
-            if (!e.currentTarget.checked && !ch3.checked) {
-                ch1.removeAttribute("disabled");
-            }
-        });
-
-        ch3.addEventListener('change', (e) => {
-            if (e.currentTarget.checked) {
-                ch1.setAttribute("disabled", true);
-            }
-
-            if (!e.currentTarget.checked && !ch2.checked) {
-                ch1.removeAttribute("disabled");
-            }
-        });
-
-
+        
+       
 
         // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
         $(".checkChoise").click(function (e) {
@@ -847,9 +506,9 @@
                 //перед вставкой, проверяем и удаляем если существует такой input у другой радио кнопки
                 $("#dayInput").parent().remove();
             }
-            $(this).parent().parent().last().after(`<div class='col-2'><input class='form-control' id="dayInput" type='number' value='' name='PaymentСonditionsDaysRaschet' min='1'/></div>`);
+            $(this).parent().parent().last().after(`<div class='col-2'><input class='form-control' id="dayInput" type='number' value='' name='PaymentConditionsDaysRaschet' min='1'/></div>`);
         });
-  
+
         $(document).ready(function () {
             checkThreeSelectValuesWithChosenStyle("#selectOrgOne", "#selectOrgTwo", "#selectOrgThree", "#subBtn", 'same_value_chosen');
         });

@@ -4,18 +4,15 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
-    ViewData["Title"] = "Список организаций";
+    var permissions = HttpHelper.GetUserPermissions();
+    ViewData["Title"] = "Организации";
 }
 
 <style>
-    #org_table {
-        min-width: 700px;
-    }
     .dropdown-menu {
         z-index: 1;
     }
+
     .input-group_flex {
         justify-content: right;
     }
@@ -45,50 +42,32 @@
                         </div>
                     </div>
                     <hr class="modal-line" />
-                    <div style="max-height:700px; overflow-y:scroll">
-                        <table class="table table-bordered table-main table-main-short table-hover" id="org_table">
+                    <div style="max-height:500px; overflow-y:scroll">
+                        <table class="table table-bordered table-main table-hover">
                             <thead>
                                 <tr>
                                     <th>
-                                        <span class="column_300">
+                                        <span class="column_400">
                                             Название
                                             @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayName", @class = "up" })
 
                                         </span>
                                     </th>
                                     <th>
-                                        <span class="column_150">
-                                            Аббревиатура
-                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.AbbrSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayAbbr", @class = "up" })
-                                        </span>
-                                    </th>
-                                    <th>
-                                        <span class="column_100">
-                                            УНП
-                                            @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.UnpSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayUnp", @class = "up" })
-                                        </span>
-                                    </th>
-                                    <th>
-                                        <span class="column_75">
-                                            Отделы
-                                        </span>
-                                    </th>
-                                    <th>
-                                        <span class="column_130">
+                                        <span class="column_140">
                                             Телефоны
                                         </span>
                                     </th>
                                     <th>
-                                        <span class="column_150">
+                                        <span class="column_250">
                                             Юр. адрес
                                         </span>
                                     </th>
                                     <th>
-                                        <span class="column_75">
-                                            Почтовый индекс
+                                        <span class="column_100">
+                                            Действие
                                         </span>
                                     </th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,46 +75,12 @@
                                 {
                                     <tr>
                                         <td>
-                                            <span class="column_300">
+                                            <span class="column_400">
                                                 @Html.DisplayFor(modelItem => item.Name)
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="column_150">
-                                                @Html.DisplayFor(modelItem => item.Abbr)
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="column_100">
-                                                @Html.DisplayFor(modelItem => item.Unp)
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            <div class="dropdown column_75">
-                                                <span class="icon link_to_page dropdown-toggle" aria-expanded="false" role="button" data-bs-toggle="dropdown">
-                                                </span>
-                                                <div class="dropdown-menu">
-                                                    @if (permissions is not null && permissions.IsCreator)
-                                                    {
-                                                        <a class="icon view_to_add_pages " asp-controller="Departments" asp-action="Create" asp-route-idOrg="@item.Id"></a>
-                                                    }
-                                                    <div class="dropdown-divider"></div>
-                                                    @foreach (var department in item.Departments)
-                                                    {
-                                                        <div class="d-flex flex-row">
-                                                            <a asp-controller="Departments" asp-action="Details" asp-route-id="@department.Id">
-                                                                @department.Name
-                                                            </a>
-
-
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="column_130">
+                                            <span class="column_140">
                                                 @foreach (var phone in item.Phones)
                                                 {
                                                     <div class="d-flex flex-row">
@@ -145,7 +90,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="column_150">
+                                            <span class="column_250">
                                                 @foreach (var address in item.Addresses)
                                                 {
                                                     @if (address.FullAddress != null)
@@ -158,19 +103,12 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="column_75">
-                                                @foreach (var address in item.Addresses)
-                                                {
-                                                    @if (address.PostIndex != null)
-                                                    {
-                                                        <div class="d-flex flex-row">
-                                                            <span class="p-1 k-mr-5 text-break">@address.PostIndex</span>
-                                                        </div>
-                                                    }
-                                                }
-                                            </span>
-                                        </td>
-                                        <td>
+                                            @if (permissions is not null && permissions.IsReader)
+                                            {
+                                                <span class="icon info" title="Детальная информация">
+                                                    <a asp-action="Details" asp-route-id="@item.Id" asp-route-page="@ViewBag.Page" asp-route-filter="@ViewBag.CurrentFilter"></a>
+                                                </span>
+                                            }
                                             @if (permissions is not null && permissions.IsEditor)
                                             {
                                                 <span class="icon edit" title="Редактировать">
@@ -179,9 +117,8 @@
                                             }
                                             @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                             {
-                                                <span class="icon delete" title="Удалить">
-                                                    @* <a asp-action="Delete" asp-route-id="@item.Id"></a> *@
-                                                    <a onclick="confirmI(@item.Id)"></a>
+                                                <span class="icon delete" title="Удалить">                                                   
+                                                    <a onclick="deleteOrg(@item.Id)"></a>
                                                 </span>
                                             }
                                         </td>
@@ -194,18 +131,18 @@
                         <ul class="pagination justify-content-center">
                             <li class="page-item previous_btn">
                                 @{
-                                    @if (Model.PageViewModel.PageNumber > 1)
+                                        @if (Model.PageViewModel.PageNumber > 1)
                                     {
-                                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
+                                            <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                                               asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                               asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
                                     }
-                                    @if (Model.PageViewModel.PageNumber <= 1)
+                                        @if (Model.PageViewModel.PageNumber <= 1)
                                     {
-                                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                           tabindex="-1" aria-disabled="true">&lt;</a>
+                                            <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                                               asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                               tabindex="-1" aria-disabled="true">&lt;</a>
                                     }
                                 }
                             </li>
@@ -214,12 +151,12 @@
                                 int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
                                 for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
                                 {
-                                    <li class="page-item pag_btn_num">
-                                        <a class="page-link " asp-action="Index" asp-route-pageNum="@i"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                           value="@i">@i</a>
-                                    </li>
+                                        <li class="page-item pag_btn_num">
+                                            <a class="page-link " asp-action="Index" asp-route-pageNum="@i"
+                                               asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                               value="@i">@i</a>
+                                        </li>
                                     if (counter == 5)
                                     {
                                         counter = 1;
@@ -229,18 +166,18 @@
                             }
                             <li class="page-item next_btn">
                                 @{
-                                    @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
+                                        @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
                                     {
-                                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
+                                            <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                                               asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                               asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
                                     }
                                     else
                                     {
-                                        <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                           aria-disabled="true">&gt;</a>
+                                            <a class="page-link" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                                               asp-route-sortOrder="@ViewData["CurrentSort"]"
+                                               asp-route-currentFilter="@ViewData["CurrentFilter"]"
+                                               aria-disabled="true">&gt;</a>
                                     }
                                 }
                             </li>
@@ -260,41 +197,24 @@
         paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
         //////ENd pagination
 
+        // Этот код управляет отображением стрелок сортировки в таблице организаций
         window.onload = function () {
-            let actualUrl = window.location.search;
-            let elementArrayName = document.getElementById("arrayName");
-            let elementArrayAbbr = document.getElementById("arrayAbbr");
-            let elementArrayUnp = document.getElementById("arrayUnp");
-
+            const actualUrl = window.location.search;
+            const elementArrayName = document.getElementById("arrayName");  // Колонка "Название"
+            
             if (actualUrl.includes('nameDesc')) {
-                elementArrayName.classList.remove("up")
-                elementArrayName.classList.add("up-down-active")
-                elementArrayName.classList.add('down')
+                elementArrayName.classList.remove("up");
+                elementArrayName.classList.add("up-down-active", "down"); 
             }
             else if (actualUrl.includes('name')) {
-                elementArrayName.classList.add("up-down-active")
-            }
-            else if (actualUrl.includes('abbrDesc')) {
-                elementArrayAbbr.classList.remove("up")
-                elementArrayAbbr.classList.add("up-down-active")
-                elementArrayAbbr.classList.add('down')
-            }
-            else if (actualUrl.includes('abbr')) {
-                elementArrayAbbr.classList.add("up-down-active")
-            }
-            else if (actualUrl.includes('unpDesc')) {
-                elementArrayUnp.classList.remove("up")
-                elementArrayUnp.classList.add("up-down-active")
-                elementArrayUnp.classList.add('down')
-            }
-            else if (actualUrl.includes('unp')) {
-                elementArrayUnp.classList.add("up-down-active")
+                elementArrayName.classList.add("up-down-active");
             }
         }
-        function confirmI(val) {
+        
+        async function deleteOrg(id) {
             $.ajax({
                 type: 'POST',
-                url: '@Url.Action("ShowDelete", "Employees")',
+                url: '@Url.Action("ShowDeleteMessage", "Home")',
                 contentType: "application/html; charset=utf-8",
                 dataType: 'html',
                 success: function (result) {
@@ -302,35 +222,25 @@
                     $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('show');
 
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
                     elementDeleteButton[0].addEventListener('click', () => {
                         $.ajax({
-                            type: 'POST',
-                            url: '@Url.Action("ShowResultDelete", "Organizations")',
-                            dataType: 'html',
-                            data: { id: val },
+                            type: 'GET',
+                            url: '@Url.Action("Delete", "Organizations")',
+                            data: { id: id },
                             success: function (result) {
-                                let buttonElement = document.querySelectorAll('#dialogContent')
-                                $('#dialogContent').html(result);
+                                window.location.reload();
                             },
                             error: function (result) {
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '@Url.Action("Message", "Home")',
-                                    dataType: 'html',
-                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
-                                    success: function (result) {
-                                        $('#dialogContent').html(result);
-                                    }
-                                });
+                                window.location.reload();
                             }
                         });
-                    })
+                    });
                 },
                 error: function (result) {
-                    alert("Ошибка отображения");
+                    // alert("Ошибка отображения");
                 }
-            })
+            });
         }
     </script>
 }

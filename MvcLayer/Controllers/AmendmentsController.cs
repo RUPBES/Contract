@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -99,7 +100,7 @@ namespace MvcLayer.Controllers
 
                 int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
                 int fileId = (int)_fileService.Create(amendment.FilesEntity, FolderEnum.Amendment, amendId);
-
+                NotificationHelper.SetNotification(TempData, "Создано доп.соглашение", NotificationType.Info);
                 _amendment.AddFile(amendId, fileId);
                 
                 if (isScope || amendment.Type == "scope")
@@ -116,7 +117,7 @@ namespace MvcLayer.Controllers
                     };
                     TempData["returnContractId"] = returnContractId;
                     TempData["contractId"] = amendment.ContractId;
-                    return RedirectToAction("CreatePeriods", "ScopeWorks", scopeWork);                    
+                    return RedirectToAction("Create/Period", "ScopeWorks", scopeWork);                    
                 }
 
                 if (isPrepament || amendment.Type == "prepayment")
@@ -127,6 +128,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
                 return View();
             }
         }
@@ -149,12 +151,15 @@ namespace MvcLayer.Controllers
                 try
                 {
                     _amendment.Update(_mapper.Map<AmendmentDTO>(amendment));
+                    NotificationHelper.SetNotification(TempData, "Доп.соглашение обновлено", NotificationType.Info);
                 }
                 catch
                 {
+                    NotificationHelper.SetNotification(TempData, "Ошибка обновления доп.соглашение", NotificationType.Error);
                     return View();
                 }
             }
+            NotificationHelper.SetNotification(TempData, "Ошибка обновления доп.соглашение", NotificationType.Warning);
             if (amendment.ContractId is not null && amendment.ContractId > 0)
             {
                 return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
@@ -176,6 +181,8 @@ namespace MvcLayer.Controllers
                 }
 
                 _amendment.Delete(id);
+                NotificationHelper.SetNotification(TempData, "Доп.соглашение удалено", NotificationType.Info);
+
                 if (contractId is not null && contractId > 0)
                 {
                     return RedirectToAction(nameof(GetByContractId), new { id = contractId });
@@ -187,6 +194,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления доп.соглашение", NotificationType.Error);
                 return View();
             }
         }

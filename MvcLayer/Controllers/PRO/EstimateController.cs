@@ -6,10 +6,11 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
+using DatabaseLayer.Models.PRO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using MvcLayer.Models;
-using System.Diagnostics;
+using System.Reflection;
 
 namespace MvcLayer.Controllers.PRO;
 
@@ -20,6 +21,7 @@ public class EstimateController : Controller
     private readonly IParseService _pars;
     private readonly IContractService _contractService;
     private readonly IMapper _mapper;
+    private readonly ILoggerContract _logger;
     private readonly IEstimateService _estimateService;
     private readonly IAbbreviationKindOfWorkService _abbreviationKindOfWorkService;
     private readonly IKindOfWorkService _kindOfWorkService;
@@ -28,7 +30,7 @@ public class EstimateController : Controller
 
     public EstimateController(IFileService file, IWebHostEnvironment env, IParseService pars, ITextSearcher textSearcher,
         IContractService contractService, IMapper mapper, IEstimateService estimateService,
-        IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService, IExcelReader excelReader)
+        IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService, IExcelReader excelReader, ILoggerContract logger)
     {
         _file = file;
         _env = env;
@@ -40,151 +42,17 @@ public class EstimateController : Controller
         _kindOfWorkService = kindOfWorkService;
         _textSearcher = textSearcher;
         _excelReader = excelReader;
+        _logger = logger;
     }
 
-    //public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
-    //{
-    //    //Stopwatch stopwatch = new Stopwatch();
-    //    //stopwatch.Start();
-    //    ///////////////////////
-    //    ViewData["contractNumber"] = _contractService.Find(x => x.Id == contractId).Select(x => x.Number).FirstOrDefault();
-    //    ViewData["contractId"] = contractId;
-    //    ViewData["returnContractId"] = returnContractId;
-    //    var pageSize = 1000;
-    //    if (pageNum < 1)
-    //    {
-    //        pageNum = 1;
-    //    }
-    //    var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId, SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
-    //    var answer = new IndexViewModel();
-    //    answer.PageViewModel = list.PageViewModel;
-    //    var listEstimate = new List<EstimateViewModel>();
-    //    var listEstimateSum = new List<EstimateDTO>();
-    //    foreach (EstimateDTO item in list.Objects)
-    //    {
-    //        var estimateView = listEstimate.Where(x => x.BuildingName == item.BuildingName && x.BuildingCode == item.BuildingCode).FirstOrDefault();
-    //        EstimateViewModelItem estimateViewItem;
+    public ActionResult Index(string sortOrder, int contractId,
+        Dictionary<string, string> SearchString,
+        Dictionary<string, string> CurrentSearchString,
+        Dictionary<string, List<int>> ListSearchString,
+        Dictionary<string, List<int>> CurrentListSearchString,
+        int returnContractId = 0, int? pageNum = 1)
 
-    //        var estimateViewDrawning = new EstimateViewModelDrawning();
-    //        estimateViewDrawning.Id = item.Id;
-    //        estimateViewDrawning.Number = item.Number;
-    //        estimateViewDrawning.PercentOfContrPrice = item.PercentOfContrPrice ?? 0M;
-    //        estimateViewDrawning.EstimateDate = item.EstimateDate ?? new DateTime(1, 1, 1);
-    //        estimateViewDrawning.DrawingsDate = item.DrawingsDate;
-    //        estimateViewDrawning.ContractsCost = item.ContractsCost ?? 0M;
-    //        estimateViewDrawning.DoneSmrCost = item.DoneSmrCost ?? 0M;
-    //        estimateViewDrawning.DrawingsKit = item.DrawingsKit;
-    //        estimateViewDrawning.LaborCost = item.LaborCost ?? 0;
-    //        estimateViewDrawning.RemainsSmrCost = item.RemainsSmrCost ?? 0M;
-    //        estimateViewDrawning.SubContractor = item.SubContractor;
-    //        var IsInList = listEstimateSum.Where(x => x.Number == item.Number && x.BuildingCode == item.BuildingCode
-    //        && x.BuildingName == item.BuildingName).FirstOrDefault();
-    //        if (estimateView is null)
-    //        {
-    //            estimateView = new EstimateViewModel();
-    //            estimateView.BuildingName = item.BuildingName;
-    //            estimateView.BuildingCode = item.BuildingCode;
-
-    //            estimateViewItem = new EstimateViewModelItem();
-    //            estimateViewItem.DrawingsName = item.DrawingsName;
-    //            estimateView.DetailsView.Add(estimateViewItem);
-    //            listEstimate.Add(estimateView);
-    //        }
-    //        else
-    //        {
-    //            estimateViewItem = estimateView.DetailsView.Where(x => x.DrawingsName == item.DrawingsName).FirstOrDefault();
-    //            if (estimateViewItem == null)
-    //            {
-    //                estimateViewItem = new EstimateViewModelItem();
-    //                estimateViewItem.DrawingsName = item.DrawingsName;
-    //                estimateView.DetailsView.Add(estimateViewItem);
-    //            }
-    //        }
-    //        if (IsInList == null)
-    //        {
-    //            listEstimateSum.Add(item);
-    //            var kindId = _abbreviationKindOfWorkService.Find(x => x.Id == item.KindOfWorkId).Select(x => x.KindOfWorkId).FirstOrDefault();
-    //            var KindName = _kindOfWorkService.Find(x => x.Id == kindId).Select(x => x.name).FirstOrDefault();
-    //            EstimateViewResultBuilding report;
-    //            if (!estimateView.report.TryGetValue(KindName, out report))
-    //            {
-    //                var estimateViewResultBuilding = new EstimateViewResultBuilding();
-    //                estimateViewResultBuilding.RemainsSmrCost = item.RemainsSmrCost ?? 0;
-    //                estimateViewResultBuilding.DoneSmrCost = item.DoneSmrCost ?? 0;
-    //                estimateViewResultBuilding.ContractsCost = item.ContractsCost ?? 0;
-    //                estimateViewResultBuilding.PercentOfContrPrice = item.PercentOfContrPrice ?? 0;
-    //                estimateViewResultBuilding.LaborCost = item.LaborCost ?? 0;
-    //                estimateView.report.Add(KindName, estimateViewResultBuilding);
-    //            }
-    //            else
-    //            {
-    //                report.ContractsCost += item.ContractsCost ?? 0;
-    //                report.RemainsSmrCost += item.RemainsSmrCost ?? 0;
-    //                report.DoneSmrCost += item.DoneSmrCost ?? 0;
-    //                report.PercentOfContrPrice += item.PercentOfContrPrice ?? 0;
-    //                report.LaborCost += item.LaborCost ?? 0;
-    //            }
-    //        }
-    //        estimateViewItem.EstimateViewModelDrawnings.Add(estimateViewDrawning);
-    //    }
-    //    //var i1 = stopwatch.ElapsedMilliseconds;
-    //    foreach (var detailsView in listEstimate)
-    //    {
-    //        foreach (var item in detailsView.DetailsView)
-    //        {
-    //            var listOrder = item.EstimateViewModelDrawnings;
-    //            for (int i = 0; i < listOrder.Count - 1; i++)
-    //                for (int j = i + 1; j < listOrder.Count; j++)
-    //                {
-    //                    if (listOrder[i].DrawingsDate != null)
-    //                    {
-    //                        if (listOrder[j].DrawingsDate != null && listOrder[i].DrawingsDate > listOrder[j].DrawingsDate)
-    //                        {
-    //                            var obj = listOrder[i];
-    //                            listOrder[i] = listOrder[j];
-    //                            listOrder[j] = obj;
-    //                        }
-    //                    }
-    //                    else if (listOrder[j].DrawingsDate != null)
-    //                    {
-    //                        var obj = listOrder[i];
-    //                        listOrder[i] = listOrder[j];
-    //                        listOrder[j] = obj;
-    //                    }
-    //                }
-    //            item.EstimateViewModelDrawnings = listOrder;
-    //        }
-    //    }
-    //    //var i2 = stopwatch.ElapsedMilliseconds;
-    //    foreach (var detailsView in listEstimate)
-    //    {
-    //        foreach (var item in detailsView.DetailsView)
-    //        {
-    //            var index = -1;
-    //            foreach (var drawning in item.EstimateViewModelDrawnings)
-    //            {
-    //                if (drawning.Number != null)
-    //                {
-    //                    item.NumberEntriesByEstimate.Add(1);
-    //                    index++;
-    //                }
-    //                else if (item.NumberEntriesByEstimate.Count >= 1 && item.NumberEntriesByEstimate[index] >= 0)
-    //                {
-    //                    item.NumberEntriesByEstimate[index]++;
-    //                }
-    //            }
-    //        }
-    //    }
-    //    //var i3 = stopwatch.ElapsedMilliseconds;
-    //    answer.Objects = listEstimate;
-    //    ViewBag.CurrentSearchString = SearchString;
-    //    ViewBag.CurrentListSearchString = ListSearchString;
-    //    //var i4 = stopwatch.ElapsedMilliseconds;
-    //    return View(answer);
-    //}
-
-
-    public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? pageNum = 1)
+    
     {
         #region НОМЕР_1
 
@@ -202,15 +70,15 @@ public class EstimateController : Controller
 
         var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId,
                                  SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
-
+        
+       
         //Stopwatch st = new Stopwatch();
         //st.Start();
         var answer = new IndexViewModel();
         //answer.PageViewModel = list.PageViewModel;
         var estimateDTOs = (List<EstimateDTO>)list.Objects;
 
-        //var estimateViewModel = new EstimateViewModel2();
-        var estimateItemsModel = new List<EstimateItemModel>();
+        var estimateItemsModel = new List<EstimateViewModel>();
         var totalCostResultModel = new Dictionary<string, EstimateCostResultModel>();
 
         //Debug.WriteLine((st.ElapsedMilliseconds) + "sec");
@@ -234,6 +102,7 @@ public class EstimateController : Controller
             x.EstimateDate,
             x.ChangeEstimateDate,
             x.Id,
+
             x.DrawingsDate,
             x.DrawingsName,
             x.ChangeDrawingDate,
@@ -293,7 +162,7 @@ public class EstimateController : Controller
             laborCostTotal = 0.0;
             remainsSmrCost = 0M;
 
-            var newEstItem = new EstimateItemModel();
+            var newEstItem = new EstimateViewModel();
             newEstItem.BuildingCode = resultItem.Key;
 
             foreach (var item in resultItem)
@@ -356,38 +225,52 @@ public class EstimateController : Controller
         //st.Stop();
 
         ViewBag.TotalSumObject = totalCostResultModel;
-        answer.Objects = estimateItemsModel;
         ViewBag.CurrentSearchString = SearchString;
         ViewBag.CurrentListSearchString = ListSearchString;
+         
+        answer.Objects = estimateItemsModel;
+
         return View(answer);
     }
 
 
-    public ActionResult GetType(int contractId, int returnContractId = 0, /*bool isChange = false,*/ bool isUpdate = false, int? estimateId = null)
+    public ActionResult GetType(int contractId, int returnContractId = 0, bool isUpdate = false, int? estimateId = null)
     {
         ViewData["contractId"] = contractId;
         ViewBag.EstimateId = estimateId;
-        //ViewBag.IsChange = isChange;
         ViewData["returnContractId"] = returnContractId;
         ViewBag.IsUpdate = isUpdate;
         return View();
     }
 
-    public ActionResult Create(int contractId, int returnContractId = 0,/* bool isChange = false,*/ string? type = null, int? estimateId = null)
+    public ActionResult Create(int contractId, int returnContractId = 0,string? type = null, int? estimateId = null)
     {
         ViewData["contractId"] = contractId;
         ViewData["returnContractId"] = returnContractId;
         ViewData["type"] = type;
-        //ViewBag.IsChange = isChange;
         ViewBag.EstimateId = estimateId;
         return View();
     }
+
+
+    [HttpGet]
+    public ActionResult Update(int contractId, string updateByType, int returnContractId = 0, string? type = null, string? buildingsCode = null)
+    {
+        ViewBag.ContractId = contractId;
+        ViewBag.ReturnContractId = returnContractId;
+        ViewBag.UpdateByType = updateByType;
+        ViewBag.Type = type;
+        ViewBag.BuildingsCode = buildingsCode;
+
+        return View();
+    }
+
 
     public ActionResult GetEstimateData(string path, int contractId, DateTime date, string? type = null, int? estimateId = null)
     {
         try
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != ConstantsApp.ORG_MAJOR)?.Value ?? ConstantsApp.ORG_BES;
+            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != Constants.ORG_MAJOR)?.Value ?? Constants.ORG_BES;
             var contract = _contractService.GetById(contractId);
             int page = _excelReader.GetListOfBook(path).Count();
             int index = 0;
@@ -418,6 +301,10 @@ public class EstimateController : Controller
                     var estUpdate = _estimateService.GetById(estimateId.Value);
                     estUpdate.IsChange = true;
                     _estimateService.Update(estUpdate);
+                    _logger.WriteLog(logLevel: LogLevel.Information,
+                                         message: $"updated estimate, ID={estUpdate.Id}",
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
                     break;
                 }
 
@@ -455,6 +342,10 @@ public class EstimateController : Controller
         catch (Exception ex)
         {
             _file.DeleteByPath(path);
+            _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: ex.Message,
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
             return BadRequest("Загрузка данных смет(ы) прервана");
         }
     }
@@ -560,22 +451,10 @@ public class EstimateController : Controller
                 return PartialView("_GetEstimateLaborCost");
             case "contractCost":
                 return PartialView("_GetContractCost");
-            case "doneSMR":
-                return PartialView("_GetEstimateLaborCost");
+            //case "doneSMR":
+            //    return PartialView("_GetEstimateLaborCost");
             default: return BadRequest("Произошло обращение к несуществующей странице");
         }
-    }
-
-    [HttpGet]
-    public ActionResult Update(int contractId, string updateByType, int returnContractId = 0, string? type = null, string? buildingsCode = null)
-    {
-        ViewBag.ContractId = contractId;
-        ViewBag.ReturnContractId = returnContractId;
-        ViewBag.UpdateByType = updateByType;
-        ViewBag.Type = type;
-        ViewBag.BuildingsCode = buildingsCode;
-
-        return View();
     }
 
     [HttpPost]
@@ -594,18 +473,16 @@ public class EstimateController : Controller
 
                     foreach (var item in listEstNumbWithLaborCost)
                     {
-                        //var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-                        //if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
-                        //{
-                        //    fullNumber = item.estimateNumber;
-                        //}
-                        //var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
-
                         var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);
                         if (estimate is not null)
                         {
                             estimate.LaborCost = Convert.ToDouble(item.cost);
                             _estimateService.Update(estimate);
+                            _logger.WriteLog(logLevel: LogLevel.Information,
+                                         message: $"updated estimate, ID={estimate.Id}",
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
+
                             CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
                             countUpdated++;
                         }
@@ -618,12 +495,20 @@ public class EstimateController : Controller
             }
             else
             {
+                _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: $"invalid path to file of labor cost, path={path}",
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
                 return BadRequest("Неверно указан путь к файлу");
             }
         }
         catch (Exception ex)
         {
             _file.DeleteByPath(path);
+            _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: ex.Message,
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
             return BadRequest(ex.Message);
         }
     }
@@ -657,6 +542,10 @@ public class EstimateController : Controller
                         {
                             estimate.ContractsCost = item.cost;
                             _estimateService.Update(estimate);
+                            _logger.WriteLog(logLevel: LogLevel.Information,
+                                        message: $"updated estimate, ID={estimate.Id}",
+                                        nameSpace: typeof(EstimateController).Name,
+                                        methodName: MethodBase.GetCurrentMethod().Name);
                             CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
                             countUpdated++;
                         }
@@ -667,12 +556,23 @@ public class EstimateController : Controller
                 _file.DeleteByPath(path);
                 return Ok($"Обновлены cтоимости по договору, {countUpdated}  смет(ы)");
             }
+            else
+            {
+                _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: $"invalid path to file of contract cost, path={path}",
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
+            }
             return BadRequest("Ошибка считывания документа Excel");
 
         }
         catch (Exception ex)
         {
             _file.DeleteByPath(path);
+            _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: ex.Message,
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
             return BadRequest("Ошибка считывания документа Excel");
         }
     }
@@ -693,17 +593,16 @@ public class EstimateController : Controller
 
                     foreach (var item in costs)
                     {
-                        //var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-                        //if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
-                        //{
-                        //    fullNumber = item.estimateNumber;
-                        //}
-                        var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);// _estimateService.Find(x => x.FullNumber == fullNumber     && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
+                        var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);
 
                         if (estimate is not null)
                         {
                             estimate.DoneSmrCost = item.cost;
                             _estimateService.Update(estimate);
+                            _logger.WriteLog(logLevel: LogLevel.Information,
+                                       message: $"updated estimate, ID={estimate.Id}",
+                                       nameSpace: typeof(EstimateController).Name,
+                                       methodName: MethodBase.GetCurrentMethod().Name);
                             CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
                             countUpdated++;
                         }
@@ -713,12 +612,23 @@ public class EstimateController : Controller
                 _file.DeleteByPath(path);
                 return Ok($"Обновлены cтоимости выполненных СМР, у {countUpdated}  смет(ы)");
             }
+            else
+            {
+                _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: $"invalid path to file of done smr cost, path={path}",
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
+            }
             return BadRequest("Ошибка считывания документа Excel");
 
         }
         catch (Exception ex)
         {
             _file.DeleteByPath(path);
+            _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: ex.Message,
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
             return BadRequest("Ошибка считывания документа Excel");
         }
     }
@@ -744,17 +654,24 @@ public class EstimateController : Controller
                 //todo: добавить contractId для создания файла
                 CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, 0, estimateId ?? 0);
                 _file.DeleteByPath(path);
-
-                return PartialView("_ResultMessage", "Стоимость выполненных работ по СМР загружена");
+                return Content("Стоимость выполненных работ по СМР загружена");
             }
             else
             {
-                return BadRequest("Произошла ошибка при передаче данных о смете.");
+                _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: "estimate id is null",
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
+                return BadRequest("Произошла ошибка при передаче данных сметы");
             }
         }
         catch (Exception ex)
         {
             _file.DeleteByPath(path);
+            _logger.WriteLog(logLevel: LogLevel.Warning,
+                                         message: ex.Message,
+                                         nameSpace: typeof(EstimateController).Name,
+                                         methodName: MethodBase.GetCurrentMethod().Name);
             return BadRequest(ex.Message);
         }
     }
@@ -785,15 +702,32 @@ public class EstimateController : Controller
     public ActionResult Edit(EstimateDTO estimate)
     {
         _estimateService.Update(estimate);
+        _logger.WriteLog(logLevel: LogLevel.Information,
+                                        message: $"updated estimate,id= {estimate.Id}",
+                                        nameSpace: typeof(EstimateController).Name,
+                                        methodName: MethodBase.GetCurrentMethod().Name);
         return RedirectToAction(nameof(Index), "Estimate", new { contractId = estimate.ContractId });
     }
 
+    [Authorize(Policy = "DeletePolicy")]
     public ActionResult Delete(int id)
     {
+        try
+        {
+            _estimateService.Delete(id);
+            _logger.WriteLog(logLevel: LogLevel.Information,
+                                            message: $"deleted estimate,id= {id}",
+                                            nameSpace: typeof(EstimateController).Name,
+                                            methodName: MethodBase.GetCurrentMethod().Name);
 
-        _estimateService.Delete(id);
-        ViewData["reload"] = "Yes";
-        return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+            NotificationHelper.SetNotification(TempData, "Смета удалена", NotificationType.Info);
+            return Ok(); 
+        }
+        catch (Exception)
+        {
+            NotificationHelper.SetNotification(TempData, "Не удалось удалить смету", NotificationType.Error);
+            return NotFound();
+        }
     }
 
     [HttpGet]
@@ -822,11 +756,18 @@ public class EstimateController : Controller
             }
 
             _estimateService.Update(estimate);
-
-            return RedirectToAction(nameof(Index), new { contractId = estimate.ContractId });// Ok("Чертежи загружены");
+            _logger.WriteLog(logLevel: LogLevel.Information,
+                                        message: $"updated estimate,id= {estimate.Id}",
+                                        nameSpace: typeof(EstimateController).Name,
+                                        methodName: MethodBase.GetCurrentMethod().Name);
+            return RedirectToAction(nameof(Index), new { contractId = estimate.ContractId });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.WriteLog(logLevel: LogLevel.Information,
+                                        message: ex.Message,
+                                        nameSpace: typeof(EstimateController).Name,
+                                        methodName: MethodBase.GetCurrentMethod().Name);
             return BadRequest("Неудачная загрузка чертежей");
         }
     }
@@ -875,9 +816,55 @@ public class EstimateController : Controller
         return Json(estmt);
     }
 
-    //public ActionResult GetBuildingCodeByContractId(int contractId)
+    public ActionResult GetListChangedEstimate(int contractId, int estId)
+    {
+        List<int> ids = new ();
+        var estimate = _estimateService.GetById(estId);
+        while (estimate != null)
+        {
+            if (estimate.ChangeEstimateId.HasValue)
+            {
+                ids.Add(estimate.ChangeEstimateId.Value);
+                estimate = _estimateService.GetById(estimate.ChangeEstimateId.Value);
+            }
+            else
+            {
+                estimate = null;
+            }
+        }
+        var estmt = _estimateService
+            .Find(x => x.ContractId == contractId && ids.Contains(x.Id))
+            //.OrderBy(x => x.Id)
+            //для корректной отрисовки, необходимо 14 свойств закидывать для ajax запроса
+            .Select(x => new 
+            {                 
+                drawingsKit = x.DrawingsKit, 
+                drawingsName = x.DrawingsName,
+                drawingsDate = x.DrawingsDate?.ToShortDateString(),
+                changeDrawingDate = x.ChangeDrawingDate?.ToShortDateString(),
+                number = x.Number,
+                estimateDate = x.EstimateDate?.ToShortDateString(),
+
+                changeEstimateDate = x.ChangeEstimateDate?.ToShortDateString(),
+                contractsCost = x.ContractsCost?.ToString("N2"),
+                laborCost = x.LaborCost?.ToString("N2"),
+                doneSmrCost = x.DoneSmrCost?.ToString("N2"),
+                percentOfContrPrice = x.PercentOfContrPrice?.ToString("N2"),
+                remainsSmrCost = x.RemainsSmrCost?.ToString("N2"),
+                subContractor = x.SubContractor,
+                id = x.Id,
+            });
+
+        return Json(estmt);
+    }
+
+    //public ActionResult GetListData(int contractId, string attName)
     //{
-    //    var estmt = _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x => x.BuildingCode).Select(x => new { id = x.Id, code = x.BuildingCode, contractId = x.ContractId });
+    //    var estmt = _estimateService
+    //        .Find(x => x.ContractId == contractId/* && x.DrawingsKit.Contains(attName)*/)
+    //        //.DistinctBy(x => x.BuildingCode)
+    //        .Select(x => new { id = x.Id, name = x.DrawingsKit, contractId = x.ContractId });
+
     //    return Json(estmt);
     //}
 
@@ -915,6 +902,10 @@ public class EstimateController : Controller
         {
             if (answer.BuildingCode != _estimateService.GetById((int)changeEstimateId).BuildingCode)
             {
+                _logger.WriteLog(logLevel: LogLevel.Information,
+                                        message: $"building code of changing entity was not found in the database,code= {answer.BuildingCode}",
+                                        nameSpace: typeof(EstimateController).Name,
+                                        methodName: MethodBase.GetCurrentMethod().Name);
                 return null;
             }
 
@@ -928,7 +919,7 @@ public class EstimateController : Controller
             answer.EstimateDate = date;
         }
 
-        if (type == ConstantsApp.SMR_PRO_APP)
+        if (type == Constants.SMR_PRO_APP)
         {
             answer.FullNumber = answer.BuildingCode + "." + answer.Number;
         }
@@ -942,11 +933,22 @@ public class EstimateController : Controller
         answer.SubContractor = contract?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.Organization?.Name;
         answer.Owner = organizationName;
         var newEstimateId = _estimateService.Create(answer);
+        if (newEstimateId > 0)
+        {
+            _logger.WriteLog(logLevel: LogLevel.Information,
+                                       message: $"created estimate? id= {newEstimateId}",
+                                       nameSpace: typeof(EstimateController).Name,
+                                       methodName: MethodBase.GetCurrentMethod().Name);
+        }
         if (changeEstimateId != null)
         {
             var oldEstimate = _estimateService.GetById((int)changeEstimateId);
             oldEstimate.IsChange = true;
             _estimateService.Update(oldEstimate);
+            _logger.WriteLog(logLevel: LogLevel.Information,
+                                       message: $"updated estimate as changed, id= {oldEstimate.Id}",
+                                       nameSpace: typeof(EstimateController).Name,
+                                       methodName: MethodBase.GetCurrentMethod().Name);
         }
         return newEstimateId;
     }
@@ -979,9 +981,6 @@ public class EstimateController : Controller
         }
 
         var nameFile = path.Split(@"\").Last();
-
-        //if (estimateId is not null)
-        //{
         using var stream = new MemoryStream(System.IO.File.ReadAllBytes(path).ToArray());
         var formFile = new FormFile(stream, 0, stream.Length, null, nameFile)
         {
@@ -992,31 +991,16 @@ public class EstimateController : Controller
         var formFileCollection = new FormFileCollection();
         formFileCollection.Add(formFile);
         _file.Create(formFileCollection, FolderEnum.Estimate, (int)estimateId, neestedFolderName);
-        //}
-        //else
-        //{
-        //    //просто бросаем общий файл всех смет в папку share
-        //    var chPath = @$"{_env.WebRootPath}\StaticFiles\Estimate\{buildingCode}\share";
 
-        //    if (!Directory.Exists(chPath))
-        //    {
-        //        Directory.CreateDirectory(chPath);
-        //    }
-        //    if (!System.IO.File.Exists(chPath))
-        //    {
-        //        System.IO.File.Copy(path, $@"{chPath}\{nameFile}", true);
-        //    }
-        //}
     }
 
     private EstimateDTO? GetEstimateForUpdating(string estimateNumber, int contractId, string type = null, string? buildingsCode = null)
     {
-        var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{estimateNumber}" : estimateNumber;
-        if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
+        var fullNumber = type == Constants.SMR_PRO_APP ? $"{buildingsCode}.{estimateNumber}" : estimateNumber;
+        if (fullNumber.Split('.').Count() > 2 && type == Constants.SMR_PRO_APP)
         {
             fullNumber = estimateNumber;
         }
         return _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
     }
-
 }

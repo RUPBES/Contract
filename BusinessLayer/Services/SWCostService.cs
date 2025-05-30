@@ -216,15 +216,15 @@ namespace BusinessLayer.Services
                 return new List<SWCost>();
             }
             
-            for (var time = start; Checker.LessOrEquallyFirstDateByMonth((DateTime)time, (DateTime)end); time = time.Value.AddMonths(1))
+            for (var time = start; DateComparer.IsLessOrSameYearAndMonth((DateTime)time, (DateTime)end); time = time.Value.AddMonths(1))
             {
                 var scopeNow = scope;
                 var answer = _database.SWCosts
-                .Find(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)time) && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
+                .Find(x => DateComparer.IsSameYearAndMonth((DateTime)x.Period, (DateTime)time) && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
                 while (answer == null && scopeNow != null)
                 {                    
                     answer = _database.SWCosts
-                    .Find(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)time) && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
+                    .Find(x => DateComparer.IsSameYearAndMonth((DateTime)x.Period, (DateTime)time) && x.ScopeWorkId == scopeNow.Id).LastOrDefault();
                     scopeNow = scopeNow.ChangeScopeWork;
                 }
                 if (answer != null)

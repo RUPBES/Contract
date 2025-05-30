@@ -5,7 +5,6 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
-using MvcLayer.Models.Reports;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Enums;
@@ -15,56 +14,52 @@ namespace MvcLayer.Controllers
     [Authorize(Policy = "ViewPolicy")]
     public class ContractsController : Controller
     {
-        private readonly IContractOrganizationService _contractOrganizationService;
         private readonly IVContractService _vContractService;
         private readonly IVContractEnginService _vContractEnginService;
         private readonly IContractService _contractService;
         private readonly IScopeWorkService _scopeWorkService;
         private readonly IOrganizationService _organization;
         private readonly IEmployeeService _employee;
-        private readonly ISWCostService _swCostService;
-        private readonly IPrepaymentService _prepaymentService;
         private readonly IFormService _formService;
         private readonly IAmendmentService _amendmentService;
-
         private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
-        private readonly IAdminService _admin;
+        private readonly IHttpHelper _httpHelper;
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IEmployeeService employee, IContractOrganizationService contractOrganizationService, ITypeWorkService typeWork,
-            IVContractService vContractService, IVContractEnginService vContractEnginService, IScopeWorkService scopeWorkService,
-            ISWCostService sWCostService, IPrepaymentService prepaymentService, IFormService formService, IAmendmentService amendmentService,
-            IAdminService adminService)
+            IEmployeeService employee, ITypeWorkService typeWork, IVContractService vContractService, IVContractEnginService vContractEnginService,
+            IScopeWorkService scopeWorkService, IFormService formService, IAmendmentService amendmentService, IHttpHelper httpHelper)
         {
             _contractService = contractService;
             _mapper = mapper;
             _organization = organization;
             _employee = employee;
-            _contractOrganizationService = contractOrganizationService;
             _typeWork = typeWork;
             _vContractService = vContractService;
             _vContractEnginService = vContractEnginService;
             _scopeWorkService = scopeWorkService;
-            _swCostService = sWCostService;
-            _prepaymentService = prepaymentService;
             _formService = formService;
             _amendmentService = amendmentService;
-            _admin = adminService;
+            _httpHelper = httpHelper;
         }
+
+
+        #region CRUD CONTRACT
+
 
         // GET: Contracts        
         public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
-            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-            //_admin.GetListActivity(7);
+            var organizationName = _httpHelper.GetUserOrganizationCodes();
 
-            if (pageNum < 1)
+            if (pageNum < 1 || searchString != null)
             {
-                pageNum = 1;
-            }
-            if (searchString != null)
-            {
+
+                //    pageNum = 1;
+                //}
+                //if (searchString != null)
+                //{
+
                 pageNum = 1;
             }
             else
@@ -84,21 +79,21 @@ namespace MvcLayer.Controllers
             ViewData["CurrentType"] = typeSearch;
             ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
 
-            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
             {
-                return View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName));
+                return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName)));
             }
             else
             {
-                return View(_vContractService.GetPage(100, pageNum ?? 1, organizationName));
+                return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(100, pageNum ?? 1, organizationName)));
             }
         }
 
         // GET: Contracts of Engineerings
         public async Task<IActionResult> Engineerings(string currentFilter, int? pageNum, string searchString, string typeSearch, string currentType, string sortOrder)
         {
-            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-            //var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org")?.Value ?? "ContrOrgBes";
+            var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+
             if (searchString != null)
             {
                 pageNum = 1;
@@ -119,31 +114,41 @@ namespace MvcLayer.Controllers
             ViewData["CurrentFilter"] = searchString;
             ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
 
-            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
             {
-                return View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName));
+                return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPageFilter(100, pageNum ?? 1, searchString, typeSearch, sortOrder, organizationName)));
             }
             else
             {
-                return View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1, organizationName));
+                return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPage(100, pageNum ?? 1, organizationName)));
             }
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            var contract = _contractService.GetById((int)id);
+            if (!id.HasValue)
+            {
+                NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
+                return BadRequest();
+            }
+
+            var contract = _contractService.GetById(id.Value);
             if (contract == null)
             {
                 return NotFound();
             }
-            var amendment = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).
-                Select(x => new AmendmentDTO
-                {
-                    ContractPrice = x.ContractPrice,
-                    DateBeginWork = x.DateBeginWork,
-                    DateEndWork = x.DateEndWork,
-                    DateEntryObject = x.DateEntryObject
-                }).LastOrDefault();
+
+            var amendment = _amendmentService.Find(x => x.ContractId == contract.Id)
+                .OrderBy(x => x.Date).
+                 Select(x => new AmendmentDTO
+                 {
+                     ContractPrice = x.ContractPrice,
+                     DateBeginWork = x.DateBeginWork,
+                     DateEndWork = x.DateEndWork,
+                     DateEntryObject = x.DateEntryObject
+                 })
+                .LastOrDefault();
+
             if (amendment is not null)
             {
                 contract.ContractPrice = amendment.ContractPrice;
@@ -151,14 +156,146 @@ namespace MvcLayer.Controllers
                 contract.DateEndWork = amendment.DateEndWork;
                 contract.EnteringTerm = amendment.DateEntryObject;
             }
-            return View(_mapper.Map<ContractViewModel>(contract));
+            return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create(int? genContrId = null, bool isAgreement = false, bool isEngineering = false, bool isSubContract = false)
         {
-            return View();
+            var orgCode = _httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes";
+            var model = new ContractViewModel
+            {
+                IsAgreementContract = isAgreement,
+                IsEngineering = isEngineering,
+                IsSubContract = isSubContract,
+                Author = orgCode,
+                Owner = orgCode,
+            };
+
+            if (genContrId.HasValue)
+            {
+                if (isAgreement)
+                {
+                    model.AgreementContractId = genContrId;
+                    var agreementContract = _contractService.GetById(genContrId.Value);
+                    if (agreementContract != null)
+                    {
+                        model.NameObject = agreementContract.NameObject;
+                    }
+                }
+                else if (isSubContract)
+                {
+                    model.SubContractId = genContrId;
+                    var subContract = _contractService.GetById(genContrId.Value);
+                    if (subContract != null)
+                    {
+                        model.NameObject = subContract.NameObject;
+                    }
+                }
+                if (isAgreement || isSubContract || isEngineering)
+                {
+                    var mainContract = _contractService.GetById((int)genContrId);
+                    model.NameObject = mainContract.NameObject;
+                }
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                model.EmployeeContracts.Add(new EmployeeContractDTO());
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                model.ContractOrganizations.Add(new ContractOrganizationDTO());
+            }
+
+            model.TypeWorkContracts.Add(new TypeWorkContractDTO());
+            model.SelectionProcedures.Add(new SelectionProcedureDTO());
+
+            return await Task.FromResult<IActionResult>(View(model));
         }
+
+        [HttpPost]
+        [Authorize(Policy = "CreatePolicy")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(ContractViewModel contract)
+        {
+            if (contract is null)
+            {
+                NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
+                return await Task.FromResult<IActionResult>(View(contract));
+            }
+            int returnContractId = 0;
+            if (contract?.IsSubContract == true || contract?.IsAgreementContract == true)
+            {
+                /// todo: добавить проверку на ДС!
+                var gencontract = _contractService?.Find(x => x.Id == (contract?.SubContractId ?? contract?.AgreementContractId))
+                    ?.Select(x => new
+                    {
+                        x.Id,
+                        Price = x.ContractPrice ?? 0,
+                        StartDate = x.Date,
+                        EndDate = x.ContractTerm
+                    })
+                    ?.FirstOrDefault();
+
+                returnContractId = gencontract.Id;
+
+                ///проверяем стоимость субподрядных договоров и соглашений, чтобы не больше генподрядного договора была
+                if (gencontract?.Price < contract.ContractPrice)
+                {
+                    NotificationHelper.SetNotification(TempData, $"Договорная цена не может быть больше цены ген.подрядного договора!", NotificationType.Warning);
+                    return View(contract);
+                }
+
+                ///проверяем даты начала и срока действия субподрядных договоров и соглашений, чтобы не больше генподрядного договора были
+                if (gencontract?.StartDate?.Date > contract.Date || gencontract?.EndDate?.Date < contract.ContractTerm)
+                {
+                    NotificationHelper.SetNotification(
+                        TempData,
+                        $"Период действия довогора не должен выходить за период действия ген.подрядного договора ({gencontract?.StartDate?.ToShortDateString()} - {gencontract?.EndDate?.ToShortDateString()})",
+                        NotificationType.Warning);
+                    return View(contract);
+                }
+            }
+
+            // проверка, существует ли договор с таким номером
+            if (_contractService.IsContractNumberExists(contract.Number) || contract.Number is null)
+            {
+                NotificationHelper.SetNotification(TempData, $"Договор с номером № {contract.Number} уже существует!", NotificationType.Warning);
+                return View(contract);
+            }
+
+            if (contract.PaymentCA.Count == 0)
+            {
+                contract.PaymentCA.Add("Без авансов");
+            }
+
+            contract.FundingSource = string.Join(", ", contract.FundingFS);
+            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+            contract.PaymentСonditionsRaschet =
+                GeneratePaymentDescription(contract.PaymentConditionsDaysRaschet, contract?.PaymentСonditionsRaschet, contract?.IsEngineering);
+
+            contract.ContractOrganizations.RemoveAll(x => x.OrganizationId == 0);
+            contract.EmployeeContracts.RemoveAll(x => x.EmployeeId == 0);
+            contract.TypeWorkContracts.RemoveAll(x => x.TypeWorkId == 0);
+
+            var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
+
+            if (contractId is null)
+            {
+                NotificationHelper.SetNotification(TempData, $"Ошибка добавления", NotificationType.Warning);
+                return await Task.FromResult<IActionResult>(View(nameof(Index)));
+            }
+
+            NotificationHelper.SetNotification(TempData, $"Договор создан", NotificationType.Info);
+            ///если с подобъектами перенаправляем на заполнение подобъектов
+            if (contract.IsMultiple == true)
+            {
+                return await Task.FromResult<IActionResult>(RedirectToAction("CreateSubObj", "Contracts", new { Id = contractId, returnContractId = returnContractId }));
+            }
+            return await Task.FromResult<IActionResult>(RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = returnContractId }));
+        }
+
 
         [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateSubObj(int? id, int returnContractId = 0)
@@ -197,298 +334,10 @@ namespace MvcLayer.Controllers
                 viewModel.Author = organizationName;
                 viewModel.Owner = organizationName;
 
-                if (viewModel.ContractPrice is null)
-                {
-                    viewModel.ContractPrice = 0;
-                }
                 _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
                 return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });
             }
             return View();
-        }
-
-
-        /// <summary>
-        /// Создание соглашения с филиалом
-        /// </summary>
-        /// <param name="id">Договора к которому добавляем субдоговор</param>
-        /// <param name="nameObject">название объекта</param>
-        /// <returns></returns>
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreateAgr(int? id, string? nameObject)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }            
-
-            ContractViewModel contract = new ContractViewModel();
-            contract.IsAgreementContract = true;
-            contract.AgreementContractId = id;
-            contract.NameObject = nameObject;
-
-            var mainContract = _contractService.GetById((int)id);
-            contract.EnteringTerm = mainContract.EnteringTerm;
-            contract.DateBeginWork = mainContract.DateBeginWork;
-            contract.DateEndWork = mainContract.DateEndWork;
-
-            if (mainContract.Date == null)
-            {
-                contract.Date = mainContract.DateBeginWork;
-            }
-            else
-            {
-                contract.Date = mainContract.Date;
-            }
-
-            if (mainContract.ContractTerm == null)
-            {
-                contract.ContractTerm = mainContract.EnteringTerm.Value.AddDays(1);
-            }
-            else
-            {
-                contract.ContractTerm = mainContract.ContractTerm;
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                //contract.ContractOrganizations.Add(new ContractOrganizationDTO());
-                contract.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
-                //contract.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-
-            contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
-            contract.SelectionProcedures.Add(new SelectionProcedureDTO());
-
-            return View(contract);
-        }
-
-        /// <summary>
-        /// Создание  договора на оказание инжиниринговых услуг
-        /// </summary> 
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreateEngin()
-        {
-            ContractViewModel contract = new ContractViewModel();
-            contract.IsEngineering = true;
-
-            for (int i = 0; i < 3; i++)
-            {
-                //contract.ContractOrganizations.Add(new ContractOrganizationDTO());
-                contract.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
-                //contract.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-
-            contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
-            contract.SelectionProcedures.Add(new SelectionProcedureDTO());
-
-            return View(contract);
-        }
-
-        /// <summary>
-        /// Создание субподрядного договора
-        /// </summary>
-        /// <param name="id">Договора к которому добавляем субдоговор</param>
-        /// <param name="nameObject">название объекта</param>
-        /// <returns></returns>
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreateSub(int? id, string? nameObject)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            ContractViewModel contract = new ContractViewModel();
-            contract.IsSubContract = true;
-            contract.SubContractId = id;
-            contract.NameObject = nameObject;
-
-            var mainContract = _contractService.GetById((int)id);
-            contract.EnteringTerm = mainContract.EnteringTerm;
-            contract.DateBeginWork = mainContract.DateBeginWork;
-            contract.DateEndWork = mainContract.DateEndWork;
-
-            if (mainContract.Date == null)
-            {
-                contract.Date = mainContract.DateBeginWork;
-            }
-            else
-            {
-                contract.Date = mainContract.Date;
-            }
-
-            if (mainContract.ContractTerm == null)
-            {
-                contract.ContractTerm = mainContract.EnteringTerm.Value.AddDays(1);
-            }
-            else
-            {
-                contract.ContractTerm = mainContract.ContractTerm;
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                //contract.ContractOrganizations.Add(new ContractOrganizationDTO());
-                contract.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                contract.ContractOrganizations.Add(new ContractOrganizationDTO());
-                //contract.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-
-            contract.TypeWorkContracts.Add(new TypeWorkContractDTO());
-            contract.SelectionProcedures.Add(new SelectionProcedureDTO());
-
-            return View(contract);
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "CreatePolicy")]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(ContractViewModel contract, bool isSubObject = false)
-        {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
-
-            if (contract != null && (contract.IsSubContract == true || contract.IsAgreementContract == true))
-            {
-                var ob = contract.SubContractId != null && contract.SubContractId > 0 ? contract.SubContractId : contract.AgreementContractId;
-                ViewData["returnContractId"] = ob;
-            }
-
-            // проверка, существует ли договор с таким номером,если да - то обратно на заполнение данных
-            if (_contractService.ExistContractByNumber(contract.Number) || contract.Number is null)
-            {
-                TempData["Message"] = "Уже создан договор с таким номерам";
-                if (contract.IsSubContract == true)
-                {
-                    return View("CreateSub", contract);
-                }
-                if (contract.IsAgreementContract == true)
-                {
-                    return View("CreateAgr", contract);
-                }
-                if (contract.IsEngineering == true)
-                {
-                    return View("CreateEngin", contract);
-                }
-
-                return View(contract);
-            }
-
-            if (contract is not null)
-            {
-                contract.FundingSource = string.Join(", ", contract.FundingFS);
-                if (contract.PaymentCA.Count == 0)
-                {
-                    contract.PaymentCA.Add("Без авансов");
-                }
-
-                contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-
-                if (contract.IsEngineering == true)
-                    TempData["IsEngin"] = true;
-                contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
-
-                var orgContract1 = new ContractOrganizationDTO
-                {
-                    IsClient = contract.ContractOrganizations[0].IsClient,
-                    IsGenContractor = contract.ContractOrganizations[0].IsGenContractor,
-                    IsResponsibleForWork = contract.ContractOrganizations[0].IsResponsibleForWork,
-                    OrganizationId = contract.ContractOrganizations[0].OrganizationId,
-                };
-                var orgContract2 = new ContractOrganizationDTO
-                {
-                    IsClient = contract.ContractOrganizations[1].IsClient,
-                    IsGenContractor = contract.ContractOrganizations[1].IsGenContractor,
-                    IsResponsibleForWork = contract.ContractOrganizations[1].IsResponsibleForWork,
-                    OrganizationId = contract.ContractOrganizations[1].OrganizationId,
-                };
-                var orgContract3 = new ContractOrganizationDTO
-                {
-                    IsClient = contract.ContractOrganizations[2].IsClient,
-                    IsGenContractor = contract.ContractOrganizations[2].IsGenContractor,
-                    IsResponsibleForWork = contract.ContractOrganizations[2].IsResponsibleForWork,
-                    OrganizationId = contract.ContractOrganizations[2].OrganizationId,
-                };
-                var empContract1 = new EmployeeContractDTO
-                {
-                    IsResponsible = contract.EmployeeContracts[0].IsResponsible,
-                    IsSignatory = contract.EmployeeContracts[0].IsSignatory,
-                    EmployeeId = contract.EmployeeContracts[0].EmployeeId,
-                };
-                var empContract2 = new EmployeeContractDTO
-                {
-                    IsResponsible = contract.EmployeeContracts[1].IsResponsible,
-                    IsSignatory = contract.EmployeeContracts[1].IsSignatory,
-                    EmployeeId = contract.EmployeeContracts[1].EmployeeId,
-                };
-                var typeWork = new TypeWorkContractDTO
-                {
-                    TypeWorkId = contract.TypeWorkContracts[0].TypeWorkId
-                };
-
-                contract.ContractOrganizations.Clear();
-                contract.EmployeeContracts.Clear();
-                contract.TypeWorkContracts.Clear();
-
-                if (orgContract1.OrganizationId != 0)
-                {
-                    contract.ContractOrganizations.Add(orgContract1);
-                }
-                if (orgContract2.OrganizationId != 0)
-                {
-                    contract.ContractOrganizations.Add(orgContract2);
-                }
-                if (orgContract3.OrganizationId != 0)
-                {
-                    contract.ContractOrganizations.Add(orgContract3);
-                }
-
-                if (empContract1.EmployeeId != 0)
-                {
-                    contract.EmployeeContracts.Add(empContract1);
-                }
-                if (empContract2.EmployeeId != 0)
-                {
-                    contract.EmployeeContracts.Add(empContract2);
-                }
-                if (typeWork.TypeWorkId > 0)
-                {
-                    contract.TypeWorkContracts.Add(typeWork);
-                }
-
-                contract.Author = organizationName;
-                contract.Owner = organizationName;
-
-                if (contract.ContractPrice is null) contract.ContractPrice = 0;
-                if (contract.IsEngineering == true && contract.PaymentСonditionsPrice is null) contract.PaymentСonditionsPrice = 0;
-                var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
-                if (isSubObject == true)
-                {
-                    return RedirectToAction("CreateSubObj", "Contracts", new { Id = contractId, returnContractId = ViewBag.returnContractId });
-                }
-                if (ViewData["returnContractId"] != null)
-                {
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = ViewBag.returnContractId });
-                }
-                if (contract.IsEngineering == true)
-                {
-                    return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
-                }
-                return RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId });
-            }
-
-            return View(contract);
         }
 
         [Authorize(Policy = "EditPolicy")]
@@ -496,11 +345,22 @@ namespace MvcLayer.Controllers
         {
             ViewData["returnContractId"] = returnContractId;
 
-            var contract = _contractService.GetById((int)id);
+            if (!id.HasValue)
+            {
+                NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
+                return BadRequest();
+            }
+
+            var contract = _contractService.GetById(id.Value);
             if (contract == null)
             {
+                NotificationHelper.SetNotification(TempData, $"Не найден договор", NotificationType.Warning);
                 return NotFound();
             }
+
+            //todo: удалить и переписать
+            #region удалить все в модели и заполнить новым!
+
 
             if (contract.IsSubContract != true && contract.IsAgreementContract != true)
             {
@@ -544,16 +404,12 @@ namespace MvcLayer.Controllers
                     });
                 }
             }
+
             if (contract.TypeWorkContracts.Count < 1)
             {
                 contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id });
             }
-
-            if (contract.IsEngineering == true)
-                ViewData["IsEngin"] = true;
-
-            //ViewData["AgreementContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.AgreementContractId);
-            //ViewData["SubContractId"] = new SelectList(_contractService.GetAll(), "Id", "Id", contract.SubContractId);
+            #endregion
 
             var viewContract = _mapper.Map<ContractViewModel>(contract);
             if (contract?.FundingSource is not null)
@@ -564,8 +420,51 @@ namespace MvcLayer.Controllers
             {
                 ViewData["IsAmendment"] = true;
             }
-            return View(viewContract);
+            return await Task.FromResult<IActionResult>(View(viewContract));
         }
+
+        [HttpPost]
+        [Authorize(Policy = "EditPolicy")]
+        public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
+        {
+            contract.ContractOrganizations.RemoveAll(ec => ec.OrganizationId == 0);
+            contract.EmployeeContracts.RemoveAll(ec => ec.EmployeeId == 0);
+            contract.TypeWorkContracts.RemoveAll(ec => ec.TypeWorkId == 0);
+            contract.FundingSource = string.Join(", ", contract.FundingFS);
+            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+            contract.PaymentСonditionsRaschet = GeneratePaymentDescription(contract.PaymentConditionsDaysRaschet, contract.PaymentСonditionsRaschet, contract.IsEngineering);
+
+            try
+            {
+                // если у просроченного договора изменили дату окончания работ, проверяем - если больше сегодняшнего дня то удаляем (если есть) статус ЗАКРЫТ и ПРОСРОЧЕН
+                if (contract?.DateEndWork > DateTime.Now)
+                {
+                    contract.IsClosed = false;
+                    contract.IsExpired = false;
+                }
+
+                _contractService.Update(_mapper.Map<ContractDTO>(contract));
+                NotificationHelper.SetNotification(TempData, "Договор обновлен", NotificationType.Info);
+            }
+            catch (Exception)
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);
+            }
+
+            if (returnContractId != 0)
+            {
+                return await Task.FromResult<IActionResult>(RedirectToAction("Details", new { id = returnContractId }));
+            }
+            else if (contract?.IsEngineering == true)
+            {
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
+            }
+            else
+            {
+                return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
+            }
+        }
+
 
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> EditSubObj(int? id, int returnContractId = 0)
@@ -580,7 +479,7 @@ namespace MvcLayer.Controllers
 
             var viewContract = _mapper.Map<ContractViewModel>(contract);
 
-            return View(viewContract);
+            return await Task.FromResult<IActionResult>(View(viewContract));
         }
 
         [HttpPost]
@@ -598,75 +497,15 @@ namespace MvcLayer.Controllers
 
             if (returnContractId != 0)
             {
-                return RedirectToAction("Details", new { id = returnContractId });
+                return await Task.FromResult<IActionResult>(RedirectToAction("Details", new { id = returnContractId }));
             }
             else if (contract.IsEngineering == true)
             {
-                return RedirectToAction(nameof(Engineerings));
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
             }
             else
             {
-                return RedirectToAction("Index");
-            }
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
-        {
-            for (int index = 0; index < contract.ContractOrganizations.Count; index++)
-            {
-                if (contract.ContractOrganizations[index].OrganizationId == 0)
-                {
-                    contract.ContractOrganizations.Remove(contract.ContractOrganizations[index]);
-                }
-            }
-
-            if (contract.EmployeeContracts[1].EmployeeId == 0)
-            {
-                contract.EmployeeContracts.Remove(contract.EmployeeContracts[1]);
-            }
-            if (contract.EmployeeContracts[0].EmployeeId == 0)
-            {
-                contract.EmployeeContracts.Remove(contract.EmployeeContracts[0]);
-            }
-
-            if (contract.TypeWorkContracts[0].TypeWorkId == 0)
-            {
-                contract.TypeWorkContracts.Remove(contract.TypeWorkContracts[0]);
-            }
-
-            contract.FundingSource = string.Join(", ", contract.FundingFS);
-            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-            if (contract.IsEngineering == true)
-                TempData["IsEngin"] = true;
-            contract.PaymentСonditionsRaschet = CreateStringOfRaschet(contract.PaymentСonditionsDaysRaschet, contract.PaymentСonditionsRaschet);
-            try
-            {
-                // если у просроченного договора изменили дату окончания работ, проверяем - если больше сегодняшнего дня то удаляем (если есть) статус ЗАКРЫТ и ПРОСРОЧЕН
-                if (contract.DateEndWork is not null && contract.DateEndWork > DateTime.Now)
-                {
-                    contract.IsClosed = false;
-                    contract.IsExpired = false;
-                }
-
-                _contractService.Update(_mapper.Map<ContractDTO>(contract));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-            }
-
-            if (returnContractId != 0)
-            {
-                return RedirectToAction("Details", new { id = returnContractId });
-            }
-            else if (contract.IsEngineering == true)
-            {
-                return RedirectToAction(nameof(Engineerings));
-            }
-            else
-            {
-                return RedirectToAction("Index");
+                return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
             }
         }
 
@@ -674,488 +513,294 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _contractService.GetAll() == null)
+            if (id == null || id < 1)
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
 
             var contract = _contractService.GetById((int)id);
             if (contract == null)
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
 
-            return View(_mapper.Map<ContractViewModel>(contract));
+            return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
         }
 
         [Authorize(Policy = "DeletePolicy")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, bool IsEngineering)
         {
             if (id < 1)
             {
+                NotificationHelper.SetNotification(TempData, $"Ошибка удаления", NotificationType.Warning);
                 return View();
             }
-            var deleteId = id;
-            Func<DatabaseLayer.Models.KDO.Contract, bool> where = w => w.Id == id;
-            Func<DatabaseLayer.Models.KDO.Contract, DatabaseLayer.Models.KDO.Contract> select = s => new DatabaseLayer.Models.KDO.Contract
-            {
-                Id = s.Id,
-                IsOneOfMultiple = s.IsOneOfMultiple,
-                MultipleContractId = s.MultipleContractId
-            };
-            var contract = _contractService.Find(where, select).FirstOrDefault();
 
-            if (contract != null)
+            ContractType thisContractType;
+            var parentContracts = _contractService.GetParents(id, out thisContractType);
+
+            /*
+             * Обновление информации у родительских договоров
+             */
+
+            if (parentContracts?.Count > 0 && thisContractType != ContractType.GenСontract)
             {
-                int mainContractId = 0;
-                var typeContract = _contractService.GetContractType(id, out mainContractId);
-                if (mainContractId != 0)
+                var forms = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false);
+                var scopes = _scopeWorkService.GetLastScope(id);                             
+
+                if (thisContractType == ContractType.MultipleContract) //если подобъект => обновление родит. договоров только вычитанием существующих данных, запрещая создание новой в случае отсутствия соответствующей записи
                 {
-                    while (mainContractId != 0)
+                    var scopeOwns = _scopeWorkService.GetLastScope(id, true);
+                    var formsOwns = _formService.Find(x => x.ContractId == id && x.IsOwnForces == true);
+
+                    _scopeWorkService.TryUpdateParentsScopeCosts(scopeOwns, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
+                    _scopeWorkService.TryUpdateParentsScopeCosts(scopes, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
+
+                    foreach (var form in formsOwns) // обновляем справки с3-а родительских договоров
                     {
-                        _scopeWorkService.EditCostMainContract(mainContractId, deleteId, typeContract);
-                        if (typeContract == ContractType.MultipleContract)
-                        {
-                            _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, deleteId, true);
-                            _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, deleteId, true, !true);
-                        }
-                        else
-                        {
-                            _formService.RemoveAllOwnCostsFormFromMnForm(mainContractId, deleteId, false);
-                        }
-                        id = mainContractId;
-                        _contractService.GetContractType(id, out mainContractId);
+                        _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
                     }
-
-                    //удаляем объемы работ подобъектов, после чего удаляем подобъект
-                    _contractService.Delete(deleteId);
-
-                    //после удаления подобъекта, проверяем был ли этот подобъект последним для договора, если да, то меняем для договора флаг, что он больше не составной и удаляем объем работ
-                    //проверить на нулевые значения у главного договора
-                    if (contract.IsOneOfMultiple)
+                    foreach (var form in forms) // обновляем справки с3-а родительских договоров соб.силами
                     {
-                        var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == contract.MultipleContractId);
-                        if (subObj == null || subObj.Count() == 0)
-                        {
-                            try
-                            {
-                                var contractEdit = _contractService.GetById((int)contract.MultipleContractId);
-                                _contractService.DeleteScopeWorks((int)contract.MultipleContractId);
-                                _formService.DeleteNestedFormsByContrId((int)contract.MultipleContractId);
-                                contractEdit.IsMultiple = false;
-                                _contractService.Update(contractEdit);
-                            }
-                            catch (Exception)
-                            {
-                                return BadRequest();
-                            }
-                        }
+                        _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
                     }
                 }
                 else
                 {
-                    _contractService.Delete(id);
+                    foreach (var form in forms) // обновляем справки с3-а родительских договоров соб.силами
+                    {
+                        _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE);
+                    }
+                    _scopeWorkService.TryUpdateParentsScopeCosts(scopes, parentContracts, CrudOp.DELETE);
                 }
             }
 
-            return RedirectToAction(nameof(Index));
+            var childrenContracts = _contractService.GetChildren(id);
+
+            /*
+            *  Удаление договора
+            */
+
+            _contractService.Delete(id);
+            NotificationHelper.SetNotification(TempData, $"Договор удален", NotificationType.Info);
+
+            /*
+            *  Удаление вложенных договоров
+            */
+
+            foreach (var chieldId in childrenContracts) // удаляем вложенные договора
+            {
+                _contractService.Delete(chieldId);
+            }
+
+            int? genContrId = parentContracts?.Where(x => x.Value == ContractType.GenСontract)?.FirstOrDefault().Key;
+
+            
+            if (genContrId.HasValue) //после удаления, проверяем есть у генподряда договора подобъекты, если нет, устанавливаем флаг, что он больше не составной 
+            {
+                var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == genContrId.Value).Count();
+                if (subObj == 0)
+                {
+                    try
+                    {
+                        var contractEdit = _contractService.GetById(genContrId.Value);
+                        contractEdit.IsMultiple = false;
+                        _contractService.Update(contractEdit);
+                        var scopesGen = _scopeWorkService.Find(x => x.ContractId == genContrId);
+                        var hasChildren = _contractService.GetChildren(genContrId.Value).Count() > 0 ? true : false;
+                        if (!hasChildren) // если нет вложенных договоров удаляем объемы работ все у генподрядного договора
+                        {
+                            foreach (var item in scopesGen)
+                            {
+                                _scopeWorkService.Delete(item.Id);
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
+                    }
+                }
+            }
+
+
+            if (thisContractType != ContractType.GenСontract && genContrId.HasValue)
+            {
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Details), new { id = genContrId.Value }));
+            }
+            if (IsEngineering)
+            {
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
+            }
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
         }
 
+
+        #endregion
+
+        #region AJAX-ADD-ENTITY
+
+
+
         [Authorize(Policy = "CreatePolicy")]
-        public async Task<ActionResult> AddOrganization(ContractViewModel model)
+        public async Task<IActionResult> AddOrganization(ContractViewModel model)
         {
-            return PartialView("_PartialAddOrganization", model);
+            return await Task.FromResult<IActionResult>(PartialView("_PartialAddOrganization", model));
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public async Task<ActionResult> AddEmployee(ContractViewModel model)
+        public async Task<IActionResult> AddEmployee(ContractViewModel model)
         {
-            return PartialView("_PartialAddEmployee", model);
+            return await Task.FromResult<IActionResult>(PartialView("_PartialAddEmployee", model));
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public async Task<ActionResult> AddTypeWork(ContractViewModel model)
+        public async Task<IActionResult> AddTypeWork(ContractViewModel model)
         {
             if (model.NameObject is null && model.IsSubContract == true)
             {
                 model.NameObject = _contractService.GetById((int)model.SubContractId).NameObject;
             }
-            return PartialView("_PartialAddTypeWork", model);
+            return await Task.FromResult<IActionResult>(PartialView("_PartialAddTypeWork", model));
+        }
+
+
+        [Authorize(Policy = "CreatePolicy")]
+        public ActionResult AddNewOrganization(ContractViewModel viewModel)
+        {
+            if (viewModel?.ContractOrganizations[3].Organization == null)
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
+                return View("Create", viewModel);
+            }
+
+            var existingOrg = _organization.Find(o => o.Name == viewModel.ContractOrganizations[3].Organization.Name).FirstOrDefault();
+
+            if (existingOrg != null)
+            {
+                NotificationHelper.SetNotification(TempData, "Организация с таким названием уже существует", NotificationType.Warning);
+                return View("Create", viewModel);
+            }
+
+            _organization.Create(viewModel.ContractOrganizations[3].Organization);
+
+            NotificationHelper.SetNotification(TempData, "Добавлена новая организация", NotificationType.Info);
+            return View("Create", viewModel);
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddNewOrganization(ContractViewModel organization)
+        public ActionResult AddNewEmployee(ContractViewModel viewModel)
         {
-            if (organization is not null && organization.ContractOrganizations[3].Organization is not null)
+            if (viewModel?.EmployeeContracts[2]?.Employee is null)
             {
-                _organization.Create(organization.ContractOrganizations[3].Organization);
-
-                if (organization.IsSubContract == true)
-                {
-                    return View("CreateSub", organization);
-                }
-                if (organization.IsAgreementContract == true)
-                {
-                    return View("CreateAgr", organization);
-                }
-                if (organization.IsEngineering == true)
-                {
-                    return View("CreateEngin", organization);
-                }
-                ViewBag.Price = organization.ContractPrice;
-                return View("Create", organization);
+                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
+                return View("Create", viewModel);
             }
-            return BadRequest();
+
+            var fullname = $"{viewModel.EmployeeContracts[2].Employee.LastName} {viewModel.EmployeeContracts[2].Employee.FirstName} {viewModel.EmployeeContracts[2].Employee.FatherName}";
+            var existingOrg = _employee.Find(o => o.FullName.Contains(fullname)).FirstOrDefault();
+
+            if (existingOrg != null)
+            {
+                NotificationHelper.SetNotification(TempData, $"Сотрудник {fullname} уже существует", NotificationType.Warning);
+                return View("Create", viewModel);
+            }
+
+            _employee.Create(viewModel.EmployeeContracts[2].Employee);
+
+            NotificationHelper.SetNotification(TempData, "Добавлен новый сотрудник", NotificationType.Info);
+            return View("Create", viewModel);
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddNewEmployee(ContractViewModel organization)
+        public ActionResult AddNewTypeWork(ContractViewModel viewModel)
         {
-            if (organization is not null && organization.EmployeeContracts[2].Employee is not null)
+            if (viewModel?.TypeWorkContracts[1]?.TypeWork is null)
             {
-                _employee.Create(organization.EmployeeContracts[2].Employee);
-
-                if (organization.IsSubContract == true)
-                {
-                    return View("CreateSub", organization);
-                }
-                if (organization.IsAgreementContract == true)
-                {
-                    return View("CreateAgr", organization);
-                }
-                if (organization.IsEngineering == true)
-                {
-                    return View("CreateEngin", organization);
-                }
-                ViewBag.Price = organization.ContractPrice;
-                return View("Create", organization);
+                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
+                return View("Create", viewModel);
             }
-            return BadRequest();
+
+            var existingOrg = _typeWork.Find(o => o.Name == viewModel.TypeWorkContracts[1].TypeWork.Name).FirstOrDefault();
+
+            if (existingOrg != null)
+            {
+                NotificationHelper.SetNotification(TempData, "Вид работ с таким названием уже существует", NotificationType.Warning);
+                return View("Create", viewModel);
+            }
+
+            _typeWork.Create(viewModel.TypeWorkContracts[1].TypeWork);
+
+            NotificationHelper.SetNotification(TempData, "Добавлен новый вид работ", NotificationType.Info);
+            return View("Create", viewModel);
         }
 
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddNewTypeWork(ContractViewModel organization)
-        {
-            if (organization is not null && organization.TypeWorkContracts[1].TypeWork is not null)
-            {
-                _typeWork.Create(organization.TypeWorkContracts[1].TypeWork);
-
-                if (organization.IsSubContract == true)
-                {
-                    return View("CreateSub", organization);
-                }
-                if (organization.IsAgreementContract == true)
-                {
-                    return View("CreateAgr", organization);
-                }
-                if (organization.IsEngineering == true)
-                {
-                    return View("CreateEngin", organization);
-                }
-                ViewBag.Price = organization.ContractPrice;
-                return View("Create", organization);
-            }
-            return BadRequest();
-        }
-
-        private string? CreateStringOfRaschet(int? days, string payment)
-        {
-            if (!string.IsNullOrWhiteSpace(payment) && days.HasValue)
-            {
-                if (TempData["IsEngin"] == null)
-                {
-                    if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return $"Расчет за выполненные работы производится в течение {days} календарных дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ";
-                    }
-                    if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return $"Расчет за выполненные работы производится в течение {days} банковских дней с момента подписания актов сдачи-приемки выполненных работ";
-                    }
-                    if (payment.Equals("числа месяца следующего за отчетным", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return $"Расчет за выполненные работы производится не позднее {days} числа месяца, следующего за отчетным";
-                    }
-                }
-                else
-                {
-                    if (payment.Equals("календарных дней после подписания акта сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return $"Расчет за выполненные услуги производится в течение {days} календарных дней с момента подписания акта сдачи-приемки оказанных услуг";
-                    }
-                    if (payment.Equals("банковских дней с момента подписания актов сдачи-приемки выполненных работ", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return $"Расчет за выполненные услуги производится в течение {days} банковских дней с момента подписания актов сдачи-приемки оказанных услуг";
-                    }
-                    if (payment.Equals("числа месяца следующего за отчетным", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return $"Расчет за выполненные услуги производится не позднее {days} числа месяца, следующего за отчетным";
-                    }
-                }
-            }
-            return null;
-        }
+        #endregion
 
         public ActionResult ExistContractByNumber(string contractNumber)
         {
-            var result = _contractService.ExistContractByNumber(contractNumber);
+            var result = _contractService.IsContractNumberExists(contractNumber);
             return Json(result);
         }
 
-        public ActionResult ExistContractByNumberadnName(string query)
+        public ActionResult OpenScope(int id, int? mainId)
         {
-            var result = _vContractService.FindContract(query);
-            return Json(result);
-        }
+            // Получаем базовую информацию о договоре
+            var contractProp = _contractService
+                  .Find(x => x.Id == id)
+                  .Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering })
+                  .FirstOrDefault();
 
-        public ActionResult ChooseDoc(int id)
-        {
-            var doc = _contractService.GetById(id);
-            return PartialView("_OneContract", _mapper.Map<ContractViewModel>(doc));
-        }
-
-        public ActionResult ShowScopeWorks(int id)
-        {
-            var doc = _contractService.Find(x => x.Id == id).Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering }).FirstOrDefault();
-            var viewModel = new ScopeWorkContractViewModel();
-            viewModel.AmendmentInfo = _amendmentService.IsThereScopeWorkWitnLastAmendmentByContractId(id) == false ? ConstantsApp.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : String.Empty;
-            var amendmentId = _amendmentService?.Find(x => x.ContractId == id)?.LastOrDefault()?.Id;
-            var lastScope = _scopeWorkService.GetLastScope(id);
-            var lastScopeOwn = _scopeWorkService.GetLastScope(id, true);
-            var subDoc = _contractService.Find(x => x.SubContractId == id || x.AgreementContractId == id || x.MultipleContractId == id).Select(x => x.Id).ToList();
-            #region Заполнение данными из объема работ(План)
-            if (lastScope != null)
+            if (contractProp == null)
             {
-                lastScope.SWCosts = lastScope.SWCosts.OrderBy(x => x.Period).ToList();
-                foreach (var item in lastScope.SWCosts)
-                {
-                    var ob = new ItemScopeWorkContract();
-                    ob.PnrCost = item.PnrCost;
-                    ob.SmrCost = item.SmrCost;
-                    ob.EquipmentCost = item.EquipmentCost;
-                    ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
-                    ob.AdditionalCost = item.AdditionalCost;
-                    ob.Period = item.Period;
-                    ob.TotalCost = item.CostNds;
-                    ob.TotalWithoutNds = item.CostNoNds;
-                    viewModel.scopes.Add(ob);
-
-                    viewModel.contractPrice.SmrCost += ob.SmrCost;
-                    viewModel.contractPrice.PnrCost += ob.PnrCost;
-                    viewModel.contractPrice.EquipmentCost += ob.EquipmentCost;
-                    viewModel.contractPrice.OtherExpensesCost += ob.OtherExpensesCost;
-                    viewModel.contractPrice.AdditionalCost += ob.AdditionalCost;
-                    viewModel.contractPrice.TotalCost += ob.TotalCost;
-                    viewModel.contractPrice.TotalWithoutNds += ob.TotalWithoutNds;
-                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
-                    {
-                        viewModel.todayScope.SmrCost += ob.SmrCost;
-                        viewModel.todayScope.PnrCost += ob.PnrCost;
-                        viewModel.todayScope.EquipmentCost += ob.EquipmentCost;
-                        viewModel.todayScope.OtherExpensesCost += ob.OtherExpensesCost;
-                        viewModel.todayScope.AdditionalCost += ob.AdditionalCost;
-                        viewModel.todayScope.TotalCost += ob.TotalCost;
-                        viewModel.todayScope.TotalWithoutNds += ob.TotalWithoutNds;
-                    }
-                }
-            }
-            else if (lastScope == null && lastScopeOwn != null)
-            {
-                lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
-                foreach (var item in lastScopeOwn.SWCosts)
-                {
-                    var ob = new ItemScopeWorkContract();
-                    ob.PnrCost = 0;
-                    ob.SmrCost = 0;
-                    ob.EquipmentCost = 0;
-                    ob.OtherExpensesCost = 0;
-                    ob.AdditionalCost = 0;
-                    ob.Period = item.Period;
-                    ob.TotalCost = 0;
-                    ob.TotalWithoutNds = 0;
-                    viewModel.scopes.Add(ob);
-
-                    viewModel.contractPrice.SmrCost += ob.SmrCost;
-                    viewModel.contractPrice.PnrCost += ob.PnrCost;
-                    viewModel.contractPrice.EquipmentCost += ob.EquipmentCost;
-                    viewModel.contractPrice.OtherExpensesCost += ob.OtherExpensesCost;
-                    viewModel.contractPrice.AdditionalCost += ob.AdditionalCost;
-                    viewModel.contractPrice.TotalCost += ob.TotalCost;
-                    viewModel.contractPrice.TotalWithoutNds += ob.TotalWithoutNds;
-                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
-                    {
-                        viewModel.todayScope.SmrCost += ob.SmrCost;
-                        viewModel.todayScope.PnrCost += ob.PnrCost;
-                        viewModel.todayScope.EquipmentCost += ob.EquipmentCost;
-                        viewModel.todayScope.OtherExpensesCost += ob.OtherExpensesCost;
-                        viewModel.todayScope.AdditionalCost += ob.AdditionalCost;
-                        viewModel.todayScope.TotalCost += ob.TotalCost;
-                        viewModel.todayScope.TotalWithoutNds += ob.TotalWithoutNds;
-                    }
-                }
-            }
-            else
-            {
-                return PartialView("_Message", new ModalViewModel { message = "Заполните объем работ", header = "Информирование", textButton = "Хорошо" });
-            }
-            #endregion
-            #region Заполнение данными из объема работ(Собственными силами)                     
-            if (lastScopeOwn != null)
-            {
-                lastScopeOwn.SWCosts = lastScopeOwn.SWCosts.OrderBy(x => x.Period).ToList();
-                foreach (var item in lastScopeOwn.SWCosts)
-                {
-                    var ob = new ItemScopeWorkContract();
-                    ob.PnrCost = item.PnrCost;
-                    ob.SmrCost = item.SmrCost;
-                    ob.EquipmentCost = item.EquipmentCost;
-                    ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
-                    ob.AdditionalCost = item.AdditionalCost;
-                    ob.Period = item.Period;
-                    ob.TotalCost = item.CostNds;
-                    ob.TotalWithoutNds = item.CostNoNds;
-                    viewModel.scopesOwn.Add(ob);
-
-                    viewModel.contractPriceOwn.SmrCost += item.SmrCost;
-                    viewModel.contractPriceOwn.PnrCost += item.PnrCost;
-                    viewModel.contractPriceOwn.EquipmentCost += item.EquipmentCost;
-                    viewModel.contractPriceOwn.OtherExpensesCost += ob.OtherExpensesCost;
-                    viewModel.contractPriceOwn.AdditionalCost += item.AdditionalCost;
-                    viewModel.contractPriceOwn.TotalCost += item.CostNds;
-                    viewModel.contractPriceOwn.TotalWithoutNds += item.CostNoNds;
-                    if (Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Today.Year, 1, 1), (DateTime)item.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 12, 1)))
-                    {
-                        viewModel.todayScopeOwn.SmrCost += item.SmrCost;
-                        viewModel.todayScopeOwn.PnrCost += item.PnrCost;
-                        viewModel.todayScopeOwn.EquipmentCost += item.EquipmentCost;
-                        viewModel.todayScopeOwn.OtherExpensesCost += ob.OtherExpensesCost;
-                        viewModel.todayScopeOwn.AdditionalCost += item.AdditionalCost;
-                        viewModel.todayScopeOwn.TotalCost += item.CostNds;
-                        viewModel.todayScopeOwn.TotalWithoutNds += item.CostNoNds;
-                    }
-                }
-            }
-            #endregion
-            var facts = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false).OrderBy(x => x.Period).ToList();
-            #region Заполнение данных из С-3А
-            foreach (var item in facts)
-            {
-                var ob = new ItemScopeWorkContract();
-                ob.PnrCost = item.PnrCost;
-                ob.SmrCost = item.SmrCost;
-                ob.EquipmentCost = item.EquipmentCost;
-                ob.EquipmentClientCost = item.EquipmentClientCost;
-                ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
-                ob.AdditionalCost = item.AdditionalCost;
-                ob.MaterialCost = item.MaterialClientCost;
-                ob.Period = item.Period;
-                ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + ob.OtherExpensesCost;
-                ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.AdditionalContractCost + ob.OtherExpensesCost - item.OtherExpensesNdsCost;
-                viewModel.facts.Add(ob);
-
-                viewModel.remainingScope.SmrCost += ob.SmrCost;
-                viewModel.remainingScope.PnrCost += ob.PnrCost;
-                viewModel.remainingScope.EquipmentCost += ob.EquipmentCost;
-                viewModel.remainingScope.EquipmentClientCost = ob.EquipmentClientCost;
-                viewModel.remainingScope.OtherExpensesCost += ob.OtherExpensesCost;
-                viewModel.remainingScope.AdditionalCost += ob.AdditionalCost;
-                viewModel.remainingScope.MaterialCost += ob.MaterialCost;
-                viewModel.remainingScope.TotalCost += ob.TotalCost;
-                viewModel.remainingScope.TotalWithoutNds += ob.TotalWithoutNds;
-
-                if (Checker.LessFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 1, 1)))
-                {
-                    viewModel.workTodayYear.SmrCost += ob.SmrCost;
-                    viewModel.workTodayYear.PnrCost += ob.PnrCost;
-                    viewModel.workTodayYear.EquipmentCost += ob.EquipmentCost;
-                    viewModel.workTodayYear.EquipmentClientCost = ob.EquipmentClientCost;
-                    viewModel.workTodayYear.OtherExpensesCost += ob.OtherExpensesCost;
-                    viewModel.workTodayYear.AdditionalCost += ob.AdditionalCost;
-                    viewModel.workTodayYear.MaterialCost += ob.MaterialCost;
-                    viewModel.workTodayYear.TotalCost += ob.TotalCost;
-                    viewModel.workTodayYear.TotalWithoutNds += ob.TotalWithoutNds;
-                }
-            }
-            #endregion
-            #region Заполнение данных из С-3А(Собственными силами)
-            foreach (var docOwn in subDoc)
-            {
-                var factsOwn = _formService.Find(x => x.ContractId == docOwn && x.IsOwnForces == false).OrderBy(x => x.Period).ToList();
-                foreach (var item in factsOwn)
-                {
-                    var ob = new ItemScopeWorkContract();
-                    ob.PnrCost = item.PnrCost;
-                    ob.SmrCost = item.SmrCost;
-                    ob.EquipmentCost = item.EquipmentCost;
-                    ob.EquipmentClientCost = item.EquipmentClientCost;
-                    ob.OtherExpensesCost = item.OtherExpensesCost + item.MaterialCost + item.GenServiceCost;
-                    ob.AdditionalCost = item.AdditionalCost;
-                    ob.MaterialCost = item.MaterialClientCost;
-                    ob.Period = item.Period;
-                    ob.TotalCost = item.SmrCost + item.PnrCost + item.EquipmentCost + ob.OtherExpensesCost;
-                    ob.TotalWithoutNds = item.SmrContractCost + item.PnrContractCost + item.EquipmentContractCost + item.AdditionalContractCost + ob.OtherExpensesCost  - item.OtherExpensesNdsCost;
-                    viewModel.factsOwn.Add(ob);
-
-                    viewModel.remainingScopeOwn.SmrCost += ob.SmrCost;
-                    viewModel.remainingScopeOwn.PnrCost += ob.PnrCost;
-                    viewModel.remainingScopeOwn.EquipmentCost += ob.EquipmentCost;
-                    viewModel.remainingScopeOwn.EquipmentClientCost += ob.EquipmentClientCost;
-                    viewModel.remainingScopeOwn.OtherExpensesCost += ob.OtherExpensesCost;
-                    viewModel.remainingScopeOwn.AdditionalCost += ob.AdditionalCost;
-                    viewModel.remainingScopeOwn.MaterialCost += ob.MaterialCost;
-                    viewModel.remainingScopeOwn.TotalCost += ob.TotalCost;
-                    viewModel.remainingScopeOwn.TotalWithoutNds += ob.TotalWithoutNds;
-
-                    if (Checker.LessFirstDateByMonth((DateTime)item.Period, new DateTime(DateTime.Today.Year, 1, 1)))
-                    {
-                        viewModel.workTodayYearOwn.SmrCost += ob.SmrCost;
-                        viewModel.workTodayYearOwn.PnrCost += ob.PnrCost;
-                        viewModel.workTodayYearOwn.EquipmentCost += ob.EquipmentCost;
-                        viewModel.workTodayYearOwn.EquipmentClientCost += ob.EquipmentClientCost;
-                        viewModel.workTodayYearOwn.OtherExpensesCost += ob.OtherExpensesCost;
-                        viewModel.workTodayYearOwn.AdditionalCost += ob.AdditionalCost;
-                        viewModel.workTodayYearOwn.MaterialCost += ob.MaterialCost;
-                        viewModel.workTodayYearOwn.TotalCost += ob.TotalCost;
-                        viewModel.workTodayYearOwn.TotalWithoutNds += ob.TotalWithoutNds;
-                    }
-                }
-            }
-            #endregion
-            #region Осталось работы (Общая и своими силами)
-            viewModel.remainingScope.SmrCost = viewModel.contractPrice.SmrCost - viewModel.remainingScope.SmrCost;
-            viewModel.remainingScope.PnrCost = viewModel.contractPrice.PnrCost - viewModel.remainingScope.PnrCost;
-            viewModel.remainingScope.EquipmentCost = viewModel.contractPrice.EquipmentCost - viewModel.remainingScope.EquipmentCost;
-            viewModel.remainingScope.OtherExpensesCost = viewModel.contractPrice.OtherExpensesCost - viewModel.remainingScope.OtherExpensesCost;
-            viewModel.remainingScope.AdditionalCost = viewModel.contractPrice.AdditionalCost - viewModel.remainingScope.AdditionalCost;
-            viewModel.remainingScope.MaterialCost = viewModel.contractPrice.MaterialCost - viewModel.remainingScope.MaterialCost;
-            viewModel.remainingScope.TotalCost = viewModel.contractPrice.TotalCost - viewModel.remainingScope.TotalCost;
-            viewModel.remainingScope.TotalWithoutNds = viewModel.contractPrice.TotalWithoutNds - viewModel.remainingScope.TotalWithoutNds;
-
-            viewModel.remainingScopeOwn.SmrCost = viewModel.contractPriceOwn.SmrCost - viewModel.remainingScopeOwn.SmrCost;
-            viewModel.remainingScopeOwn.PnrCost = viewModel.contractPriceOwn.PnrCost - viewModel.remainingScopeOwn.PnrCost;
-            viewModel.remainingScopeOwn.EquipmentCost = viewModel.contractPriceOwn.EquipmentCost - viewModel.remainingScopeOwn.EquipmentCost;
-            viewModel.remainingScopeOwn.OtherExpensesCost = viewModel.contractPriceOwn.OtherExpensesCost - viewModel.remainingScopeOwn.OtherExpensesCost;
-            viewModel.remainingScopeOwn.AdditionalCost = viewModel.contractPriceOwn.AdditionalCost - viewModel.remainingScopeOwn.AdditionalCost;
-            viewModel.remainingScopeOwn.MaterialCost = viewModel.contractPriceOwn.MaterialCost - viewModel.remainingScopeOwn.MaterialCost;
-            viewModel.remainingScopeOwn.TotalCost = viewModel.contractPriceOwn.TotalCost - viewModel.remainingScopeOwn.TotalCost;
-            viewModel.remainingScopeOwn.TotalWithoutNds = viewModel.contractPriceOwn.TotalWithoutNds - viewModel.remainingScopeOwn.TotalWithoutNds;
-            #endregion
-            if (doc.IsSubContract != true && doc.IsAgreementContract != true)
-            {
-                ViewData["main"] = true;
+                return NotFound();
             }
 
-            if (doc.IsEngineering == true)
+            var type = ScopeType.Both;
+            mainId = mainId is null ? id : mainId;
+
+            if (contractProp.IsAgreementContract == true || contractProp.IsSubContract == true || contractProp.IsEngineering == true)
             {
-                ViewData["Engin"] = true;
+                type = ScopeType.NoOwn;
             }
 
-            return PartialView("_ScopeWork", viewModel);
+            var viewModel = new ScopeWorkReportModel();
+            var scopes = _scopeWorkService.GetScopeWorksInfoTable(id, type);
+            var forms = _formService.GetScopeWorksInfoTable(id, type);
+
+
+            ViewBag.AmendmentInfo = _scopeWorkService.HasNewAmendment(id) == false ?
+                Constants.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : string.Empty;
+
+            foreach (var item in scopes.Scopes)
+            {
+                viewModel.Scopes.TryAdd(item.Key, item.Value);
+            }
+
+            foreach (var item in forms.Scopes)
+            {
+                viewModel.Scopes.TryAdd(item.Key, item.Value);
+            }
+
+            var contract = _contractService
+                 .Find(x => x.Id == id)
+                 .Select(x => new { x.DateBeginWork, x.DateEndWork, x.ContractTerm })
+                 .FirstOrDefault();
+
+            var dates = new List<DateTime>();
+            var currentDate = contract?.DateBeginWork;
+
+            while (DateComparer.IsLessOrSameYearAndMonth(currentDate, contract.DateEndWork))
+            {
+                dates.Add((DateTime)currentDate);
+                currentDate = currentDate?.AddMonths(1);
+            }
+
+            ViewBag.Periods = dates;
+
+            return View("_ScopeWork", viewModel);
         }
 
         [Authorize(Policy = "AdminPolicy")]
@@ -1202,6 +847,7 @@ namespace MvcLayer.Controllers
                     contract.IsExpired = true;
                 }
                 _contractService.Update(contract);
+                NotificationHelper.SetNotification(TempData, "Статус договора изменен", NotificationType.Info);
             }
 
             return RedirectToAction("Index", "Contracts");
@@ -1237,6 +883,7 @@ namespace MvcLayer.Controllers
                     contract.IsClosed = false;
                 }
                 _contractService.Update(contract);
+                NotificationHelper.SetNotification(TempData, "Статус договора обновлен", NotificationType.Info);
             }
 
 
@@ -1249,5 +896,32 @@ namespace MvcLayer.Controllers
                 return RedirectToAction("Index");
             }
         }
+
+
+        private string? GeneratePaymentDescription(int? days, string? payment, bool? IsEngineering = false)
+        {
+            if (string.IsNullOrWhiteSpace(payment) || !days.HasValue)
+            {
+                return null;
+            }
+
+            var workType = IsEngineering == true ? "услуги" : "работы";
+
+            var paymentText = payment.ToLower() switch
+            {
+                var p when p.Contains("календарных дней с момента подписания акта") =>
+                    $"Расчет за выполненные {workType} производится в течение {days} календарных дней с момента подписания акта сдачи-приемки {(IsEngineering == true ? "оказанных услуг" : "выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ")}",
+
+                var p when p.Contains("банковских дней") =>
+                    $"Расчет за выполненные {workType} производится в течение {days} банковских дней с момента подписания актов сдачи-приемки {(IsEngineering == true ? "оказанных услуг" : "выполненных работ")}",
+
+                var p when p.Contains("числа месяца, следующего") =>
+                    $"Расчет за выполненные {workType} производится не позднее {days} числа месяца, следующего за отчетным",
+
+                _ => null
+            };
+
+            return paymentText;
+        }       
     }
 }

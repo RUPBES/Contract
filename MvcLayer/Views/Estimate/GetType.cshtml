@@ -47,15 +47,15 @@
                     <div>
                         <input id="contractId" name="contractId" value="@ViewBag.contractId" hidden />
                         <input name="returnContractId" value="@ViewBag.returnContractId" hidden />
-                        @*<input name="isChange" value="@ViewBag.IsChange" hidden />*@
                         <input name="estimateId" value="@ViewBag.EstimateId" hidden />
                         <input name="isUpdate" id="isUpdateId" value="@ViewBag.IsUpdate" hidden />
+                        
                         <select name="type" class="form-select" id="selectTypeId">
                             @foreach (var item in Enum.GetValues<EstimateType>())
                             {
                                 <option value="@item.ToString()">
                                     <span>
-                                        @Converter?.GetTypeOfEstimateApp((int)item)
+                                        @Converter?.GetEstimateAppType((int)item)
                                     </span>
                                 </option>
                             }

@@ -1,17 +1,17 @@
 ﻿@model MvcLayer.Models.ContractViewModel
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@* @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract *@
 
 @{
-    var contract = Contract.GetById(Model.Id);
-    ViewData["Title"] = $"Удаление контракта №{contract.Number}";
+    // var contract = Model.GetById(Model.Id);
+    ViewData["Title"] = $"Удаление контракта №{Model.Number}";
 }
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" style="max-width:800px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (contract.IsEngineering != true)
+                    @if (Model.IsEngineering != true)
                     {
                         <a asp-controller="Contracts" asp-action="Index" class="close-btn"></a>
                     }
@@ -21,77 +21,64 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <div class="row">
-                    <div class="col-3">
-                        <label asp-for="Number"></label>
-                        <input asp-for="Number" class="form-control" readonly />
-                    </div>
-                    <div class="col-9">
-                        <label asp-for="NameObject"></label>
-                        <input asp-for="NameObject" class="form-control" readonly />
-                    </div>
-                </div>
-                <div class="row">
-                    @if (contract.IsEngineering != true)
-                    {
-                        <div class="col-3">
-                            <label>Дата закл. договора</label>
-                            <input value="@Model.Date?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                        <div class="col-2">
-                            <label asp-for="DateBeginWork"></label>
-                            <input value="@Model.DateBeginWork?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                        <div class="col-2">
-                            <label asp-for="DateEndWork"></label>
-                            <input value="@Model.DateEndWork?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
+                <div>
+                    <dl class="row">
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.Number)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Html.DisplayFor(model => model.Number)
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.NameObject)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Html.DisplayFor(model => model.NameObject)
+                        </dd>
 
-                        <div class="col-2">
-                            <label asp-for="EnteringTerm"></label>
-                            <input value="@Model.EnteringTerm?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                        <div class="col-3">
-                            <label asp-for="ContractTerm"></label>
-                            <input value="@Model.ContractTerm?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="col-4">
-                            <label>Дата закл. договора</label>
-                            <input value="@Model.Date?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                        <div class="col-4">
-                            <label asp-for="DateBeginWork"></label>
-                            <input value="@Model.DateBeginWork?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                        <div class="col-4">
-                            <label asp-for="DateEndWork"></label>
-                            <input value="@Model.DateEndWork?.ToString("dd MMMM yyyy")" class="form-control" readonly />
-                        </div>
-                    }
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        <label asp-for="ContractPrice"></label>
-                        <input value="@Model.ContractPrice?.ToString("N2")" class="form-control" readonly />
-                    </div>
-                    @if (contract.IsEngineering == true)
-                    {
-                        <div class="col-3">
-                            <label>Условия цены, %</label>
-                            <input value="@Model.PaymentСonditionsPrice" class="form-control" readonly />
-                        </div>
-                    }
-                    <div class="col-3">
-                        <label asp-for="Сurrency"></label>
-                        <input value="@Model.Сurrency" class="form-control" readonly />
-                    </div>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.Date)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Model.Date?.ToShortDateString()
+                        </dd>
+                        <dt class="col-sm-4">
+                           Заказчик
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Model.ContractOrganizations.FirstOrDefault(x => x.IsClient == true)?.Organization.Name
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.DateBeginWork)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Model.DateBeginWork?.ToShortDateString()
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.DateEndWork)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Model.DateEndWork?.ToShortDateString()
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.ContractPrice)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Model.ContractPrice.ToString("N2")
+                        </dd>
+                        <dt class="col-sm-4">
+                            @Html.DisplayNameFor(model => model.Сurrency)
+                        </dt>
+                        <dd class="col-sm-8">
+                            @Html.DisplayFor(model => model.Сurrency)
+                        </dd>
+                       
+                    </dl>
                 </div>
                 <form asp-action="Delete">
                     <input type="hidden" asp-for="Id" />
-                    <div class="btn_position mt-5">
+                    <input asp-for="IsEngineering" type="hidden" />
+                    <div class="btn_position mt-4">
                         <button type="submit" class="btn btn-danger">Удалить</button>
                     </div>
                 </form>

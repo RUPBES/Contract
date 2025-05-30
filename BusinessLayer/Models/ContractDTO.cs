@@ -98,6 +98,8 @@ namespace BusinessLayer.Models
         /// </summary>
         public double? PaymentСonditionsPrice { get; set; }
 
+        public string? WorkType { get; set; }
+
         public bool IsMultiple { get; set; }
         public int? MultipleContractId { get; set; }
         public bool IsOneOfMultiple { get; set; }

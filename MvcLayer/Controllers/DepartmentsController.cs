@@ -9,6 +9,9 @@ using DatabaseLayer.Models.KDO;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Diagnostics.Contracts;
 using Microsoft.AspNetCore.Authorization;
+using Org.BouncyCastle.Ocsp;
+using BusinessLayer.Helpers;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MvcLayer.Controllers
 {
@@ -30,7 +33,7 @@ namespace MvcLayer.Controllers
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
-            ViewBag.OrganizationSortParm = sortOrder == "organization" ? "organizationDesc" : "organization";            
+            ViewBag.OrganizationSortParm = sortOrder == "organization" ? "organizationDesc" : "organization";
 
             if (query != null)
             { }
@@ -39,7 +42,7 @@ namespace MvcLayer.Controllers
             ViewBag.CurrentFilter = query;
             var items = _departmentService.GetAll();
             return View(_mapper.Map<IEnumerable<DepartmentViewModel>>(items));
-        }        
+        }
 
         public async Task<IActionResult> Details(int? id)
         {
@@ -52,7 +55,7 @@ namespace MvcLayer.Controllers
             if (department == null)
             {
                 return NotFound();
-            }            
+            }
             return View(_mapper.Map<DepartmentViewModel>(department));
         }
 
@@ -71,10 +74,15 @@ namespace MvcLayer.Controllers
             if (ModelState.IsValid)
             {
                 _departmentService.Create(_mapper.Map<DepartmentDTO>(department));
+                if (department.OrganizationId.HasValue)
+                {
+                    return RedirectToAction("Details", "Organizations", new { id = department.OrganizationId });
+                }
+
                 return RedirectToAction("Index", "Organizations");
             }
             ViewData["OrganizationId"] = new SelectList(_departmentService.GetAll(), "Id", "Name", department.OrganizationId);
-            return RedirectToAction("Index","Organizations");
+            return RedirectToAction("Index", "Organizations");
         }
 
         [Authorize(Policy = "EditPolicy")]
@@ -128,60 +136,28 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null || _departmentService.GetAll() == null)
+            try
             {
-                return NotFound();
-            }
-
-            var department = _departmentService.GetById((int)id);
-            if (department == null)
-            {
-                return NotFound();
-            }
-
-            return View(_mapper.Map<DepartmentViewModel>(department));
-        }
-
-        [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> ShowDelete()
-        {
-            return PartialView("_ViewDelete");
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> ShowResultDelete(int id)
-        {
-            var department = _departmentService.GetById((int)id);
-            _departmentService.Delete(id);
-            return PartialView("_ViewDelete");
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [Authorize(Policy = "DeletePolicy")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_departmentService.GetAll() == null)
-            {
-                return Problem("Entity set 'ContractsContext.Departments'  is null.");                
-            }
-            var department = _departmentService.GetById((int)id);
-            if (department != null)
-            {
+                var department = _departmentService.GetById(id);
                 _departmentService.Delete(id);
+                NotificationHelper.SetNotification(TempData, $"Отдел организации удален", NotificationType.Info);
+                return Ok();
             }
-
-            return RedirectToAction(nameof(Index));            
+            catch (Exception)
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления", NotificationType.Error);
+                return BadRequest();
+            }
         }
-
+               
         public JsonResult GetJsonDepartments(int id)
         {
-            return Json(_mapper.Map<IEnumerable<DepartmentsJson>>(_departmentService.Find(x=>x.OrganizationId == id)));
+            return Json(_mapper.Map<IEnumerable<DepartmentsJson>>(_departmentService.Find(x => x.OrganizationId == id)));
         }
     }
+
     class DepartmentsJson
     {
         public int Id { get; set; }

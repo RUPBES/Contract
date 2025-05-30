@@ -15,22 +15,15 @@ namespace MvcLayer.Controllers
     [Authorize(Policy = "ViewPolicy")]
     public class ServiceGCController : Controller
     {
-
-        private readonly IContractService _contractService;
-        private readonly IOrganizationService _organization;
         private readonly IServiceGCService _serviceGC;
         private readonly IScopeWorkService _scopeWork;
-
         private readonly IServiceCostService _serviceCost;
         private readonly IMapper _mapper;
 
-        public ServiceGCController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IServiceGCService serviceGC, IScopeWorkService scopeWork, IServiceCostService serviceCost)
+        public ServiceGCController(IMapper mapper, IServiceGCService serviceGC, IScopeWorkService scopeWork, IServiceCostService serviceCost)
         {
-            _contractService = contractService;
             _scopeWork = scopeWork;
             _mapper = mapper;
-            _organization = organization;
             _serviceGC = serviceGC;
             _serviceCost = serviceCost;
         }
@@ -59,11 +52,11 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
+                var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
 
                 if (period is null)
                 {
-                    TempData["Message"] = "Заполните объем работ";
+                    NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
@@ -94,7 +87,7 @@ namespace MvcLayer.Controllers
                     if (serviceMain is null || serviceMain?.Count() < 1)
                     {
                         periodChoose.IsChange = false;
-                        
+
                         return RedirectToAction(nameof(CreatePeriods), periodChoose);
                     }
 
@@ -109,14 +102,14 @@ namespace MvcLayer.Controllers
                     //если нет авансов, запонять факт невозможно, перенаправляем обратно на договор
                     if (serviceMain is null || serviceMain?.Count() < 1)
                     {
-                        TempData["Message"] = "Заполните услуги генподряда(план)";
+                        NotificationHelper.SetNotification(TempData, "Заполните услуги генподряда(план)", NotificationType.Warning);
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
 
                     if (_serviceCost.Find(x => x.IsFact != true && x.ServiceGCId == сhangeServiceId).FirstOrDefault() is null)
                     {
-                        TempData["Message"] = "Не заполнены суммы планируемых генуслуг";
+                        NotificationHelper.SetNotification(TempData, "Не заполнены суммы планируемых генуслуг", NotificationType.Warning);
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
@@ -124,10 +117,10 @@ namespace MvcLayer.Controllers
                     DateTime startDate = period.Value.Item1;
 
                     //если есть авансы заполняем список дат, для выбора за какой период заполняем факт.авансы
-                    while (Checker.LessOrEquallyFirstDateByMonth(startDate, (DateTime)(period?.Item2)))
+                    while (DateComparer.IsLessOrSameYearAndMonth(startDate,(period?.Item2)))
                     {
                         //проверяем если по данной дате уже заполненные факт.авансы
-                        if (_serviceCost.Find(x => Checker.EquallyDateByMonth((DateTime)x.Period, startDate) && 
+                        if (_serviceCost.Find(x => DateComparer.IsSameYearAndMonth(x.Period, startDate) &&
                             x.ServiceGCId == сhangeServiceId && x.IsFact == true).FirstOrDefault() is null)
                         {
                             periodChoose.ListDates.Add(startDate);
@@ -142,6 +135,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка запроса", NotificationType.Warning);
                 return RedirectToAction("Index", "Contracts");
             }
         }
@@ -155,11 +149,10 @@ namespace MvcLayer.Controllers
                 Id = id,
                 Period = model.ChoosePeriod,
                 ContractId = model.ContractId,
-                ServiceCosts = new List<ServiceCostDTO>{
-                new ServiceCostDTO{
+                ServiceCosts = new List<ServiceCostDTO>{ new ServiceCostDTO
+                {
                     ServiceGCId = id
-                }
-                }
+                }}
             });
         }
 
@@ -202,11 +195,11 @@ namespace MvcLayer.Controllers
                 if (periodViewModel.ContractId > 0)
                 {
                     return View("Create", new ServiceGCViewModel { ContractId = periodViewModel.ContractId });
-                }                
+                }
             }
             return View(periodViewModel);
         }
-    
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "CreatePolicy")]
@@ -215,7 +208,7 @@ namespace MvcLayer.Controllers
             if (listServiceGC is not null)
             {
                 var serviceId = (int)_serviceGC.Create(_mapper.Map<ServiceGCDTO>(listServiceGC));
-
+                NotificationHelper.SetNotification(TempData, "Добавлены услуги генподряда", NotificationType.Info);
                 if (listServiceGC?.AmendmentId is not null && listServiceGC?.AmendmentId > 0)
                 {
                     _serviceGC.AddAmendmentToService((int)listServiceGC?.AmendmentId, serviceId);
@@ -226,7 +219,7 @@ namespace MvcLayer.Controllers
             }
             return View(listServiceGC);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "EditPolicy")]
@@ -238,8 +231,8 @@ namespace MvcLayer.Controllers
                 {
                     _serviceCost.Create(item);
                 }
-                
 
+                NotificationHelper.SetNotification(TempData, "Добавлены стоимости услуг генподряда", NotificationType.Info);
                 return RedirectToAction("Details", "Contracts", new { id = serviceGC.ContractId });
             }
 
@@ -249,12 +242,13 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _serviceGC.GetAll() == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
             _serviceGC.Delete((int)id);
+            NotificationHelper.SetNotification(TempData, "Удалены услуги генподряда", NotificationType.Info);
             return RedirectToAction(nameof(Index));
         }
     }

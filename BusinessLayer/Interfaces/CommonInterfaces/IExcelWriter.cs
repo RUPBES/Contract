@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.ServicesCOM;
 using OfficeOpenXml;
+using OfficeOpenXml.Core.Worksheet.Fill;
 using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,6 @@ namespace BusinessLayer.Interfaces.CommonInterfaces
         ExcelWorksheet Settup(string path, params string[] nameSheets);
         void CloseExcel();
         bool CreateExcel(ExcelPackage excel, string path);
-        bool WriteLine(ExcelWorksheet sheet, int rowLine, string path, bool isHeader = false, params RowItem[] values);
+        bool WriteLine(ExcelWorksheet sheet, int rowLine, string path, bool isHeader = false, double? width = null, bool? isTextWrap = null, ExcelHorizontalAlignment? align = null, params RowItem[] values);
     }
 }

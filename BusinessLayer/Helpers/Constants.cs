@@ -1,8 +1,8 @@
-﻿using DatabaseLayer.Models.PRO;
+﻿using System.Drawing;
 
 namespace BusinessLayer.Helpers
 {
-    public static class ConstantsApp
+    public static class Constants
     {
         public static string WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK = "Введен новый ДС, проверьте данные объема работ";
         public static string WORKSHEET_NAME_DEFAULT = "Страница 1";
@@ -15,6 +15,7 @@ namespace BusinessLayer.Helpers
         public static string GRP_CONTRACT = "GRP_Contract";//работают с договорами(КДО...)
         public static string GRP_ESTIMATE = "GRP_Estimate";//работают со сметами (ПРО...)
         public static string GRP_FINANCE = "GRP_Finance";//работают с финансами (ФИН...)
+        public static string GRP_REPORT = "GRP_Report";//работают с отчетами (например, Excel...)
 
         //организации
         public static string ORG_BES = "ContrOrgBes";
@@ -34,7 +35,6 @@ namespace BusinessLayer.Helpers
 
 
         #endregion
-
 
         #region estimate
 
@@ -129,6 +129,45 @@ namespace BusinessLayer.Helpers
         public static List<string> BLSMT_DONE_SMR_COST_EXTRA_COL_NAME = new List<string> { "стоимость", "стоимост" };
         public static List<string> BLSMT_DONE_SMR_COST_EXTRA_ROW_NAME = new List<string> { "ИТОГО:", "итого:", "и т о г о :" };
         #endregion
+
+        #endregion
+
+        #region excel settup
+
+        //SIZE
+        public static int FONT_SIZE_10 = 10;
+        public static int FONT_SIZE_12 = 12;
+        public static int FONT_SIZE_14 = 14;
+        public static int FONT_SIZE_18 = 18;
+        public static int FONT_SIZE_20 = 20;
+        public static int FONT_SIZE_24 = 24;
+
+        //COLOR
+
+        public static Color COLOR_BLACK  = Color.Black;
+        public static Color COLOR_RED = Color.Red;
+        public static Color COLOR_WHITE = Color.White;
+        public static Color COLOR_BLUE = Color.Blue;
+        public static Color COLOR_DARK_BLUE = Color.DarkBlue;
+        public static Color COLOR_CORNFLOWER_BLUE = Color.CornflowerBlue;
+
+
+        #endregion
+
+        #region scope work types constants
+
+        public static string NDS_TP = "Стоимость работ";
+        public static string SMR_TP = "Неизменная цена СМР";       
+        public static string PNR_TP = "ПНР";
+
+        public static string ADD_TP = "Доп. работы";
+        public static string EQPT_TP = "Оборудование генподрядчика";
+        public static string OTHER_TP = "Прочие работы и услуги";
+
+        public static string NoNDS_TP = "Всего по договору без НДС (справочно)";
+        public static string MATRL_CLIENT_TP = "Материалы Заказчика (справочно)";
+        public static string EQPT_CLIENT_TP = "Оборудование Заказчика (справочно)";
+       
 
         #endregion
     }

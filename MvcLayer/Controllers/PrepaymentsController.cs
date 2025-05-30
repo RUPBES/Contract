@@ -3,15 +3,11 @@ using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SqlServer.Server;
 using MvcLayer.Models;
 using MvcLayer.Models.Data;
 using MvcLayer.Models.Reports;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -70,7 +66,7 @@ namespace MvcLayer.Controllers
                 #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
                 if (avans.Contains("Без авансов"))
                 {
-                    TempData["Message"] = "Условие контракта - без авансов";
+                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -87,7 +83,7 @@ namespace MvcLayer.Controllers
             #region Проверка есть, ли авансы, с возвращением с сообщением
             if (!prepCheck.Any())
             {
-                TempData["Message"] = "Не заполнены авансы!";
+                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
                 var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                 return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -160,19 +156,19 @@ namespace MvcLayer.Controllers
             var formId = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false).OrderBy(x => x.Period).Select(x => new { x.Id, x.Period }).ToList();
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
-                formId = formId.Where(x => Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
+                formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period,answer.endPeriod)).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
                 formId = formId.Where(x => 
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).ToList();
+                    DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period)).ToList();
                 answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
             }
             else if (answer.startPeriod == null && answer.endPeriod != null)
             {
                 formId = formId.Where(x => 
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
             }
             else
@@ -200,13 +196,13 @@ namespace MvcLayer.Controllers
                 answer.TheoryCurrent = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.CurrentValue);
                 answer.TheoryTarget = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id).Sum(x => x.TargetValue);
             }
-            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
             {
                 var ob = new SmrWithPrepayment();
                 #region Объем работ(План)
                 if (scope != null)
                 {
-                    var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
+                    var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).
                         Select(x => x.SmrCost).FirstOrDefault();
                     if (swCost != null)
                     {
@@ -219,7 +215,7 @@ namespace MvcLayer.Controllers
                 }
                 #endregion
                 #region Объем работ и авансы по форме С-3А
-                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
                 if (form3C != null)
                 {
                     ob.SmrFact = form3C.SmrCost != null ? form3C.SmrCost : 0;
@@ -236,7 +232,7 @@ namespace MvcLayer.Controllers
                 #region Авансы(План)
                 if (prep != null)
                 {
-                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
                     if (prepPlan != null)
                     {
                         ob.TargetPlan = prepPlan.TargetValue != null ? prepPlan.TargetValue : 0;
@@ -271,7 +267,7 @@ namespace MvcLayer.Controllers
                 #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
                 if (avans.Contains("Без авансов"))
                 {
-                    TempData["Message"] = "Условие контракта - без авансов";
+                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -306,19 +302,19 @@ namespace MvcLayer.Controllers
             var formId = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false).OrderBy(x => x.Period).Select(x => new { x.Id, x.Period }).ToList();
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
-                formId = formId.Where(x => Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
+                formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
                 formId = formId.Where(x =>
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)answer.startPeriod, (DateTime)x.Period)).ToList();
+                    DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period)).ToList();
                 answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
             }
             else if (answer.startPeriod == null && answer.endPeriod != null)
             {
                 formId = formId.Where(x =>
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, (DateTime)answer.endPeriod)).ToList();
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
             }
             else
@@ -340,19 +336,19 @@ namespace MvcLayer.Controllers
             #region Заполнение списков по контракту и доп. соглашениям
             foreach (var item in amend)
             {
-                var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                var scope = _scopeWork.GetByAmendmentId(item.Id);
                 var prep = _prepayment.GetPrepaymentByAmendment(item.Id);
                 if (scope != null || prep != null)
                 {
                     #region Заполнено либо объем, либо аванс по доп. соглашению
                     var listSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
-                    for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                    for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
                     {
                         var ob = new ElementOfListSmrPrepByAmend();
                         #region Объем работы СМР
                         if (scope != null)
                         {
-                            var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
+                            var swCost = _SWCost.Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).
                                 Select(x => x.SmrCost).FirstOrDefault();
                             if (swCost != null)
                             {
@@ -367,7 +363,7 @@ namespace MvcLayer.Controllers
                         #region Аванс(План)                        
                         if (prep != null)
                         {
-                            var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                            var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
                             if (prepPlan != null)
                             {
                                 ob.Target = prepPlan.TargetValue != null ? prepPlan.TargetValue : 0;
@@ -402,13 +398,13 @@ namespace MvcLayer.Controllers
                         if (scopeL != null || prepL != null)
                         {
                             #region Получение данных в 1-ю ДС из контракта
-                            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
                             {
                                 var ob = new ElementOfListSmrPrepByAmend();
                                 #region Объем работы
                                 if (scopeL != null)
                                 {
-                                    var swCost = _SWCost.Find(x => x.ScopeWorkId == scopeL.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).
+                                    var swCost = _SWCost.Find(x => x.ScopeWorkId == scopeL.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).
                                         Select(x => x.SmrCost).FirstOrDefault();
                                     if (swCost != null)
                                     {
@@ -423,7 +419,7 @@ namespace MvcLayer.Controllers
                                 #region Авансы (План)                                
                                 if (prepL != null)
                                 {
-                                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepL.Id && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                                    var prepPlan = _prepaymentPlan.Find(x => x.PrepaymentId == prepL.Id && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
                                     if (prepPlan != null)
                                     {
                                         ob.Target = prepPlan.TargetValue != null ? prepPlan.TargetValue : 0;
@@ -445,7 +441,7 @@ namespace MvcLayer.Controllers
                         else
                         {
                             #region Отсутсвуют объемы
-                            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+                            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
                             {
                                 var emptyOb = new ElementOfListSmrPrepByAmend();
                                 emptyOb.Period = i;
@@ -471,10 +467,10 @@ namespace MvcLayer.Controllers
             var factElement = new ListSmrPrepByAmendment();
             var listFactSmrWithAvans = new List<ElementOfListSmrPrepByAmend>();
             #region Заполнение авансов и СМР по С-3А
-            for (var i = answer.startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)i, (DateTime)answer.endPeriod); i = i.Value.AddMonths(1))
+            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
             {
                 var ob = new ElementOfListSmrPrepByAmend();
-                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)i)).FirstOrDefault();
+                var form3C = _form.Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i)).FirstOrDefault();
                 if (form3C != null)
                 {
                     ob.Smr = form3C.SmrCost != null ? form3C.SmrCost : 0;
@@ -506,7 +502,7 @@ namespace MvcLayer.Controllers
             {
                 if (avans.Contains("Без авансов"))
                 {
-                    TempData["Message"] = "Условие контракта - без авансов";
+                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -517,7 +513,7 @@ namespace MvcLayer.Controllers
             var prep = _prepayment.GetLastPrepayment(contractId);
             if (prep == null)
             {
-                TempData["Message"] = "Не заполнены авансы!";
+                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
                 var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                 return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -563,7 +559,7 @@ namespace MvcLayer.Controllers
                 end = DateTime.Today;
             #endregion            
 
-            for (var date = start; Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)end); date = date.Value.AddMonths(1))
+            for (var date = start; DateComparer.IsLessOrSameYearAndMonth(date, end); date = date.Value.AddMonths(1))
             {
                 var obj = new ItemPrepaymentTakeViewModel();
                 obj.Period = date;
@@ -571,9 +567,9 @@ namespace MvcLayer.Controllers
                 if (prep != null)
                 {                    
                     var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
-                    && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
+                    && DateComparer.IsSameYearAndMonth(x.Period, date)).ToList();
                     var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
-                   && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
+                   && DateComparer.IsSameYearAndMonth(x.Period, date)).FirstOrDefault();
                     if (ob != null)
                     {
                         if (ob.CurrentValue != null)
@@ -624,7 +620,7 @@ namespace MvcLayer.Controllers
                                 if (prep != null)
                                 {
                                     facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
-                                            && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).ToList();
+                                            && DateComparer.IsSameYearAndMonth(x.Period, date)).ToList();
                                     if (facts.Count > 0)
                                     {
                                         foreach (var item in facts)
@@ -679,27 +675,27 @@ namespace MvcLayer.Controllers
                     foreach (var plan in listPlan)
                     {
                         var ob = _prepaymentTake.Find(x => x.PrepaymentId == prep
-                        && Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)plan.Period)).FirstOrDefault();
+                        && DateComparer.IsSameYearAndMonth(x.Period, plan.Period)).FirstOrDefault();
                         if (ob == null)
                         {
-                            answer.Add((DateTime)plan.Period);
+                            answer.Add(plan.Period.Value);
                         }
                     }
                 }
                 else
                 {
-                    TempData["Message"] = "Не заполнены планируемые авансы";
+                    NotificationHelper.SetNotification(TempData, "Не заполнены планируемые авансы", NotificationType.Warning);
                     return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
                 }
             }
             else
             {
-                TempData["Message"] = "Не заполнены планируемые авансы";
+                NotificationHelper.SetNotification(TempData, "Не заполнены планируемые авансы", NotificationType.Warning);
                 return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
             }
             if (!answer.Any())
             {
-                TempData["Message"] = "Все фактические авансы заполнены";
+                NotificationHelper.SetNotification(TempData, "Все фактические авансы заполнены", NotificationType.Warning);
                 return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId = contractId, returnContractId = returnContractId });
             }
             ViewData["PrepaymentId"] = prep;
@@ -744,6 +740,7 @@ namespace MvcLayer.Controllers
                     var obj = _mapper.Map<PrepaymentTakeDTO>(item);
                     obj.FileId = _file.Create(item.FileEntity, FolderEnum.Other, 0);
                     _prepaymentTake.Create(obj);
+                    NotificationHelper.SetNotification(TempData, "Добавлена оплата", NotificationType.Info);
                 }
             }
             return RedirectToAction("GetPrepaymentsTakes", "Prepayments", new { contractId, returnContractId });
@@ -771,7 +768,7 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 #region Нахождение контракта и периода работ по "объему работ" 
-                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
+                var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
                 var contract = _contractService.GetById(contractId);
                 #endregion
                 #region Для авансов, начало периода берем с начала договора
@@ -787,7 +784,7 @@ namespace MvcLayer.Controllers
                     var contractGen = _contractService.GetById((int)contract.MultipleContractId);
                     if (contractGen.PaymentСonditionsAvans != null && contractGen.PaymentСonditionsAvans.Contains("Без авансов"))
                     {
-                        TempData["Message"] = "У контракта условие - без авансов";
+                        NotificationHelper.SetNotification(TempData, "У контракта условие - без авансов", NotificationType.Warning);
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
@@ -798,7 +795,7 @@ namespace MvcLayer.Controllers
                     #region Проверка есть ли условие аванса у контракта
                     if (contract.PaymentСonditionsAvans != null && contract.PaymentСonditionsAvans.Contains("Без авансов"))
                     {
-                        TempData["Message"] = "У контракта условие - без авансов";
+                        NotificationHelper.SetNotification(TempData, "У контракта условие - без авансов", NotificationType.Warning);
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
@@ -891,7 +888,7 @@ namespace MvcLayer.Controllers
 
                 List<PrepaymentPlanDTO> plan = new();
 
-                while (Checker.LessOrEquallyFirstDateByMonth(prepaymentViewModel.PeriodStart,prepaymentViewModel.PeriodEnd))
+                while (DateComparer.IsLessOrSameYearAndMonth(prepaymentViewModel.PeriodStart,prepaymentViewModel.PeriodEnd))
                 {
                     var prev = _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentViewModel.ChangePrepaymentId && p.Period == prepaymentViewModel.PeriodStart).FirstOrDefault();
                     if (prev == null)
@@ -973,11 +970,12 @@ namespace MvcLayer.Controllers
                 if (prepayment.PrepaymentFacts.Count() > 0 && prepayment.PrepaymentFacts is not null)
                 {
                     _prepaymentFact.Create(prepayment?.PrepaymentFacts?.FirstOrDefault());
+                   
                     return RedirectToAction(nameof(GetByContractId), new { contractId = prepayment.ContractId });
                 }
 
                 var prepaymentId = (int)_prepayment.Create(_mapper.Map<PrepaymentDTO>(prepayment));
-
+                NotificationHelper.SetNotification(TempData, "Добавлен аванс", NotificationType.Info);
                 if (prepayment?.AmendmentId is not null && prepayment?.AmendmentId > 0)
                 {
                     _prepayment.AddAmendmentToPrepayment((int)prepayment?.AmendmentId, prepaymentId);
@@ -985,6 +983,7 @@ namespace MvcLayer.Controllers
 
                 return RedirectToAction(nameof(GetByContractId), new { contractId = prepayment.ContractId, returnContractId = returnContractId });
             }
+            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
             return View(prepayment);
         }
 
@@ -997,22 +996,25 @@ namespace MvcLayer.Controllers
                 foreach (var item in prepayment)
                 {
                     _prepayment.Update(_mapper.Map<PrepaymentDTO>(item));
+                    
                 }
+                NotificationHelper.SetNotification(TempData, "Обновлены данные аванса", NotificationType.Info);
                 return RedirectToAction("GetByContractId", "Prepayments", new { contractId = prepayment.FirstOrDefault().ContractId, returnContractId = returnContractId });
             }
-
+            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
             return RedirectToAction("Index", "Contracts");
         }
 
         [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _prepayment.GetAll() == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
             _prepayment.Delete((int)id);
+            NotificationHelper.SetNotification(TempData, "Удален аванс", NotificationType.Info);
             return RedirectToAction(nameof(Index));
         }
 
@@ -1029,7 +1031,7 @@ namespace MvcLayer.Controllers
                 #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
                 if (avans.Contains("Без авансов"))
                 {
-                    TempData["Message"] = "Условие контракта - без авансов";
+                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -1046,6 +1048,7 @@ namespace MvcLayer.Controllers
             ViewData["returnContractId"] = returnContractId;
             return View(amendments);
         }
+
         /// <summary>
         /// Получение частичного представления с плановыми авансами для view FormEditPrepaymentPlan
         /// </summary>
@@ -1097,7 +1100,7 @@ namespace MvcLayer.Controllers
                     #region Если условие "нет авансов" возврашаем на страницу договора с сообщением
                     if (avans.Contains("Без авансов"))
                     {
-                        TempData["Message"] = "Условие контракта - без авансов";
+                        NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
 
@@ -1126,8 +1129,8 @@ namespace MvcLayer.Controllers
                 return PartialView("_EditPrepaymentPlan", list);
             }
             else
-            { 
-                throw new Exception(); 
+            {
+                return View(); 
             }
         }
 
@@ -1148,22 +1151,32 @@ namespace MvcLayer.Controllers
                     ob.Period = item.Period;
                     _prepaymentPlan.Update(ob);
                 }
-                return PartialView("_ResultMessage", "Удачно обновилось");
+                return Content("Удачно обновилось");
             }
 
-            return PartialView("_ResultMessage", "Произошла ошибка");
+            return Content("Произошла ошибка");
         }
 
         [Authorize(Policy = "AdminPolicy")]
         public async Task<IActionResult> DeletePrepaymentPlan(int? id)
         {
-            if (id == null || _prepayment.GetAll() == null)
+            if (id == null || id < 1)
             {
                 return NotFound();
             }
-
-            _prepayment.Delete((int)id);
-            return PartialView("_ResultMessage", "Успешно удалены записи.");
+            try
+            {
+                _prepayment.Delete((int)id);
+                //NotificationHelper.SetNotification(TempData, "Аванс удален", NotificationType.Info);
+                //return Ok();
+                return Content("Аванс удален");
+            }
+            catch (Exception)
+            {
+                return Content("Ошибка удаления");
+                //NotificationHelper.SetNotification(TempData, "Ошибка удаления", NotificationType.Error);
+                //return BadRequest();
+            }
         }
     }
 }

@@ -3,8 +3,7 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
+    var permissions = HttpHelper.GetUserPermissions();
     ViewData["Title"] = "Отдел";
 }
 
@@ -80,7 +79,7 @@
                         }
                         @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                         {
-                            <button id="button-close" type="button" class="btn btn-danger" onclick="confirmI()"><img class="img_delete" src="~/icons/delete_icon.png" />Удалить</button>
+                            <button id="button-close" type="button" class="btn btn-danger" onclick="deleteDepart(@Model.Id)"><img class="img_delete" src="~/icons/delete_icon.png" />Удалить</button>
                         }
                     </div>
                 </div>
@@ -90,37 +89,31 @@
 </div>
 
 <script type="text/javascript">
-    let val = @Model.Id;
-
-    function confirmI() {
+   
+    function deleteDepart(id) {
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("ShowDelete", "Departments")',
+            url: '@Url.Action("ShowDeleteMessage", "Home")',
             contentType: "application/html; charset=utf-8",
             dataType: 'html',
             success: function (result) {
                 $('#dialogContent').html(result);
                 $('#modDialog').modal('show');
 
-                let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
+                let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
                 elementDeleteButton[0].addEventListener('click', () => {
                     $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("ShowResultDelete", "Departments")',
-                        dataType: 'html',
-                        data: { id: val },
+                        type: 'GET',
+                        url: '@Url.Action("Delete", "Departments")',
+                        data: { id: id },
                         success: function (result) {
-                            let buttonElement = document.querySelectorAll('.close-btn')
-                            buttonElement[0].click()
+                            window.location.reload();
                         },
                         error: function (result) {
-                            console.log(result, 'Ошибка удаления');
-                            alert("Ошибка удаления");
+                            window.location.reload();
                         }
                     });
-
-                })
-
+                });               
             },
             error: function (result) {
                 console.log(result, 'error 2');

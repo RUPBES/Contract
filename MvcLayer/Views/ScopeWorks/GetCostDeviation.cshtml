@@ -239,9 +239,9 @@
                         <td class="second-td-elem">
                             СМР
                         </td>
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                         {
-                            var list = item.listScopeWork.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator)).FirstOrDefault();
+                            var list = item.listScopeWork.Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator)).FirstOrDefault();
                             var resultPlan = 0M;
                             if (list != null)
                             {
@@ -276,10 +276,10 @@
                         <td class="second-td-elem">
                             ДОП. РАБОТЫ
                         </td>
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                         {
                             var list = item.listScopeWork.
-                            Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator)).FirstOrDefault();
+                            Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator)).FirstOrDefault();
                             var resultPlan = 0M;
                             if (list != null)
                             {
@@ -314,10 +314,10 @@
                         <td class="second-td-elem">
                             ПНР
                         </td>
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator,endPeriod); iterator = iterator.AddMonths(1))
                         {
                             var list = item.listScopeWork.
-                            Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator)).FirstOrDefault();
+                            Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator)).FirstOrDefault();
                             var resultPlan = 0M;
                             if (list != null)
                             {
@@ -352,10 +352,10 @@
                         <td class="second-td-elem">
                             ОБОРУДОВАНИЕ
                         </td>
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                         {
                             var list = item.listScopeWork.
-                            Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator)).FirstOrDefault();
+                            Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator)).FirstOrDefault();
                             var resultPlan = 0M;
                             if (list != null)
                             {
@@ -390,10 +390,10 @@
                         <td class="second-td-elem">
                             ПРОЧИЕ РАБОТЫ И УСЛУГИ
                         </td>
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                         {
                             var list = item.listScopeWork.
-                            Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator)).FirstOrDefault();
+                            Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator)).FirstOrDefault();
                             var resultPlan = 0M;
                             if (list != null)
                             {
@@ -428,10 +428,10 @@
                         <td class="second-td-elem">
                             СТОИМОСТЬ МАТЕРИАЛОВ ЗАКАЗЧИКА
                         </td>
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth((DateTime)iterator, (DateTime)endPeriod); iterator = iterator.AddMonths(1))
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                         {
                             var list = item.listScopeWork.
-                            Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator)).FirstOrDefault();
+                            Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator)).FirstOrDefault();
                             var resultPlan = 0M;
                             if (list != null)
                             {

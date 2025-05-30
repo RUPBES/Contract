@@ -5,6 +5,8 @@ using BusinessLayer.Models;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using Microsoft.AspNetCore.Authorization;
+using System.Reflection;
+using BusinessLayer.Helpers;
 
 namespace MvcLayer.Controllers
 {
@@ -23,7 +25,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations
-        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
+        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)   
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
@@ -35,27 +37,31 @@ namespace MvcLayer.Controllers
             else
             { searchString = currentFilter; }
             ViewBag.CurrentFilter = searchString;
+            ViewBag.Page = pageNum;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return View(_organizationService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder));
-            else return View(_organizationService.GetPage(100, pageNum ?? 1));
+                return await Task.FromResult<IActionResult>(View(_organizationService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder)));
+            else return await Task.FromResult<IActionResult>(View(_organizationService.GetPage(100, pageNum ?? 1)));
         }
 
         // GET: Organizations/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, int? page, string? filter)
         {
-            if (id == null || _organizationService.GetAll() == null)
+            if (id == null)
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
+
+            ViewBag.Page = page;
+            ViewBag.Filter = filter;
 
             var organization = _organizationService.GetById((int)id);
             if (organization == null)
             {
-                return NotFound();
+                return await Task.FromResult<IActionResult>(NotFound());
             }
 
-            return View(_mapper.Map<OrganizationViewModel>(organization));
+            return await Task.FromResult<IActionResult>(View(_mapper.Map<OrganizationViewModel>(organization)));
         }
 
         // GET: Organizations/Create
@@ -72,38 +78,54 @@ namespace MvcLayer.Controllers
         [HttpPost]
         [Authorize(Policy = "CreatePolicy")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create( OrganizationViewModel organization)
+        public async Task<IActionResult> Create(OrganizationViewModel organization)
         {
-            if (organization is not null)
+            if (organization is null)
             {
-                var org = _mapper.Map<OrganizationDTO>(organization);
-                org.PaymentAccount = org.PaymentAccount.Replace("-", "");
-                _organizationService.Create(org);
-                return RedirectToAction(nameof(Index));
+                NotificationHelper.SetNotification(TempData, $"Ошибка добавления", NotificationType.Warning);
+                return await Task.FromResult<IActionResult>(View("Create", organization));
             }
-            return View(organization);
+
+            var existingOrg = _organizationService.Find(o => o.Name == organization.Name).FirstOrDefault();
+
+            if (existingOrg != null)
+            {
+                NotificationHelper.SetNotification(TempData, "Организация с таким названием уже существует", NotificationType.Warning);
+                return await Task.FromResult<IActionResult>(View("Create", organization));
+            }
+
+            organization.Departments.RemoveAll(x=>x.Name == null);
+            organization.Phones.RemoveAll(x=>x.Number == null);
+            organization.PaymentAccount = organization.PaymentAccount?.Replace("-", "");          
+            
+            _organizationService.Create(_mapper.Map<OrganizationDTO>(organization));
+
+            NotificationHelper.SetNotification(TempData, $"Организация добавлена", NotificationType.Info);
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
         }
 
         // GET: Organizations/Edit/5
         [Authorize(Policy = "EditPolicy")]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _organizationService.GetAll() == null)
+            if (id == null)
             {
-                return NotFound();
+                NotificationHelper.SetNotification(TempData, "Введены некорректные данные", NotificationType.Warning);
+                return await Task.FromResult<IActionResult>(NotFound());
             }
-
+                
             var organization = _organizationService.GetById((int)id);
             if (organization == null)
             {
-                return NotFound();
+                NotificationHelper.SetNotification(TempData, "Организация не найдена", NotificationType.Error);
+                return await Task.FromResult<IActionResult>(NotFound());
             }
             if (organization.Addresses.Count == 0)
             {
                 var addr = new AddressDTO();
                 organization.Addresses.Add(addr);
             }
-            return View(_mapper.Map<OrganizationViewModel>(organization));
+            return await Task.FromResult<IActionResult>(View(_mapper.Map<OrganizationViewModel>(organization)));
         }
 
         // POST: Organizations/Edit/5
@@ -113,71 +135,72 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "EditPolicy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(OrganizationViewModel organization)
-        {          
-
-            if (organization is not null)
-            {
-                try
-                {
-                    if (organization.Addresses[0].FullAddress == null && organization.Addresses[0].PostIndex == null)
-                    {
-                        organization.Addresses.Clear();
-                    }
-                    var org = _mapper.Map<OrganizationDTO>(organization);
-                    org.PaymentAccount = org.PaymentAccount.Replace("-", "");
-                    _organizationService.Update(org);
-                }
-                catch
-                {
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(organization);
-        }
-
-        // GET: Organizations/Delete/5
-        [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _organizationService.GetAll() == null)
+            if (organization is null)
             {
-                return NotFound();
+                NotificationHelper.SetNotification(TempData, "Введены некорректные данные", NotificationType.Warning);                
+                return await Task.FromResult<IActionResult>(View(organization));
             }
-
-            var organization = _organizationService.GetById((int)id);
-            if (organization == null)
+            try
             {
-                return NotFound();
+                organization.PaymentAccount = organization.PaymentAccount?.Replace("-", "");
+                organization.Addresses.RemoveAll(x => x.FullAddress == null && x.PostIndex == null);
+                var org = _mapper.Map<OrganizationDTO>(organization);
+                _organizationService.Update(org);
+                
+                NotificationHelper.SetNotification(TempData, "Организация обновлена", NotificationType.Info);                 
+                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
             }
-
-            return View(_mapper.Map<OrganizationViewModel>(organization));
+            catch
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);                
+                return await Task.FromResult<IActionResult>(View(organization));
+            }
         }
 
-        // POST: Organizations/Delete/5
-        [HttpPost, ActionName("Delete")]
+        //// GET: Organizations/Delete/5
+        //[Authorize(Policy = "DeletePolicy")]
+        //public async Task<IActionResult> Delete(int? id)
+        //{
+        //    if (id == null || _organizationService.GetAll() == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var organization = _organizationService.GetById((int)id);
+        //    if (organization == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return View(_mapper.Map<OrganizationViewModel>(organization));
+        //}
+
         [Authorize(Policy = "DeletePolicy")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            _organizationService.Delete(id);
-            _logger.WriteLog(LogLevel.Information, "delete organization", typeof(OrganizationsController).Name, this.ControllerContext.RouteData.Values["action"].ToString());
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _organizationService.Delete(id);
+                
+                NotificationHelper.SetNotification(TempData, "Организация удалена", NotificationType.Info);
+                return await Task.FromResult<IActionResult>(Ok());
+            }
+            catch (Exception)
+            {
+                NotificationHelper.SetNotification(TempData, "Не удалось удалить организацию", NotificationType.Error);                
+                return await Task.FromResult<IActionResult>(NotFound());
+            }
         }
+
 
         public JsonResult GetJsonOrganizations()
-        {           
+        {
             return Json(_mapper.Map<IEnumerable<OrganizationsJson>>(_organizationService.GetAll()));
         }
-
-        [HttpPost]
-        public async Task<IActionResult> ShowResultDelete(int id)
-        {
-            _organizationService.Delete(id);
-            ViewData["reload"] = "Yes";
-            return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
-        }
     }
-    class OrganizationsJson {
+    class OrganizationsJson
+    {
         public int Id { get; set; }
         public string Abbr { get; set; }
     }

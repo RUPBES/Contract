@@ -2,16 +2,17 @@
     $(firstId).change(function () {
         let firstValue = $(firstId).find(":selected").val();
         let secondValue = $(secondId).find(":selected").val();
+        const fieldset = $(areaId).children(":first");
 
         if (firstValue === secondValue) {
             let button = $(buttonId);
             button.attr("type", "button");
-            $(areaId).attr("style", valueStyle);
+            fieldset.attr("style", valueStyle);
         }
         else {
             let button = $(buttonId);
             button.attr("type", "submit");
-            $(areaId).removeAttr("style", valueStyle);
+            fieldset.removeAttr("style", valueStyle);
         }
 
     });
@@ -33,45 +34,52 @@ function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, butto
 function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleName) {
     const button = $(buttonId);
 
-    const selectObjOne = $(`${selectId}_chosen`);
-    const selectObjTwo = $(`${secondId}_chosen`);
-    const selectObjThree = $(`${thirdId}_chosen`);
+    //for js-chosen
+    //const selectObjOne = $(`${selectId}_chosen`);
+    //const selectObjTwo = $(`${secondId}_chosen`);
+    //const selectObjThree = $(`${thirdId}_chosen`);
+
+
+    const selectObjOne = $(`${selectId}`);
+    const selectObjTwo = $(`${secondId}`);
+    const selectObjThree = $(`${thirdId}`);
+
 
     let valueObjOne = +($(selectId).find(":selected").val());
     let valueObjTwo = +($(secondId).find(":selected").val());
     let valueObjThree = +($(thirdId).find(":selected").val());
 
     if ((valueObjOne === valueObjTwo) && (typeof (valueObjOne) === "number" && typeof (valueObjTwo) === "number")) {
-        selectObjOne.addClass(styleName);
-        selectObjTwo.addClass(styleName);
+        selectObjOne.closest("fieldset").addClass(styleName);
+        //selectObjTwo.closest("fieldset").addClass(styleName);
         $(buttonId).attr("type", "button");
     }
     if ((valueObjOne === valueObjThree) && (typeof (valueObjOne) === "number" && typeof (valueObjThree) === "number")) {
-        selectObjOne.addClass(styleName);
-        selectObjThree.addClass(styleName);
+        selectObjOne.closest("fieldset").addClass(styleName);
+        //selectObjThree.closest("fieldset").addClass(styleName);
         $(buttonId).attr("type", "button");
     }
     if ((valueObjTwo === valueObjThree) && (typeof (valueObjTwo) === "number" && typeof (valueObjThree) === "number")) {
 
-        selectObjTwo.addClass('same_value_chosen');
-        selectObjThree.addClass('same_value_chosen');
+        selectObjTwo.closest("fieldset").addClass(styleName);
+        //selectObjThree.closest("fieldset").addClass('same_value_chosen');
         $(buttonId).attr("type", "button");
     }
+    const firstNotSame = valueObjOne !== valueObjTwo && valueObjOne !== valueObjThree;
+    const secondNotSame = valueObjTwo !== valueObjOne && valueObjTwo !== valueObjThree;
+/*    const thirdNotSame = valueObjThree !== valueObjTwo && valueObjThree !== valueObjOne;*/
 
-    if (valueObjOne !== valueObjTwo && valueObjOne !== valueObjThree) {
-        selectObjOne.removeClass(styleName);
+    if (firstNotSame && secondNotSame) {
+        selectObjTwo.closest("fieldset").removeClass(styleName);
     }
-    if (valueObjTwo !== valueObjOne && valueObjTwo !== valueObjThree) {
-        selectObjTwo.removeClass(styleName);
-    }
-    if (valueObjThree !== valueObjTwo && valueObjThree !== valueObjOne) {
-        selectObjThree.removeClass(styleName);
-    }
+    //if (thirdNotSame) {
+    //    selectObjThree.closest("fieldset").removeClass(styleName);
+    //}
 
     if (document.querySelectorAll(`.${styleName}`).length < 1) {
-        document.querySelectorAll(`.${styleName}`).forEach((elem) => {
-            elem.classList.remove(styleName);
-        });
+        //document.querySelectorAll(`.${styleName}`).forEach((elem) => {
+        //    elem.closest("fieldset").classList.remove(styleName);
+        //});
         button.attr("type", "submit");
     }
 }
@@ -159,19 +167,20 @@ function confirmDelete() {
 }
 
 
-function handleError(error, urlRequest, progressObjID = null) {
+function handleError(error/*, urlRequest, progressObjID = null*/) {
     var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-    $.ajax({
-        type: 'GET',
-        url: urlRequest,
-        data: { message: errorMes },
-        dataType: 'html',
-        success: function (data) {
-            showResultMessage("#result", data);
-            if (progressObjID) {
-                $(progressObjID).attr('style', `display:none`);
-            }
+    alert(errorMes);
+    //$.ajax({
+    //    type: 'GET',
+    //    url: urlRequest,
+    //    data: { message: errorMes },
+    //    dataType: 'html',
+    //    success: function (data) {
+    //        showResultMessage("#result", data);
+    //        if (progressObjID) {
+    //            $(progressObjID).attr('style', `display:none`);
+    //        }
 
-        }
-    });
+    //    }
+    //});
 }

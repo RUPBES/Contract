@@ -100,23 +100,24 @@ namespace MvcLayer
                 o.Scope.Add("email");
                 o.Scope.Add("offline_access");
 
-                o.Scope.Add(ConstantsApp.ROLE_READ);
-                o.Scope.Add(ConstantsApp.ROLE_EDIT);
-                o.Scope.Add(ConstantsApp.ROLE_ADMIN);
-                o.Scope.Add(ConstantsApp.ROLE_DELETE);
-                o.Scope.Add(ConstantsApp.ROLE_CREATE);
+                o.Scope.Add(Constants.ROLE_READ);
+                o.Scope.Add(Constants.ROLE_EDIT);
+                o.Scope.Add(Constants.ROLE_ADMIN);
+                o.Scope.Add(Constants.ROLE_DELETE);
+                o.Scope.Add(Constants.ROLE_CREATE);
 
-                o.Scope.Add(ConstantsApp.ORG_BES);
-                o.Scope.Add(ConstantsApp.ORG_TEC_2);
-                o.Scope.Add(ConstantsApp.ORG_TEC_5);
-                o.Scope.Add(ConstantsApp.ORG_BESM);
-                o.Scope.Add(ConstantsApp.ORG_BETSS);
-                o.Scope.Add(ConstantsApp.ORG_GES);
-                o.Scope.Add(ConstantsApp.ORG_MAJOR);
+                o.Scope.Add(Constants.ORG_BES);
+                o.Scope.Add(Constants.ORG_TEC_2);
+                o.Scope.Add(Constants.ORG_TEC_5);
+                o.Scope.Add(Constants.ORG_BESM);
+                o.Scope.Add(Constants.ORG_BETSS);
+                o.Scope.Add(Constants.ORG_GES);
+                o.Scope.Add(Constants.ORG_MAJOR);
 
-                o.Scope.Add(ConstantsApp.GRP_CONTRACT);
-                o.Scope.Add(ConstantsApp.GRP_ESTIMATE);
-                o.Scope.Add(ConstantsApp.GRP_FINANCE);
+                o.Scope.Add(Constants.GRP_CONTRACT);
+                o.Scope.Add(Constants.GRP_ESTIMATE);
+                o.Scope.Add(Constants.GRP_FINANCE);
+                o.Scope.Add(Constants.GRP_REPORT);
 
                 // requests a refresh token                          
                 o.TokenValidationParameters = new TokenValidationParameters

@@ -58,7 +58,10 @@
                 <hr class="modal-line">
                 <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" method="post" class="row" enctype="multipart/form-data">
                     <input asp-for="ContractId" value="@Model.ContractId" hidden />
-                    @* <input name="DateSigning" type="datetime" value="@Model.DateSigning" hidden />*@
+                    <input asp-for="Id" value="@Model.Id" hidden />
+                    <input name="DateSigning" type="datetime" value="@Model.DateSigning" hidden />
+                    <input name="Period" type="datetime" value="@Model.Period" hidden />
+
                     <div class="col">
                         @if (ViewBag.IsEngin == null)
                         {
@@ -201,7 +204,7 @@
                         @*Дата подписания*@
                         <div class="form-group">
                             <label asp-for="DateSigning" class="control-label"></label>
-                            <input value="@Model.DateSigning?.ToString("dd MMMM yyyy")" class="form-control" disabled />
+                            <input  value="@Model.DateSigning?.ToString("dd MMMM yyyy")" class="form-control" disabled />
                             <span asp-validation-for="DateSigning" class="text-danger"></span>
                         </div>
                         @*Оборудование*@

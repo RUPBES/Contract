@@ -104,8 +104,8 @@ public partial class ContractsContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
             //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
         }
     }
 
@@ -740,6 +740,9 @@ public partial class ContractsContext : DbContext
             entity.Property(e => e.CostStatisticReportOfContractor)
            .HasColumnType("money")
            .HasComment("стоимость работ для статистической отчетности подрядчика (справочно)");
+
+            entity.Property(e => e.Reserve)
+           .HasColumnType("money");
         });
 
         modelBuilder.Entity<FormFile>(entity =>
@@ -1086,13 +1089,13 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Amendment)
                 .WithMany(p => p.ScopeWorkAmendments)
                 .HasForeignKey(d => d.AmendmentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_ScopeWorkAmendment_Amendment_Id");
 
             entity.HasOne(d => d.ScopeWork)
                 .WithMany(p => p.ScopeWorkAmendments)
                 .HasForeignKey(d => d.ScopeWorkId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_ScopeWorkAmendment_ScopeWork_Id");
         });
 

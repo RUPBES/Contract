@@ -165,15 +165,7 @@
                 },
                 error: function (error) {
                     var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("ShowError", "Parse")',
-                        data: { message: errorMes },
-                        dataType: 'html',
-                        success: function (data) {
-                            $("#result").html(`<div class="alert alert-success" role="alert"><span>${data}</span></div>`)
-                        }
-                    });
+                   
                 }
             });
         }, false);

@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Models;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Models
 {
@@ -55,7 +56,7 @@ namespace MvcLayer.Models
         [DisplayName("Окончание работ")]
         public DateTime? DateEndWork { get; set; }
 
-        //TODO: Currency - первая буква русская, начинается с базы данных
+        //TODO: Currency - первая буква русская, начинается с базы данных и т.д. вверх
         /// <summary>
         /// Валюта
         /// </summary>
@@ -66,7 +67,8 @@ namespace MvcLayer.Models
         /// Цена контракта
         /// </summary>
         [DisplayName("Договорная цена")]
-        public decimal? ContractPrice { get; set; }
+        //[Required(ErrorMessage = "Превышает стоимость ген.договора")]
+        public decimal ContractPrice { get; set; }
 
         /// <summary>
         /// Наименование объекта
@@ -89,7 +91,7 @@ namespace MvcLayer.Models
         /// </summary>
         /// 
         [DisplayName("Договор субподряда?")]
-        public bool? IsSubContract { get; set; }
+        public bool IsSubContract { get; set; }
 
         /// <summary>
         /// является ли договор инжиниринговыми услугами
@@ -101,7 +103,7 @@ namespace MvcLayer.Models
         /// является ли соглашением с филиалом
         /// </summary>
         [DisplayName("Соглашением с филиалом?")]
-        public bool? IsAgreementContract { get; set; }
+        public bool IsAgreementContract { get; set; }
 
         public List<string> PaymentCA { get; set; } = new List<string>();           
 
@@ -122,8 +124,13 @@ namespace MvcLayer.Models
         /// </summary>
         [DisplayName("Расчет за выполненные работы")]
         public string? PaymentСonditionsRaschet { get; set; }
-        public int? PaymentСonditionsDaysRaschet { get; set; }
-        public int? PaymentСonditionsDaysRaschet2 { get; set; }
+
+        [DisplayName("Виды работ по договору")]
+        public string? WorkType { get; set; }
+
+
+        public int? PaymentConditionsDaysRaschet { get; set; }
+        public int? PaymentConditionsDaysRaschet2 { get; set; }
         public int? ContractType { get; set; }
 
         public bool IsMultiple { get; set; }

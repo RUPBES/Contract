@@ -186,10 +186,10 @@
                             @item?.materialCost?.ToString("N2")
                         </td>
 
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                        iterator = iterator.AddMonths(1))
                         {
-                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            var itemMaterial = item.listMaterials.Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator))
                             .FirstOrDefault();
                             if (itemMaterial != null)
                             {

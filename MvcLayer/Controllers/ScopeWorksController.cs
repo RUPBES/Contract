@@ -8,10 +8,10 @@ using MvcLayer.Models;
 using MvcLayer.Models.Reports;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using DatabaseLayer.Models.KDO;
-using OfficeOpenXml.ConditionalFormatting;
-using System.Diagnostics.Contracts;
-using NuGet.Packaging;
 using BusinessLayer.Enums;
+using System.Reflection;
+using System.Diagnostics.Contracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Controllers
 {
@@ -28,12 +28,12 @@ namespace MvcLayer.Controllers
         private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
         private readonly IParseService _pars;
-
+        private readonly ILoggerContract _logger;
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
             IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService,
-            IPrepaymentService prepayment, IParseService parser)
+            IPrepaymentService prepayment, IParseService parser, ILoggerContract logger)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -45,104 +45,99 @@ namespace MvcLayer.Controllers
             _contractOrganizationService = contractOrganizationService;
             _prepayment = prepayment;
             _pars = parser;
+            _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return View(_mapper.Map<IEnumerable<ScopeWorkViewModel>>(_scopeWork.GetAll()));
-        }
 
         //Показывает последний работ объем и дает изменить/удалить
         public IActionResult GetByContractId(int contractId, bool isEngineering, int returnContractId = 0)
         {
-            var obj = _contractService.GetById(contractId);
-            int? scopeId;
-            if (!_contractService.IsThereScopeWorks(contractId, false, out scopeId))
+            var contract = _contractService.Find(x => x.Id == contractId, x => new() { IsEngineering = x.IsEngineering }).FirstOrDefault();
+
+            //если нет объёмов работ, то выбрасываем сообщение
+            if (!(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces == false)?.LastOrDefault()?.Id > 0))
             {
-                TempData["Message"] = "Не заполнены объемы работ!";
-                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                NotificationHelper.SetNotification(TempData, "Не заполнен объем работ!", NotificationType.Warning);
+                if (returnContractId < 1)
+                {
+                    returnContractId = contractId;
+                }
+
+                return RedirectToAction("Details", "Contracts", new { id = returnContractId });
             }
-            if (obj.IsEngineering == true)
-                ViewData["IsEngin"] = true;
+
+            ViewData["IsEngin"] = contract?.IsEngineering ?? false;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
-            var scope = _scopeWork.GetLastScope(contractId);
-            return View(_mapper.Map<ScopeWorkViewModel>(_mapper.Map<ScopeWorkDTO>(scope)));
+
+            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetLastScope(contractId)));
         }
 
+        [Route("ScopeWorks/Create/Period")]
         public IActionResult ChoosePeriod(int contractId, int returnContractId = 0)
         {
             if (contractId > 0)
             {
-                ViewData["returnContractId"] = returnContractId;
-                ViewData["contractId"] = contractId;
-                var periodChoose = new PeriodChooseViewModel
-                {
-                    ContractId = contractId
-                };
-                var isScope = _scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true).FirstOrDefault();
+                ViewBag.ReturnContractId = returnContractId;
+                ViewBag.ContractId = contractId;
 
+                var isScope = _scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces != true).FirstOrDefault();
                 if (isScope != null)
                 {
-                    return View(periodChoose);
+                    return View(new PeriodChooseViewModel { ContractId = contractId });
                 }
-                else
+
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                var contract = _contractService.GetById(contractId);
+                var scopeViewModel = new ScopeWorkViewModel();
+                var costs = new List<SWCostDTO>();
+                scopeViewModel.ContractId = contractId;
+
+                var start = new DateTime();
+
+                if (!contract.DateBeginWork.HasValue)
                 {
-                    var contract = _contractService.GetById(contractId);
-                    ScopeWorkViewModel scope = new ScopeWorkViewModel();
-                    List<SWCostDTO> costs = new List<SWCostDTO>();
-                    scope.ContractId = contractId;
-
-                    DateTime? start = new DateTime(), end = new DateTime();
-
-                    if (contract.DateBeginWork != null)
-                    {
-                        start = contract.DateBeginWork;
-                    }
-                    else
-                    {
-                        TempData["Message"] = "Не заполнена дата начала работ!";
-                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                    }
-
-                    if (contract.DateEndWork != null)
-                    {
-                        end = contract.DateEndWork;
-                    }
-                    else
-                    {
-                        TempData["Message"] = "Не заполнена дата окончания работ!";
-                        var urlReturn = returnContractId == 0 ? contractId : returnContractId;
-                        return RedirectToAction("Details", "Contracts", new { id = urlReturn });
-                    }
-
-                    while (Checker.LessOrEquallyFirstDateByMonth((DateTime)start, (DateTime)end))
-                    {
-                        costs.Add(new SWCostDTO
-                        {
-                            Period = start
-                        });
-
-                        start = start.Value.AddMonths(1);
-                    }
-
-                    scope.SWCosts.AddRange(costs);
-                    if (contract.IsEngineering == true)
-                        ViewData["IsEngin"] = true;
-                    ViewData["contractPrice"] = contract.ContractPrice;
-                    return View("Create", scope);
+                    NotificationHelper.SetNotification(TempData, "Не заполнена дата начала работ!", NotificationType.Warning);
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
+
+                if (!contract.DateEndWork.HasValue)
+                {
+                    NotificationHelper.SetNotification(TempData, "Не заполнена дата окончания работ!", NotificationType.Warning);
+                    return RedirectToAction("Details", "Contracts", new { id = urlReturn });
+                }
+
+                start = contract.DateBeginWork.Value;
+
+                while (DateComparer.IsLessOrSameYearAndMonth(start, contract.DateEndWork))
+                {
+                    costs.Add(new SWCostDTO
+                    {
+                        Period = start
+                    });
+
+                    start = start.AddMonths(1);
+                }
+
+                scopeViewModel.SWCosts.AddRange(costs);
+
+                ViewData["IsEngin"] = contract.IsEngineering == true ? true : false;
+                ViewData["contractPrice"] = contract.ContractPrice;
+
+                return View("Create", scopeViewModel);
+
             }
             return View();
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreatePeriods(PeriodChooseViewModel scopeWork, int contractId, int returnContractId = 0)
+        [Route("ScopeWorks/Create/Costs")]
+        [ActionName("Create/Period")]
+        public IActionResult CreatePeriod(PeriodChooseViewModel scopeWork, int contractId, int returnContractId = 0)
         {
             if (scopeWork is not null)
             {
+                //todo: что тут происходит? зачем все в TEMPDATA запихивать???
                 if (TempData["contractId"] != null)
                 {
                     contractId = (int)TempData["contractId"];
@@ -155,16 +150,12 @@ namespace MvcLayer.Controllers
                 ScopeWorkViewModel scope = new ScopeWorkViewModel();
                 List<SWCostDTO> costs = new List<SWCostDTO>();
 
-                if (scopeWork.AmendmentId > 0)
-                {
-                    scope.IsChange = true;
-                }
-
+                scope.IsChange = scopeWork.AmendmentId > 0 ? true : null;
                 scope.ContractId = scopeWork.ContractId;
                 scope.ChangeScopeWorkId = scopeWork.ChangeScopeWorkId;
                 scope.AmendmentId = scopeWork.AmendmentId;
 
-                while (Checker.LessOrEquallyFirstDateByMonth(scopeWork.PeriodStart, scopeWork.PeriodEnd))
+                while (DateComparer.IsLessOrSameYearAndMonth(scopeWork.PeriodStart, scopeWork.PeriodEnd))
                 {
                     costs.Add(new SWCostDTO
                     {
@@ -176,223 +167,151 @@ namespace MvcLayer.Controllers
 
                 scope.SWCosts.AddRange(costs);
 
-                var obj = _contractService.GetById(contractId);
-                if (obj.IsEngineering == true)
-                    ViewData["IsEngin"] = true;
+                var contract = _contractService.GetById(contractId);
+                var amendment = _amendmentService.GetById((int)scope?.AmendmentId);
+
+                ViewBag.IsEngin = contract.IsEngineering ?? false;
                 ViewData["returnContractId"] = returnContractId;
                 ViewData["contractId"] = contractId;
-                var amendment = _amendmentService.GetById((int)scope?.AmendmentId);
-                var contract = _contractService.GetById(contractId);
-                if (amendment != null)
-                {
-                    ViewData["contractPrice"] = amendment.ContractPrice;
-                }
-                else
-                {
-                    ViewData["contractPrice"] = contract.ContractPrice;
-                }
+                ViewData["contractPrice"] = amendment != null ? amendment.ContractPrice : contract.ContractPrice;
+
                 if (scope is not null)
                 {
                     return View("Create", scope);
                 }
+
                 if (contractId > 0)
                 {
-                    return View("Create", new ScopeWorkViewModel { ContractId = contractId });
+                    return View(new ScopeWorkViewModel { ContractId = contractId });
                 }
-                return View();
+                return View("Create", scopeWork);
             }
-            return View(scopeWork);
+            return View("Create", scopeWork);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "CreatePolicy")]
-        public IActionResult Create(ScopeWorkViewModel scopeWork, int returnContractId = 0)
+        public IActionResult Create(ScopeWorkViewModel viewModel, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
-
-            if (scopeWork is not null)
+            if (viewModel is null)
             {
-                int parentContrId = 0;
-                var contract = scopeWork?.ContractId is not null ? _contractService.GetById((int)scopeWork?.ContractId) : null;
-                if (contract == null) return BadRequest("Не найден контракт");
-                var contractType = _contractService.GetContractType(contract.Id, out parentContrId);
-                int operationSign = ((contractType == ContractType.GenСontract) || (contractType == ContractType.MultipleContract)) == true ? 1 : -1;
-
-                if (contract is not null)
-                {
-                    var isScope = _scopeWork.Find(x => x.ContractId == contract.Id).Any();
-                    var isOtherContracts = _contractService.Find(x => x.SubContractId == contract.Id ||
-                                                                    x.AgreementContractId == contract.Id).Any();
-                    if (!isScope && isOtherContracts)
-                    {
-                        CreateOwnScopeFromSubandAgrContracts(contract.Id);
-                    }
-                    var oldScope = _scopeWork.GetLastScope(contract.Id);
-                    int? oldscopeId = null;
-                    if (oldScope != null) oldscopeId = oldScope.Id;
-                    var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(scopeWork));
-
-                    if (scopeWork?.AmendmentId is not null && scopeWork?.AmendmentId > 0)
-                    {
-                        _scopeWork.AddAmendmentToScopeWork((int)scopeWork?.AmendmentId, (int)newScpId);
-                    }
-
-
-                    //comments
-                    /*
-                       1) если генконтракт -> создаем дополнительно объем собст. силами
-                       2) если подобъект -> создаем дополнительно объем собст. силами, а также обновляем данные генконтракта (объем, объем соб.силами)
-                       3) если субподряд или соглашение -> проверяем на наличие родительского договора (подобъект или генконтракт), и обновляем их объемы соб.силами (вычетаем значения)
-                    */
-                    var lastAmendment = _scopeWork.GetLastAmendmentWithScope(contract.Id);
-                    DateTime? lastAmendmentDate;
-
-                    var AmendmentDate = _amendmentService.Find(x => x.Id == scopeWork?.AmendmentId).Select(x => x.Date).FirstOrDefault();
-                    if (lastAmendment == null)
-                        lastAmendmentDate = AmendmentDate;
-                    else lastAmendmentDate = lastAmendment.Date;
-                    if (lastAmendmentDate == AmendmentDate)
-                    {
-                        var swCosts = _swCostService.Find(x => x.ScopeWorkId == newScpId).ToList();
-                        if ((contractType == ContractType.GenСontract || contractType == ContractType.MultipleContract) && newScpId.HasValue)
-                        {
-                            _scopeWork.AddOwnForcesCostsByScopeId(_mapper.Map<ScopeWorkDTO>(scopeWork), operationSign);
-
-                            if (contractType == ContractType.MultipleContract)
-                            {
-                                _scopeWork.UpdateParentCosts(parentContrId, swCosts, false, operationSign, oldscopeId);                                
-                                _scopeWork.UpdateParentCosts(parentContrId, swCosts, true, operationSign, oldscopeId);
-                            }
-                        }
-                        else
-                        {
-                            while (parentContrId != 0)
-                            {
-                                _scopeWork.UpdateParentCosts(parentContrId, swCosts, true, operationSign, oldscopeId);
-                                contract = parentContrId > 0 ? _contractService.GetById(parentContrId) : null;
-                                if (contract == null) return BadRequest("Не найден контракт");
-                                contractType = _contractService.GetContractType(contract.Id, out parentContrId);
-                            }
-                        }
-                    }
-                }
-
-                if (scopeWork.ContractId is not null)
-                {
-                    if (_prepayment.FindByContractId((int)scopeWork.ContractId).Count() == 0 && contract.PaymentСonditionsAvans != null && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
-                    {
-                        return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = scopeWork.ContractId, isFact = false, returnContractId = returnContractId });
-                    }
-                    else return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = scopeWork.ContractId, returnContractId = returnContractId });
-                }
-                else
-                {
-                    return RedirectToAction("Index", "Home");
-                }
-            }
-            return View(scopeWork);
-
-            void CreateOwnScopeFromSubandAgrContracts(int id)
-            {
-                var subContracts = _contractService.GetSubContracts(id);
-                var agrContracts = _contractService.GetbranchAgreements(id);
-                var scope = new ScopeWorkDTO();
-                scope.ContractId = id;
-                scope.IsOwnForces = true;
-                foreach (var item in subContracts)
-                {
-                    var subScope = _scopeWork.GetLastScope(item.Id);
-                    foreach (var swcost in _swCostService.Find(x => x.ScopeWorkId == subScope.Id).ToList())
-                    {
-                        var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
-                        if (swmain != null)
-                        {
-                            swmain = SubstractCosts(swmain, swcost, -1);
-                        }
-                        else
-                        {
-                            var sw = new SWCostDTO();
-                            sw.ScopeWork = scope;
-                            sw.Period = swcost.Period;
-                            sw = SubstractCosts(sw, swcost, -1);
-                            scope.SWCosts.Add(sw);
-                        }
-                    }
-                }
-                foreach (var item in agrContracts)
-                {
-                    var subScope = _scopeWork.GetLastScope(item.Id);
-                    foreach (var swcost in _swCostService.Find(x => x.ScopeWorkId == subScope.Id).ToList())
-                    {
-                        var swmain = scope.SWCosts.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)swcost.Period)).FirstOrDefault();
-                        if (swmain != null)
-                        {
-                            swmain = SubstractCosts(swmain, swcost, -1);
-                        }
-                        else
-                        {
-                            var sw = new SWCostDTO();
-                            sw.ScopeWork = scope;
-                            sw.Period = swcost.Period;
-                            sw = SubstractCosts(sw, swcost, -1);
-                            scope.SWCosts.Add(sw);
-                        }
-                    }
-                }
-                _scopeWork.Create(scope);
+                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Warning);
+                return View(viewModel);
             }
 
-            SWCostDTO SubstractCosts(SWCostDTO firstCosts, SWCostDTO secondCosts, int opr)
-            {
-                firstCosts.PnrCost = firstCosts.PnrCost + opr * (secondCosts?.PnrCost ?? 0);
-                firstCosts.SmrCost = firstCosts.SmrCost + opr * (secondCosts?.SmrCost ?? 0);
-                firstCosts.EquipmentCost = firstCosts.EquipmentCost + opr * (secondCosts?.EquipmentCost ?? 0);
-                firstCosts.OtherExpensesCost = firstCosts.OtherExpensesCost + opr * (secondCosts?.OtherExpensesCost ?? 0);
-                firstCosts.AdditionalCost = firstCosts.AdditionalCost + opr * (secondCosts?.AdditionalCost ?? 0);
-                firstCosts.GenServiceCost = firstCosts.GenServiceCost + opr * (secondCosts?.GenServiceCost ?? 0);
-                firstCosts.MaterialCost = firstCosts.MaterialCost + opr * (secondCosts?.MaterialCost ?? 0);
+            int contractId = viewModel.ContractId.HasValue ? viewModel.ContractId.Value : 0;
+            var contract = viewModel.ContractId.HasValue ? _contractService.GetById(viewModel.ContractId.Value) : null;
 
-                return firstCosts;
+            if (contractId < 1)
+            {
+                NotificationHelper.SetNotification(TempData, "Не найден договор", NotificationType.Warning);
+                return BadRequest("Не найден договор");
             }
+
+
+            ContractType thisContractType;
+            var parentContracts = _contractService.GetParents(contractId, out thisContractType);
+            var oldScope = _scopeWork.GetLastScope(contractId);
+
+            var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
+            NotificationHelper.SetNotification(TempData, "Объем работ добавлен", NotificationType.Info);
+            viewModel.Id = newScpId ?? 0;
+            _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), parentContracts, CrudOp.CREATE, oldScope?.SWCosts);
+
+
+            if (newScpId.HasValue && viewModel.AmendmentId.HasValue)
+            {
+                _scopeWork.AddAmendment(viewModel.AmendmentId.Value, newScpId.Value);
+            }
+
+
+            if (viewModel.ContractId is not null)
+            {
+                if (_prepayment.FindByContractId((int)viewModel.ContractId).Count() == 0 && contract.PaymentСonditionsAvans != null && !contract.PaymentСonditionsAvans.Contains("Без авансов"))
+                {
+                    return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = viewModel.ContractId, isFact = false, returnContractId = returnContractId });
+                }
+                else return RedirectToAction("GetByContractId", "ScopeWorks", new { contractId = viewModel.ContractId, returnContractId = returnContractId });
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [Authorize(Policy = "EditPolicy")]
+        public IActionResult Edit(int Id, int contractId, int returnContractId = 0)
+        {
+            var contract = _contractService.GetById(contractId);
+            var amendment = _scopeWork.GetAmendmentByScopeId(Id);
+
+            ViewData["IsEngin"] = contract.IsEngineering ?? false;
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["contractPrice"] = (amendment != null) ? amendment.ContractPrice : contract.ContractPrice;
+
+            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(Id)));
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "EditPolicy")]
+        public IActionResult Edit(ScopeWorkViewModel editScope, int contractId, int returnContractId = 0)
+        {
+            ContractType thisContractType;
+            var parentContracts = _contractService.GetParents(contractId, out thisContractType);
+            var oldScope = _scopeWork.GetLastScope(editScope.ContractId ?? 0);
+
+            foreach (var swCost in editScope.SWCosts)
+            {
+                _swCostService.Update(swCost);
+            }
+
+            NotificationHelper.SetNotification(TempData, "Объем работ обновлен", NotificationType.Info);
+            _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), parentContracts, CrudOp.UPDATE, oldScope?.SWCosts);
+
+            return RedirectToAction("GetByContractId", new { contractId = contractId, returnContractId = returnContractId });
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> ShowDelete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            return PartialView("_ViewDelete");
-        }
-
-        [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> ShowResultDelete(int? id)
-        {
-            var scopeWork = _scopeWork.GetById((int)id);
-            var swCosts = _swCostService.GetById((int)id);
-            if (scopeWork is not null)
+            try
             {
-                var contrId = scopeWork.ContractId;
-                int parentContrId = 0;
-                var contract = contrId.HasValue ? _contractService.GetById((int)contrId) : null;
-                if (contract == null) return BadRequest("Не найден контракт");
-                var contractType = _contractService.GetContractType(contract.Id, out parentContrId);
-                var parents = _contractService.GetParentsList(contract);
-                int oper = (contractType == ContractType.Agreement) || (contractType == ContractType.SubContract) ? 1 : -1;
-                foreach (var cost in scopeWork.SWCosts)
+                var scopeWork = _scopeWork.GetById((int)id);
+                if (scopeWork is null)
                 {
-                    _scopeWork.RemoveSubContractCost((int)cost.Id, (int)contrId, parents, oper);
-                    _swCostService.Delete((int)cost.Id);
+                    NotificationHelper.SetNotification(TempData, "Не найден объем работ", NotificationType.Info);
+                    return await Task.FromResult<IActionResult>(NotFound());
                 }
-                //TODO: сделать проверку, есть ли дочерние договора, и есть ли стоимости у договора, для того чтобы удалить объем работ или не трогать
-                //var isLastSwCost = _swCostService.Find(x => x.ScopeWorkId == scpId).Count() > 0 ? false : true;
-                //if (isLastSwCost)
-                //{
-                //    _scopeWork.DeleteAllScopeWorkContract((int)scpId);
+                
+                ScopeWorkDTO oldScope = new();
+                if (scopeWork.ChangeScopeWorkId.HasValue)
+                {
+                    oldScope = _scopeWork.GetById(scopeWork.ChangeScopeWorkId.Value);
+                }
 
-                //}
+                ContractType thisContractType;
+                var parentContracts = _contractService.GetParents(scopeWork?.ContractId ?? 0, out thisContractType);
+
+                _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(scopeWork), parentContracts, CrudOp.DELETE, oldScope.SWCosts);
+                _scopeWork.Delete(id ?? 0);
+
+                NotificationHelper.SetNotification(TempData, "Объем работ удален", NotificationType.Info);
+                return await Task.FromResult<IActionResult>(Ok());
             }
-            ViewData["reload"] = "Yes";
-            return PartialView("_Message", new ModalViewModel("Запись успешно удалена.", "Результат удаления", "Хорошо"));
+            catch (Exception)
+            {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления", NotificationType.Error);
+                _logger.WriteLog(logLevel: LogLevel.Information,
+                                               message: $"not deleted scope,id= {id}",
+                                               nameSpace: typeof(ScopeWorksController).Name,
+                                               methodName: MethodBase.GetCurrentMethod().Name);
+                return await Task.FromResult<IActionResult>(BadRequest());
+            }
         }
+
 
         public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
         {
@@ -467,7 +386,7 @@ namespace MvcLayer.Controllers
                 for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
-                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    var scope = _scopeWork.GetByAmendmentId(item.Id);
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id && w.IsOwnForces == false;
@@ -510,21 +429,21 @@ namespace MvcLayer.Controllers
                 if (listScope.Count() > 0)
                 {
                     itemViewModel.currentYearScopeWork = listScope.ToList().Where(x =>
-                    Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, new DateTime(DateTime.Now.Year, 12, 1))).Sum(x => x.CostNds);
+                    DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1), x.Period) &&
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, new DateTime(DateTime.Now.Year, 12, 1))).Sum(x => x.CostNds);
                 }
                 itemViewModel.listScopeWork = new List<ItemScopeDeviationReport>();
                 #region Заполнение месяцев
 
                 for (var date = itemViewModel.dateBeginWork;
-                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     DateComparer.IsLessOrSameYearAndMonth(date, itemViewModel.dateEndWork);
                      date = date.Value.AddMonths(1))
                 {
                     var item = new ItemScopeDeviationReport();
                     item.period = date;
                     item.planScopeWork = new ScopeWorkForReport();
                     item.factScopeWork = new ScopeWorkForReport();
-                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var plan = listScope.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (plan != null)
                     {
@@ -535,7 +454,7 @@ namespace MvcLayer.Controllers
                         item.planScopeWork.PnrCost = plan.PnrCost;
                         item.planScopeWork.SmrCost = plan.SmrCost;
                     }
-                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var fact = listFact.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (fact != null)
                     {
@@ -568,7 +487,6 @@ namespace MvcLayer.Controllers
             }
             return View(viewModel);
         }
-
 
         public IActionResult DetailsCostDeviation(int contractId)
         {
@@ -647,7 +565,7 @@ namespace MvcLayer.Controllers
                 for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
-                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    var scope = _scopeWork.GetByAmendmentId(item.Id);
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id && w.IsOwnForces == false;
@@ -690,21 +608,21 @@ namespace MvcLayer.Controllers
                 if (listScope.Count() > 0)
                 {
                     itemViewModel.currentYearScopeWork = listScope.ToList().Where(x =>
-                    Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)x.Period) &&
-                    Checker.LessOrEquallyFirstDateByMonth((DateTime)x.Period, new DateTime(DateTime.Now.Year, 12, 1))).Sum(x => x.CostNds);
+                    DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1), x.Period) &&
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, new DateTime(DateTime.Now.Year, 12, 1))).Sum(x => x.CostNds);
                 }
                 itemViewModel.listScopeWork = new List<ItemScopeDeviationReport>();
                 #region Заполнение месяцев
 
                 for (var date = itemViewModel.dateBeginWork;
-                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     DateComparer.IsLessOrSameYearAndMonth(date, itemViewModel.dateEndWork);
                      date = date.Value.AddMonths(1))
                 {
                     var item = new ItemScopeDeviationReport();
                     item.period = date;
                     item.planScopeWork = new ScopeWorkForReport();
                     item.factScopeWork = new ScopeWorkForReport();
-                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var plan = listScope.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (plan != null)
                     {
@@ -715,7 +633,7 @@ namespace MvcLayer.Controllers
                         item.planScopeWork.PnrCost = plan.PnrCost;
                         item.planScopeWork.SmrCost = plan.SmrCost;
                     }
-                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var fact = listFact.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (fact != null)
                     {
@@ -772,73 +690,18 @@ namespace MvcLayer.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Policy = "EditPolicy")]
-        public IActionResult EditSWCostByScopeWorkId(int Id, int contractId, int returnContractId = 0)
-        {
-            var contract = _contractService.GetById(contractId);
-            if (contract.IsEngineering == true)
-                ViewData["IsEngin"] = true;
-            ViewData["returnContractId"] = returnContractId;
-            ViewData["contractId"] = contractId;
-            var amendment = _scopeWork.GetAmendmentByScopeId(Id);
-
-            if (amendment != null)
-            {
-                ViewData["contractPrice"] = amendment.ContractPrice;
-            }
-            else
-            {
-                ViewData["contractPrice"] = contract.ContractPrice;
-            }
-            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(Id)));
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "EditPolicy")]
-        public IActionResult EditSWCostByScopeWorkId(ScopeWorkViewModel model, int contractId, int returnContractId = 0)
-        {
-            List<SWCostDTO> costs = new List<SWCostDTO>();
-            costs.AddRange(_mapper.Map<List<SWCostDTO>>(model.SWCosts));
-            int parentContrId = 0;
-            var contract = _contractService.GetById(contractId);
-            if (contract == null) return BadRequest("Не найден контракт");
-            var contractType = _contractService.GetContractType(contract.Id, out parentContrId);
-
-            if (contractType == ContractType.GenСontract)
-            {
-                _scopeWork.UpdateParentCosts(contractId, costs, isOwnForces: true, operatorSign: 1, changeScopeId: model?.Id);
-            }
-            else if (contractType == ContractType.MultipleContract)
-            {
-                _scopeWork.UpdateParentCosts(parentContrId, costs, true, 1, model?.Id);
-                _scopeWork.UpdateParentCosts(parentContrId, costs, false, 1, model?.Id);
-
-            }
-            else
-            {
-                while (parentContrId != 0)
-                {
-                    _scopeWork.UpdateParentCosts(parentContrId, costs, true, -1, model?.Id);
-                    contract = parentContrId > 0 ? _contractService.GetById(parentContrId) : null;
-                    if (contract == null) return BadRequest("Не найден контракт");
-                    contractType = _contractService.GetContractType(contract.Id, out parentContrId);
-                }
-            }
-
-            foreach (var swCost in model.SWCosts)
-            {
-                _swCostService.Update(_mapper.Map<SWCostDTO>(swCost));
-            }
-            return RedirectToAction("GetByContractId", new { contractId = contractId, returnContractId = returnContractId });
-        }
-
+        //todo: убарть этот брЭд! или переписать на получение дынных периода
         public IActionResult GetPeriodAmendment(int Id)
         {
             return PartialView("_Period", Id);
         }
 
+
+
+
+
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult GetScopeWorkByFile(int contractId, int returnContractId = 0)
+        public ActionResult GetByFile(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
@@ -846,7 +709,15 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult GetDataScopes(string path, int contractId, int returnContractId, /*string formId,*/ int page = 0)
+        public ActionResult CreateByFile(string model, int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View();
+        }
+
+        [Authorize(Policy = "CreatePolicy")]
+        public ActionResult GetDataScopes(string path, int contractId, int returnContractId, int page = 0)
         {
             try
             {
@@ -855,9 +726,6 @@ namespace MvcLayer.Controllers
                 {
                     throw new Exception();
                 }
-
-                //int contId = 0;
-                //bool isInt = int.TryParse(contractId, out contId);
 
                 answer.ContractId = contractId /*contId*/;
                 answer.IsOwnForces = false;
@@ -873,9 +741,6 @@ namespace MvcLayer.Controllers
                     ViewData["contractPrice"] = contract.ContractPrice;
                 }
 
-                //ViewData["IsEngin"] = isInt && contId > 0 ? _contractService.GetById(contId).IsEngineering : false;
-                //ViewData["path"] = path;
-                //ViewData["forId"] = formId;
                 ViewData["contractId"] = contractId;
                 ViewData["returnContractId"] = returnContractId;
 
@@ -885,7 +750,7 @@ namespace MvcLayer.Controllers
                     fileInf.Delete();
                 }
 
-                return View("CreateScopeWorkByFile", _mapper.Map<ScopeWorkViewModel>(answer));
+                return View("CreateByFile", _mapper.Map<ScopeWorkViewModel>(answer));
             }
             catch
             {
@@ -894,73 +759,10 @@ namespace MvcLayer.Controllers
                 {
                     fileInf.Delete();
                 }
-                return PartialView("_error", "Загрузите файл excel (кроме Excel книга 97-2033)");
+                NotificationHelper.SetNotification(TempData, $"Загрузите файл excel (кроме Excel книга 97-2003)", NotificationType.Error);
+                return View();// PartialView("_error", "Загрузите файл excel (кроме Excel книга 97-2003)");
             }
         }
 
-
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult CreateScopeWorkByFile(string model, int contractId, int returnContractId = 0)
-        {
-            ViewData["contractId"] = contractId;
-            ViewData["returnContractId"] = returnContractId;
-            return View();
-        }
-
-        #region AdditionsMethods
-        //private void CreateOrUpdateSWCostsOfMainContract(int multipleContractId, bool isOwnForses, List<SWCostDTO> costs)
-        //{
-        //    int? scopeId = null;
-        //    var contractMultiple = _contractService.GetById(multipleContractId);
-
-        //    //если есть объем работ у главного договора
-        //    if (_contractService.IsThereScopeWorks(contractMultiple.Id, isOwnForses, out scopeId))
-        //    {
-        //        //есть стоимости у гл.дог-ра (ищем по ID объема работ)                  
-        //        if (_contractService.IsThereSWCosts(scopeId))
-        //        {
-        //            ///обновляем соответствующие периоды, добавляя из подобъекта, и если их нет создаем с этим же периодом
-        //            _scopeWork.AddSWCostForMainContract(scopeId, costs);
-        //        }
-        //        else
-        //        {
-        //            //создаем, копируя с подобъекта
-        //            _scopeWork.CreateSWCostForMainContract(scopeId, costs, isOwnForses);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        //создаем объем и копируем ему данные стоимости из подобъекта
-        //        var scopeWorkId = _scopeWork.Create(new ScopeWorkDTO
-        //        {
-        //            ContractId = contractMultiple.Id,
-        //            IsOwnForces = isOwnForses,
-        //            IsChange = false
-        //        });
-
-        //        _scopeWork.CreateSWCostForMainContract(scopeWorkId, costs, isOwnForses);
-        //    }
-        //}
-
-        ///// <summary>
-        ///// обновляем глав. договор, удалением старых и добовления новых стоимостей
-        ///// </summary>
-        ///// <param name="multipleContractId"></param>
-        ///// <param name="changeScopeId"></param>
-        ///// <param name="isOwnForses"></param>
-        ///// <param name="costs"></param>
-        //private void UpdateSWCostsOfMainContract(int multipleContractId, int changeScopeId, bool isOwnForses, List<SWCostDTO> costs)
-        //{
-        //    int? scopeId = null;
-        //    var contractMultiple = _contractService.GetById(multipleContractId);
-
-        //    //если есть объем работ у главного договора, проверяем стоимости
-        //    if (_contractService.IsThereScopeWorks(contractMultiple.Id, isOwnForses, out scopeId))
-        //    {
-        //        ///обновляем соответствующие периоды, вычетаем из объема договора старый объем подобъекта и добавляем новый объем
-        //        _scopeWork.UpdateCostOwnForceMnContract(multipleContractId, changeScopeId, costs);
-        //    }
-        //}
-        #endregion
     }
 }

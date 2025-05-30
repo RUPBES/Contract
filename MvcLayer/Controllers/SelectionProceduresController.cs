@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -33,7 +34,7 @@ namespace MvcLayer.Controllers
 
         public IActionResult GetByContractId(int contractId)
         {
-            return View(_mapper.Map<IEnumerable<SelectionProcedureViewModel>>(_selectProcedureService.Find(x => x.ContractId == contractId)));
+            return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.Find(x => x.ContractId == contractId).LastOrDefault()));
         }
 
         //при создании договора, автоматически создается запись в таблице "Процедура выбора" с Видом закупки,
@@ -58,6 +59,7 @@ namespace MvcLayer.Controllers
             {
                 _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
 
+                NotificationHelper.SetNotification(TempData, $"Данные процедуры выбора обновлены", NotificationType.Info);
                 //если запрос пришел с детальной инфы по договору, тогда редиректим проц.выбора для этого договора, если нет - на список всех проц.выбора
                 if (selectProcedure.ContractId is not null)
                 {
@@ -88,6 +90,7 @@ namespace MvcLayer.Controllers
                 try
                 {
                     _selectProcedureService.Update(_mapper.Map<SelectionProcedureDTO>(selectProcedure));
+                    NotificationHelper.SetNotification(TempData, $"Данные процедуры выбора обновлены", NotificationType.Info);
                     if (selectProcedure.FilesEntity != null && selectProcedure.FilesEntity.Count() > 0)
                     {
                         int fileId = (int)_fileService.Create(selectProcedure.FilesEntity, FolderEnum.SelectionProcedures, selectProcedure.Id);
@@ -96,6 +99,7 @@ namespace MvcLayer.Controllers
                 }
                 catch
                 {
+                    NotificationHelper.SetNotification(TempData, $"Ошибка обновления", NotificationType.Error);
                     return View();
                 }
             }
@@ -105,6 +109,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
+                NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
                 return RedirectToAction(nameof(Index));
             }
         }
@@ -112,12 +117,13 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _selectProcedureService.GetAll() == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
             _selectProcedureService.Delete((int)id);
+            NotificationHelper.SetNotification(TempData, $"Процедура выбора удалена", NotificationType.Info);
             return RedirectToAction("Index", "Contracts");
         }
     }

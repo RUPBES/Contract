@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +7,9 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/chosen.css" asp-append-version="true" />    
+    <link rel="stylesheet" href="~/css/chosen.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/selectize.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/selectize.default.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/TableStyle.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/modalWindow.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/element-styles.css" asp-append-version="true" />
@@ -21,10 +23,11 @@
             z-index: 1000;
         }
     </style>
-    <link rel="stylesheet"  href="~/lib/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker.min.css"/>
+
+    <link rel="stylesheet" href="~/lib/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-datepicker-1.9.0-dist/css/bootstrap-datepicker3.min.css" />
     @* из-за partial jquery не успевает увидеть *@
-    <script src="~/lib/jquery/dist/jquery.min.js"></script> 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
 </head>
 <body>
     <div id="modDialog" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, 0.65);">
@@ -50,22 +53,37 @@
                 </main>
             </div>
         }
-        @Html.Partial("_Footer")
+        <div class="footer">
+            &copy; <span style="text-transform:uppercase;">РУП "Белэнергострой" - Договоры</span>   <span>@DateTime.Now.Year </span>@* <a asp-controller="Home" asp-action="Privacy">Документация</a> *@
+        </div>
     </div>
 
+    <!-- Notification container -->
+    <div class="notification-container">
+        @if (TempData["NotificationMessage"] != null)
+        {
+            <div class="notification @TempData["NotificationType"]">
+                @TempData["NotificationMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+    </div>
 
     <script src="~/lib/bootstrap-datepicker-1.9.0-dist/js/bootstrap-datepicker.min.js"></script>
-    <script src="~/lib/bootstrap-datepicker-1.9.0-dist/locales/bootstrap-datepicker.ru.min.js"></script>    
+    <script src="~/lib/bootstrap-datepicker-1.9.0-dist/locales/bootstrap-datepicker.ru.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>    
-    <script src="~/lib/jquery-validation/dist/additional-methods.min.js"></script>    
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>    
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/additional-methods.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/customJs.js" asp-append-version="true"></script>
     <script src="~/js/open_dropdown_menu.js" asp-append-version="true"></script>
     <script src="~/kendoui/kendo.all.min.js"></script>
     <script src="~/js/chosen.jquery.min.js"></script>
+    <script src="~/js/selectize.min.js"></script>
     <script src="~/kendoui/kendo.culture.by-BY.min.js"></script>
     <script src="~/kendoui/kendo.time.date.class-style.js"></script>
     @await RenderSectionAsync("Scripts", required: false)

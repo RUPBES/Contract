@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -56,6 +57,7 @@ namespace MvcLayer.Controllers
                 int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, FolderEnum.EstimateDocumentations, estimateDocId);
 
                 _estimateDocService.AddFile(estimateDocId, fileId);
+                NotificationHelper.SetNotification(TempData, "Создан ПСД", NotificationType.Info);
 
                 if (estimateDoc?.ContractId is not null && estimateDoc.ContractId > 0)
                 {
@@ -68,6 +70,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка создания", NotificationType.Error);
                 return View();
             }
         }
@@ -93,13 +96,15 @@ namespace MvcLayer.Controllers
                 try
                 {
                     _estimateDocService.Update(_mapper.Map<EstimateDocDTO>(commissionAct));
+                    NotificationHelper.SetNotification(TempData, "Обновлен ПСД", NotificationType.Info);
                 }
                 catch
                 {
+                    NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);
                     return View();
                 }
             }
-
+            NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Warning);
             if (commissionAct?.ContractId is not null && commissionAct.ContractId > 0)
             {
                 return RedirectToAction(nameof(GetByContractId), new { id = commissionAct.ContractId, returnContractId = returnContractId});
@@ -121,6 +126,8 @@ namespace MvcLayer.Controllers
                 }
 
                 _estimateDocService.Delete(id);
+                NotificationHelper.SetNotification(TempData, "Удален ПСД", NotificationType.Info);
+
                 if (contractId is not null && contractId > 0)
                 {
                     return RedirectToAction(nameof(GetByContractId), new { id = contractId });
@@ -132,6 +139,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления", NotificationType.Error);
                 return View();
             }
         }

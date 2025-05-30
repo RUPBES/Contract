@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using MvcLayer.Models.Reports;
-using Newtonsoft.Json;
-using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -25,10 +23,9 @@ namespace MvcLayer.Controllers
         private readonly IContractOrganizationService _contractOrganizationService;
         private readonly IOrganizationService _organization;
 
-        public PaymentsController(IContractService contractService, IMapper mapper,
-            IPaymentService payment, IScopeWorkService scopeWork, IAmendmentService amendmentService,
-            IFormService formService, ISWCostService swCostService, IContractOrganizationService contractOrganizationService,
-            IOrganizationService organization)
+        public PaymentsController(IContractService contractService, IMapper mapper, IPaymentService payment, 
+            IScopeWorkService scopeWork, IAmendmentService amendmentService, IFormService formService, 
+            ISWCostService swCostService, IContractOrganizationService contractOrganizationService, IOrganizationService organization)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -59,11 +56,11 @@ namespace MvcLayer.Controllers
             {
 
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
+                var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
 
                 if (period is null)
                 {
-                    TempData["Message"] = "Заполните объем работ";
+                    NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
@@ -98,6 +95,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
+                NotificationHelper.SetNotification(TempData, $"Некорректные данные", NotificationType.Warning);
                 return RedirectToAction("Index", "Contracts");
             }
         }
@@ -117,7 +115,7 @@ namespace MvcLayer.Controllers
             {
                 List<PaymentViewModel> payment = new List<PaymentViewModel>();
 
-                while (Checker.LessOrEquallyFirstDateByMonth(paymentViewModel.PeriodStart, paymentViewModel.PeriodEnd))
+                while (DateComparer.IsLessOrSameYearAndMonth(paymentViewModel.PeriodStart, paymentViewModel.PeriodEnd))
                 {
                     payment.Add(new PaymentViewModel
                     {
@@ -150,11 +148,12 @@ namespace MvcLayer.Controllers
             {
                 foreach (var item in payment)
                 {
-                    var prepaymentId = (int)_payment.Create(_mapper.Map<PaymentDTO>(item));
-
+                     _payment.Create(_mapper.Map<PaymentDTO>(item));
+                    NotificationHelper.SetNotification(TempData, "Добавлена оплата", NotificationType.Info);
                 }
                 return RedirectToAction("GetByContractId", new { contractId = payment.FirstOrDefault().ContractId, returnContractId = returnContractId });
             }
+            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
             return RedirectToAction("Index", "Contracts");
         }
 
@@ -167,10 +166,11 @@ namespace MvcLayer.Controllers
                 foreach (var item in payment)
                 {
                     _payment.Update(_mapper.Map<PaymentDTO>(item));
+                    NotificationHelper.SetNotification(TempData, "Обновлена оплата", NotificationType.Info);
                 }
                 return RedirectToAction("GetByContractId", new { contractId = payment.FirstOrDefault().ContractId, returnContractId = returnContractId });
             }
-
+            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
             return RedirectToAction("Index", "Contracts");
         }
 
@@ -202,14 +202,17 @@ namespace MvcLayer.Controllers
                 itemViewModel.nameObject = contract.NameObject;
                 itemViewModel.currency = contract.Сurrency;
                 itemViewModel.dateContract = contract.Date;
+
                 #region Доп. соглашения
                 var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
                 var amend = listAmend.LastOrDefault();
                 #endregion
+
                 itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
                 itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
                 itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
                 itemViewModel.dateEnter = amend == null ? contract.EnteringTerm : amend.DateEntryObject;
+
                 #region Проверка дат
 
                 if (itemViewModel.dateBeginWork == null)
@@ -226,26 +229,33 @@ namespace MvcLayer.Controllers
                 }
 
                 #endregion
+
                 #region Лист. Факт значений
+
                 Func<FormC3a, bool> where = w => w.ContractId == contract.Id && w.IsOwnForces == false;
                 Func<FormC3a, FormC3a> select = s => new FormC3a
                 {
                     TotalCost = s.SmrContractCost + s.SmrNdsCost + s.PnrNdsCost + s.PnrContractCost + s.AdditionalCost + s.EquipmentCost
-                };
+                };               
+
                 itemViewModel.factWorkByC3A = _formService.Find(where, select).Sum(x => x.TotalCost);
+                itemViewModel.Reserve = _formService.Find(where).Sum(x => x.Reserve);
+
                 #endregion
+
                 itemViewModel.remainingWork = itemViewModel.contractPrice - itemViewModel.factWorkByC3A;
+
                 #region Плановые значения Объема работ
                 IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
                 for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
-                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    var scope = _scopeWork.GetByAmendmentId(item.Id);
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
-                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1), w.Period) &&
+                        DateComparer.IsLessOrSameYearAndMonth(w.Period, new DateTime(DateTime.Now.Year, 12, 1));
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             CostNds = s.CostNds
@@ -260,8 +270,8 @@ namespace MvcLayer.Controllers
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
-                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1),w.Period) &&
+                        DateComparer.IsLessOrSameYearAndMonth(w.Period, new DateTime(DateTime.Now.Year, 12, 1));
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             CostNds = s.CostNds
@@ -270,12 +280,16 @@ namespace MvcLayer.Controllers
                     }
                 }
                 #endregion
+
                 if (listScope.Count() > 0)
                 {
                     itemViewModel.currentYearScopeWork = listScope.Sum(x => x.CostNds);
                 }
+
                 itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();
+
                 #region Нахождение клиента и генподрядчика
+
                 var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
                     .Select(x => x.OrganizationId).FirstOrDefault();
                 if (clientId != null && clientId != 0)
@@ -289,6 +303,8 @@ namespace MvcLayer.Controllers
                     itemViewModel.genContractor = _organization.GetNameByContractId(genId);
                 }
                 #endregion
+
+
                 viewModel.Add((itemViewModel));
             }
             return View(viewModel);
@@ -364,12 +380,12 @@ namespace MvcLayer.Controllers
                 for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
-                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    var scope = _scopeWork.GetByAmendmentId(item.Id);
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
-                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1), w.Period) &&
+                        DateComparer.IsLessOrSameYearAndMonth(w.Period, new DateTime(DateTime.Now.Year, 12, 1));
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             CostNds = s.CostNds
@@ -384,8 +400,8 @@ namespace MvcLayer.Controllers
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
-                        Checker.LessOrEquallyFirstDateByMonth(new DateTime(DateTime.Now.Year, 1, 1), (DateTime)w.Period) &&
-                        Checker.LessOrEquallyFirstDateByMonth((DateTime)w.Period, new DateTime(DateTime.Now.Year, 12, 1));
+                        DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1), w.Period) &&
+                        DateComparer.IsLessOrSameYearAndMonth(w.Period, new DateTime(DateTime.Now.Year, 12, 1));
                         Func<SWCost, SWCost> selectSw = s => new SWCost
                         {
                             CostNds = s.CostNds
@@ -402,12 +418,12 @@ namespace MvcLayer.Controllers
                 #region Заполнение месяцев
                 var listPayments = _payment.Find(x => x.ContractId == contract.Id).ToList();
                 for (var date = itemViewModel.dateBeginWork;
-                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     DateComparer.IsLessOrSameYearAndMonth(date, itemViewModel.dateEndWork);
                      date = date.Value.AddMonths(1))
                 {
                     var item = new ItemPaymentDeviationReport();
                     item.period = date;
-                    var itemPayment = listPayments.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date)).FirstOrDefault();
+                    var itemPayment = listPayments.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date)).FirstOrDefault();
                     if (itemPayment != null)
                     {
                         if (itemPayment.PaySum != null)

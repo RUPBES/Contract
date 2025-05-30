@@ -174,31 +174,31 @@ namespace BusinessLayer.Services
             }
         }
 
-        public (DateTime?, DateTime?)? GetPeriodRangeOfContractById(int contractId)
-        {
-            (DateTime?, DateTime?) range = (null, null);
+        //public (DateTime?, DateTime?)? GetPeriodRangeOfContractById(int contractId)
+        //{
+        //    (DateTime?, DateTime?) range = (null, null);
 
-            var lastAmendment = _database.Amendments.Find(x => x.ContractId == contractId).LastOrDefault();
-            range.Item1 = lastAmendment.DateBeginWork;
-            range.Item2 = lastAmendment.DateEndWork;
+        //    var lastAmendment = _database.Amendments.Find(x => x.ContractId == contractId).LastOrDefault();
+        //    range.Item1 = lastAmendment.DateBeginWork;
+        //    range.Item2 = lastAmendment.DateEndWork;
 
-            if (range.Item1 is null && range.Item2 is null)
-            {
-                return null;
-            }
-            return range;
-        }
+        //    if (range.Item1 is null && range.Item2 is null)
+        //    {
+        //        return null;
+        //    }
+        //    return range;
+        //}
 
-        public bool? IsThereScopeWorkWitnLastAmendmentByContractId(int contractId)
-        {
-            var amendmentId = _database.Amendments.Find(x => x.ContractId == contractId && x.Type == "scope")?.OrderBy(x => x.Date).LastOrDefault()?.Id;
+        //public bool? HasNewAmendment(int contractId)
+        //{
+        //    var amendmentId = _database.Amendments.Find(x => x.ContractId == contractId && x.Type == "scope")?.OrderBy(x => x.Date).LastOrDefault()?.Id;
             
-            if (amendmentId is null)
-            {
-                return null;
-            }
+        //    if (amendmentId is null)
+        //    {
+        //        return null;
+        //    }
             
-            return _database.ScopeWorkAmendments?.Find(p => p.AmendmentId == amendmentId)?.FirstOrDefault() is not null? true : false;
-        }
+        //    return _database.ScopeWorkAmendments?.Find(p => p.AmendmentId == amendmentId)?.FirstOrDefault() is not null? true : false;
+        //}
     }
 }

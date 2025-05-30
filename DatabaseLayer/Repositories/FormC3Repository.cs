@@ -64,27 +64,37 @@ namespace DatabaseLayer.Repositories
                 var form = _context.FormC3as.Find(entity.Id);
 
                 if (form is not null)
-                {                    
-                    //form.DateSigning = entity.DateSigning;
-                    form.SmrContractCost = entity.SmrContractCost ;
-                    form.SmrCost = entity.SmrCost ;
+                {
+                    form.Period = entity.Period;
+                    form.DateSigning = entity.DateSigning;
+                    form.SmrCost = entity.SmrCost;
                     form.PnrCost = entity.PnrCost;
-                    form.EquipmentCost = entity.EquipmentCost ;
+                    form.EquipmentCost = entity.EquipmentCost;
                     form.OtherExpensesCost = entity.OtherExpensesCost;
                     form.AdditionalCost = entity.AdditionalCost;
                     form.MaterialCost = entity.MaterialCost;
                     form.GenServiceCost = entity.GenServiceCost;
-                    
-                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment;
-                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment;
 
-                    form.IsExemptFromVAT = entity.IsExemptFromVAT ?? false;
+                    form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment;
+                    form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment;
+
+                    form.SmrContractCost = entity.SmrContractCost ;
                     form.MaterialClientCost = entity.MaterialClientCost;
                     form.EquipmentClientCost = entity.EquipmentClientCost;
+                    form.IsExemptFromVAT = entity.IsExemptFromVAT ?? false;
                     form.CostToConstructionIndustryFund = entity.CostToConstructionIndustryFund;
                     form.CostStatisticReportOfContractor = entity.CostStatisticReportOfContractor;
-                    form.SmrNdsCost = entity.SmrNdsCost;
+
                     form.AdditionalNdsCost = entity.AdditionalNdsCost;
+                    form.SmrNdsCost = entity.SmrNdsCost;
+
+                    form.PnrNdsCost = entity.PnrNdsCost;
+                    form.EquipmentNdsCost = entity.EquipmentNdsCost;
+                    form.AdditionalContractCost = entity.AdditionalContractCost;
+                    form.EquipmentContractCost = entity.EquipmentContractCost;
+
+                    form.PnrContractCost = entity.PnrContractCost;
+                    form.OtherExpensesNdsCost = entity.OtherExpensesNdsCost;
                     form.Reserve = entity.Reserve;
 
                     _context.FormC3as.Update(form);

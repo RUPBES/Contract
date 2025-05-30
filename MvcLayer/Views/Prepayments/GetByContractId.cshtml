@@ -391,11 +391,11 @@
                                 <td colspan="3"></td>
                                 @foreach (var item in Model.listSmrWithAvans)
                                 {
-                                    var fileT = Model.listFiles.Where(x => Checker.EquallyDateByMonth((DateTime)x.date, (DateTime)item.Period)).FirstOrDefault();
+                                    var fileT = Model?.listFiles?.Where(x => DateComparer.IsSameYearAndMonth(x.date, item.Period))?.FirstOrDefault();
                                     <td colspan="2" class="text-center">
                                         @if (fileT is not null && fileT.file.Count() > 0)
                                         {
-                                            <a href="~/Files/GetFile?id=@fileT.file.FirstOrDefault().Id" target="_blank">@fileT.date.Value.ToString("MMMM yy")</a>
+                                            <a href="~/Files/OpenFile?id=@fileT?.file?.FirstOrDefault()?.Id" target="_blank">@fileT?.date?.ToString("MMMM yy")</a>
                                         }
                                     </td>
                                 }

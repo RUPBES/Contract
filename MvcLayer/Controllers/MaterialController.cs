@@ -2,15 +2,12 @@
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using BusinessLayer.Services;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using MvcLayer.Models.Reports;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace MvcLayer.Controllers
 {
@@ -19,7 +16,6 @@ namespace MvcLayer.Controllers
     {
 
         private readonly IContractService _contractService;
-        private readonly IOrganizationService _organization;
         private readonly IMaterialService _materialService;
         private readonly IMaterialCostService _materialCostService;
         private readonly IScopeWorkService _scopeWork;
@@ -28,13 +24,12 @@ namespace MvcLayer.Controllers
         private readonly IFormService _formService;
         private readonly ISWCostService _swCostService;
 
-        public MaterialController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IMaterialService materialService, IScopeWorkService scopeWork, IMaterialCostService materialCostService, 
-            IAmendmentService amendmentService, IFormService formService, ISWCostService swCostService)
+        public MaterialController(IContractService contractService, IMapper mapper, IMaterialService materialService, 
+            IScopeWorkService scopeWork, IMaterialCostService materialCostService, IAmendmentService amendmentService, 
+            IFormService formService, ISWCostService swCostService)
         {
             _contractService = contractService;
             _mapper = mapper;
-            _organization = organization;
             _materialService = materialService;
             _scopeWork = scopeWork;
             _materialCostService = materialCostService;
@@ -66,11 +61,11 @@ namespace MvcLayer.Controllers
             if (contractId > 0)
             {
                 //находим  по объему работ начало и окончание периода
-                var period = _scopeWork.GetPeriodRangeScopeWork(contractId);
+                var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
 
                 if (period is null)
                 {
-                    TempData["Message"] = "Заполните объем работ";
+                    NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }
@@ -119,7 +114,7 @@ namespace MvcLayer.Controllers
                     //если нет материалов, заполнять факт невозможно, перенаправляем обратно на договор
                     if (materialMain is null || materialMain?.Count() < 1)
                     {
-                        TempData["Message"] = "Не заполнены стоимость материалов по плану";
+                        NotificationHelper.SetNotification(TempData, "Не заполнены стоимость материалов по плану", NotificationType.Warning);
                         var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                         return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                     }
@@ -151,6 +146,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
+                NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
                 return RedirectToAction("Index", "Contracts");
             }
         }
@@ -241,15 +237,18 @@ namespace MvcLayer.Controllers
             if (material is not null)
             {
 
-                var materialId = (int)_materialService.Create(_mapper.Map<MaterialDTO>(material));
+                var materialId = _materialService.Create(_mapper.Map<MaterialDTO>(material)) ?? 0;
+                NotificationHelper.SetNotification(TempData, $"Материалы созданы", NotificationType.Info);
 
-                if (material?.AmendmentId is not null && material?.AmendmentId > 0)
+                if (material?.AmendmentId > 0)
                 {
-                    _materialService.AddAmendmentToMaterial((int)material?.AmendmentId, materialId);
+                    _materialService.AddAmendmentToMaterial((material?.AmendmentId ?? 0), materialId);
                 }
                 var urlReturn = returnContractId == 0 ? material.ContractId : returnContractId;
                 return RedirectToAction("Details", "Contracts", new { id = urlReturn });
             }
+
+            NotificationHelper.SetNotification(TempData, $"Некорректные данные", NotificationType.Warning);
             return View(material);
         }
 
@@ -272,12 +271,13 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "DeletePolicy")]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _materialService.GetAll() == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
             _materialService.Delete((int)id);
+            NotificationHelper.SetNotification(TempData, $"Материалы удалены", NotificationType.Info);
             return RedirectToAction(nameof(Index));
         }
 
@@ -344,7 +344,7 @@ namespace MvcLayer.Controllers
                 for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
-                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    var scope = _scopeWork.GetByAmendmentId(item.Id);
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
@@ -377,18 +377,18 @@ namespace MvcLayer.Controllers
                 #region Заполнение месяцев
 
                 for (var date = itemViewModel.dateBeginWork;
-                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     DateComparer.IsLessOrSameYearAndMonth(date, itemViewModel.dateEndWork);
                      date = date.Value.AddMonths(1))
                 {
                     var item = new ItemMaterialDeviationReport();
                     item.period = date;                  
-                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var plan = listScope.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (plan != null)
                     {
                         item.plan = plan.MaterialCost;
                     }
-                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var fact = listFact.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (fact != null)
                     {                      
@@ -464,7 +464,7 @@ namespace MvcLayer.Controllers
                 for (var i = listAmend.Count() - 1; i >= 0; i--)
                 {
                     var item = listAmend[i];
-                    var scope = _scopeWork.GetScopeByAmendment(item.Id);
+                    var scope = _scopeWork.GetByAmendmentId(item.Id);
                     if (scope != null)
                     {
                         Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id;
@@ -497,18 +497,18 @@ namespace MvcLayer.Controllers
                 #region Заполнение месяцев
 
                 for (var date = itemViewModel.dateBeginWork;
-                     Checker.LessOrEquallyFirstDateByMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
+                     DateComparer.IsLessOrSameYearAndMonth((DateTime)date, (DateTime)itemViewModel.dateEndWork);
                      date = date.Value.AddMonths(1))
                 {
                     var item = new ItemMaterialDeviationReport();
                     item.period = date;
-                    var plan = listScope.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var plan = listScope.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (plan != null)
                     {
                         item.plan = plan.MaterialCost;
                     }
-                    var fact = listFact.Where(x => Checker.EquallyDateByMonth((DateTime)x.Period, (DateTime)date))
+                    var fact = listFact.Where(x => DateComparer.IsSameYearAndMonth(x.Period, date))
                         .FirstOrDefault();
                     if (fact != null)
                     {

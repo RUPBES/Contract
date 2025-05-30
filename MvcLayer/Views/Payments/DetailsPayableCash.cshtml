@@ -157,7 +157,7 @@
                                 <th rowspan="2">
                                     Фактическое выполнение по справке С-3а, в т.ч.
                                 </th>
-                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th colspan="2">
                                         @iterator.ToString("MMMM yyyy")
@@ -166,7 +166,7 @@
                             </tr>
 
                             <tr>
-                                @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
+                                @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod); iterator = iterator.AddMonths(1))
                                 {
                                     <th>
                                         к оплате
@@ -220,10 +220,10 @@
                                         @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator,endPeriod); 
+                                    @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator,endPeriod); 
                                     iterator = iterator.AddMonths(1))
                                     {
-                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        var itemPayment = item.listPayments.Where(p => DateComparer.IsSameYearAndMonth(p.period, iterator)).FirstOrDefault();
                                         if (itemPayment != null)
                                         {
                                             <td class="text-end">
@@ -290,10 +290,10 @@
                                         @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                    @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                                    iterator = iterator.AddMonths(1))
                                     {
-                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        var itemPayment = item.listPayments.Where(p => DateComparer.IsSameYearAndMonth(p.period, iterator)).FirstOrDefault();
                                         if (itemPayment != null)
                                         {
                                             <td class="text-end">
@@ -360,10 +360,10 @@
                                         @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                    @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                                    iterator = iterator.AddMonths(1))
                                     {
-                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        var itemPayment = item.listPayments.Where(p => DateComparer.IsSameYearAndMonth(p.period, iterator)).FirstOrDefault();
                                         if (itemPayment != null)
                                         {
                                             <td class="text-end">
@@ -430,10 +430,10 @@
                                         @item.factWorkByC3A?.ToString("N2")
                                     </td>
 
-                                    @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                                    @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                                    iterator = iterator.AddMonths(1))
                                     {
-                                        var itemPayment = item.listPayments.Where(p => Checker.EquallyDateByMonth((DateTime)p.period, iterator)).FirstOrDefault();
+                                        var itemPayment = item.listPayments.Where(p => DateComparer.IsSameYearAndMonth(p.period, iterator)).FirstOrDefault();
                                         if (itemPayment != null)
                                         {
                                             <td class="text-end">

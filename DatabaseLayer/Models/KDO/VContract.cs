@@ -43,6 +43,7 @@ public partial class VContract
     public string? FundingSource { get; set; }
 
     public string? PaymentСonditionsAvans { get; set; }
+    public string? WorkType { get; set; }
 
     public string? PaymentСonditionsRaschet { get; set; }
     public string? Author { get; set; }

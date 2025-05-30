@@ -11,17 +11,17 @@ namespace MvcLayer.Models
 
         [DisplayName("Имя")]
         [RegularExpression("^[А-Яа-яЁё\\s]+$", ErrorMessage = "Прописные и строчные буквы русского алфавита")]
-        [Required(ErrorMessage = "Необходимо заполнить Имя")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? FirstName { get; set; }
 
         [DisplayName("Фамилия")]
         [RegularExpression("^[А-Яа-яЁё\\s]+$", ErrorMessage = "Прописные и строчные буквы русского алфавита")]
-        [Required(ErrorMessage = "Необходимо заполнить Фамилию")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? LastName { get; set; }
 
         [DisplayName("Отчество")]
         [RegularExpression("^[А-Яа-яЁё\\s]+$", ErrorMessage = "Прописные и строчные буквы русского алфавита")]
-        [Required(ErrorMessage = "Необходимо заполнить Отчество")]
+        [Required(ErrorMessage = "Обязательное поле")]
         public string? FatherName { get; set; }
 
         [DisplayName("Фамилия, имя, отчество")]

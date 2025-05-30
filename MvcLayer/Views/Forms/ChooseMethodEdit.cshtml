@@ -24,11 +24,11 @@
                 <div class="dm-modal" style="width:500px;">
                     <div class="top-modal-block">
                         <label class="my-modal-title">@ViewData["Title"]</label>
-                        @if (backId != null && backId > 0)
+                        @if (backId > 0)
                         {
                             <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                         }
-                        @if (backId == null || backId == 0)
+                        @if (backId == 0)
                         {
                             <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                         }
@@ -54,7 +54,7 @@
                             </div>
                         </form>
                     </div>
-                    <div id="result">
+                    <div id="form-result">
                     </div>
                 </div>
             </div>
@@ -69,8 +69,8 @@
             let contractId = $("#contractId").val();
             let returnContractId = $("#returnContractId").val();
             let formId = $("#formId").val();
-            
-            let formData = new FormData(files);            
+
+            let formData = new FormData(files);
             event.preventDefault()
             function setProgress(e) {
                 if (e.lengthComputable) {
@@ -89,7 +89,7 @@
                     return xhr;
                 },
                 type: 'POST',
-                url: '@Url.Action("DownloadFile", "Parse")',
+                url: '@Url.Action("UploadAndReturnPath", "Files")',
                 data: formData,
                 success: function (data) {
                     let path = data;
@@ -99,22 +99,16 @@
                         data: { path: path, contractId: contractId, returnContractId: returnContractId, formId: formId },
                         dataType: 'html',
                         success: function (data) {
-                            $("#result").html(data)
-                        }
+                            $("#form-result").html(data)
+                        },
+                        error: function (result) {
+                            alert("Загрузите файл excel (кроме Excel книга 97-2003)");
+                        },
                     });
                     $("#container_progress").attr('style', `display:none`);
                 },
                 error: function (result) {
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("ShowError", "Parse")',
-                        data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
-                        dataType: 'html',
-                        success: function (data) {
-                            $("#result").html(data)
-                            $("#container_progress").attr('style', `display:none`);
-                        }
-                    });
+                    alert("Загрузите файл excel (кроме Excel книга 97-2003)");
                 },
                 contentType: false,
                 processData: false

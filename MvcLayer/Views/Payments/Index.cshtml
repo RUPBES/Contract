@@ -6,9 +6,8 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var permissions = HttpHelper.GetUserPermissions();
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 
 }
 <h1>Список оплат по договорам</h1>

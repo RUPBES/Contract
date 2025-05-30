@@ -36,9 +36,9 @@ label {
 
     #tab-c3a td,
     #tab-c3a th {
-        min-width: 155px !important;
-        max-width: 155px !important;
-        width: 155px !important;
+        min-width: 100px !important;
+        max-width: 130px !important;
+        width: 125px !important;
     }
 
     #tab-c3a th {
@@ -46,6 +46,7 @@ label {
         max-height: 60px !important;
         min-height: 60px !important;
     }
+
 /*  #tab-c3a th {
         width: 120px !important;
         height: 70px !important;
@@ -84,11 +85,14 @@ label {
 }
 
 /***/
-.same_value_chosen {
-    border: solid red 4px;
-    width: 100%;
-    border-radius: 10px;
+.same_value_chosen {   
+    border: solid 1px red !important;
+    background-color: rgba(255, 0, 0, 0.1);
 }
+
+.same_values_chosen {
+}
+
 /***/
 
 
@@ -120,6 +124,10 @@ label {
         height: inherit;
     }
 
+.filter {
+    background-image: url(../icons/funnel.svg);
+    filter: brightness(0) saturate(100%) invert(49%) sepia(40%) saturate(1578%) hue-rotate(190deg) brightness(98%) contrast(92%);
+}
 
 .transfer {
     background-image: url(../icons/move_group.svg);
@@ -137,13 +145,18 @@ label {
     background-image: url(../icons/eye.svg);
 }
 
+.info {
+    background-image: url(../icons/info.svg);
+}
+
+    .info:hover {
+        filter: brightness(0) saturate(100%) invert(24%) sepia(93%) saturate(2261%) hue-rotate(205deg) brightness(101%) contrast(112%);
+    }
+
 .file-add {
     background-image: url(../icons/file-earmark-plus.svg);
     /*background-image: url(../icons/attach_file_add.svg);*/
 }
-
-
-   
 
 .drawing-add {
     background-image: url(../icons/architecture.svg);
@@ -375,6 +388,12 @@ form {
     width: 130px !important;
 }
 
+.column_140 {
+    display: inline-flex;
+    word-wrap: anywhere;
+    width: 140px !important;
+}
+
 .column_150 {
     display: inline-flex;
     word-wrap: anywhere;
@@ -481,4 +500,224 @@ a {
     content: "*";
     color: red;
     font-size: 20px;
+}
+
+
+/**Notifications style*/
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.notification {
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    min-width: 300px;
+}
+
+    .notification.Error {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+
+    .notification.Success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    .notification.Warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+
+    .notification.Info {
+        color: #0c5460;
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+    }
+
+    .notification .close {
+        float: right;
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+        color: inherit;
+        text-shadow: 0 1px 0 #fff;
+        opacity: .5;
+        background: none;
+        border: none;
+        padding: 0;
+        margin: -2px 0 0 10px;
+    }
+
+        .notification .close:hover {
+            opacity: .75;
+            cursor: pointer;
+        }
+
+
+ /* таблица объемов работ */
+
+.cost-summary,
+.cost-summary__column,
+.cost-summary__column-l,
+.cost-summary__column-s,
+.cost-summary__list,
+.price-breakdown__column,
+.price-breakdown__column-l,
+.price-breakdown__column-s,
+.price-breakdown__list,
+.scp-container {
+    display: grid;
+}
+
+.cost-summary {
+    grid-template-columns: minmax(0,70px) minmax(230px, 3fr) repeat(4, 1fr);
+    row-gap: 2px;
+    column-gap: 1px;
+    margin-right: 2px;
+    border: solid 1px;
+    color: white;
+    position: relative;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    width: fit-content;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    padding-bottom: 8px;
+}
+
+    .cost-summary::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+
+.category > div,
+.title > div {
+    font-weight: 600;
+    background-color: #2d4156;
+}
+
+.cost-summary__column-header,
+.title > div {
+    display: grid;
+    justify-content: center;
+    word-break: break-word;
+    text-align: center;
+}
+
+.scp-price > div {
+    background-color: #5f7b99;
+}
+
+.price-breakdown {
+    display: grid;
+    position: relative;
+    grid-auto-flow: column;
+    min-width: 300px;
+    background-color: lightgray;
+    overflow-x: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: orange lightgray;
+}
+
+.cost-summary__column-l {
+    grid-template-rows: 50px 1fr 1fr 1fr 1fr;
+    row-gap: 1px;
+}
+
+.cost-summary__column-s {
+    grid-template-rows: 50px 1fr 1fr;
+    row-gap: 1px;
+}
+
+.price-breakdown__column-l {
+    min-width: 100px;
+    row-gap: 2px;
+    grid-template-rows: 50px 1fr 1fr 1fr 1fr;
+}
+
+.price-breakdown__column-s {
+    min-width: 100px;
+    row-gap: 2px;
+    grid-template-rows: 50px 1fr 1fr;
+}
+
+.cost-summary__list,
+.price-breakdown__list {
+    row-gap: 1px;
+}
+
+.cost-summary__column-header,
+.price-breakdown__column-header {
+    background-color: #2d4156;
+    color: #fff;
+    word-wrap: break-word;
+    padding: 0 5px;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: solid 2px;
+}
+
+.cost-summary__list-item,
+.price-breakdown__list-item,
+.cost-category__title {
+    align-items: center;
+    display: grid;
+    padding: 2px 0;
+    background-color: white;
+}
+
+.scp-container {
+    display: grid;
+    width: 100%;
+    max-width: 1300px;
+    grid-template-columns: auto 1fr;
+    background-color: lightgray;
+    overflow: auto;
+    position: relative;
+    max-height: 600px;
+    scrollbar-width: thin;
+    scrollbar-color: orange lightgray;
+}
+
+
+
+/* доп. стили окно создания договора */
+
+div#CurDC_chosen {
+    max-width: 85%;
+}
+
+.mainContent {
+    background-color: lightsteelblue;
+}
+
+label {
+    font-size: 1.1em;
+}
+
+
+.prepayment_container {
+    display: flex;
+}
+
+.input-prepayment-container {
+    width: 100% !important;
+}
+
+.btn_save {
+    margin-top: 1rem !important;
+    display: flex;
+    align-content: center;
+    width: 96%;
+    justify-content: flex-end;
 }

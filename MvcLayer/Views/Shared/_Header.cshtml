@@ -1,13 +1,16 @@
-﻿@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+﻿@using BusinessLayer.Helpers
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
+    var permissions = HttpHelper.GetUserPermissions();
 }
 <style>
-
     a {
         font-weight: normal !important;
+        font-size: 14px !important;
+    }
+    ul > li > a {
+        font-weight: 500 !important;
         font-size: 16px !important;
     }
 
@@ -100,16 +103,19 @@
                         <li><hr class="dropdown-divider"></li>
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a></li>
+
                         @if (permissions is not null && (permissions.IsAdmin && permissions.IsCreator && permissions.IsDeleter))
                         {
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="CreateReport" asp-route-daysCount="7">Сформировать отчет</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="SendReport" asp-route-daysCount="7">Отправить сформированный отчет</a></li>
                         }
                     </ul>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="Index">
-                        Договоры
+                        Договора
                     </a>
                 </li>
                 <li class="nav-item">
@@ -122,16 +128,34 @@
                         Анализ/Мониторинг
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a></li>
+                       @*  <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a></li>
                         <li><hr class="dropdown-divider"></li>
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="ScopeWorks" asp-action="GetCostDeviation">Мониторинг выполнения графика производства работ</a></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li><hr class="dropdown-divider"></li> *@
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Payments" asp-action="GetPayableCash">Денежные средства по договорам, подлежащие к оплате</a></li>
 
                     </ul>
                 </li>
+                @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
+                {
+                    <li class="nav-item dropdown">
+                        <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Отчеты
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Report" asp-action="SelectContractProperties">Договора</a></li>
+                        @* <li><hr class="dropdown-divider"></li> *@
+
+                       @*  <li><a class="text-dark dropdown-item" asp-area="" asp-controller="" asp-action=""></a></li>
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="" asp-action=""></a></li> *@
+
+                    </ul>
+                </li>
+                }
             </ul>
             @*  <ul class="navbar-nav flex-grow-1">
             @if (User?.Identity is { IsAuthenticated: true })

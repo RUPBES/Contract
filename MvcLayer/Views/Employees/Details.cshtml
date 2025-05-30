@@ -1,47 +1,89 @@
 ﻿@model MvcLayer.Models.EmployeeViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
+@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractInterfaces.IPhoneService Phone
 @{
-    ViewData["Title"] = "Детали";
+    ViewData["Title"] = "Детальная информация";
 }
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:50%">
+                <div class="top-modal-block flex-column">
+                    <div class="input-group m-2">
+                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
+                        <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
+                    </div>
+                    <hr class="modal-line" />
+                    <div>
+                        <dl class="row">
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.FullName)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.FullName)
+                            </dd>
+                            <dt class="col-sm-3">
+                                Организация
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var department in Model.DepartmentEmployees)
+                                {
+                                    <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Name</span>
 
-<h1>@ViewData["Title"]</h1>
+                                }
 
-<div>
-    <h4>Сотрудник</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FullName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FullName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fio)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fio)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Position)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Position)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        @* <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Contract)
-        </dt>
-         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Contract.Id)
-        </dd> *@
-    </dl>
+                            </dd>
+
+                            <dt class="col-sm-3">
+                                Отдел
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var department in Model.DepartmentEmployees)
+                                {
+                                    <span>@Department.GetById(@department.DepartmentId).Name</span>
+                                }
+                            </dd>
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.Position)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.Position)
+                            </dd>
+                            <dt class="col-sm-3">
+                                Телефон
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var phone in Phone.Find(x => x.EmployeeId == Model.Id))
+                                {
+                                    <span>@phone.Number</span>
+                                }
+                            </dd>
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.Email)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.Email)
+                            </dd>
+                        </dl>
+                    </div>
+                    <div>
+                        <a asp-action="Index" asp-route-page="@ViewBag.Page" asp-route-currentFilter="@ViewBag.Filter">Вернуться назад</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Редактировать</a>
-    <a asp-action="Index">Вернуться назад</a>
-</div>
+@section Scripts {
+    <script type="text/javascript">
+        function confirmDelete() {
+            if (confirm('Вы уверены, что хотите удалить?')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    </script>
+}

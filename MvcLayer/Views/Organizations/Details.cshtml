@@ -1,36 +1,162 @@
 ﻿@model MvcLayer.Models.OrganizationViewModel
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
 @{
-    ViewData["Title"] = "Details";
+    var d = Model.Departments;
+    var permissions = HttpHelper.GetUserPermissions();
+    ViewData["Title"] = "Детальная информация";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:50%">
+                <div class="top-modal-block flex-column">
+                    <div class="input-group m-2">
+                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
+                        <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
+                    </div>
+                    <hr class="modal-line" />
+                    <div>
+                        <dl class="row">
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.Name)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.Name)
+                            </dd>
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.Abbr)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.Abbr)
+                            </dd>
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.Unp)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @Html.DisplayFor(model => model.Unp)
+                            </dd>
+                            <dt class="col-sm-3">
+                                Сайт организации
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var addrr in Model.Addresses)
+                                {
+                                    <span>
+                                        @addrr.SiteAddress
+                                    </span>
+                                }
 
-<div>
-    <h4>Organization</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Abbr)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Abbr)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Unp)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Unp)
-        </dd>
-    </dl>
+                            </dd>
+                            <dt class="col-sm-3">
+                                Почтовый индекс
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var addrr in Model.Addresses)
+                                {
+                                    <span>
+                                        @addrr.PostIndex
+                                    </span>
+                                }
+
+                            </dd>
+                            <dt class="col-sm-3">
+                                Адрес
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var addrr in Model.Addresses)
+                                {
+                                    <span>
+                                        @addrr.FullAddressFact
+                                    </span>
+                                }
+
+                            </dd>
+
+                            <dt class="col-sm-3">
+                                @Html.DisplayNameFor(model => model.Departments)
+                            </dt>
+                            <dd class="col-sm-9">
+                                @foreach (var depart in Model.Departments)
+                                {
+                                    <span>
+                                        @depart.Name
+                                        @if (permissions is not null && permissions.IsDeleter)
+                                        {
+                                            <a class="del-btn" onclick="deleteDepart(@depart.Id)">×</a>                                          
+                                        }
+                                    </span>
+                                }
+
+                            </dd>
+                            <dt class="col-sm-3">
+                                Участие в договорах
+                            </dt>
+                            <dd class="col-sm-9">
+                                @if (Model.ContractOrganizations.Count == 0)
+                                {
+                                    <span>нет договоров</span>
+                                }
+                                @if (Model.ContractOrganizations.Count > 0)
+                                {
+                                    <ul style="max-width:250px; max-height:200px; overflow-y:auto;">
+
+                                        @foreach (var depart in Model.ContractOrganizations)
+                                        {
+                                            <li>
+                                                @*<a asp-controller="Contracts" asp-action="Details" asp-route-id="@depart.ContractId">@depart.Contract.Number</a>*@
+                                                @depart.Contract.Number
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                    <div>
+                        <a asp-action="Index" asp-route-page="@ViewBag.Page" asp-route-currentFilter="@ViewBag.Filter">Вернуться назад</a> |
+                        @if (permissions is not null && permissions.IsCreator)
+                        {
+                            <a asp-controller="Departments" asp-action="Create" asp-route-idOrg="@Model.Id">Добавить отдел</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Вернуться назад</a>
-</div>
+@section Scripts {
+    <script type="text/javascript">       
+        function deleteDepart(id) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ShowDeleteMessage", "Home")',
+                contentType: "application/html; charset=utf-8",
+                dataType: 'html',
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal('show');
+
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
+                    elementDeleteButton[0].addEventListener('click', () => {
+                        $.ajax({
+                            type: 'GET',
+                            url: '@Url.Action("Delete", "Departments")',
+                            data: { id: id },
+                            success: function (result) {
+                                window.location.reload();
+                            },
+                            error: function (result) {
+                                window.location.reload();
+                            }
+                        });
+                    });
+                },
+                error: function (result) {
+                    console.log(result, 'error 2');                   
+                }
+            })
+        }
+    </script>
+}

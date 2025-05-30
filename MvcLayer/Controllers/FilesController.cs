@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,8 +43,7 @@ namespace MvcLayer.Controllers
         public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             int fileId = (int)_file.Create(collection.Files, fileCategory, entityId);
-            //_file.AttachFileToEntity(fileId, entityId, fileCategory);
-
+            NotificationHelper.SetNotification(TempData, "Файл добавлен", NotificationType.Info);
             if (redirectAction.Equals("Details", StringComparison.OrdinalIgnoreCase) && redirectController.Equals("Contracts", StringComparison.OrdinalIgnoreCase))
             {
                 return Redirect($@"~/Files/GetByContractId/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}&returnContractId={returnContractId}");
@@ -65,35 +65,15 @@ namespace MvcLayer.Controllers
             var files = _file.GetFilesOfEntity(id, fileCategory).ToList();
             return View(files);
         }
-
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                //_file.Create(collection.Files, folder: FolderEnum.Other);
-
-                return Redirect($"/Home/Index");
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
+            
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null)
+        public ActionResult Delete(int id, FolderEnum fileCategory, string? redirectAction = null, string? redirectController = null, int? contractId = null)
         {
             try
             {
                 _file.Delete(id);
+                NotificationHelper.SetNotification(TempData, "Файл удален", NotificationType.Info);
+
                 if (redirectController is not null && redirectAction is not null)
                 {
                     if (fileCategory == FolderEnum.SelectionProcedures)
@@ -101,20 +81,13 @@ namespace MvcLayer.Controllers
                         return Redirect($@"~/{redirectController}/{redirectAction}?contractId={contractId}");
 
                     }
-                    //if (redirectAction.Equals("GetByContractId", StringComparison.OrdinalIgnoreCase) && redirectAction.Equals("Files", StringComparison.OrdinalIgnoreCase))
-                    //{
                     return Redirect($@"~/{redirectController}/{redirectAction}/{contractId}?redirectAction={redirectAction}&redirectController={redirectController}&fileCategory={fileCategory}");
-                    //return RedirectToAction(redirectAction, redirectController, new { id = contractId, redirectAction = redirectAction, redirectController = redirectController, fileCategory = fileCategory });
-                    //}
-                    //else
-                    //{
-                    //    return RedirectToAction(redirectAction, redirectController, new { contractId = contractId });
-                    //}
                 }
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления файла", NotificationType.Error);
                 return View();
             }
         }
@@ -140,6 +113,10 @@ namespace MvcLayer.Controllers
                 var file = _file.GetById(id);
                 var path = _env.WebRootPath + file.FilePath;
                 var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                if (string.IsNullOrEmpty(fileType))
+                {
+                    fileType = file.FileType;
+                }
                 var fsResult = new FileStreamResult(fileStream, fileType);
                 return fsResult;
             }
@@ -147,6 +124,49 @@ namespace MvcLayer.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
+        }
+
+        public ActionResult OpenExcelByPath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {               
+                var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                var fsResult = new FileStreamResult(fileStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                return fsResult;
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        /// <summary>
+        /// WebAPI ответ возвращает
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        public ActionResult UploadAndReturnPath(IFormCollection collection)
+        {
+            var path = _env.WebRootPath + "\\Temp\\";
+            if (collection.Files.Count < 1)
+            {
+                NotificationHelper.SetNotification(TempData, "Выберите файл", NotificationType.Warning);
+                return BadRequest();
+            }
+
+            bool exists = Directory.Exists(path);
+            if (!exists)
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            path += collection?.Files?.FirstOrDefault()?.FileName;
+            using (var fileStream = new FileStream(path, FileMode.Create))
+            {
+                collection?.Files?.FirstOrDefault()?.CopyTo(fileStream);
+                //NotificationHelper.SetNotification(TempData, "Файл скопирован в папку", NotificationType.Info);
+            }
+            return Content(path);
         }
     }
 }

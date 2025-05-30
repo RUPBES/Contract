@@ -7,15 +7,14 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
+    var permissions = HttpHelper.GetUserPermissions();
 
     ViewData["Title"] = "Акты приостановления (возобновления) работ (услуг)";
-    bool isAdmin = true;
+    // bool isAdmin = true;
     string redirectAction = "Index";
     string redirectController = "Acts";
 
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 }
 <h2>@ViewData["Title"]</h2>
 
@@ -79,7 +78,7 @@
                     @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Acts))
                     {
                         <div>
-                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                             @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                             {
                                 @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })

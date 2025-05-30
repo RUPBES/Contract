@@ -2,6 +2,7 @@
 @{
     int index = 0;
     int indexFS = 0;
+    var d = Model;
 }
 <div data-bs-backdrop="static" id="staticBackdrop" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="false">
     <div>
@@ -20,6 +21,11 @@
                     <input asp-for="IsEngineering" hidden />
 
                     <input asp-for="Date" type="datetime" hidden/>
+                    <input asp-for="DateBeginWork" type="datetime" class="form-control" hidden>
+                    <input asp-for="DateEndWork" type="datetime" hidden>
+                    <input asp-for="EnteringTerm" type="datetime" hidden>
+                    <input asp-for="ContractTerm" type="datetime" hidden>
+
                     <input asp-for="Number" hidden />
                     <input asp-for="FundingSource"  hidden />
                     <input asp-for="NameObject" hidden />
@@ -28,14 +34,13 @@
                     <input asp-for="ContractOrganizations[0].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[1].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[2].OrganizationId" type="number" hidden />
-                    <input asp-for="DateBeginWork" type="date" class="form-control" hidden>
+
                     
-                    <input asp-for="DateEndWork" type="date" hidden>                   
-                    <input asp-for="EnteringTerm" type="date" hidden>                    
-                    <input asp-for="ContractTerm" type="date" hidden>
+
                     <input asp-for="ContractPrice" hidden />
                     <input asp-for="Сurrency" hidden />
                     <input asp-for="TypeWorkContracts[0].TypeWorkId" hidden />
+                    <input asp-for="PaymentСonditionsPrice" type="text"hidden>
                     
                     @foreach (var item in Model.PaymentCA)
                     {
@@ -48,7 +53,7 @@
                         indexFS++;
                     }
 
-                    <input asp-for="PaymentСonditionsDaysRaschet" hidden />
+                    <input asp-for="PaymentConditionsDaysRaschet" hidden />
                     <input asp-for="PaymentСonditionsRaschet" hidden />
                     <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />
 
@@ -56,30 +61,30 @@
 
                     <div class="form-group">
                         <label asp-for="ContractOrganizations[3].Organization.Name" class="control-label">Полное название</label>
-                        <input asp-for="ContractOrganizations[3].Organization.Name" class="form-control" />
+                        <input asp-for="ContractOrganizations[3].Organization.Name" class="form-control" required/>
                     </div>
                     <div class="form-group">
                         <label asp-for="ContractOrganizations[3].Organization.Abbr" class="control-label">Аббревиатура</label>
-                        <input asp-for="ContractOrganizations[3].Organization.Abbr" class="form-control" />
+                        <input asp-for="ContractOrganizations[3].Organization.Abbr" class="form-control" required />
                     </div>
                     <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.Unp" class="control-label">УНП организации</label>
+                        <label asp-for="ContractOrganizations[3].Organization.Unp" >УНП организации</label>
                         <input asp-for="ContractOrganizations[3].Organization.Unp" class="form-control" />
                     </div> 
                     <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.Email" class="control-label">Электронная почта</label>
+                        <label asp-for="ContractOrganizations[3].Organization.Email" >Электронная почта</label>
                         <input asp-for="ContractOrganizations[3].Organization.Email" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.PaymentAccount" class="control-label">Расчетный счет</label>
+                        <label asp-for="ContractOrganizations[3].Organization.PaymentAccount">Расчетный счет</label>
                         <input asp-for="ContractOrganizations[3].Organization.PaymentAccount" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.Addresses[0].FullAddress" class="control-label">Адрес</label>
+                        <label asp-for="ContractOrganizations[3].Organization.Addresses[0].FullAddress">Адрес</label>
                         <input asp-for="ContractOrganizations[3].Organization.Addresses[0].FullAddress" class="form-control" />
                     </div>
                     <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.Addresses[0].PostIndex" class="control-label">Почтовый индекс</label>
+                        <label asp-for="ContractOrganizations[3].Organization.Addresses[0].PostIndex">Почтовый индекс</label>
                         <input asp-for="ContractOrganizations[3].Organization.Addresses[0].PostIndex" class="form-control" />
                     </div>
                     <button class="btn btn-primary mt-3" type="submit" id="submitForm">Добавить</button>
@@ -91,7 +96,7 @@
 
 <script type="text/javascript">
     $('button.btn-close').click(function () {
-        $('#modDialog4').modal('hide');
+        $('#modDialog').modal('hide');
     });   
 
 </script> 

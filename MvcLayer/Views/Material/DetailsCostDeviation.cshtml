@@ -136,7 +136,7 @@
                     </th>
                 </tr>
                 <tr>
-                    @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
+                    @for (var item = startPeriod; DateComparer.IsLessOrSameYearAndMonth(item, endPeriod); item = item.AddMonths(1))
                     {
                         <th colspan="3">
                             @item.ToString("MMMM yyyy")
@@ -144,7 +144,7 @@
                     }
                 </tr>
                 <tr>
-                    @for (var item = startPeriod; Checker.LessOrEquallyFirstDateByMonth(item, endPeriod); item = item.AddMonths(1))
+                    @for (var item = startPeriod; DateComparer.IsLessOrSameYearAndMonth(item, endPeriod); item = item.AddMonths(1))
                     {
                         <th>
                             План
@@ -175,10 +175,10 @@
                             @item?.materialCost?.ToString("N2")
                         </td>
 
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                        iterator = iterator.AddMonths(1))
                         {
-                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            var itemMaterial = item?.listMaterials?.Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator))?
                             .FirstOrDefault();
                             if (itemMaterial != null)
                             {
@@ -234,10 +234,10 @@
                             @item?.materialCost?.ToString("N2")
                         </td>
 
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                        iterator = iterator.AddMonths(1))
                         {
-                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            var itemMaterial = item?.listMaterials?.Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator))?
                             .FirstOrDefault();
                             if (itemMaterial != null)
                             {
@@ -293,10 +293,10 @@
                             @item?.materialCost?.ToString("N2")
                         </td>
 
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                        iterator = iterator.AddMonths(1))
                         {
-                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            var itemMaterial = item?.listMaterials?.Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator))?
                             .FirstOrDefault();
                             if (itemMaterial != null)
                             {
@@ -352,10 +352,10 @@
                             @item?.materialCost?.ToString("N2")
                         </td>
 
-                        @for (var iterator = startPeriod; Checker.LessOrEquallyFirstDateByMonth(iterator, endPeriod);
+                        @for (var iterator = startPeriod; DateComparer.IsLessOrSameYearAndMonth(iterator, endPeriod);
                        iterator = iterator.AddMonths(1))
                         {
-                            var itemMaterial = item.listMaterials.Where(x => Checker.EquallyDateByMonth((DateTime)x.period, iterator))
+                            var itemMaterial = item?.listMaterials?.Where(x => DateComparer.IsSameYearAndMonth(x.period, iterator))?
                             .FirstOrDefault();
                             if (itemMaterial != null)
                             {

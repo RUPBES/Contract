@@ -4,6 +4,97 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IKindOfWorkService KindOfWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.PRO.IAbbreviationKindOfWorkService AbbrKindOfWork
 @model IndexViewModel
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 5px;
+        width: 70%;
+        max-width: 500px;
+        position: relative;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+        .close:hover {
+            color: #666;
+        }
+
+    .modal-body {
+        margin-bottom: 20px;
+    }
+
+    .checkbox-item {
+        margin: 10px 0;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    #openModalBtn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    #saveBtn {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    #cancelBtn {
+        background-color: #f44336;
+        color: white;
+    }
+
+    button:hover {
+        opacity: 0.8;
+    }
+
+    .filter-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0 5px;
+        font-size: 14px;
+        color: #666;
+    }
+
+        .filter-btn:hover {
+            color: #000;
+        }
+</style>
 @{
     int backId = 0;
     int contractId = ViewBag.ContractId ?? 0;
@@ -86,6 +177,127 @@
         .full-width {
             max-height: 80vh;
         }
+
+        .container {
+            margin: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            position: relative;
+        }
+
+        .summary-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+            .summary-row td {
+                text-align: center;
+            }
+
+        /* Modal styles */
+        /*   .modal {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    z-index: 1000;
+                }
+
+                .modal-content {
+                    background-color: #fff;
+                    margin: 15% auto;
+                    padding: 20px;
+                    border-radius: 5px;
+                    width: 300px;
+                    max-height: 80vh;
+                    position: relative;
+                }
+
+                .modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+
+                .close {
+                    font-size: 24px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+
+                .filter-search {
+                    margin-bottom: 10px;
+                }
+
+                    .filter-search input {
+                        width: 100%;
+                        padding: 8px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        box-sizing: border-box;
+                    }
+
+                #filterCheckboxes {
+                    max-height: 300px;
+                    overflow-y: auto;
+                    margin-bottom: 10px;
+                }
+
+                .checkbox-item {
+                    margin: 8px 0;
+                }
+
+                .modal-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                }
+
+                button {
+                    padding: 8px 12px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    background-color: #4CAF50;
+                    color: white;
+                }
+
+                    button:hover {
+                        opacity: 0.8;
+                    }
+
+                #cancelFilter {
+                    background-color: #f44336;
+                }
+
+                .filtered-column {
+                    background-color: #8ca9bf !important;
+                }
+
+                tr[style*="display: none"] {
+                    display: none !important;
+                } */
     </style>
     <div class="header-view">
         <h1 class="list_agreement">Реестр полученной ПСД по договору №@ViewData["contractNumber"]</h1>
@@ -93,6 +305,8 @@
               asp-controller="Estimate"
               asp-route-contractId="@contractId" style="display: flex;"
               asp-route-returnContractId="@ViewData["returnContractId"]">
+            <input id="contrctId" value="@contractId" hidden />
+
             <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -107,22 +321,20 @@
                                 {
                                     if (item.Key == "Шифр здания")
                                     {
-                                        @*
-                            isWrite = true;
-                            <input class="form-control" name="SearchString[Шифр здания]"  id="inputGroupSearch01" />
-
-                            break;*@
+                                        isWrite = true;
+                                        <input class="form-control" name="SearchString[Шифр здания]" id="inputGroupSearch01" />
+                                        break;
 
                                         isWrite = true;
-                                        <select name="SearchString[Шифр здания]" id="inputGroupSearch01">
+                                        <select name="SearchString[Шифр здания]" id="inputGroupSearch02">
                                             <option value="@item.Value" selected>@item.Value</option>
                                         </select>
                                     }
                                 }
                                 @if (!isWrite)
                                 {
-                                    @*  <input class="form-control" name="SearchString[Шифр здания]" value="" id="inputGroupSearch01" /> *@
-                                    <select name="SearchString[Шифр здания]" id="inputGroupSearch01">
+                                    <input class="form-control" name="SearchString[Шифр здания]" value="" id="inputGroupSearch01" />
+                                    <select name="SearchString[Шифр здания]" id="inputGroupSearch02">
                                         <option value="" selected disabled></option>
                                     </select>
                                 }
@@ -131,26 +343,6 @@
                                     isWrite = false;
                                 }
                             </div>
-                            @* <div class="input-group mb-3">
-                        <label class="input-group-text" for="inputGroupSearch02">Название здания</label>
-                        @foreach (KeyValuePair<string, string> item in ViewBag.CurrentSearchString)
-                        {
-                        if (item.Key == "Название здания")
-                        {
-                        isWrite = true;
-                        <input class="form-control" name="SearchString[Название здания]" value="@item.Value" id="inputGroupSearch02" />
-                        break;
-                        }
-                        }
-                        @if (!isWrite)
-                        {
-                        <input class="form-control" name="SearchString[Название здания]" value="" id="inputGroupSearch02" />
-                        }
-                        else
-                        {
-                        isWrite = false;
-                        }
-                        </div>*@
                             <div class="input-group mb-3">
 
                                 <label class="input-group-text" for="inputGroupSearch03">Подрядчик</label>
@@ -345,19 +537,19 @@
 
                         </div>
                         <div class="modal-footer">
+                            <button type="reset" class="btn btn-warning">Очистить фильтр</button>
                             <button class="btn btn-primary" type="submit" title="Поиск организации" alt="Поиск организации">Поиск</button>
-
-                            <button type="button" class="btn btn-warning" onclick="ClearFind()">Очистить фильтр</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <input id="contrctId" value="@contractId" hidden />
+
             <div class="box-btn">
                 <button class="btn btn-ctr btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
                     <div>Поиск</div>
                 </button>
             </div>
+            @*UPDATE DATAs*@
             <div class="box-btn">
                 <a class="btn btn-ctr btn-primary"
                    asp-action="GetType"
@@ -369,6 +561,8 @@
                     <div>Обновить данные</div>
                 </a>
             </div>
+
+            @*CREATE DATA*@
             <div class="box-btn">
                 <a class="btn btn-ctr btn-success"
                    asp-action="GetType"
@@ -382,31 +576,35 @@
         </form>
     </div>
     <div class="full-width">
-        <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
+        <table class="table table-main table-main-short table-bordered table-hover table-condensed search-table-db" id="dataTable">
             <thead>
                 <tr>
-                    <th>
-                        Шифр здания, сооружения
+                    <th data-filter="bCode">
+                        <div>Шифр здания, сооружения</div>
+                        <div class="filter-btn icon filter" data-column="department"></div>
                     </th>
-                    <th>
-                        Наименование здания, сооружения
+                    <th data-filter="bName">
+                        <div>Наименование здания, сооружения</div>
+                        <div class="filter-btn icon filter" data-column="employee"></div>
                     </th>
-                    <th>
+                    <th data-filter="drwKit">
                         Комплект чертежей
+                        @* <button class="filter-btn" data-column="metric">☰</button> *@
                     </th>
-                    <th>
+                    <th data-filter="drwName">
                         Наименование чертежа
+                        @* <button class="filter-btn" data-column="value">☰</button> *@
                     </th>
-                    <th>
+                    <th data-filter="drwDate">
                         Дата получения чертежа
                     </th>
-                    <th>
+                    <th data-filter="drwChDate">
                         Дата получения изменения чертежа
                     </th>
-                    <th>
+                    <th data-filter="number">
                         Номер сметы
                     </th>
-                    <th>
+                    <th data-filter="estDate">
                         Дата получения сметы
                     </th>
                     <th>
@@ -437,34 +635,33 @@
             </thead>
             <tbody class="table_tbody">
                 @*
-
             ** отрисовка по объектам, всех смет **
-
             *@
-                @foreach (EstimateItemModel estimateItemModel in Model.Objects)
+                @foreach (EstimateViewModel estimateViewModel in Model.Objects)
                 {
                     @*
             ** отрисовка по сметам      **
             *@
-                    @foreach (EstimateItem estimate in estimateItemModel?.Estimates)
+                    @foreach (EstimateItem estimate in estimateViewModel?.Estimates)
                     {
-                        var classes = estimate.IsChange ? "toggle-sub-rows" : string.Empty;
-                        <tr class="@classes">
-                            @if (estimateItemModel?.Estimates[0] == estimate)
+                        var classes = estimate.ChangeEstimateId.HasValue ? "toggle-sub-rows" : null;
+
+                        <tr class="@classes" data-est="@estimate.Id">
+                            @if (estimateViewModel?.Estimates[0] == estimate)
                             {
-                                int rowspanCount = estimateItemModel?.Estimates?.Count() ?? 0;
+                                int rowspanCount = estimateViewModel?.Estimates?.Count() ?? 0;
                                 <td rowspan="@rowspanCount" class="text-center align-middle common-col">
-                                    @estimateItemModel.BuildingCode
-                                    @*         TODO: ПЕРЕСМОТРЕТЬ ВСЕ ССЫЛКИ В ССЫЛКАХ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*@
+                                    @estimateViewModel.BuildingCode
+                                    @*         TODO: ПЕРЕСМОТРЕТЬ ВСЕ ССЫЛКИ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*@
                                     <div class="icon file-store" title="Файлы">
                                         <a asp-action="ShowFiles"
                                            asp-route-contractId="@contractId"
-                                           asp-route-buildingCode="@estimateItemModel.BuildingCode">
+                                           asp-route-buildingCode="@estimateViewModel.BuildingCode">
                                         </a>
                                     </div>
                                 </td>
                                 <td rowspan="@rowspanCount" class="text-center align-middle common-col">
-                                    @estimateItemModel.Estimates?.FirstOrDefault()?.BuildingName
+                                    @estimateViewModel.Estimates?.FirstOrDefault()?.BuildingName
                                 </td>
                             }
                             <td>
@@ -476,7 +673,8 @@
                             <td class="text-center align-middle">
                                 @if (estimate?.DrawingsDate != default)
                                 {
-                                    @estimate?.DrawingsDate?.ToString("dd MMMM yyyy")
+                                    @estimate?.DrawingsDate?.ToShortDateString()
+                                    //.ToString("dd MMMM yyyy")
 
                                     <div class="icon file-add" title="Добавить изменения по смете">
                                         <a asp-action="GetType"
@@ -488,16 +686,17 @@
                                 }
                             </td>
                             <td class="text-center align-middle">
-                                @estimate?.ChangeDrawingDate
+                                @estimate?.ChangeDrawingDate?.ToShortDateString()
                             </td>
                             <td class="text-center align-middle">
                                 @estimate?.Number
                             </td>
                             <td class="text-center align-middle">
-                                @estimate?.EstimateDate?.ToString("dd MMMM yyyy")
+                                @estimate?.EstimateDate?.ToShortDateString() @* //?.ToString("dd MMMM yyyy")*@
+
                             </td>
                             <td class="text-center align-middle">
-                                @estimate?.ChangeEstimateDate?.ToString("dd MMMM yyyy")
+                                @estimate?.ChangeEstimateDate?.ToShortDateString()
                             </td>
                             <td class="text-end align-middle">
                                 @estimate?.ContractsCost?.ToString("N2")
@@ -530,7 +729,7 @@
                                 <div class="icon file-store" title="Просмотр файлов">
                                     <a asp-action="ShowFiles" asp-route-estimateId="@estimate?.Id"
                                        asp-route-contractId="@contractId"
-                                       asp-route-buildingCode="@estimateItemModel.BuildingCode"
+                                       asp-route-buildingCode="@estimateViewModel.BuildingCode"
                                        asp-route-estimateNumber="@estimate?.Number"
                                        asp-route-isDrawing="false">
                                     </a>
@@ -552,38 +751,38 @@
                     @*
             ** отрисовка итоговых стоимостей (согласно видам работ) по сметам   **
             *@
-                    <tr>
+                    <tr class="summary-row">
                         <td class="text-end" colspan="9">
                             Итого по зданию, сооружению:
                         </td>
                         <td class="text-end align-middle">
-                            @estimateItemModel?.CostResults["totalSum"].ContractsCost?.ToString("N2")
+                            @estimateViewModel?.CostResults["totalSum"].ContractsCost?.ToString("N2")
                         </td>
                         <td class="text-end align-middle">
-                            @estimateItemModel?.CostResults["totalSum"].LaborCost?.ToString("N2")
+                            @estimateViewModel?.CostResults["totalSum"].LaborCost?.ToString("N2")
                         </td>
                         <td class="text-end align-middle">
-                            @estimateItemModel?.CostResults["totalSum"].DoneSmrCost?.ToString("N2")
+                            @estimateViewModel?.CostResults["totalSum"].DoneSmrCost?.ToString("N2")
                         </td>
                         <td class="text-end align-middle">
-                            @estimateItemModel?.CostResults["totalSum"].PercentOfContrPrice?.ToString("N2")
+                            @estimateViewModel?.CostResults["totalSum"].PercentOfContrPrice?.ToString("N2")
                         </td>
                         <td class="text-end align-middle">
-                            @estimateItemModel?.CostResults["totalSum"].RemainsSmrCost?.ToString("N2")
+                            @estimateViewModel?.CostResults["totalSum"].RemainsSmrCost?.ToString("N2")
                         </td>
                         <td colspan="2">
                         </td>
                     </tr>
-                    <tr>
+                    <tr class="summary-row">
                         <td class="text-end" colspan="9">
                             в том числе:
                         </td>
                         <td colspan="7">
                         </td>
                     </tr>
-                    foreach (var result in @estimateItemModel?.CostResults.Where(x => x.Key != "totalSum"))
+                    foreach (var result in @estimateViewModel?.CostResults.Where(x => x.Key != "totalSum"))
                     {
-                        <tr>
+                        <tr class="summary-row">
                             <td class="text-end" colspan="9">
                                 @result.Key
                             </td>
@@ -607,7 +806,7 @@
                         </tr>
                     }
 
-                    <tr>
+                    <tr class="summary-row">
                         <td colspan="16" style="background-color:white;">
                         </td>
                     </tr>
@@ -615,11 +814,11 @@
                 @*
             ** отрисовка итоговых стоимостей (согласно видам работ) по ОБЪЕКТУ       **
             *@
-                <tr>
+                <tr class="summary-row-total">
                     <td colspan="16">
                     </td>
                 </tr>
-                <tr>
+                <tr class="summary-row-total">
                     <td class="text-end" colspan="9">
                         ВСЕГО по объекту:
                     </td>
@@ -640,7 +839,7 @@
                     </td>
                     <td colspan="2"></td>
                 </tr>
-                <tr>
+                <tr class="summary-row-total">
                     <td class="text-end" colspan="9">
                         в том числе:
                     </td>
@@ -649,7 +848,7 @@
                 </tr>
                 @foreach (var item in totalSumObj.Where(x => x.Key != "totalSum"))
                 {
-                    <tr>
+                    <tr class="summary-row-total">
                         <td class="text-end" colspan="9">
                             @item.Key
                         </td>
@@ -675,38 +874,38 @@
             </tbody>
         </table>
     </div>
+
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Фильтр</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="filter-search">
+                    <input type="text" id="filterSearch" placeholder="Поиск...">
+                </div>
+                <div id="filterCheckboxes"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="selectAll">Выбрать все</button>
+                <button id="clearAll">Очистить все</button>
+                <button id="applyFilter">Применить</button>
+                <button id="cancelFilter">Отмена</button>
+            </div>
+        </div>
+    </div>
 }
 
 @section Scripts {
+
     <script>
-        $("#StartPeriodDrawing").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        });
-        $("#EndPeriodDrawing").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        });
-        $("#StartPeriodEstimate").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        });
-        $("#EndPeriodEstimate").datepicker({
+        // Инициализация datepicker для полей дат чертежей и смет
+        // Настраивает формат даты как "день месяц год" на русском языке
+        // Показывает номера недель, автоматически закрывается при выборе
+        // Отключает навигацию с клавиатуры, включает предположение ближайшего года
+        // Позволяет переключать активное состояние
+        $("#StartPeriodDrawing, #EndPeriodDrawing, #StartPeriodEstimate, #EndPeriodEstimate").datepicker({
             format: "d MM yyyy",
             language: "ru",
             calendarWeeks: true,
@@ -716,17 +915,29 @@
             toggleActive: true
         });
 
-        function ClearFind() {
-            $('#inputGroupSearch01').val('');
-            $('#inputGroupSearch02').val('');
-            $('#inputGroupSearch03').val('');
-            $('#StartPeriodDrawing').val('');
-            $('#EndPeriodDrawing').val('');
-            $('#StartPeriodEstimate').val('');
-            $('#EndPeriodEstimate').val('');
-            $('#letterIndex option').prop('selected', false).trigger('chosen:updated');
-            $('#kindOfWork option').prop('selected', false).trigger('chosen:updated');
-        }
+        // document.querySelectorAll(`.search-table-db>thead>tr>[data-filter]`).forEach((e) => {
+        //     e.addEventListener('click', function () {
+        //         $.ajax({
+        //             type: 'POST',
+        //             url: '@Url.Action("GetListData", "Estimate")',
+        //             dataType: 'json',
+        //             data: { contractId: $("#contrctId").val(), attName: "test1" },
+        //             success: function (estimate) {
+        //                 let ssa = estimate;
+        //                 //if (estimate.length == 0)
+        //                 //    return;
+        //                 //$.each(estimate, function (r, emp) {
+        //                 //    $("#inputGroupSearch01").append('<option value="' + emp.code + '">' + emp.code + '</option>');
+        //                 //});
+        //             },
+        //             error: function (ex) {
+        //                 alert('Ошибка загрузки данных');
+        //             }
+        //         });
+        //     });
+        // })
+
+        let list = [];
 
         function DeleteEstimate(val) {
             $.ajax({
@@ -746,88 +957,137 @@
                             url: '@Url.Action("Delete", "Estimate")',
                             data: { id: val },
                             success: function (result) {
-                                $('#dialogContent').html(result);
+                                window.location.reload();
                             },
                             error: function (result) {
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '@Url.Action("Message", "Home")',
-                                    dataType: 'html',
-                                    data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
-                                    success: function (result) {
-                                        $('#dialogContent').html(result);
-                                    }
-                                });
+                                window.location.reload();
                             }
                         });
                     })
                 },
                 error: function (result) {
-                    alert("Ошибка отображения");
                 }
             })
         }
 
-        $(document).ready(function () {
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("GetEstimatesByContractId", "Estimate")',
-                dataType: 'json',
-                data: { contractId: $("#contrctId").val() },
-                success: function (estimate) {
-
-                    if (estimate.length == 0)
-                        return;
-                    $.each(estimate, function (r, emp) {
-                        $("#inputGroupSearch01").append('<option value="' + emp.code + '">' + emp.code + '</option>');
-                    });
-                },
-                error: function (ex) {
-                    alert('Ошибка загрузки данных');
-                }
-            });
-
-        });
-
-
         const onClickOpen = function () {
-            const target = event.target;            
+            const target = event.target;
             let parentROW = target.parentElement;
+            let estId;
+            ///если кликнули по ячейке, то data-set берем у родителя - строка TR
+            /// усли по строке TR - то ее data-set берем
+
+            if (target.tagName === 'TD') {
+                estId = parentROW.dataset.est;
+            } else {
+                estId = target.dataset.est;
+            }
 
             if (!parentROW.firstElementChild.classList.contains('common-col')) {
                 ///ищем строку, которая содержит два первых, общих для всех строк, столбца
-                while (parentROW) {
-                    if (parentROW?.previousElementSibling.firstElementChild.classList.contains('common-col')) {
-                        parentROW = parentROW?.previousElementSibling;
+                while (parentROW && parentROW.previousElementSibling) {
+                    if (parentROW.previousElementSibling.firstElementChild.classList.contains('common-col')) {
+                        parentROW = parentROW.previousElementSibling;
                         break;
                     }
-                    parentROW = parentROW?.previousElementSibling;
+                    parentROW = parentROW.previousElementSibling;
                 }
             }
 
             const firstROW = parentROW.firstElementChild;
             const secondROW = firstROW.nextElementSibling;
             const rowspans = firstROW.getAttribute("rowspan");
-            firstROW.setAttribute("rowspan", +rowspans + 1);
-            secondROW.setAttribute("rowspan", +rowspans + 1);
 
             ////////////
             ///
             ///
 
-            const newTR = document.createElement("tr");
-            newTR.className = 'sub-row text-center align-middle';
-            for (let index = 0; index < 14; index++) {
-                const newTD = document.createElement("td");
-                newTD.innerHTML = `test ${index}`;
-                newTR.appendChild(newTD);
-            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetListChangedEstimate", "Estimate")',
+                dataType: 'json',
+                data: { contractId: $("#contrctId").val(), estId: estId },
+                success: function (estimates) {
+                    if (estimates.length == 0) return;
+                    estimates = estimates.sort(function (a, b) { return b.id > a.id });
+                    $.each(estimates, function (r, estimate) {
+                        const newTR = document.createElement("tr");
+                        newTR.className = 'sub-row text-center align-middle';
 
-            target.parentElement.after(newTR);
-            target.parentElement.removeEventListener('click', onClickOpen);
-            target.parentElement.addEventListener('click', onClickClose);
+                        // for (let index = 0; index < 14; index++) {
+                        const newTD1 = document.createElement("td");
+                        newTD1.innerText = estimate.drawingsKit;
+                        newTR.appendChild(newTD1);
+
+                        const newTD2 = document.createElement("td");
+                        newTD2.innerText = estimate.drawingsName;
+                        newTR.appendChild(newTD2);
+
+                        const newTD3 = document.createElement("td");
+                        newTD3.innerText = estimate.drawingsDate;
+                        newTR.appendChild(newTD3);
+
+                        const newTD4 = document.createElement("td");
+                        newTD4.innerText = estimate.changeDrawingDate;
+                        newTR.appendChild(newTD4);
+
+                        const newTD5 = document.createElement("td");
+                        newTD5.innerText = estimate.number;
+                        newTR.appendChild(newTD5);
+
+                        const newTD6 = document.createElement("td");
+                        newTD6.innerText = estimate.estimateDate;
+                        newTR.appendChild(newTD6);
+
+                        const newTD7 = document.createElement("td");
+                        newTD7.innerText = estimate.changeEstimateDate;
+                        newTR.appendChild(newTD7);
+
+                        const newTD8 = document.createElement("td");
+                        newTD8.innerText = estimate.contractsCost;
+                        newTR.appendChild(newTD8);
+
+                        const newTD9 = document.createElement("td");
+                        newTD9.innerText = estimate.laborCost;
+                        newTR.appendChild(newTD9);
+
+                        const newTD10 = document.createElement("td");
+                        newTD10.innerText = estimate.doneSmrCost;
+                        newTR.appendChild(newTD10);
+
+                        const newTD11 = document.createElement("td");
+                        newTD11.innerText = estimate.percentOfContrPrice;
+                        newTR.appendChild(newTD11);
+
+                        const newTD12 = document.createElement("td");
+                        newTD12.innerText = estimate.remainsSmrCost;
+                        newTR.appendChild(newTD12);
+
+                        const newTD13 = document.createElement("td");
+                        newTD13.innerText = estimate.subContractor;
+                        newTR.appendChild(newTD13);
+
+                        const newTD14 = document.createElement("td");
+                        newTD14.innerText = '';
+                        newTR.appendChild(newTD14);
+
+                        target.parentElement.after(newTR);
+                    });
+
+                    target.parentElement.removeEventListener('click', onClickOpen);
+                    target.parentElement.addEventListener('click', onClickClose);
+
+                    firstROW.setAttribute("rowspan", +rowspans + estimates.length);
+                    secondROW.setAttribute("rowspan", +rowspans + estimates.length);
+                },
+                error: function (ex) {
+                    alert('Ошибка загрузки данных');
+                }
+            });
+
+
+
         };
-
         const onClickClose = function () {
             const target = event.target;
             let parentROW = target.parentElement;
@@ -845,25 +1105,57 @@
             const secondROW = firstROW.nextElementSibling;
 
             const rowspans = firstROW.getAttribute("rowspan");
+            let countRemoveSpanRow = 0;
 
-            firstROW.setAttribute("rowspan", +rowspans - 1);
-            secondROW.setAttribute("rowspan", +rowspans - 1);
-            target.parentElement.nextSibling.remove();
+            //если
+            while (event.target) {
+                if (event.target.parentElement.nextElementSibling.classList.contains('sub-row')) {
+                    event.target.parentElement.nextElementSibling.remove();
+                    countRemoveSpanRow++;
+                } else {
+                    break;
+                }
+            }
+
+            firstROW.setAttribute("rowspan", +rowspans - countRemoveSpanRow);
+            secondROW.setAttribute("rowspan", +rowspans - countRemoveSpanRow);
+
             ////////////
             ///
-            ///        
+            ///
             target.parentElement.removeEventListener('click', onClickClose);
             target.parentElement.addEventListener('click', onClickOpen);
         };
-
-
         function onClickRow() {
             document.querySelectorAll(".toggle-sub-rows")?.forEach((value) => {
                 value.addEventListener("click", onClickOpen);
             });
         };
 
-        //onClickRow();
+        onClickRow();
+
+
+        $(document).ready(function () {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetEstimatesByContractId", "Estimate")',
+                dataType: 'json',
+                data: { contractId: $("#contrctId").val() },
+                success: function (estimate) {
+
+                    if (estimate.length == 0)
+                        return;
+                    $.each(estimate, function (r, emp) {
+                        $("#inputGroupSearch02").append('<option value="' + emp.code + '">' + emp.code + '</option>');
+                    });
+                },
+                error: function (ex) {
+                    alert('Ошибка загрузки данных');
+                }
+            });
+        });
 
     </script>
+
+    @* <script src="~/js/filterTableData.js"></script> *@
 }

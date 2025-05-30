@@ -71,9 +71,8 @@ namespace BusinessLayer.IoC
 
             services.AddScoped<IKindOfWorkService, KindOfWorkService>();
             services.AddScoped<IAbbreviationKindOfWorkService, AbbreviationKindOfWorkService>();
-
-            services.AddTransient<IStreamFileUploadService, StreamFileUploadLocalService>();
-            services.AddTransient<IParseService, ParseService>();
+            services.AddTransient<IParseService, ParseService>(); 
+            services.AddTransient<IReportExcelService, ReportExcelService>();
         }
     }
 }

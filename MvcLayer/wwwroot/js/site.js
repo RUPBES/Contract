@@ -92,12 +92,13 @@ function digits_float(target) {
 }
 
 $(document).ready(function () {
-    $('.js-chosen').chosen({
-        no_results_text: 'Совпадений не найдено',
-        placeholder_text_single: 'Выберите',
-        width: '100%',
-        disable_search_threshold: 5
-    });
+    $('.js-chosen').selectize();
+    //    chosen({
+    //    no_results_text: 'Совпадений не найдено',
+    //    placeholder_text_single: 'Выберите',
+    //    width: '100%',
+    //    disable_search_threshold: 5
+    //});
 });
 
 function setColor(element, color) {
@@ -118,3 +119,15 @@ for (let value of arrayTextEnd) {
         value.setAttribute('style', 'color:red');
     }
 }
+
+$(document).ready(function () {
+    // Handle notification close button
+    $('.notification .close').on('click', function () {
+        $(this).closest('.notification').fadeOut();
+    });
+
+    // Optional: Auto-hide notifications after 5 seconds
+    setTimeout(function () {
+        $('.notification').fadeOut();
+    }, 5000);
+});

@@ -96,7 +96,7 @@
                                     @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
                                     {
                                         <div>
-                                            <a href="~/Files/GetFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                            <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                                             @if (isAdmin)
                                             {
                                                 @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})

@@ -6,10 +6,9 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
+    var permissions = HttpHelper.GetUserPermissions();
     ViewData["Title"] = "Список авансов";
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 
 }
 

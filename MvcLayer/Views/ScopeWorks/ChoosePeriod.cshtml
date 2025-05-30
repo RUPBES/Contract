@@ -16,7 +16,7 @@
     }
     bool hasScope = false;
     // ищем есть ли изменения, выбираем последние. если изменения есть то ID последнего помечаем что изменяем
-    var scopes = @Scope.Find(x => x.ContractId == Model.ContractId)?.LastOrDefault();
+    var scopes = Scope.GetLastScope(Model?.ContractId ?? 0);
     if (scopes is not null)
     {
         hasScope = true;
@@ -125,7 +125,7 @@
                 var listAmendment = Scope.GetFreeAmendment((int)Model?.ContractId);
                 @if (listAmendment.Count() > 0)
                 {
-                    <form id="target" asp-action="CreatePeriods" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data">
+                    <form id="target" asp-action="Create/Period" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId" class="row" method="post" enctype="multipart/form-data">
                         <input asp-for="ContractId" value="@Model?.ContractId" hidden />
                         <input asp-for="ChangeScopeWorkId" value="@scopes?.Id" hidden />
 
@@ -187,7 +187,7 @@
 
             @if (!hasScope)
             {
-                <form id="target" asp-action="CreatePeriods" class="row" method="post" enctype="multipart/form-data" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
+                <form id="target" asp-action="Create/Period" class="row" method="post" enctype="multipart/form-data" asp-route-contractId="@ViewBag.contractId" asp-route-returnContractId="@ViewBag.returnContractId">
                     @if (contract.IsEngineering == true)
                     {
                         <h4>Выбор периода объема услуг</h4>
@@ -253,23 +253,23 @@
             })
         });
 
-        // $("#amendCheck").on("change", function () {
-        //     let isChange = $(this).prop('checked');
-        //     let besInput = document.querySelector("#chooseAmendment");
+        $("#amendCheck").on("change", function () {
+            let isChange = $(this).prop('checked');
+            let besInput = document.querySelector("#chooseAmendment");
 
-        //     if (besInput.hidden != true) {
-        //         besInput.hidden = true;
-        //     }
-        //     else {
-        //         besInput.hidden = null;
-        //     }
+            if (besInput.hidden != true) {
+                besInput.hidden = true;
+            }
+            else {
+                besInput.hidden = null;
+            }
 
-        //     if (isChange === false) {
-        //         $(this).attr("value", "false")
-        //     }
-        //     else {
-        //         $(this).attr("value", "true")
-        //     }
-        // });
+            if (isChange === false) {
+                $(this).attr("value", "false")
+            }
+            else {
+                $(this).attr("value", "true")
+            }
+        });
     </script>
 }

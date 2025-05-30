@@ -75,7 +75,7 @@
                                 }
                                 @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
                                 {
-                                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                    var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                     var valueArray = Model?.PaymentСonditionsAvans;
                                     if (valueArray == null) { valueArray = ""; }
                                     string idCh = "check" + @numberCheckbox;
@@ -104,17 +104,17 @@
                         <div class="col-6">
                             <div class="form-group mt-1">
                                 <label class="control-label" asp-for="DateBeginWork"></label>
-                                <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateBeginWork">
+                                <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("dd MMMM yyyy")" type="text" class="form-control" required id="DateBeginWork">
                                 <label class="form-label" id="labelBeginWork" style="display:none"></label>
                             </div>
                             <div class="form-group mt-1">
                                 <label class="control-label" asp-for="DateEndWork"></label>
-                                <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateEndWork">
+                                <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("dd MMMM yyyy")" type="text" class="form-control" required id="DateEndWork">
                                 <label class="form-label" id="labelEndWork" style="display:none"></label>
                             </div>
                             <div class="form-group mt-1">
                                 <label class="control-label" asp-for="EnteringTerm"></label>
-                                <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="EnteringTerm">
+                                <input asp-for="EnteringTerm" value="@Model.EnteringTerm?.ToString("dd MMMM yyyy")" type="text" class="form-control" required id="EnteringTerm">
                                 <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
                             </div>
                         </div>
@@ -132,9 +132,9 @@
         </div>
     </div>
 </div>
-<input id="BeginMin" value="@contract.DateBeginWork?.ToString("yyyy-MM-dd")" hidden />
-<input id="EndMin" value="@contract.DateEndWork?.ToString("yyyy-MM-dd")" hidden />
-<input id="EnterMin" value="@contract.EnteringTerm?.ToString("yyyy-MM-dd")" hidden />
+<input id="BeginMin" value="@contract.DateBeginWork?.ToString("dd.MM.yyyy")" hidden />
+<input id="EndMin" value="@contract.DateEndWork?.ToString("dd.MM.yyyy")" hidden />
+<input id="EnterMin" value="@contract.EnteringTerm?.ToString("dd.MM.yyyy")" hidden />
 
 @section Scripts {
     <script>
@@ -207,9 +207,9 @@
             changeEnteringTm()
         });
 
-        $("#DateBeginWork").datepicker('setDate', new Date(beginWorkVal));
-        $("#DateEndWork").datepicker('setDate', new Date(endWorkVal));
-        $("#EnteringTerm").datepicker('setDate', new Date(enteringTmVal));
+        // $("#DateBeginWork").datepicker('setDate', new Date(beginWorkVal));
+        // $("#DateEndWork").datepicker('setDate', new Date(endWorkVal));
+        // $("#EnteringTerm").datepicker('setDate', new Date(enteringTmVal));
 
         function changeBeginWork() {
             let dateBeg = $("#DateBeginWork").datepicker('getDate');
@@ -217,7 +217,7 @@
             let dateEnter = $("#EnteringTerm").datepicker('getDate');
 
             if (dateBeg != null) {
-                let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
+                let datePlusOne = addDays(new Date(dateBeg.toDateString('dd MMMM yyyy')), 1);
                 if (dateBeg && (!dateEnd || dateBeg >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
                 if (dateBeg && (!dateEnter || dateBeg >= dateEnter)) { $("#EnteringTerm").datepicker('update', datePlusOne); }
             }
@@ -229,7 +229,7 @@
             let dateEnter = $("#EnteringTerm").datepicker('getDate');
 
             if (dateEnter != null) {
-                let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
+                let dateDecOne = addDays(new Date(dateEnd.toDateString('dd MMMM yyyy')), -1);
 
                 if (dateEnd && (!dateBeg || dateEnd <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
                 if (dateEnd && (!dateEnter || dateEnd > dateEnter)) { $("#EnteringTerm").datepicker('update', dateEnd); }
@@ -242,7 +242,7 @@
             let dateEnter = $("#EnteringTerm").datepicker('getDate');
 
             if (dateEnter != null) {
-                let dateDecOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), -1);
+                let dateDecOne = addDays(new Date(dateEnter.toDateString('dd MMMM yyyy')), -1);
 
                 if (dateEnter && (!dateBeg || dateEnter <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
                 if (dateEnter && (!dateEnd || dateEnter < dateEnd)) { $("#DateEndWork").datepicker('update', dateEnter); }
@@ -313,7 +313,7 @@
 
             let dayStr = day < 10 ? "0" + String(day) : String(day);
             let monthStr = month < 10 ? "0" + String(month) : String(month);
-            return dayStr + '-' + monthStr + '-' + newDateOfyear;
+            return dayStr + ' ' + monthStr + ' ' + newDateOfyear;
         }
     </script>
 }

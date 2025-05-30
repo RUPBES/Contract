@@ -50,6 +50,7 @@ namespace BusinessLayer.Models
 
         public string? PaymentСonditionsRaschet { get; set; }
 
+        public string? WorkType { get; set; }
         public double? PaymentСonditionsPrice { get; set; }
         public string? Author { get; set; }
         public string? Owner { get; set; }

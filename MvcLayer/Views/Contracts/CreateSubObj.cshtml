@@ -19,23 +19,6 @@
     }
 }
 
-<style>
-    div#CurDC_chosen {
-        max-width: 85%;
-    }
-
-    label {
-        font-size: 1.1em;
-    }
-
-    .btn_save {
-        margin-top: 1rem !important;
-        display: flex;
-        align-content: center;
-        width: 96%;
-        justify-content: flex-end;
-    }
-</style>
 
 <div class="dm-overlay">
     <div class="dm-table">
@@ -77,7 +60,7 @@
                                 }
                                 @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
                                 {
-                                    var value = $"{Converter.GetTypeOfPrepaymentCondition((int)item)}";
+                                    var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                     var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
                                     string idCh = "check" + @numberCheckbox;
                                     <div>
@@ -139,6 +122,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/creationContractFunc.js"></script>
     <script type="text/javascript">
 
         $(function ($) {
@@ -147,210 +131,11 @@
             });
             digits_float('#CDC');
         });
-        //////////////////////////////////////////
-        ////    проверка вводимых дат ////
-        //beginWork(b) - Дата начало работы
-        //endWork(c) - Дата окончания работы
-        //enteringTm(d) - Дата ввода объекта
-        // b < c <= d
-        //////********/
-        let minDate = $('#DateBeginWork').val();
-        let endDate = $('#DateEndWork').val();
-        let maxDate = $('#EnteringTerm').val();
-        let beginWork = document.querySelector("#DateBeginWork");
-        let endWork = document.querySelector("#DateEndWork");
-        let enteringTm = document.querySelector("#EnteringTerm");
-        $("#DateBeginWork").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            startDate: minDate,
-            endDate: maxDate,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeBeginWork()
-        });
-        $("#DateEndWork").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            startDate: minDate,
-            endDate: maxDate,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeEndWork()
-        });
-        $("#EnteringTerm").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            startDate: minDate,
-            endDate: maxDate,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true
-        }).on('changeDate', function () {
-            changeEnteringTm()
-        });
 
-        $("#DateBeginWork").datepicker('setDate', minDate);
-        $("#DateEndWork").datepicker('setDate', endDate);
-        $("#EnteringTerm").datepicker('setDate', maxDate);
-
-        function changeBeginWork() { 
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-
-            if (dateBeg != null) {
-                let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
-                if (dateBeg && (!dateEnd || dateBeg >= dateEnd)) { $("#DateEndWork").datepicker('update', datePlusOne); }
-                if (dateBeg && (!dateEnter || dateBeg >= dateEnter)) { $("#EnteringTerm").datepicker('update', datePlusOne); }
-            }
-            showHideMin()
-        }
-        function changeEndWork() {
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-
-            if (dateEnter != null) {
-                let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
-
-                if (dateEnd && (!dateBeg || dateEnd <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
-                if (dateEnd && (!dateEnter || dateEnd > dateEnter)) { $("#EnteringTerm").datepicker('update', dateEnd); }
-            }
-            showHideMin()
-        }
-        function changeEnteringTm() {
-            let dateBeg = $("#DateBeginWork").datepicker('getDate');
-            let dateEnd = $("#DateEndWork").datepicker('getDate');
-            let dateEnter = $("#EnteringTerm").datepicker('getDate');
-
-            if (dateEnter != null) {
-                let dateDecOne = addDays(new Date(dateEnter.toDateString('d-MM-yyyy')), -1);
-
-                if (dateEnter && (!dateBeg || dateEnter <= dateBeg)) { $("#DateBeginWork").datepicker('update', dateDecOne); }
-                if (dateEnter && (!dateEnd || dateEnter < dateEnd)) { $("#DateEndWork").datepicker('update', dateEnter); }
-            }
-            showHideMin()
-        }
-        function showHideMin() {
-            if (!beginWork.value || beginWork.value === null || beginWork.value === '') {
-                $('#labelBeginWork').show();
-                $('#labelBeginWorkMax').show();
-            }
-            else {
-                $('#labelBeginWork').hide();
-                $('#labelBeginWorkMax').hide();
-            }
-
-            if (!endWork.value || endWork.value === null || endWork.value === '') {
-                $('#labelEndWork').show();
-                $('#labelEndWorkMax').show();
-            }
-            else {
-                $('#labelEndWork').hide();
-                $('#labelEndWorkMax').hide();
-            }
-
-            if (!enteringTm.value || enteringTm.value === null || enteringTm.value === '') {
-                $('#labelEnteringTerm').show();
-                $('#labelEnteringTermMax').show();
-            }
-            else {
-                $('#labelEnteringTerm').hide();
-                $('#labelEnteringTermMax').hide();
-            }
-        }
-
-        beginWork.addEventListener('change', (e) => {
-            changeBeginWork();
-        });
-        endWork.addEventListener('change', (e) => {
-            changeEndWork();
-        });
-        enteringTm.addEventListener('change', (e) => {
-            changeEnteringTm();
-        });
-
-        function addDays(date, countDays) {
-            let newDateOfyear = date.getFullYear() + ""; // год
-            let day = date.getDate() + countDays; // текущий день
-            let month = date.getMonth() + 1; //текущий месяц
-
-            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
-            if (day > maxDateToday) {
-                month = month + 1;
-                if (month > 12) {
-                    newDateOfyear = newDateOfyear + 1;
-                    month = 1;
-                    day = (day - 31);
-                }
-                else {
-                    day = (day - maxDateToday);
-                }
-            }
-            if (day < 1) {
-                month = month - 1;
-                if (month < 1) {
-                    newDateOfyear = newDateOfyear - 1;
-                    month = 12;
-                    day = 31 + day;
-                }
-                else {
-                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
-                    day = maxDate + day;
-                }
-            }
-
-            let dayStr = day < 10 ? "0" + String(day) : String(day);
-            let monthStr = month < 10 ? "0" + String(month) : String(month);
-            return dayStr + '-' + monthStr + '-' + newDateOfyear;
-        }
+        initializeDatepickers();
 
         ///////проверка на взаимоисключающие позиции условий авансирования, если выбрано "Без авансов" - остальные замьюченные, и наоборот/////
+        handleCheckboxChanges();
 
-        let ch1 = document.querySelector("#check0");
-        let ch2 = document.querySelector("#check1");
-        let ch3 = document.querySelector("#check2");
-
-        ch1.addEventListener('change', (e) => {
-            if (e.currentTarget.checked) {
-                ch2.setAttribute("disabled", true);
-                ch3.setAttribute("disabled", true);
-            }
-
-            if (!e.currentTarget.checked) {
-                ch2.removeAttribute("disabled");
-                ch3.removeAttribute("disabled");
-            }
-        });
-        ch2.addEventListener('change', (e) => {
-            if (e.currentTarget.checked) {
-                ch1.setAttribute("disabled", true);
-            }
-            if (!e.currentTarget.checked && !ch3.checked) {
-                ch1.removeAttribute("disabled");
-            }
-
-        });
-        ch3.addEventListener('change', (e) => {
-            if (e.currentTarget.checked) {
-                ch1.setAttribute("disabled", true);
-            }
-            if (!e.currentTarget.checked && !ch2.checked) {
-                ch1.removeAttribute("disabled");
-            }
-        });
-
-        ///////
     </script>
 }

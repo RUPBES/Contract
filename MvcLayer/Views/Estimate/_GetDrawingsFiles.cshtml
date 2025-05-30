@@ -95,15 +95,7 @@
     //         },
     //         error: function (error) {
     //             var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-    //             $.ajax({
-    //                 type: 'POST',
-    //                 url: '@Url.Action("ShowError", "Parse")',
-    //                 data: { message: errorMes },
-    //                 dataType: 'html',
-    //                 success: function (data) {
-    //                     showResultMessage("#result", data);
-    //                 }
-    //             });
+    //            
     //         }
     //     });
     // });
@@ -146,28 +138,13 @@
                     },
                     error: function (error) {
                         var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
-                        $.ajax({
-                            type: 'POST',
-                            url: '@Url.Action("ShowError", "Parse")',
-                            data: { message: errorMes },
-                            dataType: 'html',
-                            success: function (data) {
-                                showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
-                            }
-                        });
+                        showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${errorMes}</span></div>`);
                     }
                 });
             },
             error: function (result) {
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("ShowError", "Parse")',
-                    data: { message: "Загрузите файл excel (кроме Excel книга 97-2033)" },
-                    dataType: 'html',
-                    success: function (data) {
-                        showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${data}</span></div>`);
-                    }
-                });
+                var errorMes = error.responseText;
+                showResultMessage("#result", `<div class="alert alert-success" role="alert"><span>${errorMes}</span></div>`);               
             },
             contentType: false,
             processData: false

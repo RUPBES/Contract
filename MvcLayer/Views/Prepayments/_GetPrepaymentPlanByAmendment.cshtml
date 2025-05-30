@@ -72,10 +72,10 @@ else
             data: { id},
             dataType: 'html',
             success: function (data) {
-                $('#ContentCreate').html(data)
+                $('#ContentCreate').html(`<h3>${data}</h3>`)
             },
             error: function (exception) {
-                console.log("Ошибка")
+                console.log(exception)
             }
         });
     }
@@ -100,25 +100,17 @@ else
                         data: { id: val },
                         success: function (result) {                            
                             $('#modDialog').modal('hide');
-                            $('#ContentCreate').html(result);                             
+                            $('#ContentCreate').html(`<h3>${result}</h3>`);
                             document.getElementById("Amendment").selectedIndex = 0;
                         },
                         error: function (result) {
-                            $.ajax({
-                                type: 'POST',
-                                url: '@Url.Action("Message", "Home")',
-                                dataType: 'html',
-                                data: { message: "Во время удаления произошла ошибка.", header: "Ошибка", textButton: "Плохо" },
-                                success: function (result) {
-                                    $('#dialogContent').html(result);
-                                }
-                            });
+                           
                         }
                     });
                 })
             },
             error: function (result) {
-                alert("Ошибка отображения");
+                console.log("Ошибка отображения");
             }
         })
     }

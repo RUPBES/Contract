@@ -1,146 +1,148 @@
-﻿using DatabaseLayer.Models.KDO;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.Metrics;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessLayer.Models
 {
     public class SWCostDTO
     {
         public int Id { get; set; }
-        public DateTime? Period { get; set; }
+
+        public DateTime? Period { get; set; } = null;
+
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public decimal? CostNoNds { get; set; }
+        public decimal? CostNoNds { get; set; } = 0M;
+
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public decimal? CostNds { get; set; }
-        public decimal? SmrCost { get; set; }
-        public decimal? PnrCost { get; set; }
-        public decimal? EquipmentCost { get; set; }
-        public decimal? OtherExpensesCost { get; set; }
-        public decimal? AdditionalCost { get; set; }
-        public decimal? MaterialCost { get; set; }
-        public decimal? GenServiceCost { get; set; }
+        public decimal? CostNds { get; set; } = 0M;
+
+        public decimal? SmrCost { get; set; } = 0M;
+
+        public decimal? PnrCost { get; set; } = 0M;
+
+        public decimal? EquipmentCost { get; set; } = 0M;
+
+        public decimal? OtherExpensesCost { get; set; } = 0M;
+
+        public decimal? AdditionalCost { get; set; } = 0M;
+
+        public decimal? MaterialCost { get; set; } = 0M;
+
+        public decimal? GenServiceCost { get; set; } = 0M;
+
         public bool? IsOwnForces { get; set; }
+
         public int? ScopeWorkId { get; set; }
+
         public virtual ScopeWorkDTO? ScopeWork { get; set; }
 
-        public SWCostDTO()
+
+        /// <summary>
+        /// Добавляет значения первому объекту из второго (ID, Period и др. в результирующем объекте будет равен первому объекту)
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns>Новый объект равный первому, у котрого добавлены данные стоимостей из второго объекта</returns>
+        public static SWCostDTO operator + (SWCostDTO first, SWCostDTO second)
         {
-            Id = 0;
-            Period = null;
-            CostNoNds = 0;
-            CostNds = 0;
-            SmrCost = 0;
-            PnrCost = 0;
-            EquipmentCost = 0;
-            OtherExpensesCost = 0;
-            AdditionalCost = 0;
-            MaterialCost = 0;
-            GenServiceCost = 0;
+            return new SWCostDTO
+            {
+                Id = first.Id,
+                Period = first.Period,
+                IsOwnForces = first.IsOwnForces,
+                ScopeWorkId = first.ScopeWorkId,
+
+                CostNds = (first.CostNds ?? 0) + (second.CostNds ?? 0),
+                CostNoNds = (first.CostNoNds ?? 0) + (second.CostNoNds ?? 0),
+                SmrCost = (first.SmrCost ?? 0) + (second.SmrCost ?? 0),
+                PnrCost = (first.PnrCost ?? 0) + (second.PnrCost ?? 0),
+                AdditionalCost = (first.AdditionalCost ?? 0) + (second.AdditionalCost ?? 0),
+                EquipmentCost = (first.EquipmentCost ?? 0) + (second.EquipmentCost ?? 0),
+                OtherExpensesCost = (first.OtherExpensesCost ?? 0) + (second.OtherExpensesCost ?? 0),
+                MaterialCost = (first.MaterialCost ?? 0) + (second.MaterialCost ?? 0),
+                GenServiceCost = (first.GenServiceCost ?? 0) + (second.GenServiceCost ?? 0),
+            };
         }
 
-        public static SWCostDTO operator + (SWCostDTO a, SWCost b) 
+        /// <summary>
+        ///  Вычетает значения у первого объекта значениями из второго (ID, Period и др. в результирующем объекте будетут равны первому объекту)
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns>Новый объект равный первому, у котрого вычтены данные стоимостей из второго объекта</returns>
+        public static SWCostDTO operator - (SWCostDTO first, SWCostDTO second)
         {
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds + b.CostNds ;
-            result.CostNoNds = a.CostNoNds + b.CostNoNds;
-            result.SmrCost = a.SmrCost + b.SmrCost;
-            result.PnrCost = a.PnrCost + b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost + b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost + b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost + b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost + b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost + b.GenServiceCost;
-            return result;
+            return new SWCostDTO
+            {
+                Id = first.Id,
+                Period = first.Period,
+                IsOwnForces = first.IsOwnForces,
+                ScopeWorkId = first.ScopeWorkId,
+
+                CostNds = (first.CostNds??0) - (second.CostNds??0),
+                CostNoNds = (first.CostNoNds ?? 0) - (second.CostNoNds ?? 0),
+                SmrCost = (first.SmrCost ?? 0) - (second.SmrCost ?? 0),
+                PnrCost = (first.PnrCost ?? 0) - (second.PnrCost ?? 0),
+                AdditionalCost = (first.AdditionalCost ?? 0) - (second.AdditionalCost ?? 0),
+                EquipmentCost = (first.EquipmentCost ?? 0) - (second.EquipmentCost ?? 0),
+                OtherExpensesCost =  (first.OtherExpensesCost ?? 0) - (second.OtherExpensesCost ?? 0),
+                MaterialCost = (first.MaterialCost ?? 0) - (second.MaterialCost ?? 0),
+                GenServiceCost = (first.GenServiceCost ?? 0) - (second.GenServiceCost ?? 0),
+            };
         }
 
-        public static SWCostDTO operator - (SWCostDTO a, SWCost b)
-        {
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds - b.CostNds;
-            result.CostNoNds = a.CostNoNds - b.CostNoNds;
-            result.SmrCost = a.SmrCost - b.SmrCost;
-            result.PnrCost = a.PnrCost - b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost - b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost - b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost - b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost - b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost - b.GenServiceCost;
-            return result;
+        /// <summary>
+        /// Умножает значения стоимостей первого объекта на величину переменной val
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="number"></param>
+        /// <returns>Новый объект равный объекту, значения стоимостей котрого уноженны на величину val</returns>
+        public static SWCostDTO operator * (SWCostDTO first, int? number)
+        { 
+            number = number.HasValue? number.Value : 0; 
+            return new SWCostDTO
+            {
+                Id = first.Id,
+                Period = first.Period,
+                IsOwnForces = first.IsOwnForces,
+                ScopeWorkId = first.ScopeWorkId,
+
+                CostNds = (first.CostNds ?? 0) * number,
+                CostNoNds = (first.CostNoNds ?? 0) * number,
+                SmrCost = (first.SmrCost ?? 0) * number,
+                PnrCost = (first.PnrCost ?? 0) * number,
+                AdditionalCost = (first.AdditionalCost ?? 0) * number,
+                EquipmentCost = (first.EquipmentCost ?? 0) * number,
+                OtherExpensesCost = (first.OtherExpensesCost ?? 0) * number,
+                MaterialCost = (first.MaterialCost ?? 0) * number,
+                GenServiceCost = (first.GenServiceCost ?? 0) * number,
+            };
         }
 
-        public static SWCostDTO operator +(SWCostDTO a, SWCostDTO b)
+        /// <summary>
+        /// Умножает переменную val на значения стоимостей объекта
+        /// </summary>
+        /// <param name="first">стоимости</param>
+        /// <param name="number">переменная </param>
+        /// <returns>Новый объект равный объекту, значения стоимостей котрого уноженны на величину val</returns>
+        public static SWCostDTO operator * (int? number, SWCostDTO scope)
         {
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds + b.CostNds;
-            result.CostNoNds = a.CostNoNds + b.CostNoNds;
-            result.SmrCost = a.SmrCost + b.SmrCost;
-            result.PnrCost = a.PnrCost + b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost + b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost + b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost + b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost + b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost + b.GenServiceCost;
-            return result;
-        }
+            number = number.HasValue ? number.Value : 0;
+            return new SWCostDTO
+            {
+                Id = scope.Id,
+                Period = scope.Period,
+                IsOwnForces = scope.IsOwnForces,
+                ScopeWorkId = scope.ScopeWorkId,
 
-        public static SWCostDTO operator - (SWCostDTO a, SWCostDTO b)
-        {
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds - b.CostNds;
-            result.CostNoNds = a.CostNoNds - b.CostNoNds;
-            result.SmrCost = a.SmrCost - b.SmrCost;
-            result.PnrCost = a.PnrCost - b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost - b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost - b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost - b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost - b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost - b.GenServiceCost;
-            return result;
-        }
-
-        public static SWCostDTO operator + (SWCost a, SWCostDTO b)
-        {
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds + b.CostNds;
-            result.CostNoNds = a.CostNoNds + b.CostNoNds;
-            result.SmrCost = a.SmrCost + b.SmrCost;
-            result.PnrCost = a.PnrCost + b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost + b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost + b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost + b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost + b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost + b.GenServiceCost;
-            return result;
-        }
-
-        public static SWCostDTO operator - (SWCost a, SWCostDTO b)
-        {
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds - b.CostNds;
-            result.CostNoNds = a.CostNoNds - b.CostNoNds;
-            result.SmrCost = a.SmrCost - b.SmrCost;
-            result.PnrCost = a.PnrCost - b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost - b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost - b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost - b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost - b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost - b.GenServiceCost;
-            return result;
-        }
-
-        public static SWCostDTO operator +(SWCostDTO a, FormDTO b)
-        {            
-            var result = new SWCostDTO();
-            result.CostNds = a.CostNds + b.TotalCost;
-            result.CostNoNds = a.CostNoNds + (b.TotalCost / (decimal)1.2);
-            result.SmrCost = a.SmrCost + b.SmrCost;
-            result.PnrCost = a.PnrCost + b.PnrCost;
-            result.AdditionalCost = a.AdditionalCost + b.AdditionalCost;
-            result.EquipmentCost = a.EquipmentCost + b.EquipmentCost;
-            result.OtherExpensesCost = a.OtherExpensesCost + b.OtherExpensesCost;
-            result.MaterialCost = a.MaterialCost + b.MaterialCost;
-            result.GenServiceCost = a.GenServiceCost + b.GenServiceCost;
-            return result;
+                CostNds = (scope.CostNds ?? 0) * number,
+                CostNoNds = (scope.CostNoNds ?? 0) * number,
+                SmrCost = (scope.SmrCost ?? 0) * number,
+                PnrCost = (scope.PnrCost ?? 0) * number,
+                AdditionalCost = (scope.AdditionalCost ?? 0) * number,
+                EquipmentCost = (scope.EquipmentCost ?? 0) * number,
+                OtherExpensesCost = (scope.OtherExpensesCost ?? 0) * number,
+                MaterialCost = (scope.MaterialCost ?? 0) * number,
+                GenServiceCost = (scope.GenServiceCost ?? 0) * number,
+            };
         }
     }
 }

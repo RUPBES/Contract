@@ -177,7 +177,7 @@ namespace BusinessLayer.Services
             var list = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
             IEnumerable<Employee> items;
-            if (!String.IsNullOrEmpty(request))
+            if (!string.IsNullOrEmpty(request))
             { 
                 items = _database.Employees.FindLike("FullName", request).Where(e => list.Contains(e.Author)).ToList(); 
             }

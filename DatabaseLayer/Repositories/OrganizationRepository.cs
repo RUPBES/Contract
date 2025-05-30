@@ -52,6 +52,8 @@ namespace DatabaseLayer.Repositories
             if (id > 0)
             {
                 return _context.Organizations
+                    .Include(x=>x.ContractOrganizations)
+                    .ThenInclude(x=>x.Contract)
                     .Include(x => x.Addresses)
                     .Include(x => x.Departments)
                     .Include(x => x.Phones)

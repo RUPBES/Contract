@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using BusinessLayer.Models.Settings;
@@ -8,6 +9,8 @@ using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using OfficeOpenXml.Style;
+using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Reflection;
 
@@ -76,22 +79,25 @@ namespace BusinessLayer.Services.Administrator
 
                 int startRow = 2;
                 int startCol = 1;
-                var size14 = 14;
-                var size18 = 18;
                 var colorText = Color.Black;
                 var colorTextHdr = Color.White;
                 var colorBcgHdr = Color.DarkBlue;
-                
+                List<string> listHeaders = new List<string> { "Сотрудник", "Организация", "Должность", "Сервис", "Действие", "Дата доступа" };
                 try
                 {
-                    _excelWriter.WriteLine(sheet, startRow++, path, true,
-                        new RowItem { Value = "Сотрудник", Col = startCol++, FontColor = colorTextHdr, FontSize = size18, BgColor = colorBcgHdr },
-                        new RowItem { Value = "Организация", Col = startCol++, FontColor = colorTextHdr, FontSize = size18, BgColor = colorBcgHdr },
-                        new RowItem { Value = "Должность", Col = startCol++, FontColor = colorTextHdr, FontSize = size18, BgColor = colorBcgHdr },
-                        new RowItem { Value = "Сервис", Col = startCol++, FontColor = colorTextHdr, FontSize = size18, BgColor = colorBcgHdr },
-                        new RowItem { Value = "Действие", Col = startCol++, FontColor = colorTextHdr, FontSize = size18, BgColor = colorBcgHdr },
-                        new RowItem { Value = "Дата доступа", Col = startCol++, FontColor = colorTextHdr, FontSize = size18, BgColor = colorBcgHdr }
-                        );
+                    List<RowItem> rowItems = new List<RowItem>();
+                    foreach (var colName in listHeaders)
+                    {
+                        rowItems.Add(new RowItem
+                        {
+                            Value = colName,
+                            Col = startCol++,
+                            FontColor = Constants.COLOR_WHITE,
+                            FontSize = Constants.FONT_SIZE_18,
+                            BgColor = Constants.COLOR_DARK_BLUE
+                        });
+                    }
+                    _excelWriter.WriteLine(sheet, startRow++, path, true, width: null,isTextWrap:null, ExcelHorizontalAlignment.Left, rowItems.ToArray());
 
                     startCol = 1;
                     foreach (var user in users)
@@ -100,18 +106,18 @@ namespace BusinessLayer.Services.Administrator
 
                         foreach (var item in user)
                         {
-                            _excelWriter.WriteLine(sheet, startRow, path, false,
-                                new RowItem { Value = item.UserName, Col = startCol++, FontColor = colorText, FontSize = size14 },
-                                new RowItem { Value = organization?.enterprise, Col = startCol++, FontColor = colorText, FontSize = size14 },
-                                new RowItem { Value = organization?.position, Col = startCol++, FontColor = colorText, FontSize = size14 },
-                                new RowItem { Value = item.NameSpace, Col = startCol++, FontColor = colorText, FontSize = size14 },
-                                new RowItem { Value = item.MethodName, Col = startCol++, FontColor = colorText, FontSize = size14 },
-                                new RowItem { Value = item.DateTime, Col = startCol++, FontColor = colorText, FontSize = size14 }
+                            _excelWriter.WriteLine(sheet, startRow, path, false, null, isTextWrap: null, align: null,
+                                new RowItem { Value = item.UserName, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
+                                new RowItem { Value = organization?.enterprise, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
+                                new RowItem { Value = organization?.position, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
+                                new RowItem { Value = item.NameSpace, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
+                                new RowItem { Value = item.MethodName, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
+                                new RowItem { Value = item.DateTime, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 }
                                 );
                             startCol = 1;
                             startRow++;
                         }
-                        _excelWriter.WriteLine(sheet, startRow++, path, false, new RowItem { Value = string.Empty, Col = startCol });
+                        _excelWriter.WriteLine(sheet, startRow++, path, false, null, isTextWrap: null, align: null, new RowItem { Value = string.Empty, Col = startCol });
                     }
                     _excelWriter.CloseExcel();
                 }
@@ -134,8 +140,8 @@ namespace BusinessLayer.Services.Administrator
                     {
                         DateTime = log.DateTime?.ToShortDateString(),
                         UserName = log?.UserName,
-                        MethodName = _converter?.ConvertMethodNameToRussian(log.MethodName),
-                        NameSpace = _converter?.ConvertNameSpaceToRussian(log.NameSpace)
+                        MethodName = _converter?.ToRussianMethodName(log.MethodName),
+                        NameSpace = _converter?.ToRussianNameSpace(log.NameSpace)
                     });
                 }
                 return newList.GroupBy(x => x.UserName);

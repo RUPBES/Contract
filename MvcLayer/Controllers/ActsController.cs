@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -50,6 +51,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int actId = (int)_actService.Create(_mapper.Map<ActDTO>(actViewModel));
+                NotificationHelper.SetNotification(TempData, "Создан акт приостановки/возобновления работ", NotificationType.Info);
                 int fileId = (int)_fileService.Create(actViewModel.FilesEntity, FolderEnum.Acts, actId);
                 
                 _actService.AddFile(actId, fileId);
@@ -66,6 +68,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка добавления акта", NotificationType.Error);
                 return View();
             }
         }
@@ -88,12 +91,15 @@ namespace MvcLayer.Controllers
                 try
                 {
                     _actService.Update(_mapper.Map<ActDTO>(act));
+                    NotificationHelper.SetNotification(TempData, "Обновлен акт", NotificationType.Info);
                 }
                 catch
                 {
+                    NotificationHelper.SetNotification(TempData, "Ошибка обновления акта", NotificationType.Error);
                     return View();
                 }
             }
+            NotificationHelper.SetNotification(TempData, "Ошибка обновления акта", NotificationType.Warning);
             if (act?.ContractId is not null && act.ContractId > 0)
             {
                 return RedirectToAction(nameof(GetByContractId), new { id = act.ContractId, returnContractId = returnContractId });
@@ -111,10 +117,11 @@ namespace MvcLayer.Controllers
             {
                 foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Acts))
                 {
-                    _fileService.Delete(item.Id);
+                    _fileService.Delete(item.Id);                   
                 }
 
                 _actService.Delete(id);
+                NotificationHelper.SetNotification(TempData, "Удален акт", NotificationType.Error);
 
                 if (contractId is not null && contractId > 0)
                 {
@@ -127,6 +134,7 @@ namespace MvcLayer.Controllers
             }
             catch
             {
+                NotificationHelper.SetNotification(TempData, "Ошибка удаления акта", NotificationType.Error);
                 return View();
             }
         }

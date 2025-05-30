@@ -6,19 +6,18 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
-@inject BusinessLayer.Interfaces.ContractInterfaces.IAmendmentService Amendment
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ISelectionProcedureService SelectionProcedure
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
 
 @{
+    var permissions = HttpHelper.GetUserPermissions();
 
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
-    var branchAgreement = Contracts.GetbranchAgreements(Model.Id).ToList();
-    var subContract = Contracts.GetSubContracts(Model.Id).ToList();
-    var subObjectsOfContract = Contracts.GetSubObjects(Model.Id).ToList();
+    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement);
+    var subContract = Contracts.GetSubsByType(Model.Id, ContractType.SubContract);
+    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, ContractType.MultipleContract);
+
     var isEngineering = Model.IsEngineering == true ? true : false;
     var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple != true ? true : false;
     string redirectAction = "Details";
@@ -27,14 +26,14 @@
     var status = Model.IsClosed is true ? "closed" : "expired";
     var titleScope = "Объем ";
     var titleSub = "";
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
 }
 
 @section Table {
     <style>
         .dropdown-menu {
-            max-height: 220px !important;
-            overflow-y: scroll !important;
+           /*  max-height: 220px !important;
+            overflow-y: scroll !important; */
             z-index: 30 !important;
         }
 
@@ -207,9 +206,12 @@
                                 <div class="dropdown-menu">
                                     @if (!isEngineering)
                                     {
-                                        <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
+                                        @* <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Договор субподряда</a>
                                         <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-nameObject="@Model?.NameObject">+ Соглашение с филиалом</a>
-
+                                        *@
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Contracts" asp-route-genContrId="@Model?.Id" asp-route-isSubContract="true">+ Договор субподряда</a>
+                                        <a class="dropdown-item" asp-action="Create" asp-controller="Contracts" asp-route-genContrId="@Model?.Id" asp-route-isAgreement="true">+ Соглашение с филиалом</a>
+                                                                                                            @* asp-route-nameObject="@Model?.NameObject" *@
                                         if (!isThereScopeWorks)
                                         {
                                             <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-returnContractId="@Model.Id">+ Подобъект</a>
@@ -284,7 +286,7 @@
                             titleScope += "работ генподряда";
                         }
                         <div class="icon scope_work" title="@titleScope">
-                            <a id="SMR-detail" onclick="ShowModalScopeWork(@Model.Id)"></a>
+                            <a asp-action="OpenScope" asp-route-id="@Model.Id" ></a>
                         </div>
                     </div>
                 </td>
@@ -337,7 +339,7 @@
                 <td>
                     <span class="table_span-customer">
 
-                        @Model.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsClient == true)?.Organization?.Name
+                        @Model?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsClient == true)?.Organization?.Name
                     </span>
                 </td>
                 @if (!isEngineering)
@@ -346,7 +348,7 @@
                     <td>
                         <span class="table_span-contractor">
 
-                            @Model.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsGenContractor == true)?.Organization?.Name
+                            @Model?.ContractOrganizations?.FirstOrDefault(x => x.ContractId == Model.Id && x.IsGenContractor == true)?.Organization?.Name
 
                         </span>
                     </td>
@@ -360,27 +362,27 @@
                 <td>
                     <span class="table_span-deadlines">
                         Сроки-
-                        @if (Model.DateBeginWork?.ToShortDateString() is not null || Model.DateEndWork?.ToShortDateString() is not null)
+                        @if (Model?.DateBeginWork?.ToShortDateString() is not null || Model?.DateEndWork?.ToShortDateString() is not null)
                         {
                             <b>выполнения работ:</b>
                             <br>
-                            <span>@Model.DateBeginWork?.ToShortDateString() -  @Model.DateEndWork?.ToShortDateString()</span>
+                            <span>@Model?.DateBeginWork?.ToShortDateString() -  @Model?.DateEndWork?.ToShortDateString()</span>
                             <br>
                         }
-                        @if (Model.EnteringTerm?.ToShortDateString() is not null)
+                        @if (Model?.EnteringTerm?.ToShortDateString() is not null)
                         {
                             <b>ввода:</b>
 
                             <br>
-                            <span>@Model.EnteringTerm?.ToShortDateString()</span>
+                            <span>@Model?.EnteringTerm?.ToShortDateString()</span>
                             <br>
                         }
-                        @if (Model.ContractTerm?.ToShortDateString() is not null)
+                        @if (Model?.ContractTerm?.ToShortDateString() is not null)
                         {
                             <b>действия договора по взаиморасчетам:</b>
 
                             <br>
-                            <span>@Model.ContractTerm?.ToShortDateString()</span>
+                            <span>@Model?.ContractTerm?.ToShortDateString()</span>
                             <br>
                         }
 
@@ -412,8 +414,8 @@
                 <td class="text-end">
                     <span class="table_span-contractprice">
                         @* ЦЕна - *@
-                        @Model?.ContractPrice?.ToString("N2")
-                        @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)Model?.Id) == false)
+                        @Model?.ContractPrice.ToString("N2")
+                        @if (Scopes.HasNewAmendment((int)Model?.Id) == false)
                         {
                             <br />
                             <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
@@ -431,7 +433,7 @@
             {
                 var dropdownid1 = "Dropdown" + contractBranch.Id;
                 var dropdownid2 = "Dropdown_" + contractBranch.Id;
-                <tr style="background-color: lightsalmon">
+                <tr style="background-color: #f9c5b1">
                     <td>
                         <div class="table_span-action">
                             <div class="dropdown" title="Просмотр информации">
@@ -486,9 +488,12 @@
                                     <div class="dropdown-menu">
                                         @if (!isEngineering)
                                         {
-                                            <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@contractBranch?.Id" asp-route-nameObject="@contractBranch?.NameObject">+ Договор субподряда</a>
+                                            <a class="dropdown-item" asp-action="Create" asp-controller="Contracts" asp-route-genContrId="@contractBranch?.Id" asp-route-isSubContract="true">+ Договор субподряда</a>
+                                            <a class="dropdown-item" asp-action="Create" asp-controller="Contracts" asp-route-genContrId="@contractBranch?.Id" asp-route-isAgreement="true">+ Соглашение с филиалом</a>
+
+@*                                             <a class="dropdown-item" asp-action="CreateSub" asp-controller="Contracts" asp-route-Id="@contractBranch?.Id" asp-route-nameObject="@contractBranch?.NameObject">+ Договор субподряда</a>
                                             <a class="dropdown-item" asp-action="CreateAgr" asp-controller="Contracts" asp-route-Id="@contractBranch?.Id" asp-route-nameObject="@contractBranch?.NameObject">+ Соглашение с филиалом</a>
-                                            <div class="dropdown-divider"></div>
+ *@                                            <div class="dropdown-divider"></div>
                                             <h6 class="dropdown-header">План</h6>
                                             <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="ScopeWorks" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">+ Oбъем работ</a>
                                             <a class="dropdown-item" asp-action="ChoosePeriod" asp-controller="Prepayments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">+ Авансы</a>
@@ -526,11 +531,14 @@
                             }
 
                             <div class="icon view" title="Просмотр детальной информации">
-                                <a asp-action="Details" asp-route-id="@contractBranch.Id"></a>
+                                <a asp-action="Details" asp-route-id="@contractBranch?.Id" ></a>
                             </div>
-                            <div class="icon scope_work" title="Объем работ">
+                            <div class="icon scope_work" title="@titleScope">
+                                <a asp-action="OpenScope" asp-route-id="@contractBranch.Id" asp-route-mainId="@Model?.Id"></a>
+                            </div>
+                           @*  <div class="icon scope_work" title="Объем работ">
                                 <a id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch.Id)"></a>
-                            </div>
+                            </div> *@
                             @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                             {
                                 <div class="icon edit" title="Редактировать">
@@ -582,7 +590,7 @@
                         <span class="table_span-contractprice">
                             @* ЦЕна - *@
                             @contractBranch?.ContractPrice?.ToString("N2")
-                            @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)contractBranch?.Id) == false)
+                            @if (Scopes.HasNewAmendment((int)contractBranch?.Id) == false)
                             {
                                 <br />
                                 <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
@@ -659,9 +667,13 @@
                             }
                             @if (!isEngineering)
                             {
-                                <div class="icon scope_work" title="Объем работ">
+                                 <div class="icon scope_work" title="@titleScope">
+                                    <a asp-action="OpenScope" asp-route-id="@contractBranch.Id" asp-route-mainId="@Model?.Id"></a>
+                            </div>
+
+                                @* <div class="icon scope_work" title="Объем работ">
                                     <a id="SMR-detail" onclick="ShowModalScopeWork(@contractBranch?.Id)"></a>
-                                </div>
+                                </div> *@
                             }
                             @if (isEngineering)
                             {
@@ -797,7 +809,7 @@
                         <span class="table_span-contractprice">
 
                             @contractBranch?.ContractPrice?.ToString("N2")
-                            @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)contractBranch?.Id) == false)
+                            @if (Scopes.HasNewAmendment((int)contractBranch?.Id) == false)
                             {
                                 <br />
                                 <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
@@ -901,10 +913,13 @@
                             {
                                 titleScope = "Oбъем работ";
                             }
-
                             <div class="icon scope_work" title="@titleScope">
-                                <a id="SMR-detail" onclick="ShowModalScopeWork(@contractSub?.Id)"></a>
+                                <a asp-controller="Contracts" asp-action="OpenScope" asp-route-mainId="@Model?.Id" asp-route-id="@contractSub.Id"></a>
                             </div>
+
+                           @*  <div class="icon scope_work" title="@titleScope">
+                                <a id="SMR-detail" onclick="ShowModalScopeWork(@contractSub?.Id)"></a>
+                            </div> *@
 
                             @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
                             {
@@ -1036,7 +1051,7 @@
                         <span class="table_span-contractprice">
 
                             @contractSub?.ContractPrice?.ToString("N2")
-                            @if (Amendment.IsThereScopeWorkWitnLastAmendmentByContractId((int)contractSub?.Id) == false)
+                            @if (Scopes.HasNewAmendment((int)contractSub?.Id) == false)
                             {
                                 <br />
                                 <span style="color:red; font-size:0.9rem; font-weight:700; letter-spacing:1.1px;">Есть изменение по новому ДС!</span>
@@ -1053,48 +1068,33 @@
         </tbody>
     </table>
 
-    @{
+   @*  @{
         if (TempData["Message"] != null)
         {
             var mes = (string)TempData["Message"];
             <input id="messageInput" onclick="MessageError(document.getElementById('messageInput').value)" value="@mes" hidden />
         }
-    }
+    } *@
 
     <script>
-        window.onload = function () {
+        @* window.onload = function () {
             $("#messageInput").trigger('click');
-        }
-        function MessageError(val) {
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Message", "Home")',
-                dataType: 'html',
-                data: { message: val, header: "Информирование", textButton: "Хорошо" },
-                success: function (result) {
-                    $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
-                    $('#modDialog').modal('toggle');
-                },
-                error: function (result) {
-                    alert('Ошибка при вызове сообщения.');
-                }
-            })
-        }
+        } *@
+ 
 
         function ShowModalScopeWork(id) {
             $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ShowScopeWorks")',
+                type: 'GET',
+                    url: '@Url.Action("ShowScopeWorks")',
                 dataType: 'html',
                 data: { id: id },
                 success: function (result) {
-                    $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
+                     $('#dialogContent').html(result);
+                   $('#modDialog').modal({ backdrop: false });
                     $('#modDialog').modal('toggle');
                 },
                 error: function (result) {
-                    alert('Ошибка при вызове сообщения.');
+                    console.log(result);
                 }
             });
         };

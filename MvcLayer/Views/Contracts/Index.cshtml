@@ -15,14 +15,13 @@
 
 
 @{
-    var http = new HttpContextAccessor();
-    var permissions = HttpHelper.GetPermissionForUser(http);
+    var permissions = HttpHelper.GetUserPermissions();
 
     var isEngineering = (bool)ViewData["IsEngineering"];
-    string redirectAction = "Index";
-    string redirectController = "Contracts";
+    // string redirectAction = "Index";
+    // string redirectController = "Contracts";
     var actionMethod = isEngineering is true ? "Engineerings" : "Index";
-    var isGRP_Contract = permissions.GroupeName.Contains(ConstantsApp.GRP_CONTRACT);
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
     if (ViewBag.CurrentType == null)
         ViewBag.CurrentType = "none";
 }
@@ -30,18 +29,6 @@
 
 @section Table {
     <style>
-        .square {
-            width: 20px;
-            height: 20px;
-            margin-left: 1%;
-            margin-right: 1%;
-            border: solid black;
-        }
-
-        .overdue {
-            background-color: #79a6fbb0 !important;
-        }
-
         .color_label {
             display: flex;
             font-weight: bold;
@@ -55,22 +42,6 @@
         .wrapper-table {
             width: 100%;
         }
-
-        .table-main tr:nth-child(even) {
-            background-color: #ecf2f9;
-        }
-
-        .search-choice-close::before {
-            content: "х";
-            text-decoration: none !important;
-        }
-
-        .th-item-search {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            position: relative;
-        }
     </style>
     <div>
         <div class="header-view">
@@ -79,7 +50,7 @@
             { @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                 {
                     <div class="box-btn">
-                        <button type="button" class="btn btn-success btn-ctr " onclick="location.href='@Url.Action("CreateEngin", "Contracts")'">
+                        <button type="button" class="btn btn-success btn-ctr " onclick="location.href='@Url.Action("Create", "Contracts")?isEngineering=true'">
                             <img class="icon" src="~/icons/plus-circle.svg" />Новый договор
                         </button>
 
@@ -186,184 +157,186 @@
 
                     @foreach (VContractDTO item in Model.Objects)
                     {
-                        if (item.DateEndWork < DateTime.Today.Date)
+                        string className = "";
+                        if (item.DateEndWork < DateTime.Today.Date && item.IsClosed)
                         {
-                            <tr class="overdue">
-                                @*Номер и дата договора*@
-                                <td>
-                                    <span class="table_span-numberanddate">
-                                        <a asp-action="Details" asp-route-id="@item.Id">
-                                            @item.Number от
-                                            @item.Date?.ToShortDateString()
-                                        </a>
-                                    </span>
+                            className = "overdue";
+                        }
+                        else if (item.DateEndWork < DateTime.Today.Date && item.IsClosed)
+                        {
+                            className = "overdue";
+                        }
+                        else if (item.DateEndWork < DateTime.Today.Date)
+                        {
+                            className = "overdue";
+                        }
 
-                                </td>
+                        <tr class="@className">
+                            @*Номер и дата договора*@
+                            <td>
+                                <span class="table_span-numberanddate">
+                                    <a asp-action="Details" asp-route-id="@item.Id">
+                                        @item.Number от @item.Date?.ToShortDateString()
+                                    </a>
+                                </span>
+                            </td>
 
-                                @*Наименование объекта*@
+                            @*Наименование объекта*@
+                            <td>
+                                <span class="table_span-nameobject">@item.NameObject</span>
+                            </td>
+                            @*Заказчик*@
+                            <td>
+                                <span class="table_span-customer">@item.Client</span>
+                            </td>
+                            @*Генподрядчик*@
+                            @if (isEngineering != true)
+                            {
                                 <td>
-                                    <span class="table_span-nameobject">
-                                        @item.NameObject
-                                    </span>
-                                </td>
-                                @*Заказчик*@
-                                <td>
-                                    <span class="table_span-customer">
-                                        @item.Client
-                                    </span>
-                                </td>
-                                @*Генподрядчик*@
-                                @if (isEngineering != true)
-                                {
-                                    <td>
+                                    <div>
+                                        <span class="table_span-contractor">@item.GenContractor</span>
+                                    </div>
+                                    @if (item.ResponsibleForWork is not null)
+                                    {
                                         <div>
                                             <span class="table_span-contractor">
-                                                @item.GenContractor
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span class="table_span-contractor">
-                                                @if (item.ResponsibleForWork is not null)
-                                                {
-                                                    <hr />
-                                                    <span>Ответственный за производство работ:</span>
-                                                    <br />
-                                                }
+                                                <hr />
+                                                <span>Ответственный за производство работ:</span><br />
                                                 @item.ResponsibleForWork
                                             </span>
                                         </div>
-                                    </td>
-                                }
-                                @*Сроки: выполнения работ - ввода *@
-                                <td>
-                                    <span class="table_span-deadlines">
-                                        @if (@item.DateBeginWork?.ToShortDateString() is not null || @item.DateEndWork?.ToShortDateString() is not null)
-                                        {
-                                            <b>выполнения работ:</b>
+                                    }
+                                </td>
+                            }
+                            @*Сроки: выполнения работ - ввода *@
+                            <td>
+                                <span class="table_span-deadlines">
+                                    @if (@item.DateBeginWork?.ToShortDateString() is not null || @item.DateEndWork?.ToShortDateString() is not null)
+                                    {
+                                        <b>выполнения работ:</b>
 
-                                            <br>
-                                            <span>@item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()</span>
+                                        <br>
+                                        <span>@item.DateBeginWork?.ToShortDateString() - @item.DateEndWork?.ToShortDateString()</span>
 
-                                            <br>
-                                        }
-                                        @if (@item.EnteringTerm?.ToShortDateString() is not null)
-                                        {
-                                            <b>ввода:</b>
-                                            <span>@item.EnteringTerm?.ToShortDateString()</span>
-                                            <br>
-                                            <br>
-                                        }
+                                        <br>
+                                    }
+                                    @if (@item.EnteringTerm?.ToShortDateString() is not null)
+                                    {
+                                        <b>ввода:</b>
+                                        <span>@item.EnteringTerm?.ToShortDateString()</span>
 
-                                    </span>
-                                </td>
-                                @*Условия оплаты: Аванс - Оплата*@
-                                <td>
-                                    <span class="table_span-conditions">
-                                        <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
-                                            @item?.PaymentСonditionsAvans
-                                        </a>
-                                        <br />
-                                        <br />
-                                        <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
-                                            @item?.PaymentСonditionsRaschet@*  Оплата *@
-                                        </a>
-                                    </span>
-                                </td>
-                                @*Валюта*@
-                                <td>
-                                    <span class="table_span-currency">
-                                        @item.Сurrency
-                                    </span>
-                                </td>
+                                        <br>
 
-                                @*Условия формирования договорной цены*@
-                                @if (isEngineering)
-                                {
-                                    <td>
-                                        <span class="table_span-work">
-                                            @item.PaymentСonditionsPrice
-                                        </span>
-                                    </td>
-                                }
-                                @*Виды работ по договору*@
-                                @if (!isEngineering)
-                                {
-                                    <td>
-                                        <span class="table_span-work">
-                                            @* @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name *@
-                                            @TypeWork?.GetByContractId((int)item?.Id)?.Name
-                                        </span>
-                                    </td>
-                                }
-                                @*Контрактная цена*@
-                                <td class="text-end">
-                                    <span class="table_span-contractprice">
-                                        @item.ContractPrice?.ToString("N2")
-                                    </span>
-                                </td>
-                                @*Выполнено на начало года*@
-                                <td class="text-end">
-                                    <span class="table_span-realization">
-                                        @item.PreYearSum?.ToString("N2")
-                                        @* @sumPreviusYear?.ToString("N2") *@
-                                    </span>
-                                </td>
-                                @*Остаток*@
-                                <td class="text-end">
-                                    <span class="table_span-remains">
-                                        @item.RemainingSum?.ToString("N2")
-                                    </span>
-                                </td>
-                                @*Объем*@
+                                        <br>
+                                    }
+                                </span>
+                            </td>
+                            @*Условия оплаты: Аванс - Оплата*@
+                            <td>
+                                <span class="table_span-conditions">
+                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
+                                        @item?.PaymentСonditionsAvans
+                                    </a>
+                                    <br /><br />
+                                    <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item?.Id">
+                                        @item?.PaymentСonditionsRaschet
+                                    </a>
+                                </span>
+                            </td>
+                            @*Валюта*@
+                            <td>
+                                <span class="table_span-currency">@item?.Сurrency</span>
+                            </td>
+
+                            @*Условия формирования договорной цены*@
+                            @if (isEngineering)
+                            {
                                 <td>
-                                    <span class="table_span-volume">@item.ThisYearSum?.ToString("N2")</span>
+                                    <span class="table_span-work">@item?.PaymentСonditionsPrice</span>
                                 </td>
-                                @*Действия с договором*@
+                            }
+                            @*Виды работ по договору*@
+                            @if (!isEngineering)
+                            {
                                 <td>
-                                    <span class="table_span-action-main">
-                                        <div class="icon view" title="Просмотр детальной информации по договору">
-                                            <a asp-action="Details" asp-route-id="@item.Id"></a>
-                                        </div>
+                                    <span class="table_span-work">@item?.WorkType</span>
+                                </td>
+                            }
+                            @*Контрактная цена*@
+                            <td class="text-end">
+                                <span class="table_span-contractprice">@item?.ContractPrice?.ToString("N2")</span>
+                            </td>
+                            @*Выполнено на начало года*@
+                            <td class="text-end">
+                                <span class="table_span-realization">@item?.PreYearSum?.ToString("N2")</span>
+                            </td>
+                            @*Остаток*@
+                            <td class="text-end">
+                                <span class="table_span-remains">@item?.RemainingSum?.ToString("N2")</span>
+                            </td>
+                            @*Объем*@
+                            <td>
+                                <span class="table_span-volume">@item?.ThisYearSum?.ToString("N2")</span>
+                            </td>
+                            @*Действия с договором*@
+                            <td>
+                                <span class="table_span-action-main">
+
+                                    <div class="icon view" title="Детальная информация">
+                                        <a asp-action="Details" asp-route-id="@item?.Id"></a>
+                                    </div>
+                                    @if (!isEngineering && permissions.GroupeName.Contains(Constants.GRP_ESTIMATE))
+                                    {
                                         <div class="icon estimate" title="Сметы">
-                                            <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
+                                            <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item?.Id"></a>
                                         </div>
-                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
+                                    }
+
+                                    @if (isGRP_Contract)
+                                    {
+                                        @if (permissions?.IsEditor == true)
                                         {
                                             <div class="icon edit" title="Редактировать договор">
-                                                <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                                <a asp-action="Edit" asp-route-id="@item?.Id"></a>
                                             </div>
                                         }
-                                        @if (permissions is not null && permissions.IsDeleter && isGRP_Contract)
+
+                                        @if (permissions?.IsDeleter == true)
                                         {
                                             <div class="icon delete" title="Удалить договор">
-                                                <a asp-action="Delete" asp-route-id="@item.Id"></a>
+                                                <a asp-action="Delete" asp-route-id="@item?.Id"></a>
                                             </div>
                                         }
-                                        @if (ViewBag?.IsMajorOrganization && isGRP_Contract)
+
+                                        @if (ViewBag?.IsMajorOrganization == true && permissions?.IsEditor == true)
                                         {
                                             <div class="icon transfer" title="Передать договор филиалу">
-                                                <a asp-action="ChangeOwner" asp-route-id="@item.Id"></a>
+                                                <a asp-action="ChangeOwner" asp-route-id="@item?.Id"></a>
                                             </div>
                                         }
-                                        @if (!item.IsArchive && isGRP_Contract)
+
+                                        @if (!item.IsArchive && permissions?.IsEditor == true)
                                         {
                                             <div class="icon archive" title="Переместить в архив">
-                                                <a asp-action="ChangeStatus" asp-route-status="archive" asp-route-contrId="@item.Id"></a>
+                                                <a asp-action="ChangeStatus" asp-route-status="archive" asp-route-contrId="@item?.Id"></a>
                                             </div>
                                         }
-                                        @if (item.IsExpired && isGRP_Contract)
+
+                                        @if (item.IsExpired)
                                         {
                                             <div class="icon expired" title="Договор просрочен">
                                                 <div></div>
                                             </div>
                                         }
-                                        @if (item.IsClosed && isGRP_Contract)
+
+                                        @if (item.IsClosed)
                                         {
                                             <div class="icon closed" title="Договор закрыт, ожидается акта ввода">
                                                 <div></div>
                                             </div>
                                         }
-                                        @if (!item.IsExpired && !item.IsClosed && isGRP_Contract)
+
+                                        @if (!item.IsExpired && !item.IsClosed && !string.IsNullOrEmpty(className) && permissions?.IsEditor == true)
                                         {
                                             <div class="icon expired warning_icon" title="Договор просрочен">
                                                 <a asp-action="ChangeStatus" asp-route-status="expired" asp-route-contrId="@item.Id"></a>
@@ -372,175 +345,19 @@
                                                 <a asp-action="ChangeStatus" asp-route-status="closed" asp-route-contrId="@item.Id"></a>
                                             </div>
                                         }
-                                    </span>
-                                </td>
-                            </tr>
-                        }
-                        else
-                        {
-                            <tr>
-                                @*Номер и дата договора*@
-                                <td>
-                                    <span class="table_span-numberanddate">
-                                        <a asp-action="Details" asp-route-id="@item.Id">
-                                            @item.Number от
-                                            @item.Date?.ToShortDateString()
-                                        </a>
-                                    </span>
-
-                                </td>
-
-                                @*Наименование объекта*@
-                                <td>
-                                    <span class="table_span-nameobject">
-                                        @item.NameObject
-                                    </span>
-                                </td>
-                                @*Заказчик*@
-                                <td>
-                                    <span class="table_span-customer">
-                                        @item.Client
-                                    </span>
-                                </td>
-                                @*Генподрядчик*@
-                                @if (isEngineering != true)
-                                {
-                                    <td>
-                                        <div>
-                                            <span class="table_span-contractor">
-                                                @item.GenContractor
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span class="table_span-contractor">
-                                                @if (item.ResponsibleForWork is not null)
-                                                {
-                                                    <hr />
-                                                    <span>Ответственный за производство работ:</span>
-                                                    <br />
-                                                }
-                                                @item.ResponsibleForWork
-                                            </span>
-                                        </div>
-                                    </td>
-                                }
-                                @*Сроки: выполнения работ - ввода *@
-                                <td>
-                                    <span class="table_span-deadlines">
-                                        @if (@item.DateBeginWork?.ToShortDateString() is not null || @item.DateEndWork?.ToShortDateString() is not null)
+                                        @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
                                         {
-                                            <b>выполнения работ:</b>
-
-                                            <br>
-                                            <span>@item.DateBeginWork?.ToShortDateString() -  @item.DateEndWork?.ToShortDateString()</span>
-
-                                            <br>
-                                        }
-                                        @if (@item.EnteringTerm?.ToShortDateString() is not null)
-                                        {
-                                            <b>ввода:</b>
-                                            <span>@item.EnteringTerm?.ToShortDateString()</span>
-                                            <br>
-                                            <br>
-                                        }
-
-                                    </span>
-                                </td>
-                                @*Условия оплаты: Аванс - Оплата*@
-                                <td>
-                                    <span class="table_span-conditions">
-                                        <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
-                                            @item?.PaymentСonditionsAvans
-                                        </a>
-                                        <br />
-                                        <br />
-                                        <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item.Id">
-                                            @item?.PaymentСonditionsRaschet@*  Оплата *@
-                                        </a>
-                                    </span>
-                                </td>
-                                @*Валюта*@
-                                <td>
-                                    <span class="table_span-currency">
-                                        @item.Сurrency
-                                    </span>
-                                </td>
-
-                                @*Условия формирования договорной цены*@
-                                @if (isEngineering)
-                                {
-                                    <td>
-                                        <span class="table_span-work">
-                                            @item.PaymentСonditionsPrice
-                                        </span>
-                                    </td>
-                                }
-                                @*Виды работ по договору*@
-                                @if (!isEngineering)
-                                {
-                                    <td>
-                                        <span class="table_span-work">
-                                            @* @TypeWork?.Find(x => x.TypeWorkContracts?.FirstOrDefault()?.ContractId == item?.Id)?.FirstOrDefault()?.Name *@
-                                            @TypeWork?.GetByContractId((int)item?.Id)?.Name
-                                        </span>
-                                    </td>
-                                }
-                                @*Контрактная цена*@
-                                <td class="text-end">
-                                    <span class="table_span-contractprice">
-                                        @item.ContractPrice?.ToString("N2")
-                                    </span>
-                                </td>
-                                @*Выполнено на начало года*@
-                                <td class="text-end">
-                                    <span class="table_span-realization">
-                                        @item.PreYearSum?.ToString("N2")
-                                    </span>
-                                </td>
-                                @*Остаток*@
-                                <td class="text-end">
-                                    <span class="table_span-remains">
-                                        @item.RemainingSum?.ToString("N2")
-                                    </span>
-                                </td>
-                                @*Объем*@
-                                <td>
-                                    <span class="table_span-volume">@item.ThisYearSum?.ToString("N2")</span>
-                                </td>
-                                @*Действия с договором*@
-                                <td>
-                                    <span class="table_span-action-main">
-                                        <div class="icon view" title="Просмотр детальной информации по договору">
-                                            <a asp-action="Details" asp-route-id="@item.Id"></a>
-                                        </div>
-                                        <div class="icon estimate" title="Сметы">
-                                            <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item.Id"></a>
-                                        </div>
-                                        @if (permissions is not null && permissions.IsEditor && isGRP_Contract)
-                                        {
-                                            <div class="icon edit" title="Редактировать договор">
-                                                <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                            <div class="icon view" title="Печать объемов работ">
+                                                <a asp-action="PrintScope"
+                                                   asp-controller="Report"
+                                                   asp-route-contractId="@item?.Id"
+                                                   asp-route-numberContr="@item?.Number"></a>
                                             </div>
                                         }
-                                        @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
-                                        {
-                                            <div class="icon delete" title="Удалить договор">
-                                                <a asp-action="Delete" asp-route-id="@item.Id"></a>
-                                            </div>
-                                        }
-                                        @if (ViewBag?.IsMajorOrganization && isGRP_Contract)
-                                        {
-                                            @if (permissions is not null && permissions.IsAdmin)
-                                            {
-                                                <div class="icon transfer" title="Передать договор филиалу">
-                                                    <a asp-action="ChangeOwner" asp-route-contrId="@item.Id"></a>
-                                                </div>
-                                            }
-                                        }
-                                    </span>
-                                </td>
-                            </tr>
-                        }
+                                    }
+                                </span>
+                            </td>
+                        </tr>
                     }
                 </tbody>
             </table>
@@ -639,52 +456,32 @@
                 this.urlUp = urlUp;
             }
         }
+        // Этот код управляет отображением стрелок сортировки в заголовках таблицы:
+        // - Добавляет/удаляет классы для стилизации стрелок вверх/вниз
+        // - Реагирует на параметр sortOrder в URL, который указывает текущую сортировку
+        // - Поддерживает сортировку по номеру, названию объекта, клиенту, подрядчику и датам
         window.onload = function () {
+            const actualUrl = window.location.search;
+            const sortElements = {
+                'number': document.getElementById("arrayNumberanddate"),
+                'nameObject': document.getElementById("arrayNameObject"),
+                'client': document.getElementById("arrayCustomer"),
+                'genContractor': document.getElementById("arrayGeneralContractor"),
+                'dateEnter': document.getElementById("arrayTerms")
+            };
 
-            let actualUrl = window.location.search;
-            let elementArrayNumberanddate = document.getElementById("arrayNumberanddate");
-            let elementArrayNameObject = document.getElementById("arrayNameObject");
-            let elementArrayCustomer = document.getElementById("arrayCustomer");
-            let elementArrayGeneralContractor = document.getElementById("arrayGeneralContractor");
-            let elementArrayTerms = document.getElementById("arrayTerms");
+            for (const [key, element] of Object.entries(sortElements)) {
+                if (!element) continue;
 
-            if (actualUrl.includes('sortOrder=numberDesc')) {
-                elementArrayNumberanddate.classList.remove("up")
-                elementArrayNumberanddate.classList.add("up-down-active")
-                elementArrayNumberanddate.classList.add('down')
-            } else if (actualUrl.includes('sortOrder=number')) {
-                elementArrayNumberanddate.classList.add("up-down-active")
-            } else
-                if (actualUrl.includes('sortOrder=nameObjectDesc')) {
-                    elementArrayNameObject.classList.remove("up")
-                    elementArrayNameObject.classList.add("up-down-active")
-                    elementArrayNameObject.classList.add('down')
-                } else if (actualUrl.includes('sortOrder=nameObject')) {
-                    elementArrayNameObject.classList.add('up-down-active')
+                if (actualUrl.includes(`sortOrder=${key}Desc`)) {
+                    // Сортировка по убыванию - стрелка вниз
+                    element.classList.remove("up");
+                    element.classList.add("up-down-active", "down");
+                } else if (actualUrl.includes(`sortOrder=${key}`)) {
+                    // Сортировка по возрастанию - стрелка вверх
+                    element.classList.add("up-down-active");
                 }
-                else
-                    if (actualUrl.includes('sortOrder=clientDesc')) {
-                        elementArrayCustomer.classList.remove("up")
-                        elementArrayCustomer.classList.add("up-down-active")
-                        elementArrayCustomer.classList.add('down')
-                    } else if (actualUrl.includes('sortOrder=client')) {
-                        elementArrayCustomer.classList.add('up-down-active')
-                    }
-                    else
-                        if (actualUrl.includes('sortOrder=genContractorDesc')) {
-                            elementArrayGeneralContractor.classList.remove("up")
-                            elementArrayGeneralContractor.classList.add("up-down-active")
-                            elementArrayGeneralContractor.classList.add('down')
-                        } else if (actualUrl.includes('sortOrder=genContractor')) {
-                            elementArrayGeneralContractor.classList.add('up-down-active')
-                        } else
-                            if (actualUrl.includes('sortOrder=dateEnterDesc')) {
-                                elementArrayTerms.classList.remove("up")
-                                elementArrayTerms.classList.add("up-down-active")
-                                elementArrayTerms.classList.add('down')
-                            } else if (actualUrl.includes('sortOrder=dateEnter')) {
-                                elementArrayTerms.classList.add('up-down-active')
-                            }
+            }
         };
 
         ////// Pagination
@@ -721,7 +518,6 @@
                     $('#modDialog2').modal('show');
                 })
             });
-
         });
 
         $("#addTypeWork").click(function (e) {
@@ -739,46 +535,36 @@
 
         });
 
-        $('.search_img_btn').click(function (elem) {
+        $('.search_img_btn').click(function (e) {
             closeModalForms();
-            // const parent = elem.target.parentElement;
-            const child = document.createElement('div');
-            const page = $('#pageNumber').val();
-            const type = elem.target.dataset.contentSearch;
-            var value = "";
-            var currentType = '@ViewBag.CurrentType';
 
-            if (currentType != "none" && type == currentType) {
-                value = "@ViewBag.CurrentFilter";
-            }
+            const searchType = e.target.dataset.contentSearch;
+            const currentType = '@ViewBag.CurrentType';
+            const searchValue = (currentType !== "none" && searchType === currentType) ? "@ViewBag.CurrentFilter" : "";
 
-            child.classList.add('modal_form_searching');
-            let coords = getCoords(elem.target);
+            const modalForm = document.createElement('div');
+            modalForm.classList.add('modal_form_searching');
 
-            child.style.left = (+coords.left - 120) + "px";
-            child.style.top = (+coords.bottom + 25) + "px";
+            const coords = getCoords(e.target);
+            modalForm.style.left = `${coords.left - 120}px`;
+            modalForm.style.top = `${coords.bottom + 25}px`;
 
-            child.innerHTML = `<div class="cursor-icon"></div><form asp-action="@actionMethod" asp-controller="Contracts" method="GET" class="form_search">
-                        <input name="typeSearch" value="${type}"  hidden />
-                        <div class="btn-close-modal-searching" onclick="return removeParent('.modal_form_searching');">X</div>
-                         <div class="input-group">
-                                      <input type="text" value="${value}" class="form-control" name="searchString" aria-describedby="button-addon2">
-                              <button class="btn btn-primary" type="submit" id="button-addon2">Поиск</button>
-                         </div>
-                    </form>`;
-            // parent.appendChild(child);
-            document.body.append(child);
+            modalForm.innerHTML = `
+                                        <div class="cursor-icon"></div>
+                                        <form asp-action="@actionMethod" asp-controller="Contracts" method="GET" class="form_search">
+                                            <input name="typeSearch" value="${searchType}" hidden />
+                                            <div class="btn-close-modal-searching" onclick="return closeModalForms();">X</div>
+                                            <div class="input-group">
+                                                <input type="text" value="${searchValue}" class="form-control" name="searchString" aria-describedby="search-button">
+                                                <button class="btn btn-primary" type="submit" id="search-button">Поиск</button>
+                                            </div>
+                                        </form>`;
+
+            document.body.append(modalForm);
         });
-        function removeParent(elem) {
-            const p = $(elem);
-            p.remove();
-        }
-        function closeModalForms() {
-            let modal = document.querySelectorAll('.modal_form_searching');
-            modal.forEach((e) => {
 
-                e.remove();
-            })
+        function closeModalForms() {
+            document.querySelectorAll('.modal_form_searching').forEach(modal => modal.remove());
         }
     </script>
 }

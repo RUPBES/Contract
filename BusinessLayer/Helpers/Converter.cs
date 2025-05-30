@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BusinessLayer.Helpers
 {
@@ -10,7 +11,7 @@ namespace BusinessLayer.Helpers
         /// </summary>
         /// <param name="number">значение ENUM</param>
         /// <returns>строка с названием типа финансирования</returns>
-        public string? GetTypeOfFundingSource(int number) => number switch
+        public string? ToFundingSourceTerm(int number) => number switch
         {
             0 => "Собственные средства",
             1 => "Средства республиканского бюджета",
@@ -22,7 +23,7 @@ namespace BusinessLayer.Helpers
         /// </summary>
         /// <param name="number">значение ENUM</param>
         /// <returns>строка с названием типа процедуры выбора</returns>
-        public string? GetTypeOfProcedure(int number) => number switch
+        public string? ToProcedureType(int number) => number switch
         {
             0 => "Маркетинговые исследования",
             1 => "Переговоры",
@@ -36,7 +37,7 @@ namespace BusinessLayer.Helpers
         /// </summary>
         /// <param name="number">значение ENUM</param>
         /// <returns>строка с названием типа условия оплаты</returns>
-        public string? GetTypeOfPrepaymentCondition(int number) => number switch
+        public string? ToPrepaymentConditionTerm(int number) => number switch
         {
             0 => "Без авансов",
             1 => "С предоставлением текущего аванса",
@@ -49,11 +50,15 @@ namespace BusinessLayer.Helpers
         /// </summary>
         /// <param name="number">значение ENUM</param>
         /// <returns>строка с названием типа условия оплаты</returns>
-        public string? GetTypeOfPaymentForWork(int number) => number switch
+        /// 
+        public string? ToPaymentTerm(int number, bool isEngineering) => (number, isEngineering) switch
         {
-            0 => "календарных дней после подписания акта сдачи-приемки выполненных работ",
-            1 => "банковских дней с момента подписания актов сдачи-приемки выполненных работ",
-            2 => "числа месяца следующего за отчетным",
+            (0, false) => "календарных дней с момента подписания акта сдачи-приемки выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ",
+            (0, true) => "календарных дней с момента подписания акта сдачи-приемки оказанных услуг",
+            (1, false) => "банковских дней с момента подписания актов сдачи-приемки выполненных работ",
+            (1, true) => "банковских дней с момента подписания актов сдачи-приемки оказанных услуг",
+            (2, false) => "числа месяца, следующего за отчетным",
+            (2, true) => "числа месяца, следующего за отчетным",
             _ => null
         };
 
@@ -62,7 +67,7 @@ namespace BusinessLayer.Helpers
         /// </summary>
         /// <param name="number">значение ENUM</param>
         /// <returns>строка с названием типа условия оплаты</returns>
-        public string? GetTypeOfContract(int number) => number switch
+        public string? ToContractType(int number) => number switch
         {
             0 => "Генподрядный договор",
             1 => "Договор субподряда",
@@ -75,7 +80,7 @@ namespace BusinessLayer.Helpers
         /// </summary>
         /// <param name="number">значение ENUM</param>
         /// <returns>строка с названием типа доп.соглашения</returns>
-        public string? GetTypeOfAmendment(int number) => number switch
+        public string? ToAmendmentType(int number) => number switch
         {
             //0 => "Нет в списке",
             1 => "Объем работ",
@@ -86,7 +91,7 @@ namespace BusinessLayer.Helpers
             6 => "Другое",
             _ => null
         };
-        public string? GetTypeOfEstimateApp(int number) => number switch
+        public string? GetEstimateAppType(int number) => number switch
         {
             //0 => "Нет в списке",
             1 => "Программный комплекс - СМР-Про",
@@ -205,7 +210,7 @@ namespace BusinessLayer.Helpers
             _ => null
         };
 
-        public string ConvertMethodNameToRussian(string name) => name switch
+        public string ToRussianMethodName(string name) => name switch
         {
             "Create" => "Создание",
             "Update" => "Обновление",
@@ -223,7 +228,7 @@ namespace BusinessLayer.Helpers
             _ => string.Empty
         };
 
-        public string ConvertNameSpaceToRussian(string name) => name switch
+        public string ToRussianNameSpace(string name) => name switch
         {
             "AbbreviationKindOfWorkService" => "Категория работ по смете",
             "ActService" => "Акт приостановления/возобновления работ",
@@ -261,6 +266,38 @@ namespace BusinessLayer.Helpers
             "TypeWorkService" => "Вид работ",           
 
             _ => string.Empty
+        };
+
+        public string ToRussianContractProps(string name) => name switch
+        {
+            "Number" => "Номер договора",
+            "Date" => "Дата заключения договора",
+            "ContractTerm" => "Срок действия договора",
+            "DateBeginWork" => "Начало работ",
+            "DateEndWork" => "Окончание работ",
+            "NameObject" => "Наименование объекта",
+            "Client" => "Заказчик",
+            "GenContractor" => "Генподрядчик",
+            "ResponsibleForWork" => "Ответственный за производство работ",
+            "EnteringTerm" => "Срок ввода",
+            "PaymentСonditionsAvans" => "Условия авансирования",
+            "PaymentСonditionsRaschet" => "Расчет за выполненные работы",
+            "Сurrency" => "Валюта",
+            "WorkType" => "Виды работ по договору",
+            "ContractPrice" => "Всего по договору с НДС",
+            "PreYearSum" => "Выполнено на 01.01 тек. года",
+            "RemainingSum" => "Остаток",
+            "ThisYearSum" => "Объем на текущий год",
+            _ => string.Empty
+        };
+
+        public string? ToScopesTableCategory(string type) => type switch
+        {
+            "scope" => "План",
+            "scopeOwn" => "План собственными силами",
+            "form" => "Факт",
+            "formOwn" => "Факт собственными силами",
+            _ => null
         };
     }
 }

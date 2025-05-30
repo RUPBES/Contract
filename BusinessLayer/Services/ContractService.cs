@@ -4,10 +4,8 @@ using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using System.Text;
 using Contract = DatabaseLayer.Models.KDO.Contract;
 
 namespace BusinessLayer.Services
@@ -51,6 +49,128 @@ namespace BusinessLayer.Services
                 methodName: MethodBase.GetCurrentMethod().Name);
 
             return null;
+        }
+
+        public ContractDTO GetById(int id, int? secondId = null)
+        {
+            var contract = _database.Contracts.GetById(id);
+
+            if (contract is not null)
+            {
+                return _mapper.Map<ContractDTO>(contract);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public IEnumerable<ContractDTO> GetAll()
+        {
+            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.GetAll());
+        }
+
+        public IEnumerable<ContractDTO> Find(Func<Contract, bool> predicate)
+        {
+            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(predicate));
+        }
+
+        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
+        {
+            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select));
+        }
+
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org)
+        {
+            var list = org.Split(',');
+            Func<Contract, bool> where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                list.Contains(w.Owner);
+            Func<Contract, Contract> select = s => new Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice
+            };
+            int skipEntities = (pageNum - 1) * pageSize;
+            IEnumerable<Contract> items = _database.Contracts.Find(where, select);
+
+            count = items.Count();
+            items = items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
+            return t;
+        }
+
+        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org)
+        {
+            var list = org.Split(',');
+            Func<Contract, bool> where;
+            Func<Contract, string> orderBy = o => o.NameObject;
+            Func<Contract, Contract> select = s => new Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice
+            };
+            int skipEntities = (pageNum - 1) * pageSize;
+            if (!String.IsNullOrEmpty(request))
+            {
+                where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                list.Contains(w.Owner) &&
+                (w.NameObject.Contains(request) || w.Number.Contains(request));
+            }
+            else
+            {
+                where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                 list.Contains(w.Owner);
+            }
+            IEnumerable<Contract> items = _database.Contracts.Find(where: where, select: select).OrderBy(o => o.NameObject);
+            count = items.Count();
+            items = items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
+            return t;
+        }
+
+        public void Update(ContractDTO item)
+        {
+            if (item is not null)
+            {
+                _database.Contracts.Update(_mapper.Map<Contract>(item));
+                _database.Save();
+                _logger.WriteLog(
+                           logLevel: LogLevel.Information,
+                           message: $"update contract, ID={item.Id}",
+                           nameSpace: typeof(ContractService).Name,
+                           methodName: MethodBase.GetCurrentMethod().Name);
+            }
+            else
+            {
+                _logger.WriteLog(
+                            logLevel: LogLevel.Error,
+                            message: $"not update contract, object is null",
+                            nameSpace: typeof(ContractService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+            }
         }
 
         public void Delete(int id, int? secondId = null)
@@ -180,7 +300,7 @@ namespace BusinessLayer.Services
                         {
                             var swcosts = _database.SWCosts.Find(x => x.ScopeWorkId == item.Id).ToList();
                             foreach (var swcost in swcosts)
-                            _database.SWCosts.Delete(swcost.Id);
+                                _database.SWCosts.Delete(swcost.Id);
                             _database.ScopeWorks.Delete(item.Id);
                         }
                         #endregion
@@ -260,57 +380,41 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ContractDTO> GetSubObjects(int id)
+        /// <summary>
+        /// Возвращает список договоров, принадлежащих генподрядному договору по его ID и 
+        /// типу необходимых договоров
+        /// </summary>
+        /// <param name="id">ID Гендоговора</param>
+        /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
+        /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
+        public IEnumerable<ContractDTO> GetSubsByType(int? id, ContractType? contractType)
         {
-            var contracts = _database.Contracts.Find(x => x.MultipleContractId == id && x.IsOneOfMultiple == true).ToList();
-
-            if (contracts is not null)
+            if (!id.HasValue || contractType == null)
             {
-                foreach (var item in contracts)
-                {
-                    var amend = _database.Amendments.Find(x => x.ContractId == item.Id ).ToList();
-                    if (amend.Count > 0)
-                    {
-                        amend = amend.OrderBy(x => x.Date).ToList();
-                        item.ContractPrice = amend.Last().ContractPrice;
-                    }
-                }
-                return _mapper.Map<IEnumerable<ContractDTO>>(contracts);
+                return Enumerable.Empty<ContractDTO>();
+            }
+            Func<Contract, bool> selector;
+
+            if (contractType == ContractType.SubContract)
+            {
+                selector = x => x.SubContractId == id && x.IsSubContract == true;
+            }
+            else if (contractType == ContractType.Agreement)
+            {
+                selector = x => x.AgreementContractId == id && x.IsAgreementContract == true;
+            }
+            else if (contractType == ContractType.MultipleContract)
+            {
+                selector = x => x.MultipleContractId == id && x.IsOneOfMultiple == true;
             }
             else
             {
-                return null;
+                return Enumerable.Empty<ContractDTO>();
             }
-        }
 
-        public IEnumerable<ContractDTO> GetSubContracts(int id)
-        {
-            var contracts = _database.Contracts.Find(x => x.SubContractId == id && x.IsSubContract == true);
+            var contracts = _database.Contracts.Find(selector);
 
-            if (contracts is not null)
-            {
-                foreach (var item in contracts)
-                {
-                    var amend = _database.Amendments.Find(x => x.ContractId == item.Id).ToList();
-                    if (amend.Count > 0)
-                    {
-                        amend = amend.OrderBy(x => x.Date).ToList();
-                        item.ContractPrice = amend.Last().ContractPrice;
-                    }
-                }
-                return _mapper.Map<IEnumerable<ContractDTO>>(contracts);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public IEnumerable<ContractDTO> GetbranchAgreements(int id)
-        {
-            var contracts = _database.Contracts.Find(x => x.AgreementContractId == id && x.IsAgreementContract == true);
-
-            if (contracts is not null)
+            if (contracts.Any())
             {
                 foreach (var item in contracts)
                 {
@@ -325,284 +429,87 @@ namespace BusinessLayer.Services
             }
             else
             {
-                return null;
+                return Enumerable.Empty<ContractDTO>();
             }
         }
 
-        public void DeleteScopeWorks(int id)
-        {
-            if (id > 0)
-            {
-                var contract = _database.Contracts.GetById(id);
 
-                if (contract is not null)
-                {
-                    try
-                    {
-                        var scopes = _database.ScopeWorks.Find(x => x.ContractId == id);
+        //public Dictionary<int, ContractType>? GetChildren(int? contractId)
+        //{
+        //    if (contractId > 0)
+        //    {
+        //        return null;
+        //    }
 
-                        foreach (var item in scopes)
-                        {
-                            foreach (var item1 in item.SWCosts)
-                            {
-                                _database.SWCosts.Delete(item1.Id);
-                            }
-                            _database.ScopeWorks.Delete(item.Id);
-                        }
+        //    var listParents = new Dictionary<int, ContractType>();
+        //    int parentId = contractId ?? 0;
+        //    var contractProps = GetContractTypingProps(parentId);
 
-                        _database.Save();
+        //    if (contractProps?.IsAgreementContract ?? false)
+        //    {
+        //        parentId = contractProps?.AgreementContractId ?? 0;
+        //        contractProps = GetContractTypingProps(parentId);
+        //    }
+        //    else if (contractProps?.IsSubContract ?? false)
+        //    {
+        //        parentId = contractProps?.SubContractId ?? 0;
+        //        contractProps = GetContractTypingProps(parentId);
+        //    }
+        //    else if (contractProps?.IsOneOfMultiple ?? false)
+        //    {
+        //        parentId = contractProps?.MultipleContractId ?? 0;
+        //        contractProps = GetContractTypingProps(parentId);
+        //    }
+        //    else
+        //    {
+        //        //return new ();
+        //        listParents.Add(parentId, ContractType.GenСontract);
+        //        parentId = 0;
+        //    }
 
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Information,
-                            message: $"delete contract's the scope works, ID={id}",
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.WriteLog(
-                            logLevel: LogLevel.Error,
-                            message: e.Message,
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-                    }
-                }
-            }
-            else
-            {
-                _logger.WriteLog(
-                            logLevel: LogLevel.Warning,
-                            message: $"not delete contract, ID is not more than zero",
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-            }
-        }
 
-        public IEnumerable<ContractDTO> GetAll()
-        {
-            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.GetAll());
-        }
+        //    while (parentId > 0)
+        //    {
+        //        if ((contractProps?.IsAgreementContract ?? false))
+        //        {
+        //            listParents.Add(parentId, ContractType.Agreement);
+        //            parentId = contractProps?.AgreementContractId ?? 0;
+        //            contractProps = GetContractTypingProps(parentId);
+        //        }
+        //        else if ((contractProps?.IsSubContract ?? false))
+        //        {
+        //            listParents.Add(parentId, ContractType.SubContract);
+        //            parentId = contractProps?.SubContractId ?? 0;
+        //            contractProps = GetContractTypingProps(parentId);
+        //        }
+        //        else if (contractProps?.IsOneOfMultiple ?? false)
+        //        {
+        //            listParents.Add(parentId, ContractType.MultipleContract);
+        //            parentId = contractProps?.MultipleContractId ?? 0;
+        //            contractProps = GetContractTypingProps(parentId);
+        //        }
+        //        else
+        //        {
+        //            listParents.Add(parentId, ContractType.GenСontract);
+        //            break;
+        //        }
+        //    }
 
-        public ContractDTO GetById(int id, int? secondId = null)
-        {
-            var contract = _database.Contracts.GetById(id);
+        //    return listParents;
 
-            if (contract is not null)
-            {
-                return _mapper.Map<ContractDTO>(contract);
-            }
-            else
-            {
-                return null;
-            }
-        }
+        //}
 
-        public void Update(ContractDTO item)
-        {
-            if (item is not null)
-            {
-                _database.Contracts.Update(_mapper.Map<Contract>(item));
-                _database.Save();
-                _logger.WriteLog(
-                           logLevel: LogLevel.Information,
-                           message: $"update contract, ID={item.Id}",
-                           nameSpace: typeof(ContractService).Name,
-                           methodName: MethodBase.GetCurrentMethod().Name);
-            }
-            else
-            {
-                _logger.WriteLog(
-                            logLevel: LogLevel.Error,
-                            message: $"not update contract, object is null",
-                            nameSpace: typeof(ContractService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);
-            }
-        }
 
-        public IEnumerable<ContractDTO> Find(Func<Contract, bool> predicate)
-        {
-            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(predicate));
-        }
 
-        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
-        {
-            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select));
-        }
 
-        public bool ExistContractByNumber(string numberContract)
-        {
-            bool result = false;
 
-            if (_database.Contracts.Find(x => x.Number == numberContract).FirstOrDefault() is not null)
-            {
-                return true;
-            }
 
-            var sameContracts = _database.Contracts.GetAll();
-
-            string contractNumberForChecking = TrimWhitespaceIntoNumberOfContract(numberContract);
-
-            foreach (var item in sameContracts)
-            {
-                if (contractNumberForChecking.Equals(TrimWhitespaceIntoNumberOfContract(item.Number), StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return result;
-        }
-
-        public List<ContractDTO>? ExistContractAndReturnListSameContracts(string numberContract, DateTime? dateContract)
-        {
-            List<ContractDTO> contracts = new List<ContractDTO>();
-            var list = _database.Contracts.GetAll();
-            var contract = list.Where(x => x.Number != null && x.Number == numberContract && x.Date != null && x.Date == dateContract).FirstOrDefault();
-
-            if (contract is not null)
-            {
-                contracts.Add(_mapper.Map<ContractDTO>(contract));
-                return contracts;
-            }
-
-            var sameContracts = _database.Contracts.Find(x => x.Date?.ToString("yyyyMMdd") == dateContract?.ToString("yyyyMMdd"));
-
-            string contractNumberForChecking = TrimWhitespaceIntoNumberOfContract(numberContract);
-
-            foreach (var item in sameContracts)
-            {
-                if (contractNumberForChecking.Equals(TrimWhitespaceIntoNumberOfContract(item.Number), StringComparison.OrdinalIgnoreCase))
-                {
-                    contracts.Add(_mapper.Map<ContractDTO>(item));
-                }
-            }
-
-            return contracts;
-        }
-
-        private string TrimWhitespaceIntoNumberOfContract(string numberContract)
-        {
-            if (string.IsNullOrWhiteSpace(numberContract))
-            {
-                return string.Empty;
-            }
-            char[] number = numberContract.ToCharArray();
-            StringBuilder stringBuilder = new StringBuilder();
-
-            for (int i = 0; i < number.Length; i++)
-            {
-                if (!char.IsWhiteSpace(number[i]))
-                {
-                    stringBuilder.Append(number[i]);
-                }
-            }
-
-            return stringBuilder.ToString();
-        }
-
-        public void AddFile(int contractId, int fileId)
-        {
-            if (fileId > 0 && contractId > 0)
-            {
-                if (_database.ContractFiles.GetById(contractId, fileId) is null)
-                {
-                    _database.ContractFiles.Create(new ContractFile
-                    {
-                        ContractId = contractId,
-                        FileId = fileId
-                    });
-
-                    _database.Save();
-
-                    _logger.WriteLog(
-                           logLevel: LogLevel.Information,
-                           message: $"create file of contract",
-                           nameSpace: typeof(ContractService).Name,
-                           methodName: MethodBase.GetCurrentMethod().Name);
-                }
-            }
-            else
-            {
-                _logger.WriteLog(
-                           logLevel: LogLevel.Warning,
-                           message: $"not create file of contract, object is null",
-                           nameSpace: typeof(ContractService).Name,
-                           methodName: MethodBase.GetCurrentMethod().Name);
-            }
-        }
-
-        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org)
-        {
-            var list = org.Split(',');
-            Func<Contract, bool> where;
-            Func<Contract, string> orderBy = o => o.NameObject;
-            Func<Contract, Contract> select = s => new Contract
-            {
-                NameObject = s.NameObject,
-                Number = s.Number,
-                Date = s.Date,
-                Id = s.Id,
-                DateBeginWork = s.DateBeginWork,
-                DateEndWork = s.DateEndWork,
-                EnteringTerm = s.EnteringTerm,
-                Сurrency = s.Сurrency,
-                ContractPrice = s.ContractPrice
-            };
-            int skipEntities = (pageNum - 1) * pageSize;
-            if (!String.IsNullOrEmpty(request))
-            {
-                where = w => w.IsEngineering == false &&
-                w.IsAgreementContract == false &&
-                w.IsOneOfMultiple == false &&
-                w.IsSubContract == false &&
-                list.Contains(w.Owner) &&
-                (w.NameObject.Contains(request) || w.Number.Contains(request));
-            }
-            else
-            {
-                where = w => w.IsEngineering == false &&
-                w.IsAgreementContract == false &&
-                w.IsOneOfMultiple == false &&
-                w.IsSubContract == false &&
-                 list.Contains(w.Owner);
-            }
-            IEnumerable<Contract> items = _database.Contracts.Find(where: where, select: select).OrderBy(o => o.NameObject);
-            count = items.Count();
-            items = items.Skip(skipEntities).Take(pageSize);
-            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
-            return t;
-        }
-
-        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org)
-        {
-            var list = org.Split(',');
-            Func<Contract, bool> where = w => w.IsEngineering == false &&
-                w.IsAgreementContract == false &&
-                w.IsOneOfMultiple == false &&
-                w.IsSubContract == false &&
-                list.Contains(w.Owner);
-            Func<Contract, Contract> select = s => new Contract
-            {
-                NameObject = s.NameObject,
-                Number = s.Number,
-                Date = s.Date,
-                Id = s.Id,
-                DateBeginWork = s.DateBeginWork,
-                DateEndWork = s.DateEndWork,
-                EnteringTerm = s.EnteringTerm,
-                Сurrency = s.Сurrency,
-                ContractPrice = s.ContractPrice
-            };
-            int skipEntities = (pageNum - 1) * pageSize;
-            IEnumerable<Contract> items = _database.Contracts.Find(where, select);
-
-            count = items.Count();
-            items = items.Skip(skipEntities).Take(pageSize);
-            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
-            return t;
-        }
-
-        public int? GetDayOfRaschet(int contrId)
+        /// <summary>
+        /// Возвращает количество дней после заключения договора для расчета
+        /// </summary>
+        /// <param name="contrId">ID договора</param>
+        /// <returns>количество дней</returns>
+        public int? GetPaymentDueDate(int contrId)
         {
             if (contrId > 0)
             {
@@ -623,112 +530,107 @@ namespace BusinessLayer.Services
             return null;
         }
 
-        public bool IsNotGenContract(int? contractId, out int mainContrId)
+        /// <summary>
+        /// Возвращает количество дней после заключения договора для расчета
+        /// </summary>
+        /// <param name="paymentDescription">строка с полным названием расчета</param>
+        /// <param name="subPaymentDescription"> часть названия, которое должно содержаться в строке с полным названием</param>
+        /// <returns>количество дней</returns>
+        public int? GetPaymentDueDate(string? paymentDescription, string? subPaymentDescription)
         {
-            mainContrId = 0;
-            var contract = contractId.HasValue ? _database.Contracts.GetById((int)contractId) : null;
-
-            if ((contract?.IsAgreementContract ?? false))
+            if (string.IsNullOrEmpty(paymentDescription) || string.IsNullOrEmpty(subPaymentDescription))
             {
-                mainContrId = contract?.AgreementContractId ?? 0;
-            }
-            else if ((contract?.IsSubContract ?? false))
-            {
-                mainContrId = contract?.SubContractId ?? 0;
-            }
-            else if (contract?.IsOneOfMultiple ?? false)
-            {
-                mainContrId = contract?.MultipleContractId ?? 0;
+                return null;
             }
 
-            return (contract?.IsOneOfMultiple ?? false) || (contract?.IsSubContract ?? false) || (contract?.IsAgreementContract ?? false);
+            bool? isSamePaymentment = paymentDescription?.Contains(subPaymentDescription);
+
+            if (isSamePaymentment == true)
+            {
+                var raschet = paymentDescription?.Replace(subPaymentDescription, "").TrimEnd().Split(" ").LastOrDefault();
+                int answer;
+                var isParse = int.TryParse(raschet, out answer);
+                if (isParse)
+                {
+                    return answer;
+                }
+            }
+
+            return null;
         }
 
-        public ContractType GetContractType(int contractId, out int parentContrId)
+        /// <summary>
+        /// Возвращает true если номер договора уже существует, если нет - false
+        /// </summary>
+        /// <param name="contractNumber">Номер договора для проверки</param>
+        /// <returns></returns>
+        public bool IsContractNumberExists(string contractNumber)
         {
-            Func<Contract, bool> where = w => w.Id == contractId;
-            Func<Contract, Contract> select = s => new Contract
-            {
-                IsOneOfMultiple = s.IsOneOfMultiple,
-                MultipleContractId = s.MultipleContractId,
-                IsSubContract = s.IsSubContract,
-                SubContractId = s.SubContractId,
-                IsAgreementContract = s.IsAgreementContract,
-                AgreementContractId = s.AgreementContractId
-            };
-            var contract = Find(where, select).FirstOrDefault();
-            parentContrId = 0;
-
-            if ((contract?.IsAgreementContract ?? false))
-            {
-                parentContrId = contract?.AgreementContractId ?? 0;
-                return ContractType.Agreement;
-            }
-            else if ((contract?.IsSubContract ?? false))
-            {
-                parentContrId = contract?.SubContractId ?? 0;
-                return ContractType.SubContract;
-            }
-            else if (contract?.IsOneOfMultiple ?? false)
-            {
-                parentContrId = contract?.MultipleContractId ?? 0;
-                return ContractType.MultipleContract;
-            }
-
-            return ContractType.GenСontract;
+            contractNumber = contractNumber?.Replace(" ", "") ?? string.Empty;
+            return _database.Contracts.Find(x => x.Number != null && x.Number?.Replace(" ", "")?.Equals(contractNumber) == true).Any();
         }
 
-        public Dictionary<int, ContractType>? GetParentsList(ContractDTO? contract)
+        /// <summary>
+        /// Возвращает список "родительских" договоров, если они отсутствуют возвращает генподрядный договор
+        /// </summary>
+        /// <param name="contractId">ID договора, для которого проверяем "родительские" договора</param>
+        /// <returns>Коллекция "родительских" договоров, Ключ = ID договора,  Значение = Тип договора</returns>
+        public Dictionary<int, ContractType>? GetParents(int? contractId, out ContractType thisType)
         {
             var listParents = new Dictionary<int, ContractType>();
-            int parentId = contract.Id;
+            thisType = ContractType.GenСontract;
+            int parentId = contractId ?? 0;
+            var contractProps = GetContractTypingProps(parentId);
 
-
-            if ((contract?.IsAgreementContract ?? false))
+            if (contractProps?.IsAgreementContract ?? false)
             {
-                parentId = _database.Contracts.GetById(contract?.AgreementContractId ?? 0).Id;
-                contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                parentId = contractProps?.AgreementContractId ?? 0;
+                contractProps = GetContractTypingProps(parentId);
+                thisType = ContractType.Agreement;
             }
-            else if ((contract?.IsSubContract ?? false))
+            else if (contractProps?.IsSubContract ?? false)
             {
-                parentId = _database.Contracts.GetById(contract?.SubContractId ?? 0).Id;
-                contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                parentId = contractProps?.SubContractId ?? 0;
+                contractProps = GetContractTypingProps(parentId);
+                thisType = ContractType.SubContract;
             }
-            else if (contract?.IsOneOfMultiple ?? false)
+            else if (contractProps?.IsOneOfMultiple ?? false)
             {
-                parentId = _database.Contracts.GetById(contract?.MultipleContractId ?? 0).Id;
-                contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                parentId = contractProps?.MultipleContractId ?? 0;
+                contractProps = GetContractTypingProps(parentId);
+                thisType = ContractType.MultipleContract;
             }
             else
             {
-                listParents.Add(contract?.Id ?? 0, ContractType.GenСontract);
+                //return new ();
+                listParents.Add(parentId, ContractType.GenСontract);
                 parentId = 0;
             }
 
 
             while (parentId > 0)
             {
-                if ((contract?.IsAgreementContract ?? false))
+                if ((contractProps?.IsAgreementContract ?? false))
                 {
-                    listParents.Add(contract?.Id ?? 0, ContractType.Agreement);
-                    parentId = _database.Contracts.GetById(contract?.AgreementContractId ?? 0).Id;
-                    contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                    listParents.Add(parentId, ContractType.Agreement);
+                    parentId = contractProps?.AgreementContractId ?? 0;
+                    contractProps = GetContractTypingProps(parentId);
                 }
-                else if ((contract?.IsSubContract ?? false))
+                else if ((contractProps?.IsSubContract ?? false))
                 {
-                    listParents.Add(contract?.Id ?? 0, ContractType.SubContract);
-                    parentId = _database.Contracts.GetById(contract?.SubContractId ?? 0).Id;
-                    contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                    listParents.Add(parentId, ContractType.SubContract);
+                    parentId = contractProps?.SubContractId ?? 0;
+                    contractProps = GetContractTypingProps(parentId);
                 }
-                else if (contract?.IsOneOfMultiple ?? false)
+                else if (contractProps?.IsOneOfMultiple ?? false)
                 {
-                    listParents.Add(contract?.Id ?? 0, ContractType.MultipleContract);
-                    parentId = _database.Contracts.GetById(contract?.MultipleContractId ?? 0).Id;
-                    contract = _mapper.Map<ContractDTO>(_database.Contracts.GetById(parentId));
+                    listParents.Add(parentId, ContractType.MultipleContract);
+                    parentId = contractProps?.MultipleContractId ?? 0;
+                    contractProps = GetContractTypingProps(parentId);
                 }
                 else
                 {
-                    listParents.Add(contract?.Id ?? 0, ContractType.GenСontract);
+                    listParents.Add(parentId, ContractType.GenСontract);
                     break;
                 }
             }
@@ -736,32 +638,57 @@ namespace BusinessLayer.Services
             return listParents;
         }
 
-        public bool IsThereScopeWorks(int contarctId, bool isOwnForses, out int? scopeId)
-        {
-            scopeId = _database.ScopeWorks.Find(x => x.ContractId == contarctId && x.IsOwnForces == isOwnForses).LastOrDefault()?.Id;
 
-            if (scopeId is not null && scopeId > 0)
+
+        private dynamic? GetContractTypingProps(int contractId)
+        {
+            if (contractId == 0)
             {
-                return true;
+                return null;
             }
-            return false;
+
+            return _database?.Contracts?.Find(x => x.Id == contractId)?.Select(s => new
+            {
+                IsOneOfMultiple = s.IsOneOfMultiple,
+                MultipleContractId = s.MultipleContractId,
+                IsSubContract = s.IsSubContract,
+                SubContractId = s.SubContractId,
+                IsAgreementContract = s.IsAgreementContract,
+                AgreementContractId = s.AgreementContractId
+            })?.FirstOrDefault();
         }
 
-        public bool IsThereAmendment(int contarctId)
+        /// <summary>
+        /// Возвращает список ID всех дочерних договоров для указанного договора
+        /// </summary>
+        /// <param name="contractId">ID договора, для которого ищем дочерние договоры</param>
+        /// <returns>Список ID всех дочерних договоров</returns>
+        public List<int> GetChildren(int contractId)
         {
-            var amendmentId = _database.Amendments.Find(x => x.ContractId == contarctId).LastOrDefault()?.Id;
-
-            if (amendmentId is not null && amendmentId > 0)
-            {
-                return true;
-            }
-            return false;
+            var childIds = new List<int>();
+            var processedIds = new HashSet<int>();
+            GetChildrenRecursive(contractId, childIds, processedIds);
+            return childIds;
         }
 
-        public (bool isExistChild, int id) IsHaveChild(int id)
+        private void GetChildrenRecursive(int contractId, List<int> childIds, HashSet<int> processedIds)
         {
+            if (processedIds.Contains(contractId))
+            {
+                return;
+            }
 
-            return (true, 0);
+            processedIds.Add(contractId);
+
+            var contract = _database.Contracts.Find(x => x.SubContractId == contractId || x.AgreementContractId == contractId || x.MultipleContractId == contractId);
+            foreach (var item in contract)
+            {
+                if (item is not null)
+                {
+                    childIds.Add(item.Id);
+                    GetChildrenRecursive(item.Id, childIds, processedIds);
+                }
+            }
         }
     }
 }
