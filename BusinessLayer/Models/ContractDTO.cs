@@ -113,6 +113,7 @@ namespace BusinessLayer.Models
         public decimal? PreYearSum { get; set; }
         public decimal? RemainingSum { get; set; }
 
+        public DateTime? ArchivedDate { get; set; }
         public virtual ContractDTO MultipleContract { get; set; }
 
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();

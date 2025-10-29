@@ -2,7 +2,6 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -34,6 +33,16 @@ namespace MvcLayer.Controllers
             ViewData["contractId"] = id;
             ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<CorrespondenceViewModel>>(_correspondenceService.Find(x => x.ContractId == id)));
+        }
+
+        [Route("/archive/Correspondences")]
+        //todo: убрать из метода название ID
+        public IActionResult GetArchByContractId(int id, bool isEngineering, int returnContractId = 0)
+        {
+            ViewBag.IsEngineering = isEngineering;
+            ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
+            return View(_mapper.Map<IEnumerable<CorrespondenceViewModel>>(_correspondenceService.Find(x => x.ContractId == id, useArchiveData: true)));
         }
 
         [Authorize(Policy = "CreatePolicy")]
@@ -111,7 +120,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Correspondences))
+                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Correspondences))
                 {
                     _fileService.Delete(item.Id);
                 }

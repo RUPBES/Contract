@@ -1,17 +1,16 @@
 ﻿@using BusinessLayer.Models
 @model Dictionary<string, IEnumerable<FileDTO>>
-
 @using BusinessLayer.Enums;
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 <link href="~/kendoui/upload_style.css" rel="stylesheet" />
+
 @{
     // var http = new HttpContextAccessor();
     // var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = $"Список загруженных файлов";
-    // var isAdmin = true;
-
     var routeValue = ViewBag.contractId is not null ? ViewBag.contractId : null;
+   
     if (ViewBag.contractId == 0)
         routeValue = ViewBag.returnContractId;
 }
@@ -29,7 +28,7 @@
             <div class="dm-modal" style="width:800px;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a href="~/Estimate/Index?contractId=@routeValue" class="close-btn"></a>
+                    <a href="~/Estimate/@(ViewBag.IsArchive == true ? "IndexArch" : "Index")?contractId=@routeValue" class="close-btn"></a>
                 </div>
                 <hr class="modal-line" />
                 @if (Model.Any())
@@ -38,7 +37,6 @@
                         <div class='file-wrapper'>
                             @foreach (var dictionary in Model)
                             {
-
                                 <h3>
                                     @{
                                         var keyValue = dictionary.Key == "doc" ? "Файлы" : "Чертежи";
@@ -73,7 +71,7 @@
                                             @*   @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                 {
                                 <div class="icon delete">
-                                @Html.ActionLink("", "Delete", "Files", new { id = item.Id, redirectAction = "GetByContractId", redirectController = "Files", fileCategory = FolderEnum.Contracts, contractId = @ViewBag.entityId, pageNum = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                @Html.ActionLink("", "Delete", "Files", new { id = item.Id, redirectAction = "GetByContractId", redirectController = "Files", fileCategory = FolderEnum.Contracts, contractId = @ViewBag.entityId, page = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                                 </div>
                                 }*@
                                         </strong>
@@ -107,7 +105,3 @@
         </div>
     </div>
 </div>
-
-
-@section Scripts {
-}

@@ -49,7 +49,7 @@
                                 </th>
                                 <th>
                                     @Html.DisplayNameFor(model => model.Date)
-                                </th>                            
+                                </th>
                                 <th>Файлы</th>
                                 <th></th>
                             </tr>
@@ -66,13 +66,19 @@
                                     </td>
 
                                     <td>
-                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.CommissionActs))
+                                        @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, FolderEnum.CommissionActs))
                                         {
                                             <div>
-                                                <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
                                                 @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                                                 {
-                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction =redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                    <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                                       asp-route-redirectAction="@redirectAction"
+                                                       asp-route-redirectController="@redirectController"
+                                                       asp-route-contractId="@item.ContractId"
+                                                       title="Удалить файл"
+                                                       class="modal-link del-btn"
+                                                       data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
                                                 }
                                             </div>
                                         }
@@ -87,7 +93,12 @@
                                         @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                                         {
                                             <span class="icon delete" title="Удалить акт">
-                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                                <a asp-action="Delete"
+                                                   asp-route-id="@item.Id"
+                                                   asp-route-contractId="@item.ContractId"
+                                                   class="modal-link"
+                                                   data-message="Акт ввода и прикрепленные файлы будут удалены. Продолжить?">
+                                                </a>
                                             </span>
                                         }
                                     </td>

@@ -2,6 +2,7 @@
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +49,14 @@ namespace MvcLayer.Controllers
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId)));
+        }
+
+        [Route("/archive/Payments")]
+        public IActionResult GetArchByContractId(int contractId, int returnContractId = 0)
+        {
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+            return View(_mapper.Map<IEnumerable<PaymentViewModel>>(_payment.Find(x => x.ContractId == contractId, useArchiveData: true)));
         }
 
         public IActionResult ChoosePeriod(int contractId, int returnContractId = 0)
@@ -174,140 +183,28 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-        public IActionResult GetPayableCash(string currentFilter, int? pageNum, string searchString)
+        public IActionResult GetPayableCash(string currentFilter, int? page, string searchString, FilterPayableModel? filter)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-            int pageSize = 20;
+            int pageSize = 100;
             if (searchString != null)
-            { pageNum = 1; }
-            else
-            { searchString = currentFilter; }
-            ViewData["CurrentFilter"] = searchString;
-            var list = new List<ContractDTO>();
-            int count;
-
-            if (!String.IsNullOrEmpty(searchString))
-                list = _contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, "Payment", out count, organizationName).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Payment", out count, organizationName).ToList();
-
-            ViewData["PageNum"] = pageNum ?? 1;
-            ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
-
-            var viewModel = new List<GetPayableCashPaymentsViewModel>();
-            foreach (var contract in list)
-            {
-                var itemViewModel = new GetPayableCashPaymentsViewModel();
-                itemViewModel.Id = contract.Id;
-                itemViewModel.number = contract.Number;
-                itemViewModel.nameObject = contract.NameObject;
-                itemViewModel.currency = contract.Сurrency;
-                itemViewModel.dateContract = contract.Date;
-
-                #region Доп. соглашения
-                var listAmend = _amendmentService.Find(x => x.ContractId == contract.Id).OrderBy(x => x.Date).ToList();
-                var amend = listAmend.LastOrDefault();
-                #endregion
-
-                itemViewModel.contractPrice = amend == null ? contract.ContractPrice : amend.ContractPrice;
-                itemViewModel.dateBeginWork = amend == null ? contract.DateBeginWork : amend.DateBeginWork;
-                itemViewModel.dateEndWork = amend == null ? contract.DateEndWork : amend.DateEndWork;
-                itemViewModel.dateEnter = amend == null ? contract.EnteringTerm : amend.DateEntryObject;
-
-                #region Проверка дат
-
-                if (itemViewModel.dateBeginWork == null)
-                {
-                    itemViewModel.dateBeginWork = DateTime.Today;
-                }
-                if (itemViewModel.dateEndWork == null)
-                {
-                    itemViewModel.dateEndWork = DateTime.Today;
-                }
-                if (itemViewModel.dateBeginWork > itemViewModel.dateEndWork)
-                {
-                    itemViewModel.dateEndWork = itemViewModel.dateBeginWork;
-                }
-
-                #endregion
-
-                #region Лист. Факт значений
-
-                Func<FormC3a, bool> where = w => w.ContractId == contract.Id && w.IsOwnForces == false;
-                Func<FormC3a, FormC3a> select = s => new FormC3a
-                {
-                    TotalCost = s.SmrContractCost + s.SmrNdsCost + s.PnrNdsCost + s.PnrContractCost + s.AdditionalCost + s.EquipmentCost
-                };               
-
-                itemViewModel.factWorkByC3A = _formService.Find(where, select).Sum(x => x.TotalCost);
-                itemViewModel.Reserve = _formService.Find(where).Sum(x => x.Reserve);
-
-                #endregion
-
-                itemViewModel.remainingWork = itemViewModel.contractPrice - itemViewModel.factWorkByC3A;
-
-                #region Плановые значения Объема работ
-                IEnumerable<SWCostDTO> listScope = new List<SWCostDTO>();
-                for (var i = listAmend.Count() - 1; i >= 0; i--)
-                {
-                    var item = listAmend[i];
-                    var scope = _scopeWork.GetByAmendmentId(item.Id);
-                    if (scope != null)
-                    {
-                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
-                        DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1), w.Period) &&
-                        DateComparer.IsLessOrSameYearAndMonth(w.Period, new DateTime(DateTime.Now.Year, 12, 1));
-                        Func<SWCost, SWCost> selectSw = s => new SWCost
-                        {
-                            CostNds = s.CostNds
-                        };
-                        listScope = _swCostService.Find(whereSw, selectSw);
-                        break;
-                    }
-                }
-                if (listScope.Count() == 0)
-                {
-                    var scope = _scopeWork.Find(x => x.ContractId == contract.Id).FirstOrDefault();
-                    if (scope != null)
-                    {
-                        Func<SWCost, bool> whereSw = w => w.ScopeWorkId == scope.Id &&
-                        DateComparer.IsLessOrSameYearAndMonth(new DateTime(DateTime.Now.Year, 1, 1),w.Period) &&
-                        DateComparer.IsLessOrSameYearAndMonth(w.Period, new DateTime(DateTime.Now.Year, 12, 1));
-                        Func<SWCost, SWCost> selectSw = s => new SWCost
-                        {
-                            CostNds = s.CostNds
-                        };
-                        listScope = _swCostService.Find(whereSw, selectSw);
-                    }
-                }
-                #endregion
-
-                if (listScope.Count() > 0)
-                {
-                    itemViewModel.currentYearScopeWork = listScope.Sum(x => x.CostNds);
-                }
-
-                itemViewModel.listPayments = new List<ItemPaymentDeviationReport>();
-
-                #region Нахождение клиента и генподрядчика
-
-                var clientId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsClient == true)
-                    .Select(x => x.OrganizationId).FirstOrDefault();
-                if (clientId != null && clientId != 0)
-                {
-                    itemViewModel.client = _organization.GetById(clientId).Abbr;
-                }
-                var genId = _contractOrganizationService.Find(x => x.ContractId == contract.Id && x.IsGenContractor == true)
-                    .Select(x => x.OrganizationId).FirstOrDefault();
-                if (genId != null && genId != 0)
-                {
-                    itemViewModel.genContractor = _organization.GetNameByContractId(genId);
-                }
-                #endregion
-
-
-                viewModel.Add((itemViewModel));
+            { 
+                page = 1; 
             }
-            return View(viewModel);
+            else
+            { 
+                searchString = currentFilter; 
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["FilterViewModel"] = filter ?? new FilterPayableModel();            
+
+            var newList = _payment.GetPayableCash(pageSize, page?? 1, filter, organizationName.Split(','), useArchiveData: false);
+            int count = newList.PageViewModel.TotalPages;
+            ViewData["PageNum"] = newList.PageViewModel.PageNumber;
+            ViewData["TotalPages"] = newList.PageViewModel.TotalPages; 
+
+            return View(newList);
         }
 
         public IActionResult DetailsPayableCash(int contractId)
@@ -480,6 +377,14 @@ namespace MvcLayer.Controllers
                 viewModel.Add((itemViewModel));
             }
             return View(viewModel);
+        }
+
+        [HttpPost]
+        public IActionResult GetFilterForm(string client, string genContractor, DateTime? dateEnteringTerm, DateTime? starEnteringTerm, DateTime? endEnteringTerm)
+        {
+            return PartialView("_PartialFilter",new FilterPayableModel
+            { Client = client , GenContractor = genContractor, DateEnteringTerm = dateEnteringTerm,
+            StarEnteringTerm = starEnteringTerm, EndEnteringTerm = endEnteringTerm});
         }
     }
 }

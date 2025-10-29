@@ -212,92 +212,92 @@
 
         /* Modal styles */
         /*   .modal {
-                    display: none;
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    z-index: 1000;
-                }
+                            display: none;
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background-color: rgba(0, 0, 0, 0.5);
+                            z-index: 1000;
+                        }
 
-                .modal-content {
-                    background-color: #fff;
-                    margin: 15% auto;
-                    padding: 20px;
-                    border-radius: 5px;
-                    width: 300px;
-                    max-height: 80vh;
-                    position: relative;
-                }
+                        .modal-content {
+                            background-color: #fff;
+                            margin: 15% auto;
+                            padding: 20px;
+                            border-radius: 5px;
+                            width: 300px;
+                            max-height: 80vh;
+                            position: relative;
+                        }
 
-                .modal-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
+                        .modal-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                        }
 
-                .close {
-                    font-size: 24px;
-                    font-weight: bold;
-                    cursor: pointer;
-                }
+                        .close {
+                            font-size: 24px;
+                            font-weight: bold;
+                            cursor: pointer;
+                        }
 
-                .filter-search {
-                    margin-bottom: 10px;
-                }
+                        .filter-search {
+                            margin-bottom: 10px;
+                        }
 
-                    .filter-search input {
-                        width: 100%;
-                        padding: 8px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        box-sizing: border-box;
-                    }
+                            .filter-search input {
+                                width: 100%;
+                                padding: 8px;
+                                border: 1px solid #ddd;
+                                border-radius: 4px;
+                                box-sizing: border-box;
+                            }
 
-                #filterCheckboxes {
-                    max-height: 300px;
-                    overflow-y: auto;
-                    margin-bottom: 10px;
-                }
+                        #filterCheckboxes {
+                            max-height: 300px;
+                            overflow-y: auto;
+                            margin-bottom: 10px;
+                        }
 
-                .checkbox-item {
-                    margin: 8px 0;
-                }
+                        .checkbox-item {
+                            margin: 8px 0;
+                        }
 
-                .modal-footer {
-                    display: flex;
-                    justify-content: space-between;
-                    gap: 8px;
-                    flex-wrap: wrap;
-                }
+                        .modal-footer {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 8px;
+                            flex-wrap: wrap;
+                        }
 
-                button {
-                    padding: 8px 12px;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    background-color: #4CAF50;
-                    color: white;
-                }
+                        button {
+                            padding: 8px 12px;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            background-color: #4CAF50;
+                            color: white;
+                        }
 
-                    button:hover {
-                        opacity: 0.8;
-                    }
+                            button:hover {
+                                opacity: 0.8;
+                            }
 
-                #cancelFilter {
-                    background-color: #f44336;
-                }
+                        #cancelFilter {
+                            background-color: #f44336;
+                        }
 
-                .filtered-column {
-                    background-color: #8ca9bf !important;
-                }
+                        .filtered-column {
+                            background-color: #8ca9bf !important;
+                        }
 
-                tr[style*="display: none"] {
-                    display: none !important;
-                } */
+                        tr[style*="display: none"] {
+                            display: none !important;
+                        } */
     </style>
     <div class="header-view">
         <h1 class="list_agreement">Реестр полученной ПСД по договору №@ViewData["contractNumber"]</h1>
@@ -742,7 +742,13 @@
                                     </a>
                                 </div>
                                 <div class="icon delete" title="Удалить запись">
-                                    <a onclick="DeleteEstimate(@estimate?.Id)"></a>
+                                    <a asp-action="Delete"
+                                       asp-controller="Estimate"
+                                       asp-route-id="@estimate?.Id"
+                                       asp-route-contractId="@contractId"
+                                       class="modal-link"
+                                       data-message="Смета и прикрепленные файлы будут удалены. Продолжить?">
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -939,37 +945,6 @@
 
         let list = [];
 
-        function DeleteEstimate(val) {
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ShowDeleteMessage", "Home")',
-                contentType: "application/html; charset=utf-8",
-                dataType: 'html',
-                success: function (result) {
-                    $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
-                    $('#modDialog').modal('show');
-
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete')
-                    elementDeleteButton[0].addEventListener('click', () => {
-                        $.ajax({
-                            type: 'GET',
-                            url: '@Url.Action("Delete", "Estimate")',
-                            data: { id: val },
-                            success: function (result) {
-                                window.location.reload();
-                            },
-                            error: function (result) {
-                                window.location.reload();
-                            }
-                        });
-                    })
-                },
-                error: function (result) {
-                }
-            })
-        }
-
         const onClickOpen = function () {
             const target = event.target;
             let parentROW = target.parentElement;
@@ -1134,7 +1109,6 @@
 
         onClickRow();
 
-
         $(document).ready(function () {
             $.ajax({
                 type: 'POST',
@@ -1154,7 +1128,6 @@
                 }
             });
         });
-
     </script>
 
     @* <script src="~/js/filterTableData.js"></script> *@

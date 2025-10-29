@@ -11,9 +11,9 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         IEnumerable<DateTime> GetFreeForms(int contractId);
 
-        List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period);
+        List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period, bool? useArchiveData =null);
 
-        ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type);
+        ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type, bool? useArchiveData = null);
 
         bool TryUpdateParentsForms(FormDTO newForm, Dictionary<int, ContractType>? parentContracts, CrudOp operation, FormDTO? previousStateForm = null, bool isOneOfMultipleDelete = false);
     }

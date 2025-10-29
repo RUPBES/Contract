@@ -6,6 +6,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IPrepaymentFactService : IService<PrepaymentFactDTO, PrepaymentFact>
     {
-        Prepayment GetLastPrepayment(int contractId);
+        Prepayment GetLastPrepayment(int contractId, bool? useArchiveData = null);
     }
 }

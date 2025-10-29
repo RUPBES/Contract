@@ -1,0 +1,121 @@
+﻿@using BusinessLayer.Enums
+@using BusinessLayer.Helpers
+@using BusinessLayer.Models
+@model MvcLayer.Models.SelectionProcedureViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+
+@{
+    var permissions = HttpHelper.GetUserPermissions();
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
+    var contract = Model?.ContractId > 0 ? Contract.GetById((int)Model?.ContractId, useArchiveData:true) : null;
+    ViewData["Title"] = "Процедура выбора";
+    string redirectAction = "GetArchByContractId";
+    string redirectController = "SelectionProcedures";
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <label class="my-modal-title">@ViewData["Title"] по договору @contract?.Number</label>
+                    @if (@contract?.Id != null && @contract?.Id > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@Model?.ContractId" class="close-btn"></a>
+                    }
+                    @if (@contract?.Id == null || @contract?.Id == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="IndexArch" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+                <table class="table table-striped table-bordered table-main">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.TypeProcedure)
+                            </th>
+                            <th class="text-center" colspan="2">
+                                Cроки проведения
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.StartPrice)
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.AcceptancePrice)
+                            </th>
+                            <th rowspan="2">
+                                Снижение
+                            </th>
+                            <th rowspan="2">
+                                @Html.DisplayNameFor(model => model.AcceptanceNumber),
+                                @Html.DisplayNameFor(model => model.DateAcceptance)
+                            </th>
+                            <th rowspan="2">Файлы</th>                            
+                        </tr>
+                        <tr>
+                            <th>
+                                @Html.DisplayNameFor(model => model.DateBegin)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.DateEnd)
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>                       
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => Model.TypeProcedure)
+                            </td>
+                            <td>
+                                @Model?.DateBegin?.ToShortDateString()
+                            </td>
+                            <td>
+                                @Model?.DateEnd?.ToShortDateString()
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => Model.Name)
+                            </td>
+                            <td class="text-end">
+                                @Convert.ToDecimal(Model.StartPrice).ToString("N2")
+                            </td>
+                            <td class="text-end">
+                                @Convert.ToDecimal(Model.AcceptancePrice).ToString("N2")
+                            </td>
+                            <td class="text-end">
+                                @{
+                                    var discont = Convert.ToDecimal(Model.StartPrice) - Convert.ToDecimal(Model.AcceptancePrice);
+                                }
+                                @discont.ToString("N2")
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => Model.AcceptanceNumber)
+                                @if (@Model.DateAcceptance != null)
+                                {
+                                    <span>
+                                        от
+                                    </span>
+                                    @Model.DateAcceptance?.ToShortDateString()
+                                }
+                            </td>
+                            <td>
+
+                                @foreach (FileDTO item2 in Files.GetAttachedFiles(Model.Id, FolderEnum.SelectionProcedures, useArchiveData: true))
+                                {
+                                    <div>
+                                        <a href="~/Files/OpenFile?id=@item2.Id&fileType=@item2.FileType&useArchiveData=true" target="_blank">@item2.FileName</a>
+                                    </div>
+                                }
+                            </td>
+                        </tr>                       
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

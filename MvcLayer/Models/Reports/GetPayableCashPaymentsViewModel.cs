@@ -1,6 +1,4 @@
-﻿using BusinessLayer.Models;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel;
 
 namespace MvcLayer.Models.Reports
 {

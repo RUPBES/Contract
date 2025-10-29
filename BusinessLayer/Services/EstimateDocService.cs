@@ -13,13 +13,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
 
-        public EstimateDocService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public EstimateDocService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(EstimateDocDTO item)
@@ -133,9 +135,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<EstimateDocDTO> Find(Func<EstimateDoc, bool> predicate)
+        public IEnumerable<EstimateDocDTO> Find(Func<EstimateDoc, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<EstimateDocDTO>>(_database.EstimateDocs.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<EstimateDocDTO>>(_databaseArch.EstimateDocs.Find(predicate)) :
+                 _mapper.Map<IEnumerable<EstimateDocDTO>>(_database.EstimateDocs.Find(predicate));
         }
 
         public void AddFile(int estimateDocId, int fileId)

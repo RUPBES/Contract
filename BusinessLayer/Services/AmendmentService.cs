@@ -13,13 +13,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
 
-        public AmendmentService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public AmendmentService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(AmendmentDTO item)
@@ -133,14 +135,19 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> predicate)
+        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<AmendmentDTO>>(_databaseArch.Amendments.Find(predicate)):
+                _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(predicate));
         }
 
-        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select)
+        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select, bool useArchiveData)
         {
-            return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(where, select));
+            var amendments = useArchiveData == true ?
+                               _databaseArch.Amendments.Find(where, select)
+                               : _database.Amendments.Find(where, select);
+            return _mapper.Map<IEnumerable<AmendmentDTO>>(amendments);
         }
 
         public void AddFile(int amendId, int fileId)
@@ -173,32 +180,5 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
-
-        //public (DateTime?, DateTime?)? GetPeriodRangeOfContractById(int contractId)
-        //{
-        //    (DateTime?, DateTime?) range = (null, null);
-
-        //    var lastAmendment = _database.Amendments.Find(x => x.ContractId == contractId).LastOrDefault();
-        //    range.Item1 = lastAmendment.DateBeginWork;
-        //    range.Item2 = lastAmendment.DateEndWork;
-
-        //    if (range.Item1 is null && range.Item2 is null)
-        //    {
-        //        return null;
-        //    }
-        //    return range;
-        //}
-
-        //public bool? HasNewAmendment(int contractId)
-        //{
-        //    var amendmentId = _database.Amendments.Find(x => x.ContractId == contractId && x.Type == "scope")?.OrderBy(x => x.Date).LastOrDefault()?.Id;
-            
-        //    if (amendmentId is null)
-        //    {
-        //        return null;
-        //    }
-            
-        //    return _database.ScopeWorkAmendments?.Find(p => p.AmendmentId == amendmentId)?.FirstOrDefault() is not null? true : false;
-        //}
     }
 }

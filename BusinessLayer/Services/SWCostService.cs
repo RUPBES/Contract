@@ -18,15 +18,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
 
-        public SWCostService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public SWCostService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(SWCostDTO item)
@@ -93,9 +93,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<SWCostDTO> Find(Func<SWCost, bool> predicate)
+        public IEnumerable<SWCostDTO> Find(Func<SWCost, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<SWCostDTO>>(_database.SWCosts.Find(predicate));
+            return (useArchiveData == true) ? 
+                _mapper.Map<IEnumerable<SWCostDTO>>(_databaseArch.SWCosts.Find(predicate)) :
+                _mapper.Map<IEnumerable<SWCostDTO>>(_database.SWCosts.Find(predicate));
         }
 
         public IEnumerable<SWCostDTO> Find(Func<SWCost, bool> where, Func<SWCost, SWCost> select)

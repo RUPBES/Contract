@@ -1,4 +1,5 @@
-﻿using DatabaseLayer.Models.KDO;
+﻿using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 
 namespace DatabaseLayer.Interfaces
@@ -19,7 +20,7 @@ namespace DatabaseLayer.Interfaces
         IRepository<Department> Departments { get; }
 
         IRepository<ContractFile> ContractFiles { get; }
-        IRepository<Contract> Contracts { get; }
+        IContractRepository Contracts { get; }
         IRepository<EmployeeContract> EmployeeContracts { get; }
         IRepository<ContractOrganization> ContractOrganizations { get; }
         IRepository<DepartmentEmployee> DepartmentEmployees { get; }

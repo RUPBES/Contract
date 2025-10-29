@@ -69,17 +69,17 @@
             <div class="dm-modal">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
-                    @if (backId != null && backId > 0)
+                    @if (backId > 0)
                     {
                         <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
                     }
-                    @if (backId == null || backId == 0)
+                    @if (backId == 0)
                     {
                         <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
                     }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action=@actionName asp-route-returnContractId="@ViewBag.returnContractId" class="row">
+                <form asp-action=@actionName asp-route-returnContractId="@backId" class="row">
                     <div class="cont-table">
                         <table class="table table-bordered table-main table-hover">
                             <tr>

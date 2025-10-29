@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.Entities;
 using DatabaseLayer.Models.KDO;
 using System.Diagnostics;
 
@@ -11,20 +13,22 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
-        public VContractService(IContractUoW database, IMapper mapper)
+        private readonly IContractArchiveUoW _databaseArch;
+        private readonly IReadonlyRepoDapper<VContract> _databaseDp;
+        private readonly IReadonlyContractDapperRepo _databaseContractDp;
+        public VContractService(IContractUoW database, IMapper mapper, IContractArchiveUoW databaseArch, 
+            IReadonlyRepoDapper<VContract> databaseDp, IReadonlyContractDapperRepo databaseContractDp)
         {
             _database = database;
             _mapper = mapper;
+            _databaseArch = databaseArch;
+            _databaseDp = databaseDp;
+            _databaseContractDp = databaseContractDp;
         }
 
         public IEnumerable<VContractDTO> Find(Func<VContract, bool> predicate)
         {
             return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.Find(predicate));
-        }
-
-        public IEnumerable<VContractDTO> FindContract(string queryString)
-        {
-            return _mapper.Map<IEnumerable<VContractDTO>>(_database.vContracts.FindContract(queryString));
         }
 
         public IEnumerable<VContractDTO> FindLikeNameObj(string queryString)
@@ -39,122 +43,147 @@ namespace BusinessLayer.Services
 
         public VContractDTO GetById(int id)
         {
-            var contract = _database.vContracts.GetById(id);
+            var contract = _databaseContractDp.GetById($"where c.Id ={id}");
 
             if (contract is not null)
             {
                 return _mapper.Map<VContractDTO>(contract);
             }
-            else
-            {
-                return null;
-            }
+            return null;
+
         }
 
-        public IndexViewModel GetPage(int pageSize, int pageNum, string org)
-        {            
+        public IndexViewModel GetPage(int pageSize, int pageNum, string org, bool useArchiveData)
+        {
             int skipEntities = (pageNum - 1) * pageSize;
-           
-            var items = _database.vContracts.GetEntitySkipTake(skipEntities, pageSize, org);
-            
-            int count = items.Count();
-            foreach (var item in items)
-            {
-                var amend = _database.Amendments.Find(x => x.ContractId == item.Id).OrderBy(x => x.Date).
-                    Select(x => new Amendment {DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork, DateEntryObject = x.DateEntryObject }).LastOrDefault();
-                if (amend is not null)
-                {
-                    item.DateBeginWork = amend.DateBeginWork;
-                    item.DateEndWork = amend.DateEndWork;
-                    item.EnteringTerm = amend.DateEntryObject;
-                }
-            }
-            var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
+
+            var items = useArchiveData ?
+                     _databaseArch.vContracts.GetEntitySkipTake(skipEntities, pageSize, org)
+                    : _databaseDp.GetEntitySkipTake(skipEntities, pageSize, org);
+
+            int count = useArchiveData ?
+               _databaseArch.vContracts.Count() :
+               _databaseDp.Count();
+
+
+            var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
             IndexViewModel viewModel = new IndexViewModel
             {
                 PageViewModel = pageViewModel,
-                Objects = t
+                Objects = objIndexModel
             };
-           
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string typeRequest, string sortOrder, string org)
+        public IndexViewModel GetPageFilter(int pageSize, int pageNum, string request, string typeRequest, string sortOrder, string org, bool useArchiveData)
         {
-            var list = org.Split(',');
+            var orgList = org.Split(',');
             int skipEntities = (pageNum - 1) * pageSize;
-            IEnumerable<VContract> items;
+            IEnumerable<VContract> contractsView;
+
             if (!String.IsNullOrEmpty(request))
             {
                 switch (typeRequest)
                 {
                     case "number":
-                        items = _database.vContracts.FindNumberContract(request, list);
+                        contractsView = useArchiveData ?
+                                  _databaseArch.vContracts.FindNumberContract(request, orgList) :
+                                  _databaseDp.Find($"c.Number like('%{request}%') ORDER BY Date DESC", orgList);
+                        //_database.vContracts.FindNumberContract(request, listOrganization);
+
                         break;
                     case "nameObject":
-                        items = _database.vContracts.FindLikeNameObj(request, list);
+                        contractsView = useArchiveData ?
+                                 _databaseArch.vContracts.FindLikeNameObj(request, orgList) :
+                                 _databaseDp.Find($"c.NameObject like('%{request}%') ORDER BY Date DESC", orgList);
+                        //_database.vContracts.FindLikeNameObj(request, listOrganization);
                         break;
                     case "client":
-                        items = _database.vContracts.FindOrganization(request, "client", list);// _database.vContracts.Find(x => list.Contains(x.Owner) && x.Client != null && x.Client.Contains(request));
+                        contractsView = useArchiveData ?
+                                 _databaseArch.vContracts.FindOrganization(request, "client", orgList) :
+                                 _databaseDp.Find($"c.Client like('%{request}%') ORDER BY Date DESC", orgList);
+                        //_database.vContracts.FindOrganization(request, "client", listOrganization);
+
                         break;
-                    case "general":                       
-                        items = _database.vContracts.FindOrganization(request, "general", list);
-                        break;                   
+                    case "general":
+                        contractsView = useArchiveData ?
+                                _databaseArch.vContracts.FindOrganization(request, "general", orgList) :
+                                _databaseDp.Find($"c.GenContractor like('%{request}%') ORDER BY Date DESC", orgList);
+                        //_database.vContracts.FindOrganization(request, "general", listOrganization);
+                        break;
                     default:
-                        items = _database.vContracts.Find(x => list.Contains(x.Owner));
+                        contractsView = useArchiveData ?
+                               _databaseArch.vContracts.Find(x => orgList.Contains(x.Owner)) :
+                               _databaseDp.Find($"ORDER BY Date DESC", orgList);
+                        //_database.vContracts.Find(x => orgList.Contains(x.Owner));
                         break;
-                }                
+                }
             }
-            else 
-            { 
-                items = _database.vContracts.Find(x => list.Contains(x.Owner)); 
+            else
+            {
+                contractsView = useArchiveData ?
+                    _databaseArch.vContracts.Find(x => orgList.Contains(x.Owner))
+                    : _databaseDp.Find($"ORDER BY Date DESC", orgList);
+                //: _database.vContracts.Find(x => orgList.Contains(x.Owner));
             }
-            int count = items.Count();
+
+            int count = useArchiveData ?
+               _databaseArch.vContracts.Count() :
+                _databaseDp.Count();
+            //_database.vContracts.Count();
 
             switch (sortOrder)
             {
                 case "number":
-                    items = items.OrderBy(s => s.Date).ThenBy(s => s.Number);
+                    contractsView = contractsView.OrderBy(s => s.Date).ThenBy(s => s.Number);
                     break;
                 case "numberDesc":
-                    items = items.OrderByDescending(s => s.Date).ThenBy(s => s.Number);
+                    contractsView = contractsView.OrderByDescending(s => s.Date).ThenBy(s => s.Number);
                     break;
                 case "nameObject":
-                    items = items.OrderBy(s => s.NameObject).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderBy(s => s.NameObject).ThenBy(s => s.Id);
                     break;
                 case "nameObjectDesc":
-                    items = items.OrderByDescending(s => s.NameObject).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderByDescending(s => s.NameObject).ThenBy(s => s.Id);
                     break;
                 case "client":
-                    items = items.OrderBy(s => s.Client).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderBy(s => s.Client).ThenBy(s => s.Id);
                     break;
                 case "clientDesc":
-                    items = items.OrderByDescending(s => s.Client).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderByDescending(s => s.Client).ThenBy(s => s.Id);
                     break;
                 case "genContractor":
-                    items = items.OrderBy(s => s.GenContractor).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderBy(s => s.GenContractor).ThenBy(s => s.Id);
                     break;
                 case "genContractorDesc":
-                    items = items.OrderByDescending(s => s.GenContractor).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderByDescending(s => s.GenContractor).ThenBy(s => s.Id);
                     break;
                 case "dateEnter":
-                    items = items.OrderBy(s => s.EnteringTerm).ThenBy(s => s.Id); 
+                    contractsView = contractsView.OrderBy(s => s.EnteringTerm).ThenBy(s => s.Id);
                     break;
                 case "dateEnterDesc":
-                    items = items.OrderByDescending(s => s.EnteringTerm).ThenBy(s => s.Id);
+                    contractsView = contractsView.OrderByDescending(s => s.EnteringTerm).ThenBy(s => s.Id);
                     break;
                 default:
-                    items = items.OrderBy(s => s.Id);
+                    contractsView = contractsView.OrderBy(s => s.Id);
                     break;
             }
 
-            items = items.Skip(skipEntities).Take(pageSize);
-            foreach (var item in items)
+            contractsView = contractsView.Skip(skipEntities).Take(pageSize);
+
+            foreach (var item in contractsView)
             {
-                var amend = _database.Amendments.Find(x => x.ContractId == item.Id).OrderBy(x => x.Date).
-                    Select(x => new Amendment { DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork, DateEntryObject = x.DateEntryObject }).LastOrDefault();
+                var amend = useArchiveData ?
+                    _databaseArch.Amendments
+                    .Find(x => x.ContractId == item.Id).OrderBy(x => x.Date)
+                    .Select(x => new { DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork, DateEntryObject = x.DateEntryObject }).LastOrDefault()
+
+                    : _database.Amendments
+                    .Find(x => x.ContractId == item.Id).OrderBy(x => x.Date)
+                    .Select(x => new { DateBeginWork = x.DateBeginWork, DateEndWork = x.DateEndWork, DateEntryObject = x.DateEntryObject }).LastOrDefault();
+
                 if (amend is not null)
                 {
                     item.DateBeginWork = amend.DateBeginWork;
@@ -162,16 +191,80 @@ namespace BusinessLayer.Services
                     item.EnteringTerm = amend.DateEntryObject;
                 }
             }
-                var t = _mapper.Map<IEnumerable<VContractDTO>>(items);
+            var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(contractsView);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
             IndexViewModel viewModel = new IndexViewModel
             {
                 PageViewModel = pageViewModel,
-                Objects = t
+                Objects = objIndexModel
             };
 
             return viewModel;
         }
+
+        /// <summary>
+        /// Возвращает список договоров, принадлежащих генподрядному договору по его ID и 
+        /// типу необходимых договоров
+        /// </summary>
+        /// <param name="id">ID Гендоговора</param>
+        /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
+        /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
+        public IEnumerable<VContractDTO> GetSubsByType(int? id, ContractType? contractType, bool useArchiveData)
+        {
+            if (!id.HasValue || contractType == null)
+            {
+                return Enumerable.Empty<VContractDTO>();
+            }
+            
+            Func<Contract, bool> selector;
+            string sqlPredicate = string.Empty;
+
+            if (contractType == ContractType.SubContract)
+            {
+                sqlPredicate = $"where c.SubContractId = @id and c.IsSubContract = 1  ORDER BY Date DESC";
+            }
+            else if (contractType == ContractType.Agreement)
+            {
+                sqlPredicate = $"where c.AgreementContractId = @id and c.IsAgreementContract = 1  ORDER BY Date DESC";
+            }
+            else if (contractType == ContractType.MultipleContract)
+            {
+                sqlPredicate = $"where c.MultipleContractId = @id and c.IsOneOfMultiple = 1  ORDER BY Date DESC";
+            }
+            else
+            {
+                return Enumerable.Empty<VContractDTO>();
+            }
+
+            //var s = _databaseDp.Find($"where c.Number like('%{request}%') and c.Owner IN @orgList  ORDER BY Date DESC");
+
+            //var contracts = useArchiveData ?
+            //    _databaseArch.Contracts.Find(selector) :
+            //    _database.Contracts.Find(selector);
+            var contracts = _databaseContractDp.GetSubsById(id.Value, sqlPredicate);
+            if (contracts.Any())
+            {
+                //foreach (var item in contracts)
+                //{
+                //    var amend = useArchiveData ?
+                //                _databaseArch.Amendments.Find(x => x.ContractId == item.Id).ToList() :
+                //                _database.Amendments.Find(x => x.ContractId == item.Id).ToList();
+
+                //    if (amend.Count > 0)
+                //    {
+                //        amend = amend.OrderBy(x => x.Date).ToList();
+                //        item.ContractPrice = amend.Last().ContractPrice;
+                //    }
+                //}
+                return _mapper.Map<IEnumerable<VContractDTO>>(contracts);
+            }
+            else
+            {
+                return Enumerable.Empty<VContractDTO>();
+            }
+        }
+
+
     }
 }

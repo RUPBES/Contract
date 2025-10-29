@@ -5,7 +5,10 @@
 
 @{
     ContractDTO contract = Contract.GetById(ViewBag.ContrId);
-    ViewData["Title"] = "Передать права на договор организации";
+    var isSubobjectCreation = ViewBag.IsSubobjectCreation;
+    ViewData["Title"] = isSubobjectCreation == true ?
+        "Добавить подобъект для субподрядчика" :
+        "Передать права на договор организации";
 }
 
 <div class="dm-overlay">
@@ -20,32 +23,57 @@
                 <form asp-action="ChangeOwner" class="row align-items-center" style="max-width:700px;">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <input name="contrId" type="number" value="@ViewBag?.ContrId" hidden>
+
+
                     <div class="row">
                         @if (contract is not null)
                         {
-                            <div class="">
-                                <label class="control-label mb-3">От</label>
-                                <div>
-                                    <span style="font-weight:600;text-transform:uppercase;">@Convertor?.GetNameOrganizationByCode(contract.Owner)</span>
+                            @if (isSubobjectCreation == false)
+                            {
+                                <div class="">
+                                    <label class="control-label mb-3">От</label>
+                                    <div>
+                                        <span style="font-weight:600;text-transform:uppercase;">@Convertor?.GetNameOrganizationByCode(contract.Owner)</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <label class="control-label mb-3">Кому</label>
-                                <select name="codeName" class="form-control js-chosen">
+                                <div class="col-12 mb-4">
+                                    <label class="control-label mb-3">Кому</label>
+                                    <select name="codeName" class="form-control js-chosen">
 
-                                    @foreach (var item in Enum.GetValues<OrganizationEnum>())
-                                    {
-                                        string code = item.ToString();
-                                        var name = Convertor.GetNameOrganizationByCode(item.ToString());
-                                        if (!contract.Owner.Equals(item.ToString(), StringComparison.OrdinalIgnoreCase))
-                                        {                                           
-                                            <option value="@code">@name</option>
+                                        @foreach (var item in Enum.GetValues<OrganizationEnum>())
+                                        {
+                                            string code = item.ToString();
+                                            var name = Convertor.GetNameOrganizationByCode(item.ToString());
+                                            if (!contract.Owner.Equals(item.ToString(), StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <option value="@code">@name</option>
+                                            }
                                         }
-                                    }
 
-                                </select>
-                            </div>
+                                    </select>
+                                </div>
+                            }
+                            @if (isSubobjectCreation == true)
+                            {
+                                <input name="isSubobjectCreation" type="hidden" value="true">
+                                <div class="col-12 mb-4">
+                                    <label class="control-label mb-3">Выбрать субподрядрядчика</label>
+                                    <select name="codeName" class="form-control js-chosen">
+                                        @foreach (var item in Enum.GetValues<OrganizationEnum>())
+                                        {
+                                            string code = item.ToString();
+                                            var name = Convertor.GetNameOrganizationByCode(item.ToString());
+                                            if (!contract.Owner.Equals(item.ToString(), StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <option value="@code">@name</option>
+                                            }
+                                        }
+
+                                    </select>
+                                </div>
+                            }
                         }
+
                         <div class="col-4">
                             <input type="submit" class="btn btn-primary col-12" value="Сохранить">
                         </div>

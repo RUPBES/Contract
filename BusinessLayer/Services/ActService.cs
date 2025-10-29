@@ -13,13 +13,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;     
 
-        public ActService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public ActService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(ActDTO item)
@@ -133,9 +135,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ActDTO> Find(Func<Act, bool> predicate)
+        public IEnumerable<ActDTO> Find(Func<Act, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<ActDTO>>(_database.Acts.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<ActDTO>>(_databaseArch.Acts.Find(predicate)):
+                _mapper.Map<IEnumerable<ActDTO>>(_database.Acts.Find(predicate));
         }
 
         public void AddFile(int actId, int fileId)

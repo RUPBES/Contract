@@ -1,6 +1,8 @@
 ﻿using BusinessLayer.Models;
+using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MvcLayer.Models
 {
@@ -14,6 +16,7 @@ namespace MvcLayer.Models
         /// </summary>
         /// 
         [DisplayName("Номер")]
+        [JsonProperty("РегистрационныйНомер")]
         public string? Number { get; set; }
 
         /// <summary>
@@ -30,6 +33,7 @@ namespace MvcLayer.Models
         /// Дата договора
         /// </summary>
         [DisplayName("Дата заключения договора")]
+        [JsonProperty("ДатаРегистрации")]
         public DateTime? Date { get; set; }
 
         /// <summary>
@@ -48,12 +52,14 @@ namespace MvcLayer.Models
         /// Начало работ
         /// </summary>
         [DisplayName("Начало работ")]
+        [JsonProperty("ДатаНачалаДействия")]
         public DateTime? DateBeginWork { get; set; }
 
         /// <summary>
         /// Конец работ
         /// </summary>
         [DisplayName("Окончание работ")]
+        [JsonProperty("ДатаОкончанияДействия")]
         public DateTime? DateEndWork { get; set; }
 
         //TODO: Currency - первая буква русская, начинается с базы данных и т.д. вверх
@@ -61,12 +67,14 @@ namespace MvcLayer.Models
         /// Валюта
         /// </summary>
         [DisplayName("Валюта")]
+        [JsonProperty("Валюта")]
         public string? Сurrency { get; set; }
 
         /// <summary>
         /// Цена контракта
         /// </summary>
         [DisplayName("Договорная цена")]
+        [JsonProperty("Сумма")]
         //[Required(ErrorMessage = "Превышает стоимость ген.договора")]
         public decimal ContractPrice { get; set; }
 
@@ -74,6 +82,7 @@ namespace MvcLayer.Models
         /// Наименование объекта
         /// </summary>
         [DisplayName("Наименование объекта")]
+        [JsonProperty("Наименование")]
         public string? NameObject { get; set; }
 
 
@@ -129,13 +138,26 @@ namespace MvcLayer.Models
         public string? WorkType { get; set; }
 
 
+
+        public string? SignatoryEmp { get; set; }
+
+        public string? ResponsibleEmp { get; set; }
+
+        //[JsonProperty("РегистрационныйНомер")]
+        public string? GenContractor { get; set; }
+
+        public string? ResponsibleForWork { get; set; }
+
+        //[JsonProperty("РегистрационныйНомер")]
+        public string? Client { get; set; }
+
         public int? PaymentConditionsDaysRaschet { get; set; }
         public int? PaymentConditionsDaysRaschet2 { get; set; }
         public int? ContractType { get; set; }
-
         public bool IsMultiple { get; set; }
         public int? MultipleContractId { get; set; }
         public bool IsOneOfMultiple { get; set; }
+
 
         public string? Author { get; set; }
         public string? Owner { get; set; }
@@ -145,6 +167,11 @@ namespace MvcLayer.Models
         public decimal? ThisYearSum { get; set; }
         public decimal? PreYearSum { get; set; }
         public decimal? RemainingSum { get; set; }
+
+        public string? ProcedureName { get; set; }
+
+        public int? ProcedureId { get; set; }
+        public DateTime? ArchivedDate { get; set; }
 
         public ContractViewModel? MultipleContract { get; set; }
 

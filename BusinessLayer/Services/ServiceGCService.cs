@@ -136,7 +136,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ServiceGCDTO> Find(Func<ServiceGc, bool> predicate)
+        public IEnumerable<ServiceGCDTO> Find(Func<ServiceGc, bool> predicate, bool? booluseArchiveData)
         {
             return _mapper.Map<IEnumerable<ServiceGCDTO>>(_database.ServiceGCs.Find(predicate));
         }

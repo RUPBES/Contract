@@ -77,13 +77,13 @@
                     @item.ContractChanges
                 </td>                
                 <td>
-                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
+                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, FolderEnum.Amendment))
                     {
                         <div>
                             <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                             @if (isAdmin)
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, page= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
                             }
                         </div>
                     }
@@ -100,13 +100,13 @@
 </table>
 @* <div class="pages">
     <div class="npPage page-items">
-        <a class="@(!Model.PageViewModel.HasPreviousPage ? "disabled" : "")" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
+        <a class="@(!Model.PageViewModel.HasPreviousPage ? "disabled" : "")" asp-action="Index" asp-route-page="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
     </div>
     <div class="page-items">
         Cтраница: @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages
     </div>
     <div class="npPage page-items">
-        <a class="@(!Model.PageViewModel.HasNextPage ? "disabled" : "")" asp-action="Index" asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
+        <a class="@(!Model.PageViewModel.HasNextPage ? "disabled" : "")" asp-action="Index" asp-route-page="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
     </div>
 </div> *@
 @section Scripts {

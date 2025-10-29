@@ -21,12 +21,14 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger; 
-        public ContractOrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public ContractOrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;
         }
 
 
@@ -112,6 +114,22 @@ namespace BusinessLayer.Services
             }
         }
 
+        public ContractOrganizationDTO GetById(int id, int? secondId, bool? useArchiveData)
+        {
+            var contract = (useArchiveData == true) ? 
+                _databaseArch.ContractOrganizations.GetById(id, secondId) :
+                _database.ContractOrganizations.GetById(id, secondId);
+
+            if (contract is not null)
+            {
+                return _mapper.Map<ContractOrganizationDTO>(contract);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public void Update(ContractOrganizationDTO item)
         {
             if (item is not null)
@@ -135,7 +153,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ContractOrganizationDTO> Find(Func<ContractOrganization, bool> predicate)
+        public IEnumerable<ContractOrganizationDTO> Find(Func<ContractOrganization, bool> predicate, bool? useArchiveData)
         {
             return _mapper.Map<IEnumerable<ContractOrganizationDTO>>(_database.ContractOrganizations.Find(predicate));
         }

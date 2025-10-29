@@ -60,7 +60,7 @@
                                                 new { 
                                                     sortOrder = ViewBag.FullNameSortParm, 
                                                     currentFilter = ViewData["CurrentFilter"],
-                                                    pageNum = Model.PageViewModel.PageNumber 
+                                                    page = Model.PageViewModel.PageNumber 
                                                 }, 
                                                 new { id = "arrayFullName", @class = "up" }) *@
                                         </span>
@@ -72,7 +72,7 @@
                                                 new { 
                                                     sortOrder = ViewBag.EmailSortParm, 
                                                     currentFilter = ViewData["CurrentFilter"],
-                                                    pageNum = Model.PageViewModel.PageNumber 
+                                                    page = Model.PageViewModel.PageNumber 
                                                 }, 
                                                 new { id = "arrayEmail", @class = "up" }) *@
                                         </span>
@@ -128,7 +128,11 @@
                                                 @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                                 {
                                                     <span class="icon delete" title="Удалить">
-                                                        <a onclick="deleteEmpl(@item.Id)"></a>
+                                                        <a asp-action="Delete"
+                                                           asp-route-id="@item.Id"
+                                                           asp-route-page="@Model.PageViewModel.PageNumber"
+                                                           class="modal-link"
+                                                           data-message="Сотрудник будет удален. Продолжить?"></a>
                                                     </span>
                                                 }
                                             </div>
@@ -145,14 +149,14 @@
                                     @if (Model.PageViewModel.PageNumber > 1)
                                     {
                                         <a class="page-link" asp-action="Index"
-                                           asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                                            asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
                                     }
                                     @if (Model.PageViewModel.PageNumber <= 1)
                                     {
                                         <a class="page-link" asp-action="Index"
-                                           asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                                            tabindex="-1" aria-disabled="true">&lt;</a>
@@ -168,7 +172,7 @@
                                     <li class="page-item pag_btn_num">
                                         <a class="page-link"
                                            asp-action="Index"
-                                           asp-route-pageNum="@i"
+                                           asp-route-page="@i"
                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                                            value="@i">@i</a>
@@ -186,14 +190,14 @@
                                     @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
                                     {
                                         <a class="page-link" asp-action="Index"
-                                           asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                                            asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
                                     }
                                     else
                                     {
                                         <a class="page-link" asp-action="Index"
-                                           asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
                                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                                            aria-disabled="true">&gt;</a>
@@ -213,37 +217,7 @@
         ////// Pagination
         paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
         //////ENd pagination
-        function deleteEmpl(id) {
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ShowDeleteMessage", "Home")',
-                contentType: "application/html; charset=utf-8",
-                dataType: 'html',
-                success: function (result) {
-                    $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
-                    $('#modDialog').modal('show');
-
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
-                    elementDeleteButton[0].addEventListener('click', () => {
-                        $.ajax({
-                            type: 'GET',
-                            url: '@Url.Action("Delete", "Employees")',
-                            data: { id: id },
-                            success: function (result) {
-                                window.location.reload();
-                            },
-                            error: function (result) {
-                                window.location.reload();
-                            }
-                        });
-                    });
-                },
-                error: function (result) {
-                    // alert("Ошибка отображения");
-                }
-            })
-        }
+       
         window.onload = function () {
             const actualUrl = window.location.search;
             const elementArrayFullName = document.getElementById("arrayFullName");

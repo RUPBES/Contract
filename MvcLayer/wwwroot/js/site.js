@@ -83,7 +83,14 @@ function digits_float(target) {
     val = val.replace(/(?!^)-/g, '');
     if (val.indexOf(",") != '-1') {
         first = val.substring(0, val.indexOf(",") + 1);
-        second = val.substring(val.indexOf(",") + 1, val.indexOf(",") + 3);
+        
+        let checkds = +(val.substring(val.indexOf(",") + 1, val.indexOf(",") + 4));
+        if (checkds.toString().length > 2) {
+            second = (+('0.' + checkds)).toFixed(2).toString();
+            second = second.substring(second.indexOf(".") + 1, second.indexOf(".") + 4);
+        } else {
+            second = val.substring(val.indexOf(",") + 1, val.indexOf(",") + 3);
+        }
         second = second.replace(/[^0-9]/g, '');
         val = first + second;
     }

@@ -9,7 +9,6 @@ using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using System.IO;
 using System.Reflection;
 using File = DatabaseLayer.Models.KDO.File;
 
@@ -19,15 +18,17 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
         private readonly IHostingEnvironment _env;
 
-        public FileService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env)
+        public FileService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _env = env;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(IFormFileCollection files, FolderEnum folder, int entityId, string nestedFolder = null)
@@ -185,9 +186,11 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(predicate));
         }
 
-        public FileDTO? GetById(int id)
+        public FileDTO? GetById(int id, bool? useArchiveData)
         {
-            var file = _database.Files.GetById(id);
+            var file = (useArchiveData == true) ?
+                _databaseArch.Files.GetById(id):
+                _database.Files.GetById(id);
 
             if (file is not null)
             {
@@ -222,93 +225,156 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<FileDTO> GetFilesOfEntity(int entityId, FolderEnum folder)
+        public IEnumerable<FileDTO> GetAttachedFiles(int entityId, FolderEnum folder, bool? useArchiveData)
         {
             List<File> result = new List<File>();
 
             switch (folder)
             {
                 case FolderEnum.Acts:
-                    var filesAct = _database.ActFiles.Find(x => x.ActId == entityId);
+                    var filesAct = (useArchiveData == true) ?
+                        _databaseArch.ActFiles.Find(x => x.ActId == entityId):
+                        _database.ActFiles.Find(x => x.ActId == entityId);
+
                     foreach (var file in filesAct)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                            _databaseArch.Files.Find(x => x.Id == file.FileId):
+                            _database.Files.Find(x => x.Id == file.FileId));
                     }
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.Amendment:
 
-                    var filesAmend = _database.AmendmentFiles.Find(x => x.AmendmentId == entityId);
+                    var filesAmend = (useArchiveData == true) ?
+                        _databaseArch.AmendmentFiles.Find(x => x.AmendmentId == entityId):
+                        _database.AmendmentFiles.Find(x => x.AmendmentId == entityId);
 
                     foreach (var file in filesAmend)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                            _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                            _database.Files.Find(x => x.Id == file.FileId));
                     }
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.CommissionActs:
-                    var filesComm = _database.CommissionActFiles.Find(x => x.СommissionActId == entityId);
+
+                    var filesComm = (useArchiveData == true) ?
+                        _databaseArch.CommissionActFiles.Find(x => x.СommissionActId == entityId):
+                        _database.CommissionActFiles.Find(x => x.СommissionActId == entityId);
+
                     foreach (var file in filesComm)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                            _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                            _database.Files.Find(x => x.Id == file.FileId));
                     }
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.Correspondences:
-                    var filesCorres = _database.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId);
+
+                    var filesCorres = (useArchiveData == true) ?
+                        _databaseArch.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId):
+                        _database.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId);
+
                     foreach (var file in filesCorres)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                           _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                           _database.Files.Find(x => x.Id == file.FileId));
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.Estimate:
 
-                    var filesEstimate = _database.EstimateFiles.Find(x => x.EstimateId == entityId);
+                    var filesEstimate = (useArchiveData == true) ?
+                        _databaseArch.EstimateFiles.Find(x => x.EstimateId == entityId):
+                        _database.EstimateFiles.Find(x => x.EstimateId == entityId);
+
                     foreach (var file in filesEstimate)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                           _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                           _database.Files.Find(x => x.Id == file.FileId));
                     }
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.EstimateDocumentations:
 
-                    var filesEstimateDoc = _database.EstimateDocFiles.Find(x => x.EstimateDocId == entityId);
+                    var filesEstimateDoc = (useArchiveData == true) ?
+                        _databaseArch.EstimateDocFiles.Find(x => x.EstimateDocId == entityId):
+                        _database.EstimateDocFiles.Find(x => x.EstimateDocId == entityId);
+
                     foreach (var file in filesEstimateDoc)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                           _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                           _database.Files.Find(x => x.Id == file.FileId));
                     }
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.Form3C:
 
-                    var filesForm = _database.FormFiles.Find(x => x.FormId == entityId);
+                    var filesForm = (useArchiveData == true) ?
+                        _databaseArch.FormFiles.Find(x => x.FormId == entityId):
+                        _database.FormFiles.Find(x => x.FormId == entityId);
+
                     foreach (var file in filesForm)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                           _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                           _database.Files.Find(x => x.Id == file.FileId));
                     }
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.Contracts:
 
-                    var filesContract = _database.ContractFiles.Find(x => x.ContractId == entityId);
+                    var filesContract = (useArchiveData == true) ?
+                        _databaseArch.ContractFiles.Find(x => x.ContractId == entityId):
+                        _database.ContractFiles.Find(x => x.ContractId == entityId);
+
                     foreach (var file in filesContract)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                           _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                           _database.Files.Find(x => x.Id == file.FileId));
                     }
+                    
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.PrepaymentTake:
-                    result.AddRange(_database.Files.Find(x => x.Id == entityId));
+
+                    var filesPrepTakeId = (useArchiveData == true) ?
+                        _databaseArch.PrepaymentTakes.GetById(entityId).FileId:
+                        _database.PrepaymentTakes.GetById(entityId).FileId;
+
+
+                    result.AddRange(
+                        (useArchiveData == true) ?
+                            _databaseArch.Files.Find(x => x.Id == filesPrepTakeId):
+                            _database.Files.Find(x => x.Id == filesPrepTakeId)
+                    );
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case FolderEnum.SelectionProcedures:
 
-                    var filesProcedure = _database.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId);
+                    var filesProcedure = (useArchiveData == true) ?
+                        _databaseArch.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId):
+                        _database.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId);
+
                     foreach (var file in filesProcedure)
                     {
-                        result.AddRange(_database.Files.Find(x => x.Id == file.FileId));
+                        result.AddRange((useArchiveData == true) ?
+                           _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                           _database.Files.Find(x => x.Id == file.FileId));
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
             }
@@ -435,9 +501,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder)
+        public IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\")));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<FileDTO>>(_databaseArch.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\"))):
+                _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\")));
         }
     }
 }

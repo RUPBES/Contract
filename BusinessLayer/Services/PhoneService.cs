@@ -95,7 +95,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<PhoneDTO> Find(Func<Phone, bool> predicate)
+        public IEnumerable<PhoneDTO> Find(Func<Phone, bool> predicate, bool? booluseArchiveData)
         {
             return _mapper.Map<IEnumerable<PhoneDTO>>(_database.Phones.Find(predicate));
         }

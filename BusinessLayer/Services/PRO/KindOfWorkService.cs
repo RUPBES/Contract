@@ -93,7 +93,7 @@ namespace BusinessLayer.Services.PRO
             }
         }
 
-        public IEnumerable<KindOfWorkDTO> Find(Func<KindOfWork, bool> predicate)
+        public IEnumerable<KindOfWorkDTO> Find(Func<KindOfWork, bool> predicate, bool? booluseArchiveData)
         {
             return _mapper.Map<IEnumerable<KindOfWorkDTO>>(_database.KindOfWorks.Find(predicate));
         }

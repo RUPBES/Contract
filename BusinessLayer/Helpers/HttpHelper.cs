@@ -33,11 +33,13 @@ namespace BusinessLayer.Helpers
             {
                 var permissions = new Permission();
                 permissions.IsAdmin = listClaims.FirstOrDefault(x => x.Value == "ContrAdmin") is not null ? true : false;
+                permissions.IsLeadAdmin = listClaims.FirstOrDefault(x => x.Value == "ContrLeadAdmin") is not null ? true : false;
                 permissions.IsCreator = listClaims.FirstOrDefault(x => x.Value == "ContrCreate") is not null ? true : false;
                 permissions.IsReader = listClaims.FirstOrDefault(x => x.Value == "ContrView") is not null ? true : false;
                 permissions.IsEditor = listClaims.FirstOrDefault(x => x.Value == "ContrEdit") is not null ? true : false;
                 permissions.IsDeleter = listClaims.FirstOrDefault(x => x.Value == "ContrDelete") is not null ? true : false;
-
+                permissions.Company = _httpCntxt?.HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value;
+                
                 var listGRP = listClaims.Where(x => x.Type == "grp")?.Select(x => x.Value)?.ToList();
                 if (listGRP is not null && listGRP.Count() > 0)
                 {

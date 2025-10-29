@@ -1,5 +1,6 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.Entities;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
@@ -544,7 +545,7 @@ namespace DatabaseLayer
                 return contractOrganizationRepository;
             }
         }
-        public IRepository<Contract> Contracts
+        public IContractRepository Contracts
         {
             get
             {

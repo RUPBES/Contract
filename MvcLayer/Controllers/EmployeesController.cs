@@ -28,14 +28,14 @@ namespace MvcLayer.Controllers
             _httpHelper = httpHelper;
         }
 
-        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)
+        public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)
         {
             var organizations = _httpHelper.GetUserOrganizationCodes();
             ViewBag.CurrentSort = sortOrder;
 
             if (searchString != null)
             {
-                pageNum = 1;
+                page = 1;
             }
             else
             {
@@ -43,11 +43,11 @@ namespace MvcLayer.Controllers
             }
 
             ViewData["CurrentFilter"] = searchString;
-            ViewBag.Page = pageNum;
+            ViewBag.Page = page;
 
             if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-                return await Task.FromResult<IActionResult>(View(_employeesService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder, organizations)));
-            else return await Task.FromResult<IActionResult>(View(_employeesService.GetPage(100, pageNum ?? 1, organizations)));
+                return await Task.FromResult<IActionResult>(View(_employeesService.GetPageFilter(100, page ?? 1, searchString, sortOrder, organizations)));
+            else return await Task.FromResult<IActionResult>(View(_employeesService.GetPage(100, page ?? 1, organizations)));
         }
 
         public async Task<IActionResult> Details(int? id, int? page, string? filter)
@@ -168,19 +168,20 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id)
+        [Route("/Employees/Delete/{id}/{page}")]
+        public IActionResult Delete(int id, int page)
         {
             try
             {
                 _employeesService.Delete(id);
                 NotificationHelper.SetNotification(TempData, "Сотрудник удален", NotificationType.Info);
-                return Ok();
             }
             catch (Exception)
             {
                 NotificationHelper.SetNotification(TempData, "Не удалось удалить сотрудника", NotificationType.Error);
-                return NotFound();
             }
+
+            return RedirectToAction(nameof(Index), new { page = page });
         }
     }
 }

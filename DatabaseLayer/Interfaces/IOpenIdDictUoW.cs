@@ -4,9 +4,9 @@ namespace DatabaseLayer.Interfaces
 {
     public interface IOpenIdDictUoW
     {
-        IRepositoryShort<AbpOrganizationUnit> AbpOrganizationUnits { get; }
-        IRepositoryShort<AbpUser> AbpUsers { get; }
-        IRepositoryShort<AbpUserOrganizationUnit> AbpUserOrganizationUnits { get; }
+        IReadonlyRepoEF<AbpOrganizationUnit> AbpOrganizationUnits { get; }
+        IReadonlyRepoEF<AbpUser> AbpUsers { get; }
+        IReadonlyRepoEF<AbpUserOrganizationUnit> AbpUserOrganizationUnits { get; }
 
         void Save();
     }

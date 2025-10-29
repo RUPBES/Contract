@@ -7,7 +7,7 @@
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 
 
-@{   
+@{
     var permissions = HttpHelper.GetUserPermissions();
 
     var contract = Contract.GetById((int)ViewBag.contractId);
@@ -17,11 +17,11 @@
     {
         backId = ViewBag.contractId;
     }
-    else 
-    { 
-        backId = ViewBag.returnContractId; 
+    else
+    {
+        backId = ViewBag.returnContractId;
     }
-    // bool isAdmin = true;
+
     string redirectAction = "GetByContractId";
     string redirectController = "Acts";
     var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
@@ -48,7 +48,7 @@
                     <table class="table table-striped table-bordered table-main table-hover">
                         <thead>
                             <tr>
-                                <th class="text-center" rowspan="2">                               
+                                <th class="text-center" rowspan="2">
                                     @Html.DisplayNameFor(model => model.DateAct)
                                 </th>
                                 <th class="text-center" rowspan="2">
@@ -68,13 +68,13 @@
                             <tr>
                                 <th class="text-center align-middle" colspan="1">с "дата"</th>
                                 <th class="text-center align-middle" colspan="1">по "дата"</th>
-                            </tr>                        
+                            </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in Model)
                             {
                                 <tr>
-                                    <td>                                   
+                                    <td>
                                         @item.DateAct?.ToShortDateString()
                                     </td>
                                     <td>
@@ -90,7 +90,7 @@
                                     </td>
                                     <td>
                                         @Html.DisplayFor(modelItem => item.Reason)
-                                    </td>                                
+                                    </td>
                                     <td>
                                         @item.DateSuspendedFrom?.ToShortDateString()
                                     </td>
@@ -99,9 +99,9 @@
                                     </td>
                                     <td>
                                         @item.DateRenewal?.ToShortDateString()
-                                    </td>                                
+                                    </td>
                                     <td>
-                                        @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Acts))
+                                        @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, FolderEnum.Acts))
                                         {
                                             // <div>
                                             //     <a onclick="window.open('@Url.Action("GetFile","Files", new {id=@item2.Id})', '_blank')">@item2.FileName</a>
@@ -109,10 +109,16 @@
                                             // </div>
 
                                             <div>
-                                                <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
                                                 @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                                                 {
-                                                    @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                    <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                                       asp-route-redirectAction="@redirectAction"
+                                                       asp-route-redirectController="@redirectController"
+                                                       asp-route-contractId="@item.ContractId"
+                                                       title="Удалить файл"
+                                                       class="modal-link del-btn"
+                                                       data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
                                                 }
                                             </div>
                                         }
@@ -133,7 +139,12 @@
                                         @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                                         {
                                             <span class="icon delete" title="Удалить акт">
-                                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                                <a asp-action="Delete"
+                                                   asp-route-id="@item.Id"
+                                                   asp-route-contractId="@item.ContractId"
+                                                   class="modal-link"
+                                                   data-message="Акт приостановки/возобновления работ (услуг) и прикрепленные файлы будут удалены. Продолжить?">
+                                                </a>
                                             </span>
                                         }
                                     </td>
@@ -166,15 +177,3 @@
         </div>
     </div>
 </div>
-@section Scripts {
-    <script type="text/javascript">
-        function confirmDelete() {
-            if (confirm('Вы уверены, что хотите удалить?')) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    </script>
-}

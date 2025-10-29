@@ -45,14 +45,9 @@ public class EstimateController : Controller
         _logger = logger;
     }
 
-    public ActionResult Index(string sortOrder, int contractId,
-        Dictionary<string, string> SearchString,
-        Dictionary<string, string> CurrentSearchString,
-        Dictionary<string, List<int>> ListSearchString,
-        Dictionary<string, List<int>> CurrentListSearchString,
-        int returnContractId = 0, int? pageNum = 1)
-
-    
+    public ActionResult Index(string sortOrder, int contractId, Dictionary<string, string> SearchString,
+                Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString,
+                Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? page = 1)
     {
         #region НОМЕР_1
 
@@ -61,14 +56,14 @@ public class EstimateController : Controller
         ViewBag.ContractId = contractId;
         ViewData["returnContractId"] = returnContractId;
         var pageSize = 1000;
-        if (pageNum < 1)
+        if (page < 1)
         {
-            pageNum = 1;
+            page = 1;
         }
 
         #endregion
 
-        var list = _estimateService.GetPageFilterByContract(pageSize, (int)pageNum, sortOrder, contractId,
+        var list = _estimateService.GetPageFilterByContract(pageSize, (int)page, sortOrder, contractId,
                                  SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString);
         
        
@@ -233,6 +228,176 @@ public class EstimateController : Controller
         return View(answer);
     }
 
+    
+    [Route("/archive/Estimates")]
+    public ActionResult IndexArch(string sortOrder, int contractId, Dictionary<string, string> SearchString,
+               Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString,
+               Dictionary<string, List<int>> CurrentListSearchString, int returnContractId = 0, int? page = 1)
+    {
+       
+        ViewData["contractNumber"] = _contractService.Find(x => x.Id == contractId, useArchiveData:true).Select(x => x.Number).FirstOrDefault();
+        ViewBag.ContractId = contractId;
+        ViewData["returnContractId"] = returnContractId;
+        var pageSize = 1000;
+        if (page < 1)
+        {
+            page = 1;
+        }
+
+        var list = _estimateService.GetPageFilterByContract(pageSize, (int)page, sortOrder, contractId,
+                                 SearchString, CurrentSearchString, ListSearchString, CurrentListSearchString, useArchiveData: true);
+
+        var answer = new IndexViewModel();
+        var estimateDTOs = (List<EstimateDTO>)list.Objects;
+
+        var estimateItemsModel = new List<EstimateViewModel>();
+        var totalCostResultModel = new Dictionary<string, EstimateCostResultModel>();
+
+        //todo: переделать вывод сумм за все сметы
+        var totalSumByKindWork = estimateDTOs.Select(x => new
+        {
+            x.LaborCost,
+            x.ContractsCost,
+            x.DoneSmrCost,
+            x.RemainsSmrCost,
+            x.PercentOfContrPrice,
+            KindWorkName = _abbreviationKindOfWorkService.Find(a => a.Id == x.KindOfWorkId, useArchiveData: true)
+                                                         .Select(a => a.KindOfWork.name)
+                                                         .FirstOrDefault()
+        }).GroupBy(x => x.KindWorkName);
+
+        var estimateByBuildingCode = estimateDTOs.Where(x => x.IsChange != true).Select(x => new
+        {
+            x.BuildingCode,
+            x.BuildingName,
+            x.Number,
+            x.EstimateDate,
+            x.ChangeEstimateDate,
+            x.Id,
+
+            x.DrawingsDate,
+            x.DrawingsName,
+            x.ChangeDrawingDate,
+            x.DrawingsKit,
+            x.SubContractor,
+            x.IsChange,
+            x.ChangeEstimateId,
+            x.ChangeNumber,
+
+            x.LaborCost,
+            x.ContractsCost,
+            x.DoneSmrCost,
+            x.RemainsSmrCost,
+            x.PercentOfContrPrice,
+            KindWorkName = _abbreviationKindOfWorkService.Find(a => a.Id == x.KindOfWorkId, useArchiveData: true)
+                                                         .Select(a => a.KindOfWork.name)
+                                                         .FirstOrDefault()
+        }).GroupBy(x => x.BuildingCode);
+
+        var contrCostTotal = 0M;
+        var doneSmrCostTotal = 0M;
+        var laborCostTotal = 0.0;
+        var remainsSmrCost = 0M;
+
+        foreach (var resultItem in totalSumByKindWork)
+        {
+            totalCostResultModel.Add(resultItem.Key, new EstimateCostResultModel
+            {
+                ContractsCost = resultItem.Sum(x => x.ContractsCost),
+                DoneSmrCost = resultItem.Sum(x => x.DoneSmrCost),
+                LaborCost = resultItem.Sum(x => x.LaborCost),
+                RemainsSmrCost = resultItem.Sum(x => x.RemainsSmrCost),
+            });
+
+            contrCostTotal += resultItem.Sum(x => x.ContractsCost) ?? 0M;
+            doneSmrCostTotal += resultItem.Sum(x => x.DoneSmrCost) ?? 0M;
+            laborCostTotal += resultItem.Sum(x => x.LaborCost) ?? 0.0;
+            remainsSmrCost += resultItem.Sum(x => x.RemainsSmrCost) ?? 0M;
+        }
+
+        totalCostResultModel.Add("totalSum", new EstimateCostResultModel
+        {
+            ContractsCost = contrCostTotal,
+            DoneSmrCost = doneSmrCostTotal,
+            LaborCost = laborCostTotal,
+            RemainsSmrCost = remainsSmrCost,
+        });
+
+        //todo: или здесь => переделать вывод сумм за все сметы
+        foreach (var resultItem in estimateByBuildingCode)
+        {
+            contrCostTotal = 0M;
+            doneSmrCostTotal = 0M;
+            laborCostTotal = 0.0;
+            remainsSmrCost = 0M;
+
+            var newEstItem = new EstimateViewModel();
+            newEstItem.BuildingCode = resultItem.Key;
+
+            foreach (var item in resultItem)
+            {
+                newEstItem.Estimates.Add(new EstimateItem
+                {
+                    BuildingCode = item.BuildingCode,
+                    BuildingName = item.BuildingName,
+                    Number = item.Number,
+                    EstimateDate = item.EstimateDate,
+                    ChangeEstimateDate = item.ChangeEstimateDate,
+                    Id = item.Id,
+                    DrawingsDate = item.DrawingsDate,
+                    DrawingsName = item.DrawingsName,
+                    ChangeDrawingDate = item.ChangeDrawingDate,
+                    DrawingsKit = item.DrawingsKit,
+                    SubContractor = item.SubContractor,
+                    IsChange = item.IsChange,
+                    ChangeEstimateId = item.ChangeEstimateId,
+                    ChangeNumber = item.ChangeNumber,
+
+                    LaborCost = item.LaborCost,
+                    ContractsCost = item.ContractsCost,
+                    DoneSmrCost = item.DoneSmrCost,
+                    RemainsSmrCost = item.RemainsSmrCost,
+                    PercentOfContrPrice = item.PercentOfContrPrice,
+
+                });
+            }
+
+            foreach (var costs in resultItem.GroupBy(x => x.KindWorkName))
+            {
+                newEstItem.CostResults.Add(costs?.Key, new EstimateCostResultModel
+                {
+                    ContractsCost = costs.Sum(x => x.ContractsCost),
+                    DoneSmrCost = costs.Sum(x => x.DoneSmrCost),
+                    LaborCost = costs.Sum(x => x.LaborCost),
+                    RemainsSmrCost = costs.Sum(x => x.RemainsSmrCost),
+                });
+
+                contrCostTotal += costs.Sum(x => x.ContractsCost) ?? 0M;
+                doneSmrCostTotal += costs.Sum(x => x.DoneSmrCost) ?? 0M;
+                laborCostTotal += costs.Sum(x => x.LaborCost) ?? 0.0;
+                remainsSmrCost += costs.Sum(x => x.RemainsSmrCost) ?? 0M;
+
+            }
+
+            newEstItem.CostResults.Add("totalSum", new EstimateCostResultModel
+            {
+                ContractsCost = contrCostTotal,
+                DoneSmrCost = doneSmrCostTotal,
+                LaborCost = laborCostTotal,
+                RemainsSmrCost = remainsSmrCost,
+            });
+
+            estimateItemsModel.Add(newEstItem);
+        }
+
+        ViewBag.TotalSumObject = totalCostResultModel;
+        ViewBag.CurrentSearchString = SearchString;
+        ViewBag.CurrentListSearchString = ListSearchString;
+        answer.Objects = estimateItemsModel;
+
+        return View(answer);
+    }
+
 
     public ActionResult GetType(int contractId, int returnContractId = 0, bool isUpdate = false, int? estimateId = null)
     {
@@ -297,14 +462,10 @@ public class EstimateController : Controller
                 //проверка если это добавление изменения по смете, и смета по изму добавлена, прерываем работу
                 if ((estimateId != null && estimateId > 0) && countEstimates > 0)
                 {
-                    //если изменение по смете, обновляем эту смету как имененную
+                    //если изменение по смете, обновляем эту смету как измененную
                     var estUpdate = _estimateService.GetById(estimateId.Value);
                     estUpdate.IsChange = true;
-                    _estimateService.Update(estUpdate);
-                    _logger.WriteLog(logLevel: LogLevel.Information,
-                                         message: $"updated estimate, ID={estUpdate.Id}",
-                                         nameSpace: typeof(EstimateController).Name,
-                                         methodName: MethodBase.GetCurrentMethod().Name);
+                    _estimateService.Update(estUpdate);                   
                     break;
                 }
 
@@ -315,29 +476,6 @@ public class EstimateController : Controller
             var additionParams = countEstimates == 1 && estimateId > 0 ? $",{buildingCode},{createdEstmtId}" : $",{buildingCode}";
 
             return Content((countEstimates).ToString() + additionParams);
-
-            #region DELETE-AFTER
-
-
-            //}
-            //else
-            //{
-            //    var answer = _pars.ParseEstimate(path, page, type);
-            //    if (_estimateService.Find(x => x.DrawingsKit == answer.DrawingsKit && x.DrawingsName == answer.DrawingsKit
-            //              && x.BuildingCode == answer.BuildingCode && x.BuildingName == answer.BuildingName
-            //              && x.Number == answer.Number).FirstOrDefault() != null)
-            //    {
-            //        return BadRequest($"Локальная смета №{answer.Number} уже загружена.");
-            //    }
-
-            //    var estimateId = AddEstimate(answer, contract, date, organizationName, type, changeEstimateId);
-            //    CopyDocumentToFolder(answer.BuildingCode, answer.Number, path, false, estimateId ?? 0);
-            //    _file.DeleteByPath(path);
-
-            //    ViewData["estimateId"] = estimateId;
-            //    return Content(estimateId.ToString() + '-' + type);
-            //}
-            #endregion
         }
         catch (Exception ex)
         {
@@ -477,11 +615,7 @@ public class EstimateController : Controller
                         if (estimate is not null)
                         {
                             estimate.LaborCost = Convert.ToDouble(item.cost);
-                            _estimateService.Update(estimate);
-                            _logger.WriteLog(logLevel: LogLevel.Information,
-                                         message: $"updated estimate, ID={estimate.Id}",
-                                         nameSpace: typeof(EstimateController).Name,
-                                         methodName: MethodBase.GetCurrentMethod().Name);
+                            _estimateService.Update(estimate);                            
 
                             CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
                             countUpdated++;
@@ -529,23 +663,12 @@ public class EstimateController : Controller
 
                     foreach (var item in costs)
                     {
-                        //var fullNumber = type == ConstantsApp.SMR_PRO_APP ? $"{buildingsCode}.{item.estimateNumber}" : item.estimateNumber;
-                        //if (fullNumber.Split('.').Count() > 2 && type == ConstantsApp.SMR_PRO_APP)
-                        //{
-                        //    fullNumber = item.estimateNumber;
-                        //}
-
-                        //var estimate = _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
-
                         var estimate = GetEstimateForUpdating(item.estimateNumber, contractId, type, buildingsCode);
                         if (estimate is not null)
                         {
                             estimate.ContractsCost = item.cost;
                             _estimateService.Update(estimate);
-                            _logger.WriteLog(logLevel: LogLevel.Information,
-                                        message: $"updated estimate, ID={estimate.Id}",
-                                        nameSpace: typeof(EstimateController).Name,
-                                        methodName: MethodBase.GetCurrentMethod().Name);
+                           
                             CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
                             countUpdated++;
                         }
@@ -599,10 +722,7 @@ public class EstimateController : Controller
                         {
                             estimate.DoneSmrCost = item.cost;
                             _estimateService.Update(estimate);
-                            _logger.WriteLog(logLevel: LogLevel.Information,
-                                       message: $"updated estimate, ID={estimate.Id}",
-                                       nameSpace: typeof(EstimateController).Name,
-                                       methodName: MethodBase.GetCurrentMethod().Name);
+                           
                             CopyDocumentToFolder(estimate?.BuildingCode, estimate?.Number, path, false, contractId, estimate.Id);
                             countUpdated++;
                         }
@@ -702,15 +822,12 @@ public class EstimateController : Controller
     public ActionResult Edit(EstimateDTO estimate)
     {
         _estimateService.Update(estimate);
-        _logger.WriteLog(logLevel: LogLevel.Information,
-                                        message: $"updated estimate,id= {estimate.Id}",
-                                        nameSpace: typeof(EstimateController).Name,
-                                        methodName: MethodBase.GetCurrentMethod().Name);
         return RedirectToAction(nameof(Index), "Estimate", new { contractId = estimate.ContractId });
     }
 
     [Authorize(Policy = "DeletePolicy")]
-    public ActionResult Delete(int id)
+    [Route("/Estimate/Delete/{id}/{contractId}")]
+    public ActionResult Delete(int id, int contractId)
     {
         try
         {
@@ -720,14 +837,13 @@ public class EstimateController : Controller
                                             nameSpace: typeof(EstimateController).Name,
                                             methodName: MethodBase.GetCurrentMethod().Name);
 
-            NotificationHelper.SetNotification(TempData, "Смета удалена", NotificationType.Info);
-            return Ok(); 
+            NotificationHelper.SetNotification(TempData, "Смета удалена", NotificationType.Info);           
         }
         catch (Exception)
         {
             NotificationHelper.SetNotification(TempData, "Не удалось удалить смету", NotificationType.Error);
-            return NotFound();
         }
+        return RedirectToAction(nameof(Index), new { contractId = contractId });
     }
 
     [HttpGet]
@@ -773,32 +889,53 @@ public class EstimateController : Controller
     }
 
 
-    //public ActionResult AddChange(int estimateId)
-    //{
-    //    ViewData["estimateId"] = estimateId;
-
-    //    var estimate = _estimateService.Find(x => x.Id == estimateId).FirstOrDefault();
-
-    //    return View();
-    //}
-
+    [Route("/Estimates/Files")]
     public ActionResult ShowFiles(string buildingCode, int? estimateId, int contractId, int returnContractId = 0)
     {
         var viewModel = new Dictionary<string, IEnumerable<FileDTO>>();
         //если ID пустое, ищем по объекту
         if (estimateId == null)
         {
-            viewModel.Add("draw", _file.GetByBuildingCode(contractId, buildingCode, "draw").DistinctBy(x => x.FileName));
-            viewModel.Add("doc", _file.GetByBuildingCode(contractId, buildingCode, "doc").DistinctBy(x => x.FileName));
+            var drwFile = _file.GetByBuildingCode(contractId, buildingCode, "draw").DistinctBy(x => x.FileName);
+            var dcFile = _file.GetByBuildingCode(contractId, buildingCode, "doc").DistinctBy(x => x.FileName);
+            viewModel.Add("draw", drwFile);
+            viewModel.Add("doc", dcFile);
         }
         //иначе -> по смете
         else
         {
-            var fileAll = _file.GetFilesOfEntity((int)estimateId, FolderEnum.Estimate);
+            var fileAll = _file.GetAttachedFiles((int)estimateId, FolderEnum.Estimate);
             viewModel.Add("draw", fileAll.Where(x => x.FilePath.Contains(@"\draw\")));
             viewModel.Add("doc", fileAll.Where(x => x.FilePath.Contains(@"\doc\")));
         }
+                
+        ViewBag.contractId = contractId;
+        ViewBag.returnContractId = returnContractId == 0 ? contractId : 0;
+        return View(viewModel);
+    }
 
+
+    [Route("/archive/Estimates/Files")]
+    public ActionResult ShowFilesArch(string buildingCode, int? estimateId, int contractId, int returnContractId = 0)
+    {
+        var viewModel = new Dictionary<string, IEnumerable<FileDTO>>();
+        //если ID пустое, ищем по объекту
+        if (estimateId == null)
+        {
+            var drwFile = _file.GetByBuildingCode(contractId, buildingCode, "draw", useArchiveData: true).DistinctBy(x => x.FileName);
+            var dcFile = _file.GetByBuildingCode(contractId, buildingCode, "doc", useArchiveData: true).DistinctBy(x => x.FileName);
+
+            viewModel.Add("draw", drwFile);
+            viewModel.Add("doc", dcFile);
+        }
+        //иначе -> по смете
+        else
+        {
+            var fileAll = _file.GetAttachedFiles((int)estimateId, FolderEnum.Estimate, useArchiveData: true);
+            viewModel.Add("draw", fileAll.Where(x => x.FilePath.Contains(@"\draw\")));
+            viewModel.Add("doc", fileAll.Where(x => x.FilePath.Contains(@"\doc\")));
+        }
+               
         ViewBag.contractId = contractId;
         ViewBag.returnContractId = returnContractId == 0 ? contractId : 0;
 
@@ -810,9 +947,11 @@ public class EstimateController : Controller
     /// </summary>
     /// <param name="contractId"></param>
     /// <returns></returns>
-    public ActionResult GetEstimatesByContractId(int contractId)
+    public ActionResult GetEstimatesByContractId(int contractId, bool? useArchiveData)
     {
-        var estmt = _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x => x.BuildingCode).Select(x => new { id = x.Id, code = x.BuildingCode, contractId = x.ContractId });
+        var estmt = (useArchiveData == true)?
+            _estimateService.Find(x => x.ContractId == contractId, useArchiveData:true).DistinctBy(x => x.BuildingCode).Select(x => new { id = x.Id, code = x.BuildingCode, contractId = x.ContractId }):
+            _estimateService.Find(x => x.ContractId == contractId).DistinctBy(x => x.BuildingCode).Select(x => new { id = x.Id, code = x.BuildingCode, contractId = x.ContractId });
         return Json(estmt);
     }
 
@@ -933,22 +1072,12 @@ public class EstimateController : Controller
         answer.SubContractor = contract?.ContractOrganizations?.FirstOrDefault(x => x.IsGenContractor == true)?.Organization?.Name;
         answer.Owner = organizationName;
         var newEstimateId = _estimateService.Create(answer);
-        if (newEstimateId > 0)
-        {
-            _logger.WriteLog(logLevel: LogLevel.Information,
-                                       message: $"created estimate? id= {newEstimateId}",
-                                       nameSpace: typeof(EstimateController).Name,
-                                       methodName: MethodBase.GetCurrentMethod().Name);
-        }
+       
         if (changeEstimateId != null)
         {
             var oldEstimate = _estimateService.GetById((int)changeEstimateId);
             oldEstimate.IsChange = true;
-            _estimateService.Update(oldEstimate);
-            _logger.WriteLog(logLevel: LogLevel.Information,
-                                       message: $"updated estimate as changed, id= {oldEstimate.Id}",
-                                       nameSpace: typeof(EstimateController).Name,
-                                       methodName: MethodBase.GetCurrentMethod().Name);
+            _estimateService.Update(oldEstimate);           
         }
         return newEstimateId;
     }
@@ -994,12 +1123,17 @@ public class EstimateController : Controller
 
     }
 
-    private EstimateDTO? GetEstimateForUpdating(string estimateNumber, int contractId, string type = null, string? buildingsCode = null)
+    private EstimateDTO? GetEstimateForUpdating(string estimateNumber, int contractId, string? type = null, string? buildingsCode = null)
     {
         var fullNumber = type == Constants.SMR_PRO_APP ? $"{buildingsCode}.{estimateNumber}" : estimateNumber;
         if (fullNumber.Split('.').Count() > 2 && type == Constants.SMR_PRO_APP)
         {
             fullNumber = estimateNumber;
+            buildingsCode = estimateNumber.Split('.').FirstOrDefault();
+        }
+        else
+        {
+            buildingsCode = fullNumber.Split('.').FirstOrDefault();
         }
         return _estimateService.Find(x => x.FullNumber == fullNumber && x.ContractId == contractId && x.BuildingCode == buildingsCode)?.FirstOrDefault();
     }

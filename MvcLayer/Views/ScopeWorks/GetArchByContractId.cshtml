@@ -1,0 +1,152 @@
+﻿@using BusinessLayer.Helpers
+@model MvcLayer.Models.ScopeWorkViewModel
+@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
+@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
+@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+
+
+@{
+    var permissions = HttpHelper.GetUserPermissions();
+    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
+
+    if (ViewBag.IsEngin == true)
+    {
+        ViewData["Title"] = "Объем услуг";
+    }
+    else
+    {
+        ViewData["Title"] = "Объем работ";
+    }
+    var actionReturn = ViewBag.IsEngin == true ? "EngineeringsArch" : null;
+    var contractId = ViewBag.contractId;
+    int backId = 0;
+    if (ViewBag.returnContractId == 0)
+        backId = ViewBag.contractId;
+    else backId = ViewBag.returnContractId;
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal">
+                <div class="top-modal-block">
+                    <div>
+                        <label class="my-modal-title">@ViewData["Title"]</label>
+                        @{
+                            var amendment = ScopeWork.GetAmendmentByScopeId(Model.Id);
+                            if (amendment != null)
+                            {
+                                <span style="font-weight:bold">@amendment.Number от @amendment?.Date?.ToString("dd MMMM yyyy")</span>
+                            }
+                        }
+                        
+                    </div>
+                    @if (backId > 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="DetailsArch" asp-route-id="@backId" class="close-btn"></a>
+                    }
+                    @if (backId == 0)
+                    {
+                        <a asp-controller="Contracts" asp-action="@actionReturn" class="close-btn"></a>
+                    }
+                </div>
+                <hr class="modal-line" />
+
+                <div class="modal-overflow-70">
+                    <table class="table table-striped table-main table-hover ">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Period)
+                                </th>
+                                @if (ViewBag.IsEngin == false)
+                                {
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CostNds)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.SmrCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.PnrCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.AdditionalCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.EquipmentCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.OtherExpensesCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.CostNoNds)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.MaterialCost)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.GenServiceCost)
+                                    </th>
+                                }
+                                else
+                                {
+                                    <th>
+                                        Объем услуг
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.SWCosts.OrderBy(x => x.Period))
+                            {
+                                <tr>
+                                    <td>
+                                        @item.Period?.ToString("MMMM yyyy")
+                                    </td>
+                                    @if (ViewBag.IsEngin == false)
+                                    {
+
+                                        <td class="text-end">
+                                            @item.CostNds?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.SmrCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.PnrCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.AdditionalCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.EquipmentCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.OtherExpensesCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.CostNoNds?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.MaterialCost?.ToString("N2")
+                                        </td>
+                                        <td class="text-end">
+                                            @item.GenServiceCost?.ToString("N2")
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-end">
+                                            @item.SmrCost?.ToString("N2")
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

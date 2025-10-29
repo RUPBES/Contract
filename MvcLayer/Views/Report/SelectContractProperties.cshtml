@@ -1,9 +1,11 @@
 ﻿@using BusinessLayer.Enums
+@using BusinessLayer.Helpers
 @inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
 @inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Convertor
 @model Dictionary<string, string>
 @{
     var permissions = HttpHelper.GetUserPermissions();
+    var userOrgCode = HttpHelper.GetUserOrganizationFirstCode();
     ViewData["Title"] = "Выбор данных договора, для экспорта в Excell";
 
 }
@@ -71,17 +73,32 @@
                     <div class="mb-4">
                         <label class="mb-3">Выбрать организацию</label>
                         <select name="organization" class="form-control js-chosen">
-                            <option value="all" selected>Все</option>
-                            @foreach (var item in Enum.GetValues<OrganizationEnum>())
+                            @if (userOrgCode == Constants.ORG_BES || userOrgCode == Constants.ORG_MAJOR)
                             {
-                                string code = item.ToString();
-                                var name = Convertor.GetNameOrganizationByCode(item.ToString());
-                                <option value="@item">@name</option>
+                                <option value="all" selected>Все</option>
+                                @foreach (var item in Enum.GetValues<OrganizationEnum>())
+                                {
+                                    string code = item.ToString();
+                                    var name = Convertor.GetNameOrganizationByCode(item.ToString());
+                                    <option value="@item">@name</option>
+                                }
+                            }
+                            @if (userOrgCode != Constants.ORG_BES && userOrgCode != Constants.ORG_MAJOR)
+                            {                               
+                                var name = Convertor.GetNameOrganizationByCode(userOrgCode.ToString());
+                                <option value="@userOrgCode" selected>@name</option>
                             }
 
                         </select>
                     </div>
-                    <div>
+
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" value="true" name="useArchiveData" id="checkNativeSwitch">
+                        <label class="form-check-label" for="checkNativeSwitch">
+                            Сформировать отчет для архивных договоров
+                        </label>
+                    </div>
+                    <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" value="" id="getAllId" checked>
                         <label class="mb-3" for="getAllId">Выбрать все</label>
                     </div>
@@ -171,7 +188,7 @@
                 // Создаем ссылку для скачивания файла
                 const link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
-                link.download = 'Договора.xlsx'; // Имя файла
+                link.download = 'Договоры.xlsx'; // Имя файла
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

@@ -71,6 +71,39 @@ public class FormsController : Controller
 
     }
 
+    [Route("/archive/Forms")]
+    public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0)
+    {
+        if (contractId < 1)
+        {
+            return RedirectToAction("IndexArch", "Contracts");
+        }
+        var contract = _contractService.GetById(contractId, useArchiveData:true);
+
+
+        if (contract.IsEngineering == true || isEngineering == true)
+        {
+            ViewBag.IsEngineering = isEngineering;
+        }
+
+        ViewData["contractId"] = contractId;
+        ViewData["returnContractId"] = returnContractId;
+
+        var forms = _formService.Find(x => x.ContractId == contractId && x.IsOwnForces != true, useArchiveData:true);
+        
+        
+        if (forms != null && forms.Count() != 0)
+        {
+            return View(_mapper.Map<IEnumerable<FormViewModel>>(forms));
+        }
+        else
+        {
+            returnContractId = returnContractId == 0 ? contractId : returnContractId;
+            NotificationHelper.SetNotification(TempData, "Справок о стоимости выполненных работ нет", NotificationType.Warning);
+            return RedirectToAction("DetailsArch", "Contracts", new { id = returnContractId });
+        }
+    }
+
     public IActionResult GetPeriod(int id, int returnContractId = 0)
     {
         var period = _scopeWork.GetScopeWorkPeriodRange(id);
@@ -329,7 +362,7 @@ public class FormsController : Controller
         try
         {
             var removingForm = _formService.GetById(id);
-            foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Form3C))
+            foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Form3C))
             {
                 _fileService.Delete(item.Id);
             }

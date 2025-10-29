@@ -114,8 +114,8 @@ namespace MvcLayer.Controllers
             }
         }
 
-        [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> Delete(int? id)
+        [Route("/SelectionProcedures/Delete/{id}/{contractId}")]
+        public ActionResult Delete(int? id, int contractId)
         {
             if (id == null)
             {
@@ -124,7 +124,14 @@ namespace MvcLayer.Controllers
 
             _selectProcedureService.Delete((int)id);
             NotificationHelper.SetNotification(TempData, $"Процедура выбора удалена", NotificationType.Info);
-            return RedirectToAction("Index", "Contracts");
+            return RedirectToAction("Details", "Contracts", new { id = contractId});
+        }
+
+
+        [Route("/archive/SelectionProcedure/")]
+        public IActionResult GetArchByContractId(int contractId)
+        {
+            return View(_mapper.Map<SelectionProcedureViewModel>(_selectProcedureService.Find(x => x.ContractId == contractId, useArchiveData:true).LastOrDefault()));
         }
     }
 }

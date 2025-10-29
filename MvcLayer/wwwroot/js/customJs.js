@@ -184,3 +184,33 @@ function handleError(error/*, urlRequest, progressObjID = null*/) {
     //    }
     //});
 }
+
+
+
+const modal = document.getElementById('alert-modal');
+const modalTitle = document.getElementById('alert-modal_title');
+const modalMessage = document.getElementById('alert-modal_message');
+const modalConfirm = document.getElementById('alert-modal_confirm');
+const modalCancel = document.getElementById('alert-modal_cancel');
+
+let currentUrl = '';
+
+document.querySelectorAll('.modal-link').forEach(link => {
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        currentUrl = this.href;
+        modalTitle.textContent = this.getAttribute('data-title') || 'Предупреждение';
+        modalMessage.textContent = this.getAttribute('data-message') || 'Вы уверены?';
+
+        modal.style.display = 'block';
+    });
+});
+
+modalConfirm.addEventListener('click', function () {
+    window.location.href = currentUrl;
+});
+
+modalCancel.addEventListener('click', function () {
+    modal.style.display = 'none';
+});

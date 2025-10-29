@@ -38,6 +38,7 @@ namespace DatabaseLayer.Models.KDO
         public bool IsClosed { get; set; }
         public bool IsArchive { get; set; }
 
+        public DateTime? ArchivedDate { get; set; }
         public virtual Contract MultipleContract { get; set; }
 
         public virtual Contract AgreementContract { get; set; }

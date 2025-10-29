@@ -7,6 +7,7 @@
         ContrOrgTec5,
         ContrOrgBesm,
         ContrOrgBetss,
-        ContrOrgGes
+        ContrOrgGes,
+        ContrOrgBelSelSmu5
     }
 }

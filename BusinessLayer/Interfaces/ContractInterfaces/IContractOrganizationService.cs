@@ -1,15 +1,11 @@
 ﻿using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Models;
 using DatabaseLayer.Models.KDO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLayer.Interfaces.ContractInterfaces
 {
     public interface IContractOrganizationService:IService<ContractOrganizationDTO, ContractOrganization>
     {
+        ContractOrganizationDTO GetById(int id, int? secondId, bool? useArchiveData);
     }
 }

@@ -1,0 +1,105 @@
+﻿@using BusinessLayer.Models.Settings
+@using MvcLayer.Models.SettingModel
+@model FilterPayableModel
+
+
+<form action="GetPayableCash" method="get" class="row">
+    <div class="col-12">
+        <label class="form-label">Заказчик</label>
+        <select name="Client" class="form-select fixed-width-select" id="orgNameSelect1">
+            <option value="null" selected>Выберите организацию</option>
+        </select>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Генподрядчик</label>
+        <select name="GenContractor" class=" form-select fixed-width-select" id="orgNameSelect2">
+            <option value="null" selected>Выберите организацию</option>
+        </select>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" checked>
+        <label class="form-check-label" for="flexRadioDefault1">
+            Выбрать дату ввода в эксплуатацию
+        </label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2">
+        <label class="form-check-label" for="flexRadioDefault2">
+            Выбрать диапазон дат
+        </label>
+    </div>
+    <div class="date-range-container">
+        <input type="date" name="DateEnteringTerm" />
+    </div>
+    <button class="col-6 mr-2 btn btn-warning" type="reset">Очистить форму</button>
+    <button class="col-6 btn btn-primary" type="submit">Искать</button>
+</form>
+
+<script>
+    $.ajax({
+        type: 'POST',
+        url: '@Url.Action("GetJsonOrganizations", "Organizations")',
+        dataType: 'json',
+        success: function (orgnztn) {
+            if (orgnztn.length == 0)
+                return;
+            $.each(orgnztn, function (r, emp) {
+                $("#orgNameSelect1").append(`<option value='` + emp.name + `'>` + emp.name + `</option>`);
+                    $("#orgNameSelect2").append(`<option value='` + emp.name + `'>` + emp.name + `</option>`);
+            });
+
+            $('.fixed-width-select option').css('max-width', '300px');
+
+        $('.fixed-width-select option').each(function() {
+            const text = $(this).text();
+            if (text.length > 120) {
+                $(this).text(text.substring(0, 120) + '...');
+                $(this).attr('title', text); // Полный текст в tooltip
+            }
+        });
+        },
+        error: function (ex) {
+            alert('Failed to retrieve organizations.' + ex);
+        }
+    });
+
+    var containerDate = document.querySelector('.date-range-container');
+    let clear_btn =  document.querySelector('button[type="reset"]');
+    let dates = '<input type="date" name="DateEnteringTerm" />';
+    let dates2 = ' с <input type="date" name="StarEnteringTerm"/> по <input type="date" name="EndEnteringTerm"/>';
+    let labelChkbx =  document.querySelector('#titleChbx');
+
+    clear_btn.addEventListener('click', function(e) {
+        let selected = document.querySelectorAll('input[name="flexRadioDefault"]');
+
+        selected.forEach((e)=>{
+             e.removeAttribute('checked');
+        });
+
+        containerDate.innerHTML = "";
+        containerDate.innerHTML = dates;
+        selected[0].checked = true;
+
+    });
+
+
+        document.addEventListener('click', function(e) {
+        // Проверяем, был ли клик по радио-кнопке или её label
+          if (e.target.matches('input[type="radio"][name="flexRadioDefault"]') ||
+              e.target.matches('label[for^="flexRadioDefault"]')) {
+
+          const selected = document.querySelector('input[name="flexRadioDefault"]:checked');
+
+
+          if(selected?.id === 'flexRadioDefault1'){
+                containerDate.innerHTML = "";
+                containerDate.innerHTML = dates;
+          }
+          if(selected?.id === 'flexRadioDefault2'){
+             containerDate.innerHTML = "";
+             containerDate.innerHTML = dates2;
+          }
+        }
+    });
+
+</script>

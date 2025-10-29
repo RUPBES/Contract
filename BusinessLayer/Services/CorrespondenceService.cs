@@ -13,13 +13,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
 
-        public CorrespondenceService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public CorrespondenceService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(CorrespondenceDTO item)
@@ -133,9 +135,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<CorrespondenceDTO> Find(Func<Correspondence, bool> predicate)
+        public IEnumerable<CorrespondenceDTO> Find(Func<Correspondence, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<CorrespondenceDTO>>(_database.Correspondences.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<CorrespondenceDTO>>(_databaseArch.Correspondences.Find(predicate)):
+                _mapper.Map<IEnumerable<CorrespondenceDTO>>(_database.Correspondences.Find(predicate));
         }
 
         public void AddFile(int correspondenceId, int fileId)

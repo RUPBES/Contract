@@ -25,7 +25,7 @@ namespace MvcLayer.Controllers
         }
 
         // GET: Organizations
-        public async Task<IActionResult> Index(string currentFilter, int? pageNum, string searchString, string sortOrder)   
+        public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)   
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
@@ -33,15 +33,15 @@ namespace MvcLayer.Controllers
             ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
 
             if (searchString != null)
-            { pageNum = 1; }
+            { page = 1; }
             else
             { searchString = currentFilter; }
             ViewBag.CurrentFilter = searchString;
-            ViewBag.Page = pageNum;
+            ViewBag.Page = page;
 
             if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return await Task.FromResult<IActionResult>(View(_organizationService.GetPageFilter(100, pageNum ?? 1, searchString, sortOrder)));
-            else return await Task.FromResult<IActionResult>(View(_organizationService.GetPage(100, pageNum ?? 1)));
+                return await Task.FromResult<IActionResult>(View(_organizationService.GetPageFilter(100, page ?? 1, searchString, sortOrder)));
+            else return await Task.FromResult<IActionResult>(View(_organizationService.GetPage(100, page ?? 1)));
         }
 
         // GET: Organizations/Details/5
@@ -177,32 +177,33 @@ namespace MvcLayer.Controllers
         //}
 
         [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> Delete(int id)
+        [Route("/Organizations/Delete/{id}/{page}")]
+        public IActionResult Delete(int id, int page)
         {
             try
             {
-                _organizationService.Delete(id);
-                
-                NotificationHelper.SetNotification(TempData, "Организация удалена", NotificationType.Info);
-                return await Task.FromResult<IActionResult>(Ok());
+                _organizationService.Delete(id);                
+                NotificationHelper.SetNotification(TempData, "Организация удалена", NotificationType.Info);                
             }
             catch (Exception)
             {
-                NotificationHelper.SetNotification(TempData, "Не удалось удалить организацию", NotificationType.Error);                
-                return await Task.FromResult<IActionResult>(NotFound());
+                NotificationHelper.SetNotification(TempData, "Не удалось удалить организацию", NotificationType.Error);
             }
+            return RedirectToAction(nameof(Index), new { page = page });
         }
 
 
         public JsonResult GetJsonOrganizations()
         {
-            return Json(_mapper.Map<IEnumerable<OrganizationsJson>>(_organizationService.GetAll()));
+            var d = _mapper.Map<IEnumerable<OrganizationsJson>>(_organizationService.GetAll());
+            return Json(d);
         }
     }
     class OrganizationsJson
     {
         public int Id { get; set; }
         public string Abbr { get; set; }
+        public string? Name { get; set; }
     }
 
 }

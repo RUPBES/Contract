@@ -25,13 +25,15 @@ namespace BusinessLayer.Helpers
         public static string ORG_TEC_5 = "ContrOrgTec5";
         public static string ORG_GES = "ContrOrgGes";
         public static string ORG_MAJOR = "ContrOrgMajor";
+        public static string ORG_BelSel_SMU5 = "ContrOrgBelSelSmu5";
 
         //роли пользователей
         public static string ROLE_CREATE = "ContrCreate";
         public static string ROLE_READ = "ContrView";
         public static string ROLE_EDIT = "ContrEdit";
         public static string ROLE_DELETE = "ContrDelete";
-        public static string ROLE_ADMIN = "ContrAdmin";
+        public static string ROLE_ADMIN = "ContrAdmin"; 
+        public static string ROLE_LEAD_ADMIN = "ContrLeadAdmin";
 
 
         #endregion
@@ -53,7 +55,7 @@ namespace BusinessLayer.Helpers
 
         //LABOR_COST
 
-        public static List<string> SMR_LABOR_COST_DOC_NAME = new List<string> { "Расчет стоимости" };
+        public static List<string> SMR_LABOR_COST_DOC_NAME = new List<string> { "Расчет стоимости", "Ведомость расчетных показателей" };
         public static List<string> SMR_LABOR_COST_COL_NAME = new List<string> { "трудозатраты", "трудозатрат", "трудозатраты чел.час.", "ТРУДОЗАТРАТ" };
         public static List<string> SMR_LABOR_COST_ROW_NAME = new List<string> { "И Т О Г О по смете ", "ИТОГО по смете ", "Итого по смете " };
 
@@ -144,12 +146,17 @@ namespace BusinessLayer.Helpers
 
         //COLOR
 
+        public static Color COLOR_EMPTY = Color.Empty;
         public static Color COLOR_BLACK  = Color.Black;
         public static Color COLOR_RED = Color.Red;
         public static Color COLOR_WHITE = Color.White;
         public static Color COLOR_BLUE = Color.Blue;
         public static Color COLOR_DARK_BLUE = Color.DarkBlue;
         public static Color COLOR_CORNFLOWER_BLUE = Color.CornflowerBlue;
+        public static Color COLOR_GRAY_LIGHT = ColorTranslator.FromHtml("#dee2e6");
+        public static Color COLOR_OLIVEDROB_LIGHT = ColorTranslator.FromHtml("#d8f3d8");
+        public static Color COLOR_SKYBLUE_LIGHT = ColorTranslator.FromHtml("#ccf3ff");
+        public static Color COLOR_ORANGE_SUBOGJ = ColorTranslator.FromHtml("#efd1c5");
 
 
         #endregion

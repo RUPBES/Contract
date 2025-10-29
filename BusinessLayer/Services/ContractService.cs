@@ -3,8 +3,11 @@ using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Reflection;
 using Contract = DatabaseLayer.Models.KDO.Contract;
 
@@ -14,13 +17,16 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
+     
 
-        public ContractService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public ContractService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;           
         }
 
         public int? Create(ContractDTO item)
@@ -51,7 +57,7 @@ namespace BusinessLayer.Services
             return null;
         }
 
-        public ContractDTO GetById(int id, int? secondId = null)
+        public ContractDTO GetById(int id, int? secondId)
         {
             var contract = _database.Contracts.GetById(id);
 
@@ -65,90 +71,40 @@ namespace BusinessLayer.Services
             }
         }
 
+        public ContractDTO GetById(int id, int? secondId, bool useArchiveData)
+        {
+
+            var contract = useArchiveData ?
+                                _databaseArch.Contracts.GetById(id)
+                                : _database.Contracts.GetById(id);
+
+            if (contract is not null)
+            {
+                return _mapper.Map<ContractDTO>(contract);
+            }
+            else
+            {
+                return new();
+            }
+        }
+
         public IEnumerable<ContractDTO> GetAll()
         {
             return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.GetAll());
         }
 
-        public IEnumerable<ContractDTO> Find(Func<Contract, bool> predicate)
+        public IEnumerable<ContractDTO> Find(Func<Contract, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<ContractDTO>>(_databaseArch.Contracts.Find(predicate)) :
+                _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(predicate));
         }
 
-        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select)
+        public IEnumerable<ContractDTO> Find(Func<Contract, bool> where, Func<Contract, Contract> select, bool useArchiveData)
         {
-            return _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select));
-        }
-
-        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org)
-        {
-            var list = org.Split(',');
-            Func<Contract, bool> where = w => w.IsEngineering == false &&
-                w.IsAgreementContract == false &&
-                w.IsOneOfMultiple == false &&
-                w.IsSubContract == false &&
-                list.Contains(w.Owner);
-            Func<Contract, Contract> select = s => new Contract
-            {
-                NameObject = s.NameObject,
-                Number = s.Number,
-                Date = s.Date,
-                Id = s.Id,
-                DateBeginWork = s.DateBeginWork,
-                DateEndWork = s.DateEndWork,
-                EnteringTerm = s.EnteringTerm,
-                Сurrency = s.Сurrency,
-                ContractPrice = s.ContractPrice
-            };
-            int skipEntities = (pageNum - 1) * pageSize;
-            IEnumerable<Contract> items = _database.Contracts.Find(where, select);
-
-            count = items.Count();
-            items = items.Skip(skipEntities).Take(pageSize);
-            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
-            return t;
-        }
-
-        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org)
-        {
-            var list = org.Split(',');
-            Func<Contract, bool> where;
-            Func<Contract, string> orderBy = o => o.NameObject;
-            Func<Contract, Contract> select = s => new Contract
-            {
-                NameObject = s.NameObject,
-                Number = s.Number,
-                Date = s.Date,
-                Id = s.Id,
-                DateBeginWork = s.DateBeginWork,
-                DateEndWork = s.DateEndWork,
-                EnteringTerm = s.EnteringTerm,
-                Сurrency = s.Сurrency,
-                ContractPrice = s.ContractPrice
-            };
-            int skipEntities = (pageNum - 1) * pageSize;
-            if (!String.IsNullOrEmpty(request))
-            {
-                where = w => w.IsEngineering == false &&
-                w.IsAgreementContract == false &&
-                w.IsOneOfMultiple == false &&
-                w.IsSubContract == false &&
-                list.Contains(w.Owner) &&
-                (w.NameObject.Contains(request) || w.Number.Contains(request));
-            }
-            else
-            {
-                where = w => w.IsEngineering == false &&
-                w.IsAgreementContract == false &&
-                w.IsOneOfMultiple == false &&
-                w.IsSubContract == false &&
-                 list.Contains(w.Owner);
-            }
-            IEnumerable<Contract> items = _database.Contracts.Find(where: where, select: select).OrderBy(o => o.NameObject);
-            count = items.Count();
-            items = items.Skip(skipEntities).Take(pageSize);
-            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
-            return t;
+            return (useArchiveData == true) ?
+                 _mapper.Map<IEnumerable<ContractDTO>>(_databaseArch.Contracts.Find(where, select)) :
+                 _mapper.Map<IEnumerable<ContractDTO>>(_database.Contracts.Find(where, select));
         }
 
         public void Update(ContractDTO item)
@@ -380,6 +336,159 @@ namespace BusinessLayer.Services
             }
         }
 
+
+        public IEnumerable<ContractDTO> GetPage(int pageSize, int pageNum, string filter, out int count, string org, bool useArchiveData)
+        {
+            var list = org.Split(',');
+
+            Func<Contract, bool> where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                list.Contains(w.Owner);
+
+            Func<Contract, Contract> select = s => new Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice
+            };
+
+            int skipEntities = (pageNum - 1) * pageSize;
+            IEnumerable<Contract> items = useArchiveData ?
+                                            _databaseArch.Contracts.Find(where, select)
+                                            : _database.Contracts.Find(where, select);
+
+            count = items.Count();
+            items = items.Skip(skipEntities).Take(pageSize);
+            return _mapper.Map<IEnumerable<ContractDTO>>(items);
+        }
+
+        public IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org, bool useArchiveData)
+        {
+            var list = org.Split(',');
+            int skipEntities = (pageNum - 1) * pageSize;
+
+            Func<Contract, bool> where;
+            Func<Contract, Contract> select = s => new Contract
+            {
+                NameObject = s.NameObject,
+                Number = s.Number,
+                Date = s.Date,
+                Id = s.Id,
+                DateBeginWork = s.DateBeginWork,
+                DateEndWork = s.DateEndWork,
+                EnteringTerm = s.EnteringTerm,
+                Сurrency = s.Сurrency,
+                ContractPrice = s.ContractPrice
+            };
+
+            if (!String.IsNullOrEmpty(request))
+            {
+                where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                list.Contains(w.Owner) &&
+                (w.NameObject.Contains(request) || w.Number.Contains(request));
+            }
+            else
+            {
+                where = w => w.IsEngineering == false &&
+                w.IsAgreementContract == false &&
+                w.IsOneOfMultiple == false &&
+                w.IsSubContract == false &&
+                 list.Contains(w.Owner);
+            }
+
+            IEnumerable<Contract> items = useArchiveData ?
+                _databaseArch.Contracts.Find(where: where, select: select).OrderBy(o => o.NameObject) :
+                _database.Contracts.Find(where: where, select: select).OrderBy(o => o.NameObject);
+
+            count = items.Count();
+            items = items.Skip(skipEntities).Take(pageSize);
+            var t = _mapper.Map<IEnumerable<ContractDTO>>(items);
+            return t;
+        }
+
+        public async Task<bool> MoveToArchive(int contrId, string user, string sourceDB = "ContrTest", string targetDB = "ContrArchiveTest")
+        {
+            return await Task.Run(() =>
+             {
+                 bool isSuccessCopy = false;
+                 var childrenContracts = GetChildren(contrId);
+                 isSuccessCopy = _database.Contracts.CopyToArchiveDb(contrId, user, sourceDB, targetDB);
+
+                 if (childrenContracts.Count > 0 && isSuccessCopy)
+                 {
+                     foreach (var childId in childrenContracts)
+                     {
+                         isSuccessCopy = _database.Contracts.CopyToArchiveDb(childId, user, sourceDB, targetDB);
+                     }
+                 }
+
+                 if (isSuccessCopy)
+                 {
+                     _logger.WriteLog(
+                       logLevel: LogLevel.Information,
+                       message: $"contract was archived successful, ID={contrId}",
+                       nameSpace: typeof(ContractService).Name,
+                       methodName: MethodBase.GetCurrentMethod().Name);
+
+                     childrenContracts.Reverse();
+                     foreach (var childId in childrenContracts)
+                     {
+                         isSuccessCopy = _database.Contracts.RemoveArchivedContractData(childId, user, sourceDB);
+                     }
+                     isSuccessCopy = _database.Contracts.RemoveArchivedContractData(contrId, user, sourceDB);
+                 }
+                 if (isSuccessCopy)
+                 {
+                     _logger.WriteLog(
+                      logLevel: LogLevel.Information,
+                      message: $"contract was deleted successful from a source DB",
+                      nameSpace: typeof(ContractService).Name,
+                      methodName: MethodBase.GetCurrentMethod().Name);
+                 }
+                 return isSuccessCopy;
+             });
+        }
+
+        public async Task<int> Restructure(int contrId, string user)
+        {
+            return await Task.Run(() =>
+            {
+                int? subobjId;
+                subobjId = _database.Contracts.SplitGenContract(contrId, user);
+
+                if (subobjId.HasValue)
+                {
+                    _logger.WriteLog(
+                    logLevel: LogLevel.Information,
+                    message: $"contract was divided successful",
+                    nameSpace: typeof(ContractService).Name,
+                    methodName: MethodBase.GetCurrentMethod().Name);
+                    return subobjId.Value;
+                }
+                else
+                {
+                    _logger.WriteLog(
+                     logLevel: LogLevel.Information,
+                     message: $"contract was not divided",
+                     nameSpace: typeof(ContractService).Name,
+                     methodName: MethodBase.GetCurrentMethod().Name);
+                    return 0;
+                }
+               
+            });
+        }
+
         /// <summary>
         /// Возвращает список договоров, принадлежащих генподрядному договору по его ID и 
         /// типу необходимых договоров
@@ -387,7 +496,7 @@ namespace BusinessLayer.Services
         /// <param name="id">ID Гендоговора</param>
         /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
         /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
-        public IEnumerable<ContractDTO> GetSubsByType(int? id, ContractType? contractType)
+        public IEnumerable<ContractDTO> GetSubsByType(int? id, ContractType? contractType, bool useArchiveData)
         {
             if (!id.HasValue || contractType == null)
             {
@@ -412,13 +521,18 @@ namespace BusinessLayer.Services
                 return Enumerable.Empty<ContractDTO>();
             }
 
-            var contracts = _database.Contracts.Find(selector);
+            var contracts = useArchiveData ?
+                _databaseArch.Contracts.Find(selector) :
+                _database.Contracts.Find(selector);
 
             if (contracts.Any())
             {
                 foreach (var item in contracts)
                 {
-                    var amend = _database.Amendments.Find(x => x.ContractId == item.Id).ToList();
+                    var amend = useArchiveData ?
+                                _databaseArch.Amendments.Find(x => x.ContractId == item.Id).ToList() :
+                                _database.Amendments.Find(x => x.ContractId == item.Id).ToList();
+
                     if (amend.Count > 0)
                     {
                         amend = amend.OrderBy(x => x.Date).ToList();
@@ -434,86 +548,20 @@ namespace BusinessLayer.Services
         }
 
 
-        //public Dictionary<int, ContractType>? GetChildren(int? contractId)
-        //{
-        //    if (contractId > 0)
-        //    {
-        //        return null;
-        //    }
-
-        //    var listParents = new Dictionary<int, ContractType>();
-        //    int parentId = contractId ?? 0;
-        //    var contractProps = GetContractTypingProps(parentId);
-
-        //    if (contractProps?.IsAgreementContract ?? false)
-        //    {
-        //        parentId = contractProps?.AgreementContractId ?? 0;
-        //        contractProps = GetContractTypingProps(parentId);
-        //    }
-        //    else if (contractProps?.IsSubContract ?? false)
-        //    {
-        //        parentId = contractProps?.SubContractId ?? 0;
-        //        contractProps = GetContractTypingProps(parentId);
-        //    }
-        //    else if (contractProps?.IsOneOfMultiple ?? false)
-        //    {
-        //        parentId = contractProps?.MultipleContractId ?? 0;
-        //        contractProps = GetContractTypingProps(parentId);
-        //    }
-        //    else
-        //    {
-        //        //return new ();
-        //        listParents.Add(parentId, ContractType.GenСontract);
-        //        parentId = 0;
-        //    }
-
-
-        //    while (parentId > 0)
-        //    {
-        //        if ((contractProps?.IsAgreementContract ?? false))
-        //        {
-        //            listParents.Add(parentId, ContractType.Agreement);
-        //            parentId = contractProps?.AgreementContractId ?? 0;
-        //            contractProps = GetContractTypingProps(parentId);
-        //        }
-        //        else if ((contractProps?.IsSubContract ?? false))
-        //        {
-        //            listParents.Add(parentId, ContractType.SubContract);
-        //            parentId = contractProps?.SubContractId ?? 0;
-        //            contractProps = GetContractTypingProps(parentId);
-        //        }
-        //        else if (contractProps?.IsOneOfMultiple ?? false)
-        //        {
-        //            listParents.Add(parentId, ContractType.MultipleContract);
-        //            parentId = contractProps?.MultipleContractId ?? 0;
-        //            contractProps = GetContractTypingProps(parentId);
-        //        }
-        //        else
-        //        {
-        //            listParents.Add(parentId, ContractType.GenСontract);
-        //            break;
-        //        }
-        //    }
-
-        //    return listParents;
-
-        //}
-
-
-
-
-
 
         /// <summary>
         /// Возвращает количество дней после заключения договора для расчета
         /// </summary>
         /// <param name="contrId">ID договора</param>
         /// <returns>количество дней</returns>
-        public int? GetPaymentDueDate(int contrId)
+        public int? GetPaymentDueDate(int contrId, bool? useArchiveData)
         {
             if (contrId > 0)
             {
-                var raschet = _database.Contracts.GetById(contrId).PaymentСonditionsRaschet;
+                var raschet = (useArchiveData == true)?
+                    _databaseArch.Contracts.GetById(contrId)?.PaymentСonditionsRaschet:
+                    _database.Contracts.GetById(contrId)?.PaymentСonditionsRaschet;
+
                 if (raschet is not null)
                 {
                     raschet = raschet.Replace("Расчет за выполненные работы производится в течение ", "");
@@ -638,6 +686,20 @@ namespace BusinessLayer.Services
             return listParents;
         }
 
+        /// <summary>
+        /// Возвращает список ID всех дочерних договоров для указанного договора
+        /// </summary>
+        /// <param name="contractId">ID договора, для которого ищем дочерние договоры</param>
+        /// <returns>Список ID всех дочерних договоров</returns>
+        public List<int> GetChildren(int contractId)
+        {
+            var childIds = new List<int>();
+            var processedIds = new HashSet<int>();
+            GetChildrenRecursive(contractId, childIds, processedIds);
+            return childIds;
+        }
+
+
 
 
         private dynamic? GetContractTypingProps(int contractId)
@@ -656,19 +718,6 @@ namespace BusinessLayer.Services
                 IsAgreementContract = s.IsAgreementContract,
                 AgreementContractId = s.AgreementContractId
             })?.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Возвращает список ID всех дочерних договоров для указанного договора
-        /// </summary>
-        /// <param name="contractId">ID договора, для которого ищем дочерние договоры</param>
-        /// <returns>Список ID всех дочерних договоров</returns>
-        public List<int> GetChildren(int contractId)
-        {
-            var childIds = new List<int>();
-            var processedIds = new HashSet<int>();
-            GetChildrenRecursive(contractId, childIds, processedIds);
-            return childIds;
         }
 
         private void GetChildrenRecursive(int contractId, List<int> childIds, HashSet<int> processedIds)

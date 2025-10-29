@@ -92,7 +92,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<DepartmentDTO> Find(Func<Department, bool> predicate)
+        public IEnumerable<DepartmentDTO> Find(Func<Department, bool> predicate, bool? booluseArchiveData)
         {
             return _mapper.Map<IEnumerable<DepartmentDTO>>(_database.Departments.Find(predicate));
         }        

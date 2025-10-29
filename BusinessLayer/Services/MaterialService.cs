@@ -133,7 +133,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<MaterialDTO> Find(Func<MaterialGc, bool> predicate)
+        public IEnumerable<MaterialDTO> Find(Func<MaterialGc, bool> predicate, bool? booluseArchiveData)
         {
             return _mapper.Map<IEnumerable<MaterialDTO>>(_database.Materials.Find(predicate));
         }

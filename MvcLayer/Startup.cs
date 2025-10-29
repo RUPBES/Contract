@@ -1,7 +1,6 @@
 ﻿using BusinessLayer.Helpers;
 using BusinessLayer.IoC;
 using BusinessLayer.Models.Settings;
-using DatabaseLayer.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http.Features;
@@ -11,6 +10,7 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using MvcLayer.Mapper;
+using MvcLayer.Filters;
 using Quartz;
 using System.Security.Claims;
 
@@ -27,11 +27,13 @@ namespace MvcLayer
         public void ConfigureServices(IServiceCollection services)
         {
             string connectionData = Configuration.GetConnectionString("Data");
-            //string connectionIdentity = Configuration.GetConnectionString("Identity");
+            
             Container.RegisterContainer(services, connectionData);
+            
             ////
             services.AddRazorPages();
             services.AddWindowsService();
+            
             ///
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
             IdentityModelEventSource.ShowPII = true;
@@ -49,19 +51,24 @@ namespace MvcLayer
                 options.MultipartBodyLengthLimit = int.MaxValue;
             });
             services.AddAutoMapper(typeof(MapperViewModel));
-            services.AddDbContext<ContractsContext>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("Data"));
-            });
-            services.AddDbContext<OpenIdDictDbContxt>(options =>
-            {
-                options.UseSqlServer(Configuration.GetConnectionString("Authentication"));
-            });
+            //services.AddDbContext<ContractsContext>(options =>
+            //{
+            //    options.UseSqlServer(Configuration.GetConnectionString("Data"));
+            //});
+            //services.AddDbContext<ContractsArchiveContext>(options =>
+            //{
+            //    options.UseSqlServer(Configuration.GetConnectionString("DataArchive"));
+            //});
+            //services.AddDbContext<OpenIdDictDbContxt>(options =>
+            //{
+            //    options.UseSqlServer(Configuration.GetConnectionString("Authentication"));
+            //});
 
             /*OptionsPattern*/
             services.Configure<ExcelActivityReportOptions>(Configuration.GetSection(ExcelActivityReportOptions.ExcelActivityReport));
             services.Configure<EmailOptions>(Configuration.GetSection(EmailOptions.EmailSettings));
             services.Configure<EmailRecipient>(Configuration.GetSection(EmailRecipient.EmailRecipients));
+            services.Configure<ArchiveSettings>(Configuration.GetSection(ArchiveSettings.ConnectionStrings));
 
             services.AddAuthentication(options =>
             {
@@ -73,10 +80,6 @@ namespace MvcLayer
                  {
                      options.LoginPath = "/Account/Login/";
                      options.LogoutPath = "/Account/Logout";
-                     //options.Events.OnSigningOut = async e =>
-                     //{
-                     //    await e.HttpContext.RevokeRefreshTokenAsync();
-                     //};
                  }
             )
             .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, o =>
@@ -103,6 +106,7 @@ namespace MvcLayer
                 o.Scope.Add(Constants.ROLE_READ);
                 o.Scope.Add(Constants.ROLE_EDIT);
                 o.Scope.Add(Constants.ROLE_ADMIN);
+                o.Scope.Add(Constants.ROLE_LEAD_ADMIN);
                 o.Scope.Add(Constants.ROLE_DELETE);
                 o.Scope.Add(Constants.ROLE_CREATE);
 
@@ -113,6 +117,7 @@ namespace MvcLayer
                 o.Scope.Add(Constants.ORG_BETSS);
                 o.Scope.Add(Constants.ORG_GES);
                 o.Scope.Add(Constants.ORG_MAJOR);
+                o.Scope.Add(Constants.ORG_BelSel_SMU5);
 
                 o.Scope.Add(Constants.GRP_CONTRACT);
                 o.Scope.Add(Constants.GRP_ESTIMATE);
@@ -167,6 +172,13 @@ namespace MvcLayer
                 };
             });
 
+            services.AddSession(op =>
+            {
+                op.IdleTimeout = TimeSpan.FromMinutes(5);
+                op.Cookie.HttpOnly = true;
+                op.Cookie.IsEssential = true;
+            });
+
             services.AddAuthorization(options => {
                
                 options.AddPolicy("ViewPolicy", policy =>
@@ -208,12 +220,17 @@ namespace MvcLayer
 
             services.AddMvc();            
             services.AddHttpClient();
-            services.AddControllersWithViews();
+            
+            //services.AddControllersWithViews(options =>
+            //{
+            //    options.Filters.Add<GlobalExceptionFilter>();
+            //});
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
+            
             app.Use((context, next) =>
             {
                 // Scheme must be resetted
@@ -227,16 +244,16 @@ namespace MvcLayer
             }
             else
             {
-                app.UseDeveloperExceptionPage();
-                //app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 
-            app.UseStatusCodePagesWithReExecute("/error", "?code={0}");
+            //app.UseStatusCodePagesWithReExecute("/error", "?code={0}");
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 

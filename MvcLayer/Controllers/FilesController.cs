@@ -55,6 +55,18 @@ namespace MvcLayer.Controllers
         }
 
         [HttpGet]
+        [Route("/archive/Files")]
+        public ActionResult GetArchByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
+        {
+            ViewBag.redirectAction = redirectAction;
+            ViewBag.redirectController = redirectController;
+            ViewBag.entityId = id;
+            ViewBag.returnContractId = contractId;
+            var files = _file.GetAttachedFiles(id, fileCategory, useArchiveData: true).ToList();
+            return View(files);
+        }
+
+        [HttpGet]
         public ActionResult GetByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
@@ -62,7 +74,7 @@ namespace MvcLayer.Controllers
             ViewBag.entityId = id;
             ViewBag.contractId = contractId;
             ViewBag.returnContractId = returnContractId;
-            var files = _file.GetFilesOfEntity(id, fileCategory).ToList();
+            var files = _file.GetAttachedFiles(id, fileCategory).ToList();
             return View(files);
         }
             
@@ -106,11 +118,11 @@ namespace MvcLayer.Controllers
             }
         }
 
-        public ActionResult OpenFile(int id, string fileType)
+        public ActionResult OpenFile(int id, string fileType, bool? useArchiveData)
         {
             if (id != 0)
             {
-                var file = _file.GetById(id);
+                var file = _file.GetById(id, useArchiveData);
                 var path = _env.WebRootPath + file.FilePath;
                 var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read);
                 if (string.IsNullOrEmpty(fileType))
@@ -125,6 +137,8 @@ namespace MvcLayer.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+
 
         public ActionResult OpenExcelByPath(string filePath)
         {

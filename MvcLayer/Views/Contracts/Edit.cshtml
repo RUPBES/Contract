@@ -18,7 +18,7 @@
     .form_container {
         overflow: auto;
         max-height: 700px;
-        max-width: 750px;
+        max-width: 800px;
     }
 
     label {
@@ -52,7 +52,7 @@
                     }
                 </div>
                 <hr class="modal-line" />
-                <form asp-action="Edit" asp-controller="Contracts" asp-route-returnContractId="@ViewBag?.returnContractId" class="row" style="max-width:700px;">
+                <form asp-action="Edit" asp-controller="Contracts" asp-route-returnContractId="@ViewBag?.returnContractId" class="row" style="max-width:800px;">
                     <div class="row form_container">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                         <input type="hidden" asp-for="Id" />
@@ -69,41 +69,49 @@
                         <input type="hidden" asp-for="IsOneOfMultiple" />
                         <div class="row">
                             @* Номер !*@
-                            <div class="col-4">
+                            <div class="col-3">
                                 <label asp-for="Number" class="control-label"></label>
                                 <input asp-for="Number" class="form-control" />
                                 <span asp-validation-for="Number" class="text-danger"></span>
                             </div>
                             @* Цены !*@
-                            <div class="col-4">
+                            <div class="col-3">
                                 <label asp-for="ContractPrice" class="control-label"></label>
                                 <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
                                 <span asp-validation-for="ContractPrice" class="text-danger"></span>
                             </div>
                             @if (Model.IsEngineering == true)
                             {
-                                <div class="col-4">
+                                <div class="col-3">
                                     <label asp-for="PaymentСonditionsPrice" class="control-label">Условия дог. цены, %</label>
                                     <input id="PaymentСonditionsPrice" type="text" name="PaymentСonditionsPrice" value="@Model.PaymentСonditionsPrice" class="form-control cost" />
                                     <span asp-validation-for="PaymentСonditionsPrice" class="text-danger"></span>
                                 </div>
                             }
-                        </div>
-                        @* Объект !*@
-                        <div class="form-group">
-                            <label asp-for="NameObject" class="control-label"></label>
-                            <input asp-for="NameObject" class="form-control" />
-                            <span asp-validation-for="NameObject" class="text-danger"></span>
-                        </div>
-                        @* Сроки !*@
-                        <div class="row">
-                            <div class="col-4">
+
+                            <div class="col-3">
                                 <label asp-for="Date" class="control-label" for="DateDC">Дата заключения</label>
                                 <div class="input-group">
                                     <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                                    <input asp-for="Date" value="@Model.Date?.ToString("yyyy-MM-dd")" type="text" class="form-control" required id="DateDC">
+                                    <input asp-for="Date" value="@Model.Date?.ToString("dd MMM yyyy")" type="text" class="form-control" required id="DateDC">
                                 </div>
                             </div>
+                            @*  Валюта  *@
+                            <div class="col-3">
+                                <label asp-for="Сurrency" class="control-label"></label>
+                                <select name="Сurrency" class="form-control js-chosen" id="CurDC">
+                                    <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
+                                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                                    {
+                                        <option value="@item">@item</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                       
+                        @* Сроки !*@
+                        <div class="row">
+                            
                             <div class="col-4">
                                 <label class="control-label" asp-for="DateBeginWork"></label>
                                 @if (ViewData["IsAmendment"] == null)
@@ -128,8 +136,6 @@
                                 }
                                 <label class="form-label" id="labelEndWork" style="display:none"></label>
                             </div>
-                        </div>
-                        <div class="row">
                             @if (Model.IsEngineering != true)
                             {
                                 <div class="col-4">
@@ -144,12 +150,24 @@
                                     }
                                     <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
                                 </div>
-                                <div class="col-4">
-                                    <label class="control-label" asp-for="ContractTerm"></label>
-                                    <input asp-for="ContractTerm" value="@Model.ContractTerm?.ToString("dd MMM yyyy")" type="text" class="form-control" required id="ContractTerm">
-                                    <label class="form-label" id="labelContractTerm" style="display:none"></label>
+                                <div class="col-4" style="display:none">
+                                    <label class="control-label" asp-for="ContractTerm" hidden></label>
+                                    <input asp-for="ContractTerm" value="@Model.ContractTerm?.ToString("dd MMM yyyy")" type="text" class="form-control" hidden id="ContractTerm">
+                                    @* <label class="form-label" id="labelContractTerm" style="display:none"></label> *@
                                 </div>
                             }
+                            
+                        </div>
+
+                        @* <div class="row">
+                            
+                         </div>*@
+
+                        @* Объект !*@
+                        <div class="form-group">
+                            <label asp-for="NameObject" class="control-label"></label>
+                            <textarea asp-for="NameObject" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="NameObject" class="text-danger"></span>
                         </div>
 
                         @* Организации !*@
@@ -367,17 +385,7 @@
                                     <option value="@item.Id">@item.Name</option>
                                 }
                             </select>
-                        </div>
-                        <div class="col-3">
-                            <label asp-for="Сurrency" class="control-label"></label>
-                            <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                                <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
-                                @foreach (var item in Enum.GetValues<CurrencyEnum>())
-                                {
-                                    <option value="@item">@item</option>
-                                }
-                            </select>
-                        </div>
+                        </div>                        
                         <div class="row">
                             <fieldset class="border rounded-1 p-3 col">
                                 <legend class="float-none w-auto px-3">Источник финансирования</legend>

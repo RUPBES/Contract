@@ -11,19 +11,21 @@ using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    internal class PrepaymentFactService: IPrepaymentFactService
+    internal class PrepaymentFactService : IPrepaymentFactService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
         private readonly IHttpContextAccessor _http;
 
-        public PrepaymentFactService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public PrepaymentFactService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(PrepaymentFactDTO item)
@@ -133,25 +135,30 @@ namespace BusinessLayer.Services
                             logLevel: LogLevel.Warning,
                             message: $"not update prepayment fact, object is null",
                             nameSpace: typeof(PrepaymentFactService).Name,
-                            methodName: MethodBase.GetCurrentMethod().Name);                
+                            methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
-        public IEnumerable<PrepaymentFactDTO> Find(Func<PrepaymentFact, bool> predicate)
+        public IEnumerable<PrepaymentFactDTO> Find(Func<PrepaymentFact, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PrepaymentFactDTO>>(_database.PrepaymentFacts.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<PrepaymentFactDTO>>(_databaseArch.PrepaymentFacts.Find(predicate)) :
+                _mapper.Map<IEnumerable<PrepaymentFactDTO>>(_database.PrepaymentFacts.Find(predicate));
         }
 
-        public Prepayment GetLastPrepayment(int contractId)
+        public Prepayment GetLastPrepayment(int contractId, bool? useArchiveData)
         {
             try
             {
-                var prep = _database.Prepayments.Find(a => a.ContractId == contractId && a.IsChange != true).FirstOrDefault();
-                if (prep == null)
-                    return null;
+                var prep = (useArchiveData == true) ?
+                    _databaseArch.Prepayments.Find(a => a.ContractId == contractId && a.IsChange != true).FirstOrDefault() :
+                    _database.Prepayments.Find(a => a.ContractId == contractId && a.IsChange != true).FirstOrDefault();
                 return prep;
             }
-            catch { return null; }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

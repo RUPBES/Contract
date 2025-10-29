@@ -25,7 +25,7 @@
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal">
+            <div class="dm-modal" style="max-width: max-content;">
                 <div class="top-modal-block">
                     <label class="my-modal-title">@ViewData["Title"] @contract?.Number</label>
                     @if (backId != null && backId > 0)
@@ -40,7 +40,7 @@
                 <hr class="modal-line" />
                 @if (Model.Any())
                 {
-                    <div class="modal-overflow-70" style="max-height: 80vh;">
+                    <div class="modal-overflow-90" style="max-height: 80vh;">
                         <table class="table table-main table-striped table-bordered table-hover">
                             <thead>
                                 <tr>
@@ -77,7 +77,7 @@
                                 {
                                     <tr>
                                         <td>
-                                            <b>@Html.DisplayFor(modelItem => item.Number)</b>                                            
+                                            <b>@Html.DisplayFor(modelItem => item.Number)</b>
                                             от
                                             <br />
                                             @item.Date?.ToString("dd MMMM yyyy")
@@ -101,13 +101,19 @@
                                             @Html.DisplayFor(modelItem => item.ContractChanges)
                                         </td>
                                         <td>
-                                            @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Amendment))
+                                            @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, FolderEnum.Amendment))
                                             {
                                                 <div>
-                                                    <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                                                    <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
                                                     @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                                     {
-                                                        @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, contractId = item.ContractId }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                                        <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                                           asp-route-redirectAction="@redirectAction"
+                                                           asp-route-redirectController="@redirectController"
+                                                           asp-route-contractId="@item.ContractId"
+                                                           title="Удалить файл"
+                                                           class="modal-link del-btn"
+                                                           data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
                                                     }
                                                 </div>
                                             }
@@ -127,8 +133,12 @@
                                             }
                                             @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                             {
-                                                <span class="icon delete" title="Удалить изменение по договору">
-                                                    <a asp-action="Delete" asp-route-id="@item.Id" asp-route-contractId="@item.ContractId"></a>
+                                                <span class="icon delete" title="Удалить доп. соглашение">
+                                                    <a asp-action="Delete"
+                                                       asp-route-id="@item.Id"
+                                                       asp-route-contractId="@item.ContractId"
+                                                       class="modal-link"
+                                                       data-message="Дополнительное соглашение и прикрепленные файлы будут удалены. Продолжить?"></a>
                                                 </span>
                                             }
                                         </td>

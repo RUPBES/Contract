@@ -29,7 +29,7 @@ namespace MvcLayer.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index(string currentFilter, int pageNum = 1, string query = "", string sortOrder = "")
+        public async Task<IActionResult> Index(string currentFilter, int page = 1, string query = "", string sortOrder = "")
         {
             ViewBag.CurrentSort = sortOrder;
             ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";

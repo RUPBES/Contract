@@ -19,15 +19,17 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
         private readonly IHttpContextAccessor _http;
 
-        public PrepaymentTakeService(IMapper mapper, IContractUoW database, ILoggerContract logger, IHttpContextAccessor http)
+        public PrepaymentTakeService(IMapper mapper, IContractUoW database, ILoggerContract logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
         {
             _mapper = mapper;
             _database = database;
             _logger = logger;
             _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(PrepaymentTakeDTO item)
@@ -141,9 +143,12 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<PrepaymentTakeDTO> Find(Func<PrepaymentTake, bool> predicate)
+        public IEnumerable<PrepaymentTakeDTO> Find(Func<PrepaymentTake, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PrepaymentTakeDTO>>(_database.PrepaymentTakes.Find(predicate));
+            return _mapper.Map<IEnumerable<PrepaymentTakeDTO>>(
+                            (useArchiveData == true) ?
+                                _databaseArch.PrepaymentTakes.Find(predicate) :
+                                 _database.PrepaymentTakes.Find(predicate));
         }
     }
 }

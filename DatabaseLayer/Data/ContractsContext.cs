@@ -1,6 +1,7 @@
 ﻿using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Data;
@@ -8,15 +9,16 @@ namespace DatabaseLayer.Data;
 public partial class ContractsContext : DbContext
 {
     public ContractsContext()
-    {
+    {       
     }
-
     public ContractsContext(DbContextOptions<ContractsContext> options) : base(options)
     {
     }
 
+
     public virtual DbSet<VContract> VContracts { get; set; }
     public virtual DbSet<VContractEngin> VContractEngins { get; set; }
+
     #region DbSetPro
 
     public virtual DbSet<Estimate> Estimates { get; set; }
@@ -102,10 +104,19 @@ public partial class ContractsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        var basePath = AppContext.BaseDirectory;
+        
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+        
+        var configuration = builder.Build();
+        var connectionString = configuration.GetConnectionString("Data");
+       
+
         if (!optionsBuilder.IsConfigured)
         {
-            //optionsBuilder.UseSqlServer("Server=DBSX;Database=Contracts;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
-            optionsBuilder.UseSqlServer("Server=DBSX;Database=ContractsTest;Persist Security Info=True;User ID=sa;Password=01011967;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer(connectionString);
         }
     }
 

@@ -18,7 +18,7 @@ namespace DatabaseLayer
             _context = new OpenIdDictDbContxt();
         }
 
-        public IRepositoryShort<AbpOrganizationUnit> AbpOrganizationUnits
+        public IReadonlyRepoEF<AbpOrganizationUnit> AbpOrganizationUnits
         {
             get
             {
@@ -29,7 +29,7 @@ namespace DatabaseLayer
                 return abpOrganizationUnit;
             }
         }
-        public IRepositoryShort<AbpUser> AbpUsers
+        public IReadonlyRepoEF<AbpUser> AbpUsers
         {
             get
             {
@@ -40,7 +40,7 @@ namespace DatabaseLayer
                 return abpUser;
             }
         }
-        public IRepositoryShort<AbpUserOrganizationUnit> AbpUserOrganizationUnits
+        public IReadonlyRepoEF<AbpUserOrganizationUnit> AbpUserOrganizationUnits
         {
             get
             {

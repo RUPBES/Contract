@@ -436,6 +436,7 @@ namespace BusinessLayer.ServicesCOM
 
             return c3A;
         }
+
         public EstimateDTO ParseEstimate(string path, int page, string? type)
         {
             var estimate = new EstimateDTO();
@@ -456,6 +457,8 @@ namespace BusinessLayer.ServicesCOM
                 }
                 if (estimateNumber == string.Empty)
                 {
+                    _logger.WriteLog(logLevel: LogLevel.Warning, message: "Файл не является локальной сметой", nameSpace: typeof(ParseService).Name,
+                                 methodName: MethodBase.GetCurrentMethod().Name);
                     throw new Exception("Файл не является локальной сметой");
                 }
 
@@ -541,6 +544,7 @@ namespace BusinessLayer.ServicesCOM
 
             if (GetCellValue(excel, shiftRow: 0, shiftCol: 0, searchingKeys.LaborCost.DocName.ToArray()) == string.Empty)
             {
+
                 throw new Exception("Файл не является расчетом стоимости");
             }
             if (ExistEstmtNumberIntoSheet(excel, estimate.DrawingsName, estimate?.FullNumber))

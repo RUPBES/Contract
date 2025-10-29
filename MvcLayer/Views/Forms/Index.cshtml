@@ -96,13 +96,13 @@
                     @Html.DisplayFor(modelItem => item.IsOwnForces)
                 </td>
                 <td>
-                    @foreach (FileDTO item2 in Files.GetFilesOfEntity(item.Id, FolderEnum.Form3C))
+                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, FolderEnum.Form3C))
                     {
                         <div>
                             <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
                             @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, pageNum = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, page = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
                             }
                         </div>
                     }

@@ -14,15 +14,17 @@ namespace BusinessLayer.Services.PRO
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
         private readonly IHttpContextAccessor _http;
 
-        public AbbreviationKindOfWorkService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public AbbreviationKindOfWorkService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(AbbreviationKindOfWorkDTO item)
@@ -93,9 +95,11 @@ namespace BusinessLayer.Services.PRO
             }
         }
 
-        public IEnumerable<AbbreviationKindOfWorkDTO> Find(Func<AbbreviationKindOfWork, bool> predicate)
+        public IEnumerable<AbbreviationKindOfWorkDTO> Find(Func<AbbreviationKindOfWork, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<AbbreviationKindOfWorkDTO>>(_database.AbbreviationKindOfWorks.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<AbbreviationKindOfWorkDTO>>(_databaseArch.AbbreviationKindOfWorks.Find(predicate)):
+                _mapper.Map<IEnumerable<AbbreviationKindOfWorkDTO>>(_database.AbbreviationKindOfWorks.Find(predicate));
         }
 
         public IEnumerable<AbbreviationKindOfWorkDTO> GetAll()

@@ -157,24 +157,24 @@ namespace MvcLayer.Controllers
             if (answer.startPeriod != null && answer.endPeriod != null)
             {
                 formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
-                    DateComparer.IsLessOrSameYearAndMonth(x.Period,answer.endPeriod)).ToList();
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
             }
             else if (answer.startPeriod != null && answer.endPeriod == null)
             {
-                formId = formId.Where(x => 
+                formId = formId.Where(x =>
                     DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period)).ToList();
                 answer.endPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).LastOrDefault();
             }
             else if (answer.startPeriod == null && answer.endPeriod != null)
             {
-                formId = formId.Where(x => 
+                formId = formId.Where(x =>
                     DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
                 answer.startPeriod = _form.Find(x => x.ContractId == contractId).OrderBy(x => x.Period).Select(x => x.Period).FirstOrDefault();
             }
             else
-            {                
+            {
                 answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
-                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();                 
+                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
             }
             #endregion
             #region Заполнение спикса файлов по справкам С-3А
@@ -182,14 +182,14 @@ namespace MvcLayer.Controllers
             foreach (var item in formId)
             {
                 var obj = new FileWithDate();
-                obj.file = _file.GetFilesOfEntity(item.Id, FolderEnum.Form3C);
+                obj.file = _file.GetAttachedFiles(item.Id, FolderEnum.Form3C);
                 obj.date = item.Period;
                 answer.listFiles.Add(obj);
             }
             #endregion
             #region Заполнение данных(объем работ/авансы)
             answer.listSmrWithAvans = new List<SmrWithPrepayment>();
-            var scope = _scopeWork.GetLastScope(contractId);
+            var scope = _scopeWork.GetLastScope(contractId, isOwnForces: false);
             var prep = _prepayment.GetLastPrepayment(contractId);
             if (prep != null)
             {
@@ -253,6 +253,412 @@ namespace MvcLayer.Controllers
                 ViewData["Amend"] = true;
             return View(answer);
         }
+
+        [Route("/archive/Prepayments")]
+        public IActionResult GetArchByContractId(int contractId, int returnContractId = 0)
+        {
+            #region Проверка есть ли условие о наличии авансов
+
+            var avans = _contractService.Find(x => x.Id == contractId, useArchiveData: true).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            if (avans == null && returnContractId != 0)
+            {
+                avans = _contractService.Find(x => x.Id == returnContractId, useArchiveData: true).Select(x => x.PaymentСonditionsAvans).FirstOrDefault();
+            }
+
+            if (avans != null)
+            {
+                if (avans.Contains("Без авансов"))  // Если условие "нет авансов" возврашаем на страницу договора с сообщением
+                {
+                    NotificationHelper.SetNotification(TempData, "Условие договора - без авансов", NotificationType.Warning);
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
+                }
+
+                // Проверка условия авансов
+                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            }
+
+            #endregion
+
+            var prepCheck = _prepayment.FindByContractId(contractId, useArchiveData: true);  // Получение списка авансов
+
+            // Проверка есть, ли авансы, с возвращением сообщения
+            if (!prepCheck.Any())
+            {
+                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
+
+            }
+
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+
+            //Создание переиенной для отправки на View
+            var answer = new PrepaymentStatementViewModel();
+
+            #region Заполнение впервый раз модели
+            answer.NameObject = _contractService
+                                .Find(x => x.Id == contractId, useArchiveData: true)
+                                .Select(x => x.NameObject)
+                                .FirstOrDefault() ?? string.Empty;
+
+            answer.Client = _organization.GetNameByContractId(contractId, useArchiveData: true);
+            answer.TheoryCurrent = 0;
+            answer.TheoryTarget = 0;
+            answer.TargetReceived = 0;
+
+            int prepaymentId = prepCheck.Where(x => x.IsChange == false).FirstOrDefault()?.Id ?? 0;
+            var sumOfTakePrepayment = _prepaymentTake.Find(x => x.PrepaymentId == prepaymentId && x.IsTarget == true, useArchiveData: true);
+
+            foreach (var item in sumOfTakePrepayment)
+            {
+                var sum = (item.IsRefund.HasValue && item.IsRefund == false) ? item.Total : (-1) * item?.Total;
+                answer.TargetReceived += sum;
+            }
+
+            answer.TargetRepaid = _form
+                                    .Find(x => x.ContractId == contractId && x.IsOwnForces != true, useArchiveData: true)
+                                    .Sum(x => x.OffsetTargetPrepayment);
+
+            answer.NameAmendment = _amendment
+                .Find(x => x.ContractId == contractId, useArchiveData: true)
+                .OrderBy(x => x.Date)
+                .Select(x => x.Number)
+                .LastOrDefault();
+
+            answer.startPeriod = _form
+                .Find(x => x.ContractId == contractId, useArchiveData: true)
+                .OrderBy(x => x.Period)
+                .Select(x => x.Period)
+                .LastOrDefault();
+
+            var amend = _amendment
+                .Find(x => x.ContractId == contractId, useArchiveData: true)
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            if (amend.Count > 0)
+            {
+                answer.minStartPeriod = _contractService
+                    .Find(x => x.Id == contractId, useArchiveData: true)
+                    .Select(x => x.Date)
+                    .FirstOrDefault();
+
+                answer.maxEndPeriod = amend.LastOrDefault()?.DateEndWork;
+            }
+            else
+            {
+                var contract = _contractService.GetById(contractId, useArchiveData: true);
+                answer.minStartPeriod = contract.Date;
+                answer.maxEndPeriod = contract.DateEndWork;
+            }
+            if (answer.startPeriod == null)
+            {
+                answer.startPeriod = answer.maxEndPeriod;
+            }
+            answer.endPeriod = answer.startPeriod;
+            #endregion
+
+            #region Получение списка Id форм
+            var formId = _form
+                .Find(x => x.ContractId == contractId && x.IsOwnForces == false, useArchiveData: true)
+                .OrderBy(x => x.Period)
+                .Select(x => new { x.Id, x.Period })
+                .ToList();
+
+            if (answer.startPeriod != null && answer.endPeriod != null)
+            {
+                formId = formId.Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period) &&
+                    DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod)).ToList();
+            }
+            else if (answer.startPeriod != null && answer.endPeriod == null)
+            {
+                formId = formId
+                    .Where(x => DateComparer.IsLessOrSameYearAndMonth(answer.startPeriod, x.Period))
+                    .ToList();
+
+                answer.endPeriod = _form
+                    .Find(x => x.ContractId == contractId, useArchiveData: true)
+                    .OrderBy(x => x.Period)
+                    .Select(x => x.Period)
+                    .LastOrDefault();
+            }
+            else if (answer.startPeriod == null && answer.endPeriod != null)
+            {
+                formId = formId
+                    .Where(x => DateComparer.IsLessOrSameYearAndMonth(x.Period, answer.endPeriod))
+                    .ToList();
+
+                answer.startPeriod = _form
+                    .Find(x => x.ContractId == contractId, useArchiveData: true)
+                    .OrderBy(x => x.Period)
+                    .Select(x => x.Period)
+                    .FirstOrDefault();
+
+            }
+            else
+            {
+                answer.startPeriod = formId.Select(x => x.Period).FirstOrDefault();
+                answer.endPeriod = formId.Select(x => x.Period).LastOrDefault();
+            }
+            #endregion
+            #region Заполнение спикса файлов по справкам С-3А
+            answer.listFiles = new List<FileWithDate>();
+            foreach (var item in formId)
+            {
+                var obj = new FileWithDate();
+                obj.file = _file.GetAttachedFiles(item.Id, FolderEnum.Form3C);
+                obj.date = item.Period;
+                answer.listFiles.Add(obj);
+            }
+            #endregion
+
+            #region Заполнение данных(объем работ/авансы)
+            answer.listSmrWithAvans = new List<SmrWithPrepayment>();
+            var scope = _scopeWork.GetLastScope(contractId, isOwnForces: false, useArchiveData: true);
+            var prep = _prepayment.GetLastPrepayment(contractId, useArchiveData: true);
+            if (prep != null)
+            {
+                answer.TheoryCurrent = _prepaymentPlan
+                    .Find(x => x.PrepaymentId == prep.Id, useArchiveData: true)
+                    .Sum(x => x.CurrentValue);
+
+                answer.TheoryTarget = _prepaymentPlan
+                    .Find(x => x.PrepaymentId == prep.Id, useArchiveData: true)
+                    .Sum(x => x.TargetValue);
+            }
+
+            for (var i = answer.startPeriod; DateComparer.IsLessOrSameYearAndMonth(i, answer.endPeriod); i = i.Value.AddMonths(1))
+            {
+                var ob = new SmrWithPrepayment();
+                // Объем работ(План)
+                if (scope != null)
+                {
+                    var swCost = _SWCost
+                        .Find(x => x.ScopeWorkId == scope.Id && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
+                        .Select(x => x.SmrCost)
+                        .FirstOrDefault();
+
+                    ob.SmrPlan = swCost ?? 0;
+                }
+
+                // Объем работ и авансы по форме С-3А
+                var form3C = _form
+                    .Find(x => x.ContractId == contractId && x.IsOwnForces == false && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
+                    .FirstOrDefault();
+
+                ob.SmrFact = (form3C?.SmrCost) ?? 0;
+                ob.TargetFact = (form3C?.OffsetTargetPrepayment) ?? 0;
+                ob.CurrentFact = (form3C?.OffsetCurrentPrepayment) ?? 0;
+
+
+                // Авансы(План)
+                if (prep != null)
+                {
+                    var prepPlan = _prepaymentPlan
+                        .Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, i), useArchiveData: true)
+                        .FirstOrDefault();
+
+                    ob.TargetPlan = (prepPlan?.TargetValue) ?? 0;
+                    ob.CurrentPlan = (prepPlan?.CurrentValue) ?? 0;
+                }
+
+                ob.Period = i;
+                answer.listSmrWithAvans.Add(ob);
+            }
+            #endregion
+            if (_amendment.Find(x => x.ContractId == contractId, useArchiveData: true).FirstOrDefault() == null)
+                ViewData["Amend"] = true;
+            return View(answer);
+        }
+
+        [Route("/archive/Prepayments/Takes")]
+        public IActionResult GetArchPrepaymentsTakes(int contractId, int returnContractId = 0)
+        {
+            var avans = _contractService
+                .Find(x => x.Id == contractId, useArchiveData: true)
+                .Select(x => x.PaymentСonditionsAvans)
+                .FirstOrDefault();
+
+            if (avans == null && returnContractId != 0)
+            {
+                avans = _contractService
+                    .Find(x => x.Id == returnContractId, useArchiveData: true)
+                    .Select(x => x.PaymentСonditionsAvans)
+                    .FirstOrDefault();
+            }
+            if (avans != null)
+            {
+                if (avans.Contains("Без авансов"))
+                {
+                    NotificationHelper.SetNotification(TempData, "Условие контракта - без авансов", NotificationType.Warning);
+                    var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                    return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
+
+                }
+                if (avans.Contains("текущего")) { ViewData["Current"] = true; }
+                if (avans.Contains("целевого")) { ViewData["Target"] = true; }
+            }
+
+            var prep = _prepayment.GetLastPrepayment(contractId, useArchiveData: true);
+
+            if (prep == null)
+            {
+                NotificationHelper.SetNotification(TempData, "Не заполнены авансы", NotificationType.Warning);
+                var urlReturn = returnContractId == 0 ? contractId : returnContractId;
+                return RedirectToAction("DetailsArch", "Contracts", new { id = urlReturn });
+
+            }
+
+            ViewData["contractId"] = contractId;
+            ViewData["returnContractId"] = returnContractId;
+
+            var answer = new PrepaymentTakeViewModel();
+            answer.NameObject = _contractService
+                .Find(x => x.Id == contractId, useArchiveData: true)
+                .Select(x => x.NameObject)
+                .FirstOrDefault() ?? string.Empty;
+
+            answer.Client = _organization.GetNameByContractId(contractId, useArchiveData: true);
+
+            var amend = _amendment
+                .Find(x => x.ContractId == contractId, useArchiveData: true)
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            answer.NameAmendment = amend.Select(x => x.Number).LastOrDefault();
+
+            #region Период времени
+            DateTime? start, end;
+            if (amend.Count > 0)
+            {
+                start = amend.LastOrDefault()?.DateBeginWork;
+                end = amend.LastOrDefault()?.DateEndWork;
+            }
+            else
+            {
+                var contract = _contractService.GetById(contractId, useArchiveData: true);
+                start = contract.DateBeginWork;
+                end = contract.DateEndWork;
+            }
+
+            if (start == null && end != null)
+            {
+                start = end;
+            }
+            if (end == null && start != null)
+            {
+                end = start;
+            }
+
+            if (start == null)
+                start = DateTime.Today;
+            if (end == null)
+                end = DateTime.Today;
+            #endregion            
+
+            for (var date = start; DateComparer.IsLessOrSameYearAndMonth(date, end); date = date.Value.AddMonths(1))
+            {
+                var itemPrepViewModel = new ItemPrepaymentTakeViewModel();
+                itemPrepViewModel.Period = date;
+                prep = _prepaymentFact.GetLastPrepayment(contractId, useArchiveData: true);
+                if (prep != null)
+                {
+                    var facts = _prepaymentTake
+                        .Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, date), useArchiveData: true)
+                        .ToList();
+
+                    var prepPlan = _prepaymentPlan
+                        .Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, date), useArchiveData: true)
+                        .FirstOrDefault();
+
+                    itemPrepViewModel.CurrentPlan = (prepPlan?.CurrentValue) ?? 0;
+                    itemPrepViewModel.TargetPlan = (prepPlan?.TargetValue) ?? 0;
+                    
+                    if (facts.Count > 0)
+                    {
+                        foreach (var prepFactItem in facts)
+                        {
+                            if (prepFactItem.IsRefund == true)
+                            {
+                                if (prepFactItem.IsTarget == true)
+                                    itemPrepViewModel.TargetFact -= prepFactItem.Total;
+                                else
+                                {
+                                    itemPrepViewModel.CurrentFact -= prepFactItem.Total;
+                                }
+                            }
+                            else
+                            {
+                                if (prepFactItem.IsTarget == true)
+                                    itemPrepViewModel.TargetFact += prepFactItem.Total;
+                                else
+                                {
+                                    itemPrepViewModel.CurrentFact += prepFactItem.Total;
+                                }
+                            }
+                            itemPrepViewModel.Files.AddRange(_file.GetAttachedFiles((int)prepFactItem.FileId, FolderEnum.PrepaymentTake, useArchiveData: true));
+                        }
+                    }
+                    if (returnContractId == 0)
+                    {
+                        var contr = _contractService
+                            .Find(x => x.MultipleContractId == contractId, useArchiveData: true)
+                            .Select(x => x.Id)
+                            .ToList();
+
+                        if (contr.Count > 0)
+                        {
+                            foreach (var contract in contr)
+                            {
+                                prep = _prepaymentFact.GetLastPrepayment(contract, useArchiveData: true);
+                                
+                                if (prep != null)
+                                {
+                                    facts = _prepaymentTake
+                                        .Find(x => x.PrepaymentId == prep.Id && DateComparer.IsSameYearAndMonth(x.Period, date), useArchiveData: true)
+                                        .ToList();
+
+                                    if (facts.Count > 0)
+                                    {
+                                        foreach (var item in facts)
+                                        {
+                                            if (item.IsRefund == true)
+                                            {
+                                                if (item.IsTarget == true)
+                                                    itemPrepViewModel.TargetFact -= item.Total;
+                                                else
+                                                {
+                                                    itemPrepViewModel.CurrentFact -= item.Total;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (item.IsTarget == true)
+                                                    itemPrepViewModel.TargetFact += item.Total;
+                                                else
+                                                {
+                                                    itemPrepViewModel.CurrentFact += item.Total;
+                                                }
+                                            }
+                                            itemPrepViewModel.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, FolderEnum.PrepaymentTake, useArchiveData: true));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                answer.List.Add(itemPrepViewModel);
+            }
+
+            if (amend.Count > 0)
+                ViewData["Amend"] = true;
+            return View(answer);
+        }
+
 
         public IActionResult GetByContractIdWithAmendments(int contractId, PrepaymentStatementViewModel? viewModel, int returnContractId = 0)
         {
@@ -328,7 +734,7 @@ namespace MvcLayer.Controllers
             foreach (var item in formId)
             {
                 var obj = new FileWithDate();
-                obj.file = _file.GetFilesOfEntity(item.Id, FolderEnum.Form3C);
+                obj.file = _file.GetAttachedFiles(item.Id, FolderEnum.Form3C);
                 obj.date = item.Period;
                 answer.listFiles.Add(obj);
             }
@@ -565,7 +971,7 @@ namespace MvcLayer.Controllers
                 obj.Period = date;
                 prep = _prepaymentFact.GetLastPrepayment(contractId);
                 if (prep != null)
-                {                    
+                {
                     var facts = _prepaymentTake.Find(x => x.PrepaymentId == prep.Id
                     && DateComparer.IsSameYearAndMonth(x.Period, date)).ToList();
                     var ob = _prepaymentPlan.Find(x => x.PrepaymentId == prep.Id
@@ -606,7 +1012,7 @@ namespace MvcLayer.Controllers
                                     obj.CurrentFact += item.Total;
                                 }
                             }
-                            obj.Files.AddRange(_file.GetFilesOfEntity((int)item.FileId, FolderEnum.PrepaymentTake));
+                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, FolderEnum.PrepaymentTake));
                         }
                     }
                     if (returnContractId == 0)
@@ -643,7 +1049,7 @@ namespace MvcLayer.Controllers
                                                     obj.CurrentFact += item.Total;
                                                 }
                                             }
-                                            obj.Files.AddRange(_file.GetFilesOfEntity((int)item.FileId, FolderEnum.PrepaymentTake));
+                                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, FolderEnum.PrepaymentTake));
                                         }
                                     }
                                 }
@@ -888,7 +1294,7 @@ namespace MvcLayer.Controllers
 
                 List<PrepaymentPlanDTO> plan = new();
 
-                while (DateComparer.IsLessOrSameYearAndMonth(prepaymentViewModel.PeriodStart,prepaymentViewModel.PeriodEnd))
+                while (DateComparer.IsLessOrSameYearAndMonth(prepaymentViewModel.PeriodStart, prepaymentViewModel.PeriodEnd))
                 {
                     var prev = _prepaymentPlan.Find(p => p.PrepaymentId == prepaymentViewModel.ChangePrepaymentId && p.Period == prepaymentViewModel.PeriodStart).FirstOrDefault();
                     if (prev == null)
@@ -970,7 +1376,7 @@ namespace MvcLayer.Controllers
                 if (prepayment.PrepaymentFacts.Count() > 0 && prepayment.PrepaymentFacts is not null)
                 {
                     _prepaymentFact.Create(prepayment?.PrepaymentFacts?.FirstOrDefault());
-                   
+
                     return RedirectToAction(nameof(GetByContractId), new { contractId = prepayment.ContractId });
                 }
 
@@ -996,7 +1402,7 @@ namespace MvcLayer.Controllers
                 foreach (var item in prepayment)
                 {
                     _prepayment.Update(_mapper.Map<PrepaymentDTO>(item));
-                    
+
                 }
                 NotificationHelper.SetNotification(TempData, "Обновлены данные аванса", NotificationType.Info);
                 return RedirectToAction("GetByContractId", "Prepayments", new { contractId = prepayment.FirstOrDefault().ContractId, returnContractId = returnContractId });
@@ -1114,7 +1520,7 @@ namespace MvcLayer.Controllers
                 #endregion
                 #region Перегонка в пустой класс без виртуальный переменных
                 var list = new List<PrepaymentPlanViewModel>();
-                foreach(var item in prepayment)
+                foreach (var item in prepayment)
                 {
                     var ob = new PrepaymentPlanViewModel();
                     ob.Id = item.Id;
@@ -1130,7 +1536,7 @@ namespace MvcLayer.Controllers
             }
             else
             {
-                return View(); 
+                return View();
             }
         }
 

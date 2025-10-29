@@ -7,6 +7,7 @@
         public string? Number { get; set; }
 
         public string? ProcedureName { get; set; }
+        public int? ProcedureId { get; set; }
 
         //public string? ResponsibleForWork { get; set; }
         public string? GenContractor { get; set; }

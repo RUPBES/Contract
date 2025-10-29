@@ -1,18 +1,21 @@
-﻿using BusinessLayer.Interfaces.ContractInterfaces;
+﻿using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Mapper;
 using BusinessLayer.Services;
-using DatabaseLayer.Data;
-using DatabaseLayer.Interfaces;
-using DatabaseLayer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using BusinessLayer.Interfaces.CommonInterfaces;
-using BusinessLayer.Helpers;
-using Microsoft.AspNetCore.Http;
-using BusinessLayer.ServicesCOM;
-using BusinessLayer.Interfaces.ContractInterfaces.PRO;
-using BusinessLayer.Services.PRO;
 using BusinessLayer.Services.Administrator;
+using BusinessLayer.Services.Archive;
+using BusinessLayer.Services.PRO;
+using BusinessLayer.ServicesCOM;
+using DatabaseLayer;
+using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Models.KDO;
+using DatabaseLayer.RepositoriesDapper.Repo;
+using DatabaseLayer.RepositoriesDapper.ViewRepo;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BusinessLayer.IoC
 {
@@ -20,13 +23,19 @@ namespace BusinessLayer.IoC
     {
         public static void RegisterContainer(IServiceCollection services, string connectionString)
         {
+            services.AddTransient<IReadonlyPaymentDapperRepo, PaymentDpRepository>(provider => new PaymentDpRepository(connectionString));
+            services.AddTransient<IReadonlyRepoDapper<VContract>, VContractDpRepository>(provider => new VContractDpRepository(connectionString));
+            services.AddTransient<IReadonlyContractDapperRepo, ContractDpRepository>(provider => new ContractDpRepository(connectionString));
+
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAutoMapper(typeof(MapperBL));
-            //services.AddDbContext<ContractsContext>(op => op.UseSqlServer(connectionString));
+
             services.AddScoped<IAdminService, ActiveUsersService>();
+            services.AddScoped<IArchiveService, ArchiveService>();
 
             services.AddScoped<IOpenIdDictUoW, OpenIdDictUoW>();
             services.AddScoped<IContractUoW, ContractUoW>();
+            services.AddScoped<IContractArchiveUoW, ContractArchiveUoW>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IConverter, Converter>();
             services.AddScoped<ILoggerContract, LoggerDb>();
@@ -73,6 +82,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IAbbreviationKindOfWorkService, AbbreviationKindOfWorkService>();
             services.AddTransient<IParseService, ParseService>(); 
             services.AddTransient<IReportExcelService, ReportExcelService>();
+
         }
     }
 }

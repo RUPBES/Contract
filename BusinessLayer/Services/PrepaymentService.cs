@@ -15,15 +15,17 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
         private readonly IHttpContextAccessor _http;
 
-        public PrepaymentService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public PrepaymentService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(PrepaymentDTO item)
@@ -137,14 +139,19 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<PrepaymentDTO> Find(Func<Prepayment, bool> predicate)
+        public IEnumerable<PrepaymentDTO> Find(Func<Prepayment, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<PrepaymentDTO>>(_databaseArch.Prepayments.Find(predicate)):
+                _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(predicate));
         }
 
-        public IEnumerable<PrepaymentDTO> FindByContractId(int id)
+        public IEnumerable<PrepaymentDTO> FindByContractId(int id, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PrepaymentDTO>>(_database.Prepayments.Find(p => p.ContractId == id));
+            return _mapper.Map<IEnumerable<PrepaymentDTO>>( (useArchiveData == true) ?
+                _databaseArch.Prepayments.Find(p => p.ContractId == id) :
+                 _database.Prepayments.Find(p => p.ContractId == id)
+                );
         }
 
         public AmendmentDTO? GetAmendmentByPrepaymentId(int prepaymentId)
@@ -194,17 +201,25 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<AmendmentDTO>>(answer);
         }
 
-        public Prepayment GetLastPrepayment(int contractId)
+        public Prepayment GetLastPrepayment(int contractId, bool? useArchiveData)
         {
-            var list = _database.Prepayments.Find(a => a.ContractId == contractId).ToList();
+            var list = (useArchiveData == true) ?
+                _databaseArch.Prepayments.Find(a => a.ContractId == contractId).ToList() :
+                _database.Prepayments.Find(a => a.ContractId == contractId).ToList();
+
             List<(Prepayment, DateTime)> listSort = new List<(Prepayment, DateTime)>();
+
             foreach (var item in list)
             {
                 (Prepayment, DateTime) obj;
-                var ob = _database.PrepaymentAmendments.Find(s => s.PrepaymentId == item.Id).FirstOrDefault();
+                var ob = (useArchiveData == true) ?
+                    _databaseArch.PrepaymentAmendments.Find(s => s.PrepaymentId == item.Id).FirstOrDefault() :
+                    _database.PrepaymentAmendments.Find(s => s.PrepaymentId == item.Id).FirstOrDefault();
                 if (ob == null)
                     obj.Item2 = new DateTime(1900, 1, 1);
-                else obj.Item2 = (DateTime )_database.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault();
+                else obj.Item2 = (useArchiveData == true) ?
+                        (DateTime )_databaseArch.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault() :
+                        (DateTime)_database.Amendments.Find(x => x.Id == ob.AmendmentId).Select(x => x.Date).FirstOrDefault();
                 obj.Item1 = item;
                 listSort.Add(obj);
             }

@@ -10,6 +10,12 @@ namespace MvcLayer
     {
         public static void Main(string[] args)
         {
+            // Ensure environment follows build configuration (Debug => Development, Release => Production)
+#if DEBUG
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Development);
+#else
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Production);
+#endif
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -27,32 +33,4 @@ namespace MvcLayer
                 });
 
     }
-
-    //public class Program
-    //{
-    //    public static void Main(string[] args)
-    //    {
-    //        // получаем путь к файлу
-    //        var pathToExe = Process.GetCurrentProcess().MainModule.FileName;
-    //        //путь к каталогу проекта
-    //        var pathToContentRoot = Path.GetDirectoryName(pathToExe);
-    //        // создаем хост
-    //        var host = WebHost.CreateDefaultBuilder(args)
-    //            //.ConfigureKestrel(op =>
-    //            //    {
-    //            //        op.Listen(IPAddress.Parse("0.0.0.0"), 6972);
-    //            //        op.Limits.MaxRequestBodySize = null;
-    //            //    })
-    //            .UseKestrel(op =>
-    //            {
-    //                op.Limits.MaxRequestBodySize = null;
-    //            })
-    //                .UseContentRoot(pathToContentRoot)
-    //                .UseStartup<Startup>()
-    //                .UseUrls("http://0.0.0.0:6972/")
-    //                .Build();
-    //        //запускаем в виде службы
-    //        host.RunAsService();
-    //    }
-    //}
 }

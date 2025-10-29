@@ -324,29 +324,38 @@
                                 numberCheckbox++;
                             }
                         </fieldset>
+                                              
 
-                        <fieldset class="border rounded-1 p-3">
-                            <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                            @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                        <fieldset class="border rounded-3 p-3">
+                            <legend class="float-none w-auto px-3">Процедура выбора</legend>
+                            @foreach (var item in Enum.GetValues<ProcedureTypeEnum>())
                             {
-                                var value = $"{Converter.ToFundingSourceTerm((int)item)}";
-                                var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
-
+                                var name = $"{Converter.ToProcedureType((int)item)}";
+                                int numberEnum = (int)item;
+                                var procedure = Model?.SelectionProcedures?[0].TypeProcedure;
                                 <div>
                                     <div class="input-group mb-3">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text" style="display: block;">
-                                                @if (valueArray is not null)
+
+                                                @if (procedure is not null && procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
                                                 {
-                                                    <input type="checkbox" name="FundingFS" value="@value" checked>
+                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
                                                 }
-                                                @if (valueArray is null)
+
+                                                @if ((procedure is null || procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
                                                 {
-                                                    <input type="checkbox" name="FundingFS" value="@value">
+                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
                                                 }
+
+                                                @if ((procedure is null || procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
+                                                {
+                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name">
+                                                }
+
                                             </div>
                                         </div>
-                                        <input type="text" class="form-control" value="@value" disabled>
+                                        <input type="text" class="form-control" value="@name" disabled>
                                     </div>
                                 </div>
                             }
@@ -407,42 +416,34 @@
                                 <input asp-for="EnteringTerm" type="text" class="form-control" required id="EnteringTerm">
                                 <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
 
-                                <label class="control-label" asp-for="ContractTerm"></label>
-                                <input asp-for="ContractTerm" type="text" class="form-control" required id="ContractTerm">
-                                <label class="form-label" id="labelContractTerm" style="display:none"></label>
+                                <label class="control-label" asp-for="ContractTerm" hidden></label>
+                                <input asp-for="ContractTerm" type="text" class="form-control" hidden id="ContractTerm">
+                                @* <label class="form-label" id="labelContractTerm" style="display:none"></label> *@
                             }
                         </fieldset>
 
-                        <fieldset class="border rounded-3 p-3">
-                            <legend class="float-none w-auto px-3">Процедура выбора</legend>
-                            @foreach (var item in Enum.GetValues<ProcedureTypeEnum>())
+                        <fieldset class="border rounded-1 p-3">
+                            <legend class="float-none w-auto px-3">Источник финансирования</legend>
+                            @foreach (var item in Enum.GetValues<FundingSourceEnum>())
                             {
-                                var name = $"{Converter.ToProcedureType((int)item)}";
-                                int numberEnum = (int)item;
-                                var procedure = Model?.SelectionProcedures?[0].TypeProcedure;
+                                var value = $"{Converter.ToFundingSourceTerm((int)item)}";
+                                var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
+
                                 <div>
                                     <div class="input-group mb-3">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text" style="display: block;">
-
-                                                @if (procedure is not null && procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
+                                                @if (valueArray is not null)
                                                 {
-                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
+                                                    <input type="checkbox" name="FundingFS" value="@value" checked>
                                                 }
-
-                                                @if ((procedure is null || procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
+                                                @if (valueArray is null)
                                                 {
-                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
+                                                    <input type="checkbox" name="FundingFS" value="@value">
                                                 }
-
-                                                @if ((procedure is null || procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
-                                                {
-                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name">
-                                                }
-
                                             </div>
                                         </div>
-                                        <input type="text" class="form-control" value="@name" disabled>
+                                        <input type="text" class="form-control" value="@value" disabled>
                                     </div>
                                 </div>
                             }

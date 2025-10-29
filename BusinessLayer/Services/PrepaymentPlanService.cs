@@ -14,15 +14,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
 
-        public PrepaymentPlanService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public PrepaymentPlanService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(PrepaymentPlanDTO item)
@@ -136,9 +136,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<PrepaymentPlanDTO> Find(Func<PrepaymentPlan, bool> predicate)
+        public IEnumerable<PrepaymentPlanDTO> Find(Func<PrepaymentPlan, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PrepaymentPlanDTO>>(_database.PrepaymentPlans.Find(predicate));
+            return (useArchiveData == true)?
+                _mapper.Map<IEnumerable<PrepaymentPlanDTO>>(_databaseArch.PrepaymentPlans.Find(predicate)):
+                 _mapper.Map<IEnumerable<PrepaymentPlanDTO>>(_database.PrepaymentPlans.Find(predicate));
         }
 
         public PrepaymentDTO GetLastPrepayment(int contractId)

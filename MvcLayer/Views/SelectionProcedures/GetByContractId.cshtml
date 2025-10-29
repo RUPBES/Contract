@@ -108,24 +108,22 @@
                             </td>
                             <td>
 
-                                @foreach (FileDTO item2 in Files.GetFilesOfEntity(Model.Id, FolderEnum.SelectionProcedures))
+                                @foreach (FileDTO item2 in Files.GetAttachedFiles(Model.Id, FolderEnum.SelectionProcedures))
                                 {
                                     <div>
                                         <a href="~/Files/OpenFile?id=@item2.Id&fileType=@item2.FileType" target="_blank">@item2.FileName</a>
                                         @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)
                                         {
-                                            @Html.ActionLink("×", "Delete", "Files", new
-                                                {
-                                                    id = item2.Id,
-                                                    fileCategory = FolderEnum.SelectionProcedures,
-                                                    redirectAction = redirectAction,
-                                                    redirectController = redirectController,
-                                                    contractId = Model.ContractId
-                                                }, new
-                                                {
-                                                    @class = "del-btn",
-                                                    @onclick = "return confirmDelete();"
-                                                })
+                                            
+                                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@item2.Id"
+                                                   asp-route-redirectAction="@redirectAction"
+                                                   asp-route-redirectController="@redirectController"
+                                                   asp-route-fileCategory="@FolderEnum.SelectionProcedures"
+                                                   asp-route-contractId="@Model.ContractId"
+                                                   title="Удалить файл"
+                                                   class="modal-link del-btn"
+                                               data-message="Прикрепленный файл будет удален. Продолжить?">×</a>
+                                            
                                         }
                                     </div>
                                 }
@@ -140,7 +138,12 @@
                                 @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                                 {
                                     <span class="icon delete" title="Удалить процедуру закупки">
-                                        <a asp-action="Delete" asp-route-id="@Model.Id" asp-route-contractId="@Model.ContractId"></a>
+                                        <a asp-action="Delete"
+                                           asp-route-id="@Model.Id"
+                                           asp-route-contractId="@Model.ContractId"
+                                           class="modal-link"
+                                           data-message="Процедура закупки и прикрепленные файлы будут удалены. Продолжить?">
+                                        </a>
                                     </span>
                                 }
                             </td>
@@ -152,15 +155,3 @@
         </div>
     </div>
 </div>
-@section Scripts {
-    <script type="text/javascript">
-        function confirmDelete() {
-            if (confirm('Вы уверены, что хотите удалить?')) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    </script>
-}

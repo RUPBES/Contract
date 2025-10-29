@@ -1,35 +1,18 @@
-﻿@model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel>
+﻿@* @model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel> *@
+@model IndexViewModel
 @using BusinessLayer.Helpers;
+@using BusinessLayer.Models
 @using MvcLayer.Models.Reports;
+@using MvcLayer.Models.SettingModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.ContractInterfaces.IPaymentService Payment
-@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCosts
-@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
-@{
-    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
-    DateTime startPeriod = new DateTime(4000, 1, 1);
-    DateTime endPeriod = new DateTime(1000, 1, 1);
-    foreach (var item in Model)
-    {
-        if (item.dateBeginWork != null)
-        {
-            if (startPeriod > item.dateBeginWork)
-            {
-                startPeriod = (DateTime)item.dateBeginWork;
-            }
-        }
 
-        if (item.dateEndWork != null)
-        {
-            if (endPeriod < item.dateEndWork)
-            {
-                endPeriod = (DateTime)item.dateEndWork;
-            }
-        }
-    }
+@{
+    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";   
     int PageNumber = ViewBag.PageNum;
+    var formModel = ViewData["FilterViewModel"] as FilterViewModel;
 }
 @section Table {
+
     <style>
         table {
             text-align: center;
@@ -69,83 +52,36 @@
                 opacity: 1;
                 border-color: #373b3e;
             }
-
-        .second-td-elem {
-            z-index: 5 !important;
-            box-shadow: inset 0 0 0 9999px #bdbac3 !important;
-            background-color: grey !important;
-        }
-
-        .header__form {
-            display: flex;
-            width: 99%;
-            justify-content: space-between;
-        }
-
-        .header__form-search {
-            display: flex;
-        }
-
-        h3 {
-/*             text-shadow: -1px -1px #FFF, -2px -2px #FFF, -1px 1px #FFF, -2px 2px #FFF, 1px 1px #FFF, 2px 2px #FFF, 1px -1px #FFF, 2px -2px #FFF, -3px -3px 2px #BBB, -3px 3px 2px #BBB, 3px 3px 2px #BBB, 3px -3px 2px #BBB;
-            color: #004d8e;
-            transition: all 1s; */
-            font-family: 'Ampersand', Montserrat, sans-serif;
-            font-size: 32px;
-            margin-left: 1%;
-        }
-
-        .search_btn {
-            width: 2vh !important;
-        }
-
-        .form_agreement {
-            display: flex !important;
-            padding: 0 30px !important;
-            margin-top: 0.5%;
-            margin-bottom: 0.5%;
-        }
-
-        .search_btn {
-            width: 2vh !important;
-            position: absolute;
-            padding: 0;
-            margin: 0 10px;
-            background-color: inherit;
-            border: none;
-            right: 30px;
-            top: 7px;
-        }
-
-        input {
-            margin: 0;
-            font-family: inherit;
-            font-size: inherit;
-            line-height: inherit;
-            border-radius: 20px;
-            padding: 0px 30px 0px 10px;
-            box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
-            margin-top: 3%;
-        }
-
-        form {
-            position: relative;
-        }
     </style>
-    <div class="header__form">
-        <h3>@ViewData["Title"]</h3>
-        @using (Html.BeginForm("GetPayableCash", "Payments", FormMethod.Get))
-        {
-            <div class="form_agreement">
+    
+    <div class="modal-window_filter">
+        <div class="content-window">
+            <div class="modal-window_filter__close-btn">
+                <div class="close-btn"></div>
+            </div>
+            <div class="laber-window">Выберете настройки поиска</div>
+            <div class="content-window__hr"></div>
+            <div class="form-window">
+            </div>
+        </div>
+    </div>
+    <input type="text" id="client_filter" value="@formModel?.Client" hidden/>
+    <input type="text" id="gencontr_filter" value="@formModel?.GenContractor" hidden />
 
-                <form method="get">
-                    @Html.TextBox("searchString", ViewData["CurrentFilter"] as string)
-                    <button class="search_btn" type="submit"> <img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" /></button>
+
+    <div class="header-view">
+        <h3>@ViewData["Title"]</h3>
+        <div class="nav_panel_btns">
+            <div class="link_add_emp"></div>
+            <div class="btn_panel_search">
+                <button type="button" class="btn btn-primary btn-ctr to_filter">Фильтр<img class="icon" src="~/icons/funnel.svg" /></button>
+                <form asp-controller="Payments" asp-action="GetPayableCash" style="search-form" method="get">
+                    <input class="btn-ctr" type="text" name="searchString" placeholder="Поиск по организации" value="@ViewData["CurrentFilter"]" id="er" />
+                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
                 </form>
             </div>
-        }
+        </div>
     </div>
-
     <hr class="modal-line" />
     <div class="wrapper-table">
         <table class="table table-bordered table-main table-main-short table-hover">
@@ -187,51 +123,51 @@
                     <th rowspan="2">
                         Зарезервированные средства
                     </th>
-                </tr>              
+                </tr>
             </thead>
             <tbody style="height:70vh;">
-                @foreach (var item in Model)
+                @foreach (VPaymentCashDTO item in Model.Objects)
                 {
                     <tr>
                         <td>
                             <a asp-action="DetailsPayableCash" asp-route-contractId="@item.Id">
-                                @item?.number <br>
+                                @item?.Number <br>
                                 от<br>
-                                @item?.dateContract?.ToShortDateString()
+                                @item?.Date?.ToShortDateString()
                             </a>
                         </td>
                         <td>
-                            @item?.nameObject
+                            @item?.NameObject
                         </td>
                         <td>
-                            @item.client
+                            @item?.Client
                         </td>
                         <td>
-                            @item.genContractor
+                            @item?.GenContractor
                         </td>
                         <td>
-                            @item?.dateBeginWork?.ToShortDateString() - @item?.dateEndWork?.ToShortDateString()
+                            @item?.DateBeginWork?.ToShortDateString() - @item?.DateEndWork?.ToShortDateString()
                         </td>
                         <td>
-                            @item?.dateEnter?.ToShortDateString()
+                            @item?.EnteringTerm?.ToShortDateString()
                         </td>
                         <td>
-                            @item?.currency
+                            @item?.Сurrency
                         </td>
                         <td class="text-end">
-                            @item.contractPrice?.ToString("N2")
+                            @((item?.ContractPrice??0).ToString("N2"))
                         </td>
                         <td class="text-end">
-                            @item.remainingWork?.ToString("N2")
+                            @(((item?.ContractPrice - item?.FactSum) ?? 0).ToString("N2")))
                         </td>
                         <td class="text-end">
-                            @item.currentYearScopeWork?.ToString("N2")
+                            @((item?.ThisYearSum??0).ToString("N2"))
                         </td>
                         <td class="text-end">
-                            @item.factWorkByC3A?.ToString("N2")
+                            @((item?.FactSum ?? 0).ToString("N2"))
                         </td>
                         <td class="text-end">
-                            @item.Reserve?.ToString("N2")
+                            @((item?.ReserveSum??0).ToString("N2"))
                         </td>
                     </tr>
                 }
@@ -242,10 +178,10 @@
         <ul class="pagination justify-content-center">
             <li class="page-item previous_btn">
                 @{
-                    @if (PageNumber > 1)
+                    @if (Model.PageViewModel.PageNumber > 1)
                     {
                         <a class="page-link" asp-action="GetPayableCash"
-                           asp-route-pageNum="@(PageNumber - 1)"
+                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]">
                             &lt;
                         </a>
@@ -262,24 +198,25 @@
             </li>
             @{
                 int counter = 1;
-                int index = PageNumber <= 3 ? 1 : PageNumber - 2;
+                int index = Model.PageViewModel.PageNumber <= 3 ? 1 : Model.PageViewModel.PageNumber - 2;
                 int end = 0;
-                if (PageNumber <= 3) end = ViewBag.TotalPages > 5 ? 5 : ViewBag.TotalPages;
-                else if (ViewBag.TotalPages <= 5)
-                    end = ViewBag.TotalPages;
-                else if (ViewBag.TotalPages >= PageNumber + 2)
-                    end = PageNumber + 2;
+                if (Model.PageViewModel.PageNumber <= 3) end = Model.PageViewModel.TotalPages > 5 ? 5 : Model.PageViewModel.TotalPages;
+                else if (Model.PageViewModel.TotalPages <= 5)
+                    end = Model.PageViewModel.TotalPages;
+                else if (Model.PageViewModel.TotalPages >= Model.PageViewModel.PageNumber + 2)
+                    end = Model.PageViewModel.PageNumber + 2;
                 else
                 {
-                    end = ViewBag.TotalPages;
-                    index = ViewBag.TotalPages - 4;
+                    end = Model.PageViewModel.TotalPages;
+                    index = Model.PageViewModel.TotalPages - 4;
                 }
 
                 for (int i = index; i <= end; i++)
                 {
-                    <li class="page-item pag_btn_num">
-                        <a class="page-link " asp-action="GetPayableCash"
-                           asp-route-pageNum="@i"
+                    <li class="page-item pag_btn_num @(i == Model.PageViewModel.PageNumber ? "active":"")">
+                        <a class="page-link "                           
+                           asp-action="GetPayableCash"
+                           asp-route-page="@i"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                            value="@i">@i</a>
                     </li>
@@ -293,10 +230,10 @@
 
             <li class="page-item next_btn">
                 @{
-                    @if (PageNumber < ViewBag.TotalPages)
+                    @if (Model.PageViewModel.PageNumber < Model.PageViewModel.TotalPages)
                     {
                         <a class="page-link" asp-action="GetPayableCash"
-                           asp-route-pageNum="@(ViewBag.PageNum + 1)"
+                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]">
                             &gt;
                         </a>
@@ -312,6 +249,42 @@
             </li>
         </ul>
     </nav>
+}
+}
+@section Scripts {
+    @{
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let window_filter = document.querySelector(" .modal-window_filter");
+                let btn_filter = document.querySelector("button.to_filter");
+                let btn_close = document.querySelector(".close-btn");
 
+                btn_filter.addEventListener('click', function(){
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetFilterForm", "Payments")',
+                        // contentType: "application/html; charset=utf-8",
+                        data: { client: $("#client_filter").val(), genContractor: $("#gencontr_filter").val() },
+                        // dataType: 'html',
+                        success: function (result) {
+                            $('.form-window').html(result);
+                        },
+                        error: function (result) {
+                            alert("Ошибка отображения");
+                        }
+                    });
 
+                    window_filter.classList.add("open");
+                });
+                btn_close.addEventListener('click', function(){
+                    window_filter.classList.remove("open");
+                    });
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        window_filter.classList.remove("open");
+                    }
+                });
+            });
+        </script>
+    }
 }

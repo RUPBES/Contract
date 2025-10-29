@@ -15,15 +15,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
-        private readonly IHttpContextAccessor _http;
 
-        public SelectionProcedureService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public SelectionProcedureService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-            _http = http;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(SelectionProcedureDTO item)
@@ -95,9 +95,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<SelectionProcedureDTO> Find(Func<SelectionProcedure, bool> predicate)
+        public IEnumerable<SelectionProcedureDTO> Find(Func<SelectionProcedure, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<SelectionProcedureDTO>>(_database.SelectionProcedures.Find(predicate));
+            return (useArchiveData == true) ? 
+                _mapper.Map<IEnumerable<SelectionProcedureDTO>>(_databaseArch.SelectionProcedures.Find(predicate))
+                : _mapper.Map<IEnumerable<SelectionProcedureDTO>>(_database.SelectionProcedures.Find(predicate));
         }
 
         public IEnumerable<SelectionProcedureDTO> GetAll()

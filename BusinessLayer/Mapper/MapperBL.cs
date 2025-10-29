@@ -15,6 +15,7 @@ namespace BusinessLayer.Mapper
             CreateMap<Amendment, AmendmentDTO>().ReverseMap();
             CreateMap<AmendmentFile, AmendmentFileDTO>().ReverseMap();
 
+            CreateMap<VPaymentCash, VPaymentCashDTO>().ReverseMap();
             CreateMap<PrepaymentFact, PrepaymentFactDTO>().ReverseMap();
             CreateMap<PrepaymentPlan, PrepaymentPlanDTO>().ReverseMap();
             CreateMap<PrepaymentTake, PrepaymentTakeDTO>().ReverseMap();
@@ -61,6 +62,7 @@ namespace BusinessLayer.Mapper
             CreateMap<TypeWorkContract, TypeWorkContractDTO>().ReverseMap();
             CreateMap<VContract, ContractDTO>().ReverseMap();
             CreateMap<VContract, VContractDTO>().ReverseMap();
+            CreateMap<VContractDTO, ContractDTO>().ReverseMap();
             CreateMap<VContractEngin, VContractDTO>().ReverseMap();
 
         }

@@ -16,10 +16,7 @@
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
-
     var isEngineering = (bool)ViewData["IsEngineering"];
-    // string redirectAction = "Index";
-    // string redirectController = "Contracts";
     var actionMethod = isEngineering is true ? "Engineerings" : "Index";
     var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
     if (ViewBag.CurrentType == null)
@@ -28,21 +25,6 @@
 
 
 @section Table {
-    <style>
-        .color_label {
-            display: flex;
-            font-weight: bold;
-            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-        }
-
-        .label_postion {
-            margin-top: 0.4%;
-        }
-
-        .wrapper-table {
-            width: 100%;
-        }
-    </style>
     <div>
         <div class="header-view">
             <h1 class="list_agreement">Список договоров</h1>
@@ -146,7 +128,7 @@
                         {
                             <th><span class="table_span-work">          Виды работ по договору      </span></th>
                         }
-                        <th><span class="table_span-contractprice">@*Контрактная цена, с НДС*@ Всего по договору с НДС </span></th>
+                        <th><span class="table_span-contractprice"> Всего по договору с НДС </span></th>
                         <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
                         <th><span class="table_span-remains">       Остаток                     </span></th>
                         <th><span class="table_span-volume">        Объем на текущий год        </span></th>
@@ -285,74 +267,90 @@
                                     <div class="icon view" title="Детальная информация">
                                         <a asp-action="Details" asp-route-id="@item?.Id"></a>
                                     </div>
-                                    @if (!isEngineering && permissions.GroupeName.Contains(Constants.GRP_ESTIMATE))
+                                    @if (item.Author.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) || permissions.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <div class="icon estimate" title="Сметы">
-                                            <a asp-action="Index" asp-controller="Estimate" asp-route-contractId="@item?.Id"></a>
-                                        </div>
-                                    }
-
-                                    @if (isGRP_Contract)
-                                    {
-                                        @if (permissions?.IsEditor == true)
+                                        @if (!isEngineering && permissions.GroupeName.Contains(Constants.GRP_ESTIMATE))
                                         {
-                                            <div class="icon edit" title="Редактировать договор">
-                                                <a asp-action="Edit" asp-route-id="@item?.Id"></a>
+                                            <div class="icon estimate" title="Сметы">
+                                                <a asp-action="Index"
+                                                   asp-controller="Estimate"
+                                                   asp-route-contractId="@item?.Id"></a>
                                             </div>
                                         }
 
-                                        @if (permissions?.IsDeleter == true)
+                                        @if (isGRP_Contract)
                                         {
-                                            <div class="icon delete" title="Удалить договор">
-                                                <a asp-action="Delete" asp-route-id="@item?.Id"></a>
-                                            </div>
-                                        }
+                                            @if (permissions?.IsEditor == true)
+                                            {
+                                                <div class="icon edit" title="Редактировать договор">
+                                                    <a asp-action="Edit" asp-route-id="@item?.Id"></a>
+                                                </div>
+                                            }
 
-                                        @if (ViewBag?.IsMajorOrganization == true && permissions?.IsEditor == true)
-                                        {
-                                            <div class="icon transfer" title="Передать договор филиалу">
-                                                <a asp-action="ChangeOwner" asp-route-id="@item?.Id"></a>
-                                            </div>
-                                        }
+                                            @if (permissions?.IsDeleter == true)
+                                            {
+                                                <div class="icon delete" title="Удалить договор">
+                                                    <a asp-action="Delete" asp-route-id="@item?.Id"></a>
+                                                </div>
+                                            }
 
-                                        @if (!item.IsArchive && permissions?.IsEditor == true)
-                                        {
-                                            <div class="icon archive" title="Переместить в архив">
-                                                <a asp-action="ChangeStatus" asp-route-status="archive" asp-route-contrId="@item?.Id"></a>
-                                            </div>
-                                        }
+                                            @if (ViewBag?.IsMajorOrganization == true && permissions?.IsEditor == true)
+                                            {
+                                                <div class="icon transfer" title="Передать договор филиалу">
+                                                    <a asp-action="ChangeOwner" asp-route-id="@item?.Id"></a>
+                                                </div>
+                                            }
 
-                                        @if (item.IsExpired)
-                                        {
-                                            <div class="icon expired" title="Договор просрочен">
-                                                <div></div>
-                                            </div>
-                                        }
+                                            @if (!item.IsArchive && permissions?.IsEditor == true && permissions.IsAdmin == true)
+                                            {
+                                                <div class="icon archive" title="Переместить в архив">
+                                                    <a asp-action="ChangeStatus"
+                                                       asp-route-status="archive"
+                                                       asp-route-contrId="@item?.Id"
+                                                       asp-route-isEngineering="@isEngineering"
+                                                       class="modal-link"
+                                                       data-message="Договор будет перемещен в архив. Продолжить?"></a>
+                                                </div>
 
-                                        @if (item.IsClosed)
-                                        {
-                                            <div class="icon closed" title="Договор закрыт, ожидается акта ввода">
-                                                <div></div>
-                                            </div>
-                                        }
+                                            }
 
-                                        @if (!item.IsExpired && !item.IsClosed && !string.IsNullOrEmpty(className) && permissions?.IsEditor == true)
-                                        {
-                                            <div class="icon expired warning_icon" title="Договор просрочен">
-                                                <a asp-action="ChangeStatus" asp-route-status="expired" asp-route-contrId="@item.Id"></a>
-                                            </div>
-                                            <div class="icon closed warning_icon" title="Договор закрыт, ожидается акта ввода">
-                                                <a asp-action="ChangeStatus" asp-route-status="closed" asp-route-contrId="@item.Id"></a>
-                                            </div>
-                                        }
-                                        @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
-                                        {
-                                            <div class="icon view" title="Печать объемов работ">
-                                                <a asp-action="PrintScope"
-                                                   asp-controller="Report"
-                                                   asp-route-contractId="@item?.Id"
-                                                   asp-route-numberContr="@item?.Number"></a>
-                                            </div>
+                                            @if (item.IsExpired)
+                                            {
+                                                <div class="icon expired" title="Договор просрочен">
+                                                    <div></div>
+                                                </div>
+                                            }
+
+                                            @if (item.IsClosed)
+                                            {
+                                                <div class="icon closed" title="Договор закрыт, ожидается акт ввода">
+                                                    <div></div>
+                                                </div>
+                                            }
+
+                                            @if (!item.IsExpired && !item.IsClosed && !string.IsNullOrEmpty(className) && permissions?.IsEditor == true)
+                                            {
+                                                <div class="icon expired warning_icon" title="Договор просрочен">
+                                                    <a asp-action="ChangeStatus" asp-route-status="expired" asp-route-contrId="@item.Id"></a>
+                                                </div>
+                                                <div class="icon closed warning_icon" title="Договор закрыт, ожидается акта ввода">
+                                                    <a asp-action="ChangeStatus" asp-route-status="closed" asp-route-contrId="@item.Id"></a>
+                                                </div>
+                                            }
+                                            @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
+                                            {
+                                                <div class="icon print" title="Печать объемов работ">
+                                                    <a asp-action="PrintScope"
+                                                       asp-controller="Report"
+                                                       asp-route-contractId="@item?.Id"
+                                                       asp-route-numberContr="@item?.Number"></a>
+                                                </div>
+                                                <div class="icon print" title="Печать детальной информации по договору">
+                                                    <a asp-action="PrintContractDetails"
+                                                       asp-controller="Report"
+                                                       asp-route-contractId="@item?.Id"></a>
+                                                </div>
+                                            }
                                         }
                                     }
                                 </span>
@@ -364,7 +362,7 @@
         </div>
     </div>
     <nav aria-label="Page navigation example" style="margin-top:10px;">
-        <div class="color_label">
+        <div style="display: flex; font-weight: bold; box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;">
             <div class="p-3 mb-2 bg-secondary text-white square overdue"></div>
             <label class="label_postion"> - Просроченные</label>
         </div>
@@ -374,7 +372,7 @@
                     @if (Model.PageViewModel.PageNumber > 1)
                     {
                         <a class="page-link" asp-action="Index"
-                           asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                            asp-route-currentType="@ViewData["CurrentType"]">
@@ -384,7 +382,7 @@
                     @if (Model.PageViewModel.PageNumber <= 1)
                     {
                         <a class="page-link" asp-action="Index"
-                           asp-route-pageNum="@(Model.PageViewModel.PageNumber - 1)"
+                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                            asp-route-currentType="@ViewData["CurrentType"]"
@@ -393,7 +391,6 @@
                         </a>
                     }
                 }
-
             </li>
             @{
                 int counter = 1;
@@ -402,7 +399,7 @@
                 {
                     <li class="page-item pag_btn_num">
                         <a class="page-link " asp-action="Index"
-                           asp-route-pageNum="@i"
+                           asp-route-page="@i"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                            value="@i">@i</a>
@@ -420,7 +417,7 @@
                     @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
                     {
                         <a class="page-link" asp-action="Index"
-                           asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                            asp-route-currentType="@ViewData["CurrentType"]">
@@ -430,7 +427,7 @@
                     else
                     {
                         <a class="page-link" asp-action="Index"
-                           asp-route-pageNum="@(Model.PageViewModel.PageNumber + 1)"
+                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
                            asp-route-sortOrder="@ViewData["CurrentSort"]"
                            asp-route-currentFilter="@ViewData["CurrentFilter"]"
                            asp-route-currentType="@ViewData["CurrentType"]"
@@ -448,7 +445,6 @@
     <script type="text/javascript">
 
         class ArrayFun {
-
             constructor(url, element, urlDown, urlUp) {
                 this.url = url;
                 this.element = element;
@@ -456,6 +452,7 @@
                 this.urlUp = urlUp;
             }
         }
+
         // Этот код управляет отображением стрелок сортировки в заголовках таблицы:
         // - Добавляет/удаляет классы для стилизации стрелок вверх/вниз
         // - Реагирует на параметр sortOrder в URL, который указывает текущую сортировку

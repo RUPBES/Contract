@@ -50,7 +50,15 @@
                                         @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                         {
                                             <div class="icon delete">
-                                                @Html.ActionLink("", "Delete", "Files", new {id = item.Id, redirectAction = "GetByContractId", redirectController="Files",fileCategory= FolderEnum.Contracts, contractId =@ViewBag.entityId,  pageNum= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@item.Id"
+                                                   asp-route-redirectAction="GetByContractId"
+                                                   asp-route-redirectController="Files"
+                                                   asp-route-fileCategory="@FolderEnum.Contracts"
+                                                   asp-route-contractId="@ViewBag.entityId"
+                                                   asp-route-page="@ViewBag.Page"
+                                                   title="Удалить файл"
+                                                   class="modal-link del-btn"
+                                                   data-message="Файл будет удален. Продолжить?"></a>
                                             </div>
                                         }
                                     </strong>
@@ -83,7 +91,3 @@
         </div>
     </div>
 </div>
-
-
-@section Scripts {
-}

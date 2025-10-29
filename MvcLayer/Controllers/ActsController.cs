@@ -35,6 +35,15 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == id)));
         }
 
+        [Route("/archive/Acts")]
+        public IActionResult GetArchByContractId(int id, int returnContractId = 0)
+        {
+            ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
+            return View(_mapper.Map<IEnumerable<ActViewModel>>(_actService.Find(x => x.ContractId == id, useArchiveData: true)));
+        }
+
+
         [Authorize(Policy = "CreatePolicy")]
         public ActionResult Create(int contractId, int returnContractId = 0)
         {
@@ -115,7 +124,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Acts))
+                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Acts))
                 {
                     _fileService.Delete(item.Id);                   
                 }

@@ -16,15 +16,17 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
         private readonly IHostingEnvironment _env;
 
-        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env)
+        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _env = env;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(EstimateDTO item)
@@ -127,9 +129,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<EstimateDTO> Find(Func<Estimate, bool> predicate)
+        public IEnumerable<EstimateDTO> Find(Func<Estimate, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<EstimateDTO>>(_database.Estimates.Find(predicate));
+            return useArchiveData == true? 
+                _mapper.Map<IEnumerable<EstimateDTO>>(_databaseArch.Estimates.Find(predicate)):
+                _mapper.Map<IEnumerable<EstimateDTO>>(_database.Estimates.Find(predicate));
         }
 
         public IEnumerable<EstimateDTO> GetAll()
@@ -254,13 +258,15 @@ namespace BusinessLayer.Services
             return viewModel;
         }
 
-        public IndexViewModel GetPageFilterByContract(int pageSize, int pageNum, string sortOrder, int ContractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString)
+        public IndexViewModel GetPageFilterByContract(int pageSize, int pageNum, string sortOrder, int ContractId, Dictionary<string, string> SearchString, Dictionary<string, string> CurrentSearchString, Dictionary<string, List<int>> ListSearchString, Dictionary<string, List<int>> CurrentListSearchString, bool? useArchiveData)
         {
             if (SearchString != CurrentSearchString)
                 pageNum = 1;
             int skipEntities = (pageNum - 1) * pageSize;
 
-            List<Estimate> items = _database.Estimates.Find(x => x.ContractId == ContractId).ToList();
+            List<Estimate> items = (useArchiveData == true)?
+                _databaseArch.Estimates.Find(x => x.ContractId == ContractId).ToList():
+                _database.Estimates.Find(x => x.ContractId == ContractId).ToList();
 
             #region SearchString
             string value;
@@ -330,7 +336,10 @@ namespace BusinessLayer.Services
                 var abbrKind = new List<AbbreviationKindOfWork>();
                 foreach (var item in listItems)
                 {
-                    var list = _database.AbbreviationKindOfWorks.Find(x => x.KindOfWorkId == item).ToList();
+                    var list = (useArchiveData == true)?
+                        _databaseArch.AbbreviationKindOfWorks.Find(x => x.KindOfWorkId == item).ToList():
+                        _database.AbbreviationKindOfWorks.Find(x => x.KindOfWorkId == item).ToList();
+
                     abbrKind.AddRange(list);
                 }
                 foreach (var item in abbrKind)

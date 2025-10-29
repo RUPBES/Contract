@@ -7,7 +7,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     public interface IAmendmentService : IService<AmendmentDTO, Amendment>
     {
         void AddFile(int amendId, int fileId);
-        IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select);
+        IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select, bool useArchiveData = false);
         //bool? HasNewAmendment(int contractId);
     }
 }

@@ -14,6 +14,7 @@ namespace MvcLayer.Mapper
         {
             CreateMap<ActDTO, ActViewModel>().ReverseMap();
             CreateMap<AddressViewModel, AddressDTO>().ReverseMap();
+            CreateMap<ContractViewModel, VContractDTO>().ReverseMap();
             CreateMap<ContractViewModel, ContractDTO>().ReverseMap();
             CreateMap<ContractOrganization, ContractOrganizationDTO>().ReverseMap();
             CreateMap<CorrespondenceDTO, CorrespondenceViewModel>().ReverseMap();

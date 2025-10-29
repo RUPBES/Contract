@@ -1,25 +1,33 @@
 ﻿using AutoMapper;
+using Azure;
 using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.Entities;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
+using System.Drawing.Printing;
 using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    internal class PaymentService: IPaymentService
+    internal class PaymentService : IPaymentService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
+        private readonly IReadonlyPaymentDapperRepo _paymentCash;
 
-        public PaymentService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public PaymentService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch, IReadonlyPaymentDapperRepo paymentCash)
         {
             _database = database;
             _mapper = mapper;
-            _logger = logger;           
+            _logger = logger;
+            _databaseArch = databaseArch;
+            _paymentCash = paymentCash;
         }
 
         public int? Create(PaymentDTO item)
@@ -91,9 +99,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<PaymentDTO> Find(Func<Payment, bool> predicate)
+        public IEnumerable<PaymentDTO> Find(Func<Payment, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<PaymentDTO>>(_database.Payments.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<PaymentDTO>>(_databaseArch.Payments.Find(predicate)) :
+                 _mapper.Map<IEnumerable<PaymentDTO>>(_database.Payments.Find(predicate));
         }
 
         public IEnumerable<PaymentDTO> GetAll()
@@ -136,6 +146,64 @@ namespace BusinessLayer.Services
                             nameSpace: typeof(PaymentService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
+        }
+
+        //()
+        public IndexViewModel GetPayableCash(int pageSize, int page, FilterPayableModel filter, string[] organizationName, bool? useArchiveData)
+        {
+            int skip = (page - 1) * pageSize;
+            int count = _paymentCash.Count();
+            string queryString = CreateQueryString(filter);
+
+            var items = _mapper.Map<IEnumerable<VPaymentCashDTO>>(_paymentCash.GetEntitySkipTake(skip, pageSize, queryString, organizationName));
+
+            PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = items
+            };
+
+            return viewModel;
+        }
+
+        public IEnumerable<VPaymentCashDTO> GetPayableCash(FilterPayableModel filter, string[] organizationName)
+        { 
+            string queryString = CreateQueryString(filter);
+            return _mapper.Map<IEnumerable<VPaymentCashDTO>>(_paymentCash.Find(queryString, organizationName));                    
+        }
+
+        private string CreateQueryString(FilterPayableModel filter)
+        {
+            string queryString = string.Empty;
+
+            if (filter?.Client != null && filter?.Client?.Equals("null", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                queryString += $"and Client ='{filter.Client}'";
+            }
+            if (filter?.GenContractor != null && filter?.GenContractor?.Equals("null", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                queryString += $"and GenContractor ='{filter.GenContractor}'";
+            }
+
+            if (filter?.DateEnteringTerm != null && filter.DateEnteringTerm != default)
+            {
+                queryString += $"and EnteringTerm ='{filter.DateEnteringTerm}'";
+            }
+            else if (filter?.StarEnteringTerm != null && filter?.EndEnteringTerm != null)
+            {
+                queryString += $"and EnteringTerm >='{filter.StarEnteringTerm}' and EnteringTerm <='{filter.EndEnteringTerm}'";
+            }
+            else if (filter?.StarEnteringTerm != null && filter.EndEnteringTerm == null)
+            {
+                queryString += $"and EnteringTerm >='{filter.StarEnteringTerm}'";
+            }
+            else if (filter?.StarEnteringTerm == null && filter?.EndEnteringTerm != null)
+            {
+                queryString += $"and EnteringTerm <='{filter.EndEnteringTerm}'";
+            }
+
+            return queryString;
         }
     }
 }

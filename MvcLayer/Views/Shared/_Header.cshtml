@@ -9,6 +9,7 @@
         font-weight: normal !important;
         font-size: 14px !important;
     }
+
     ul > li > a {
         font-weight: 500 !important;
         font-size: 16px !important;
@@ -104,7 +105,7 @@
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Employees" asp-action="Index">Сотрудники</a></li>
 
-                        @if (permissions is not null && (permissions.IsAdmin && permissions.IsCreator && permissions.IsDeleter))
+                        @if (permissions is not null && permissions.IsLeadAdmin)
                         {
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="text-dark dropdown-item" asp-controller="Admin" asp-action="CreateReport" asp-route-daysCount="7">Сформировать отчет</a></li>
@@ -115,7 +116,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="Index">
-                        Договора
+                        Договоры
                     </a>
                 </li>
                 <li class="nav-item">
@@ -128,7 +129,7 @@
                         Анализ/Мониторинг
                     </a>
                     <ul class="dropdown-menu">
-                       @*  <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a></li>
+                        @*  <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Material" asp-action="GetCostDeviation">Отклонение по материалам</a></li>
                         <li><hr class="dropdown-divider"></li>
 
                         <li><a class="text-dark dropdown-item" asp-area="" asp-controller="ScopeWorks" asp-action="GetCostDeviation">Мониторинг выполнения графика производства работ</a></li>
@@ -138,23 +139,43 @@
 
                     </ul>
                 </li>
+
                 @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
                 {
                     <li class="nav-item dropdown">
                         <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Отчеты
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="Report" asp-action="SelectContractProperties">Договора</a></li>
-                        @* <li><hr class="dropdown-divider"></li> *@
+                            Отчеты
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="text-dark dropdown-item" asp-area="" asp-controller="Report" asp-action="SelectContractProperties">Договоры</a>
+                            </li>
+                            <li>
+                                <a class="text-dark dropdown-item" asp-area="" asp-controller="Report" asp-action="FilterPayableCash">Денежные средства, подлежащие к оплате</a>
+                            </li>
+                        </ul>
 
-                       @*  <li><a class="text-dark dropdown-item" asp-area="" asp-controller="" asp-action=""></a></li>
-                        <li><hr class="dropdown-divider"></li>
 
-                        <li><a class="text-dark dropdown-item" asp-area="" asp-controller="" asp-action=""></a></li> *@
+                    </li>
 
-                    </ul>
-                </li>
+                    <li class="nav-item dropdown">
+                        <a class="btn-prizrac dropdown-toggle dropbtn agr_hover nav-link" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Архив
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="IndexArch">
+                                    Договоры
+                                </a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark agr_hover" asp-area="" asp-controller="Contracts" asp-action="EngineeringsArch">
+                                    Инжиниринговые услуги
+                                </a>
+                            </li>
+
+                        </ul>
+                    </li>
                 }
             </ul>
             @*  <ul class="navbar-nav flex-grow-1">

@@ -15,13 +15,15 @@ public class FormService : IFormService
 {
     private IMapper _mapper;
     private readonly IContractUoW _database;
+    private readonly IContractArchiveUoW _databaseArch;
     private readonly ILoggerContract _logger;
 
-    public FormService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+    public FormService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
     {
         _database = database;
         _mapper = mapper;
         _logger = logger;
+        _databaseArch = databaseArch;
     }
 
     public int? Create(FormDTO item)
@@ -93,9 +95,11 @@ public class FormService : IFormService
         }
     }
 
-    public IEnumerable<FormDTO> Find(Func<FormC3a, bool> predicate)
+    public IEnumerable<FormDTO> Find(Func<FormC3a, bool> predicate, bool? useArchiveData)
     {
-        return _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(predicate));
+        return (useArchiveData == true) ?
+            _mapper.Map<IEnumerable<FormDTO>>(_databaseArch.Forms.Find(predicate)) :
+            _mapper.Map<IEnumerable<FormDTO>>(_database.Forms.Find(predicate));
     }
 
     public IEnumerable<FormDTO> Find(Func<FormC3a, bool> where, Func<FormC3a, FormC3a> select)
@@ -178,18 +182,29 @@ public class FormService : IFormService
         return _mapper.Map<IEnumerable<DateTime>>(answer);
     }
 
-    public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period)
+    public List<FormDTO> GetNestedFormsByPeriodAndContrId(int contractId, DateTime period, bool? useArchiveData)
     {
-        List<FormDTO> formList = new ();
+        List<FormDTO> formList = new();
 
         if (contractId > 0 && period != null && period != default)
         {
-            var subContr = _database.Contracts.Find(x => x.SubContractId == contractId && x.IsSubContract == true);
-            var agrContr = _database.Contracts.Find(x => x.AgreementContractId == contractId && x.IsAgreementContract == true);
+            var subContr = (useArchiveData == true) ?
+                    _databaseArch.Contracts.Find(x => x.SubContractId == contractId && x.IsSubContract == true) :
+                    _database.Contracts.Find(x => x.SubContractId == contractId && x.IsSubContract == true);
+
+            var agrContr = (useArchiveData == true) ?
+                     _databaseArch.Contracts.Find(x => x.AgreementContractId == contractId && x.IsAgreementContract == true) :
+                    _database.Contracts.Find(x => x.AgreementContractId == contractId && x.IsAgreementContract == true);
+
 
             foreach (var item in agrContr)
             {
-                var formAgr = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
+                var formAgr = _mapper.Map<FormDTO>
+                    (
+                        (useArchiveData == true) ?
+                            _databaseArch.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault() :
+                            _database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault()
+                    );
 
                 if (formAgr is not null)
                 {
@@ -199,7 +214,10 @@ public class FormService : IFormService
             }
             foreach (var item in subContr)
             {
-                var formSub = _mapper.Map<FormDTO>(_database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
+                var formSub = _mapper.Map<FormDTO>(
+                    (useArchiveData == true) ?
+                        _databaseArch.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault() :
+                        _database.Forms.Find(x => x.ContractId == item.Id && x.Period?.Year == period.Year && x.Period?.Month == period.Month).FirstOrDefault());
                 //formSub.OrganizationName = _database.ContractOrganizations.Find(x=>x.ContractId == item.Id).FirstOrDefault()?.Organization?.Name;
                 if (formSub is not null)
                 {
@@ -252,7 +270,7 @@ public class FormService : IFormService
 
         if (!isOneOfMultipleDelete) // если не удаляется подобъект
         {
-            if (method == CrudOp.UPDATE && !isSubContracts) 
+            if (method == CrudOp.UPDATE && !isSubContracts)
             {
                 UpdateFormByContractId(form, operation, form.ContractId ?? 0, isOwnForceUpdate: true, previousStateForm);
             }
@@ -318,29 +336,29 @@ public class FormService : IFormService
     /// <param name="contractId"></param>
     /// <param name="type">Тип данных, 1- и факт и факт соб.силами, 2- факт, 3- факт собственными силами</param>
     /// <returns>Модель с фактическими данными согласно справок С3-а</returns>
-    public ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type)
+    public ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type, bool? useArchiveData)
     {
         var report = new ScopeWorkReportModel();
 
         if (type == ScopeType.Both)
         {
-            var forms = GetForms(contractId);
+            var forms = GetForms(contractId, useArchiveData);
             var group = CreateTableGroup(forms);
             report.Scopes.Add("form", group);
 
-            var formsOwn = GetForms(contractId, true);
+            var formsOwn = GetForms(contractId, useArchiveData, true);
             var groupOwn = CreateTableGroup(formsOwn);
             report.Scopes.Add("formOwn", groupOwn);
         }
         if (type == ScopeType.NoOwn)
         {
-            var forms = GetForms(contractId);
+            var forms = GetForms(contractId, useArchiveData);
             var group = CreateTableGroup(forms);
             report.Scopes.Add("form", group);
         }
         if (type == ScopeType.Own)
         {
-            var formsOwn = GetForms(contractId, true);
+            var formsOwn = GetForms(contractId, useArchiveData, true);
             var groupOwn = CreateTableGroup(formsOwn);
             report.Scopes.Add("formOwn", groupOwn);
         }
@@ -355,32 +373,65 @@ public class FormService : IFormService
     /// <param name="contractId">ID договора</param>
     /// <param name="isOwnForces">Флаг, какие данные найти, FALSE - факт, TRUE - факт собственными силами</param>
     /// <returns>Список справок С3-а</returns>
-    private List<FormDTO> GetForms(int contractId, bool isOwnForces = false)
+    private List<FormDTO> GetForms(int contractId, bool? useArchiveData, bool isOwnForces = false)
     {
-        var forms = _database.Forms
-            .Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces)
-            .Select(forms =>
-            {
-                return new FormDTO
-                {
-                    Period = forms.Period,
-                    SmrCost = forms.SmrCost,
-                    PnrCost = forms.PnrCost,
+        if (useArchiveData == true)
+        {
+            var forms =
+           _databaseArch.Forms
+           .Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces)
+           .Select(forms =>
+           {
+               return new FormDTO
+               {
+                   Period = forms.Period,
+                   SmrCost = forms.SmrCost,
+                   PnrCost = forms.PnrCost,
 
-                    EquipmentCost = forms.EquipmentCost,
-                    OtherExpensesCost = forms.OtherExpensesCost,
-                    AdditionalCost = forms.AdditionalCost,
+                   EquipmentCost = forms.EquipmentCost,
+                   OtherExpensesCost = forms.OtherExpensesCost,
+                   AdditionalCost = forms.AdditionalCost,
 
-                    MaterialCost = forms.MaterialCost,
-                    GenServiceCost = forms.GenServiceCost,
-                    TotalCost = forms.TotalCost,
-                    TotalNoNdsCost = (forms.TotalCost / 1.2m),
-                };
-            })
-            .OrderBy(x => x.Period)
-            .ToList();
+                   MaterialCost = forms.MaterialCost,
+                   GenServiceCost = forms.GenServiceCost,
+                   TotalCost = forms.TotalCost,
+                   TotalNoNdsCost = (forms.TotalCost / 1.2m),
+               };
+           })
+           .OrderBy(x => x.Period)
+           .ToList();
 
-        return forms;
+            return forms;
+        }
+        else
+        {
+            var forms =
+           _database.Forms
+           .Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces)
+           .Select(forms =>
+           {
+               return new FormDTO
+               {
+                   Period = forms.Period,
+                   SmrCost = forms.SmrCost,
+                   PnrCost = forms.PnrCost,
+
+                   EquipmentCost = forms.EquipmentCost,
+                   OtherExpensesCost = forms.OtherExpensesCost,
+                   AdditionalCost = forms.AdditionalCost,
+
+                   MaterialCost = forms.MaterialCost,
+                   GenServiceCost = forms.GenServiceCost,
+                   TotalCost = forms.TotalCost,
+                   TotalNoNdsCost = (forms.TotalCost / 1.2m),
+               };
+           })
+           .OrderBy(x => x.Period)
+           .ToList();
+
+            return forms;
+        }
+
     }
 
     /// <summary>
@@ -417,9 +468,9 @@ public class FormService : IFormService
             {
                 WorkType = type,
                 Price = forms.Sum(x => selector(x)) ?? 0,
-                Remaining = forms.Where(x => x.Period?.Year >= currentYear).Sum(x => selector(x)) ?? 0,
+                Remaining = 0,  // forms.Where(x => x.Period?.Year >= currentYear).Sum(x => selector(x)) ?? 0,
                 CompletedBeforeYear = forms.Where(x => x.Period?.Year < currentYear).Sum(x => selector(x)) ?? 0,
-                VolumeThisYear = forms.Where(x => x.Period?.Year == currentYear).Sum(x => selector(x)) ?? 0,
+                VolumeThisYear = 0, // forms.Where(x => x.Period?.Year == currentYear).Sum(x => selector(x)) ?? 0,
                 Costs = forms.Select(x => new Cost
                 {
                     Period = x.Period != null ? x.Period.Value : default,

@@ -281,12 +281,12 @@ namespace MvcLayer.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
+        public IActionResult GetCostDeviation(string currentFilter, int? page, string searchString)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             int pageSize = 20;
             if (searchString != null)
-            { pageNum = 1; }
+            { page = 1; }
             else
             { searchString = currentFilter; }
             ViewData["CurrentFilter"] = searchString;
@@ -294,10 +294,10 @@ namespace MvcLayer.Controllers
             int count;
 
             if (!String.IsNullOrEmpty(searchString))
-                list = _contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, "Material", out count, organizationName).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Material", out count, organizationName).ToList();
+                list = _contractService.GetPageFilter(pageSize, page ?? 1, searchString, "Material", out count, organizationName).ToList();
+            else list = _contractService.GetPage(pageSize, page ?? 1, "Material", out count, organizationName).ToList();
 
-            ViewData["PageNum"] = pageNum ?? 1;
+            ViewData["PageNum"] = page ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
             var viewModel = new List<GetCostDeviationMaterialViewModel>();
             foreach (var contract in list)

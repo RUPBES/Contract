@@ -70,6 +70,7 @@
                                         }
                                     </div>
                                 }
+
                                 @if (ownForm)
                                 {
                                     <div class="cost-summary__list category">
@@ -79,6 +80,7 @@
                                         }
                                     </div>
                                 }
+
                             </div>
                             <div class="@cost_column">
                                 <div class="cost-summary__column-header">Стоимость работ</div>
@@ -134,7 +136,7 @@
                                     <div class="cost-summary__list scp-price">
                                         @foreach (var item in Model.Scopes["scopeOwn"])
                                         {
-                                            <div class="cost-summary__list-item">@item.Price.ToString("N2")</div>
+                                            <div class="cost-summary__list-item">@item.CompletedBeforeYear?.ToString("N2")</div>
                                         }
                                     </div>
                                 }
@@ -143,7 +145,7 @@
                                     <div class="cost-summary__list scp-price">
                                         @foreach (var item in Model.Scopes["formOwn"])
                                         {
-                                            <div class="cost-summary__list-item">@item.Price.ToString("N2")</div>
+                                            <div class="cost-summary__list-item">@item.CompletedBeforeYear?.ToString("N2")</div>
                                         }
                                     </div>
                                 }
@@ -151,24 +153,39 @@
                             <div class="@cost_column">
                                 <div class="cost-summary__column-header">Остаток по выполнению</div>
                                 <div class="cost-summary__list scp-price">
-                                    @foreach (var item in Model.Scopes["scope"])
+                                    @*  @foreach (var item in Model.Scopes["scope"])
                                     {
                                         <div class="cost-summary__list-item">@item.Remaining?.ToString("N2")</div>
+                                    } *@
+                                    @for (int i = 0; i < Model.Scopes["scope"].Count; i++)
+                                    {
+                                        <div class="cost-summary__list-item">
+                                            @((Model.Scopes["scope"][i].Price - Model.Scopes["form"][i].Price).ToString("N2"))
+                                        </div>
                                     }
+
                                 </div>
                                 <div class="cost-summary__list scp-price">
                                     @foreach (var item in Model.Scopes["form"])
                                     {
-                                        <div class="cost-summary__list-item">@item.Remaining?.ToString("N2")</div>
+                                        @* <div class="cost-summary__list-item">@item.Remaining?.ToString("N2")</div> *@
+                                        <div class="cost-summary__list-item">@string.Empty</div>
                                     }
                                 </div>
 
                                 @if (ownScope)
                                 {
                                     <div class="cost-summary__list scp-price">
-                                        @foreach (var item in Model.Scopes["scopeOwn"])
+                                       @*  @foreach (var item in Model.Scopes["scopeOwn"])
                                         {
-                                            <div class="cost-summary__list-item">@item.Price.ToString("N2")</div>
+                                            <div class="cost-summary__list-item">@item.Remaining?.ToString("N2")</div>
+                                        } *@
+
+                                        @for (int i = 0; i < Model.Scopes["scopeOwn"].Count; i++)
+                                        {
+                                            <div class="cost-summary__list-item">
+                                                @((Model.Scopes["scopeOwn"][i].Price - Model.Scopes["formOwn"][i].Price).ToString("N2"))
+                                            </div>
                                         }
                                     </div>
                                 }
@@ -177,7 +194,8 @@
                                     <div class="cost-summary__list scp-price">
                                         @foreach (var item in Model.Scopes["formOwn"])
                                         {
-                                            <div class="cost-summary__list-item">@item.Price.ToString("N2")</div>
+                                            @* <div class="cost-summary__list-item">@item.Price.ToString("N2")</div> *@
+                                            <div class="cost-summary__list-item">@string.Empty</div>
                                         }
                                     </div>
                                 }
@@ -193,7 +211,8 @@
                                 <div class="cost-summary__list scp-price">
                                     @foreach (var item in Model.Scopes["form"])
                                     {
-                                        <div class="cost-summary__list-item">@item.VolumeThisYear?.ToString("N2")</div>
+                                        @* <div class="cost-summary__list-item">@item.VolumeThisYear?.ToString("N2")</div> *@
+                                        <div class="cost-summary__list-item">@string.Empty</div>
                                     }
                                 </div>
 
@@ -202,7 +221,7 @@
                                     <div class="cost-summary__list scp-price">
                                         @foreach (var item in Model.Scopes["scopeOwn"])
                                         {
-                                            <div class="cost-summary__list-item">@item.Price.ToString("N2")</div>
+                                            <div class="cost-summary__list-item">@item.VolumeThisYear?.ToString("N2")</div>
                                         }
                                     </div>
                                 }
@@ -211,14 +230,15 @@
                                     <div class="cost-summary__list scp-price">
                                         @foreach (var item in Model.Scopes["formOwn"])
                                         {
-                                            <div class="cost-summary__list-item">@item.Price.ToString("N2")</div>
+                                            @* <div class="cost-summary__list-item">@item.Price.ToString("N2")</div> *@
+                                            <div class="cost-summary__list-item">@string.Empty</div>
                                         }
                                     </div>
                                 }
                             </div>
                         </div>
                         <div class="price-breakdown">
-                            @for (int i = 0; i < ViewBag.Periods.Count; i++) 
+                            @for (int i = 0; i < ViewBag.Periods.Count; i++)
                             {
                                 DateTime period = ViewBag.Periods[i];
                                 <div class="@price_column">

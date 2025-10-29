@@ -13,14 +13,15 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
 
-        public OrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public OrganizationService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
-           
+            _databaseArch = databaseArch;
         }
 
         public int? Create(OrganizationDTO item)
@@ -81,7 +82,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<OrganizationDTO> Find(Func<Organization, bool> predicate)
+        public IEnumerable<OrganizationDTO> Find(Func<Organization, bool> predicate, bool? useArchiveData)
         {
             return _mapper.Map<IEnumerable<OrganizationDTO>>(_database.Organizations.Find(predicate));
         }
@@ -128,9 +129,11 @@ namespace BusinessLayer.Services
             }
         }
 
-        public string? GetNameByContractId(int contrId)
+        public string? GetNameByContractId(int contrId, bool? useArchiveData)
         {
-            var orgContr = _database.ContractOrganizations?.Find(x => x.ContractId == contrId)?.FirstOrDefault()?.Organization;
+            var orgContr = (useArchiveData == true)?
+                _databaseArch.ContractOrganizations?.Find(x => x.ContractId == contrId)?.FirstOrDefault()?.Organization :
+                _database.ContractOrganizations?.Find(x => x.ContractId == contrId)?.FirstOrDefault()?.Organization;
 
             return orgContr is null ? null : orgContr.Name;
         }

@@ -97,7 +97,7 @@ namespace BusinessLayer.Services.Administrator
                             BgColor = Constants.COLOR_DARK_BLUE
                         });
                     }
-                    _excelWriter.WriteLine(sheet, startRow++, path, true, width: null,isTextWrap:null, ExcelHorizontalAlignment.Left, rowItems.ToArray());
+                    _excelWriter.WriteLine(sheet, startRow++, path, true, null, width: null,isTextWrap:null, ExcelHorizontalAlignment.Left, rowItems.ToArray());
 
                     startCol = 1;
                     foreach (var user in users)
@@ -106,7 +106,7 @@ namespace BusinessLayer.Services.Administrator
 
                         foreach (var item in user)
                         {
-                            _excelWriter.WriteLine(sheet, startRow, path, false, null, isTextWrap: null, align: null,
+                            _excelWriter.WriteLine(sheet, startRow, path, false, null, null, isTextWrap: null, align: null,
                                 new RowItem { Value = item.UserName, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
                                 new RowItem { Value = organization?.enterprise, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
                                 new RowItem { Value = organization?.position, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
@@ -117,7 +117,7 @@ namespace BusinessLayer.Services.Administrator
                             startCol = 1;
                             startRow++;
                         }
-                        _excelWriter.WriteLine(sheet, startRow++, path, false, null, isTextWrap: null, align: null, new RowItem { Value = string.Empty, Col = startCol });
+                        _excelWriter.WriteLine(sheet, startRow++, path, false, null, null, isTextWrap: null, align: null, new RowItem { Value = string.Empty, Col = startCol });
                     }
                     _excelWriter.CloseExcel();
                 }

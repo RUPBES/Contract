@@ -94,7 +94,7 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<ServiceCostDTO> Find(Func<ServiceCost, bool> predicate)
+        public IEnumerable<ServiceCostDTO> Find(Func<ServiceCost, bool> predicate, bool? booluseArchiveData)
         {
             return _mapper.Map<IEnumerable<ServiceCostDTO>>(_database.ServiceCosts.Find(predicate));
         }

@@ -18,14 +18,16 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly IContractArchiveUoW _databaseArch;
         private readonly ILoggerContract _logger;
 
 
-        public ScopeWorkService(IContractUoW database, IMapper mapper, ILoggerContract logger)
+        public ScopeWorkService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
+            _databaseArch = databaseArch;
         }
 
         public int? Create(ScopeWorkDTO item)
@@ -77,9 +79,11 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<ScopeWorkDTO>>(_database.ScopeWorks.GetAll());
         }
 
-        public IEnumerable<ScopeWorkDTO> Find(Func<ScopeWork, bool> predicate)
+        public IEnumerable<ScopeWorkDTO> Find(Func<ScopeWork, bool> predicate, bool? useArchiveData)
         {
-            return _mapper.Map<IEnumerable<ScopeWorkDTO>>(_database.ScopeWorks.Find(predicate));
+            return (useArchiveData == true) ?
+                _mapper.Map<IEnumerable<ScopeWorkDTO>>(_databaseArch.ScopeWorks.Find(predicate)) :
+                _mapper.Map<IEnumerable<ScopeWorkDTO>>(_database.ScopeWorks.Find(predicate));
         }
 
         public void Update(ScopeWorkDTO item)
@@ -203,9 +207,36 @@ namespace BusinessLayer.Services
         /// <param name="contractId"></param>
         /// <param name="isOwnForces"></param>
         /// <returns></returns>
-        public ScopeWorkDTO GetLastScope(int contractId, bool isOwnForces = false)
+        public ScopeWorkDTO GetLastScope(int contractId, bool isOwnForces, bool? useArchiveData)
         {
-            var scopeWorks = _database.ScopeWorks
+            if (useArchiveData == true)
+            {
+                var scopeWorks = _databaseArch.ScopeWorks
+                .Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces)
+                .Select(scope =>
+                {
+                    var amendment = _databaseArch.ScopeWorkAmendments
+                        .Find(s => s.ScopeWorkId == scope.Id)
+                        .FirstOrDefault();
+
+                    var amendmentDate = amendment == null ?
+                        new DateTime(1900, 1, 1) :
+                        _databaseArch.Amendments
+                            .Find(x => x.Id == amendment.AmendmentId)
+                            .Select(x => x.Date)
+                            .FirstOrDefault() ?? new DateTime(1900, 1, 1);
+
+                    return (scope, amendmentDate);
+                })
+                .OrderBy(x => x.amendmentDate)
+                .Select(x => x.scope)
+                .LastOrDefault();
+
+                return _mapper.Map<ScopeWorkDTO>(scopeWorks);
+            }
+            else
+            {
+                var scopeWorks = _database.ScopeWorks
                 .Find(a => a.ContractId == contractId && a.IsOwnForces == isOwnForces)
                 .Select(scope =>
                 {
@@ -226,9 +257,10 @@ namespace BusinessLayer.Services
                 .Select(x => x.scope)
                 .LastOrDefault();
 
-            return _mapper.Map<ScopeWorkDTO>(scopeWorks);
+                return _mapper.Map<ScopeWorkDTO>(scopeWorks);
+            }
         }
-               
+
 
         /*
          * 
@@ -250,13 +282,16 @@ namespace BusinessLayer.Services
             }
             return _mapper.Map<IEnumerable<AmendmentDTO>>(answer);
         }
-        public AmendmentDTO? GetAmendmentByScopeId(int scopeId)
+        public AmendmentDTO? GetAmendmentByScopeId(int scopeId, bool? useArchiveData)
         {
             try
             {
-                var amendId = _database.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.Select(x => x.AmendmentId).FirstOrDefault();
+                var amendId = (useArchiveData == true) ?
+                            _databaseArch.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.Select(x => x.AmendmentId).FirstOrDefault() :
+                            _database.ScopeWorkAmendments?.Find(p => p.ScopeWorkId == scopeId)?.Select(x => x.AmendmentId).FirstOrDefault();
                 if (amendId == 0) { return null; }
-                var amend = _database.Amendments.GetById((int)amendId);
+                var amend = (useArchiveData == true) ? _databaseArch.Amendments.GetById((int)amendId) :
+                                                        _database.Amendments.GetById((int)amendId);
                 return _mapper.Map<AmendmentDTO>(amend);
             }
             catch (Exception ex) { return null; }
@@ -325,7 +360,7 @@ namespace BusinessLayer.Services
 
         public bool TryUpdateParentsScopeCosts(ScopeWorkDTO scope, Dictionary<int, ContractType>? parentContracts, CrudOp method, List<SWCostDTO>? previousScope, bool isOneOfMultipleDelete)
         {
-            if (scope == null || parentContracts?.Count < 1)
+            if (scope == null /*|| parentContracts?.Count < 1*/)
             {
                 return false;
             }
@@ -341,7 +376,7 @@ namespace BusinessLayer.Services
                            (!isSubContracts && method == CrudOp.DELETE)
                 ? MathOp.SUBTRACT
                 : MathOp.ADD;
-            
+
             if (isOneOfMultipleDelete) // если удаляется подобъект
             {
                 foreach (var parentContrId in parentContracts)
@@ -376,7 +411,7 @@ namespace BusinessLayer.Services
         {
             if (parentContrId > 0 && scope != null)
             {
-                var parentScope = GetLastScope(parentContrId, isOwnForceUpdate);
+                var parentScope = GetLastScope(parentContrId, isOwnForceUpdate, false);
                 int operationSign = operation == MathOp.SUBTRACT ? -1 : 1;
 
                 if (parentScope != null) //обновляем объем работ
@@ -437,29 +472,29 @@ namespace BusinessLayer.Services
 
         #region Table of Scopes Info
 
-        public ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type)
+        public ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type, bool? useArchiveData)
         {
             var report = new ScopeWorkReportModel();
 
             if (type == ScopeType.Both)
             {
-                var scopes = GetLastScope(contractId);
+                var scopes = GetLastScope(contractId, isOwnForces: false, useArchiveData);
                 var group = GetGroupTable(scopes, contractId);
                 report.Scopes.Add("scope", group);
 
-                var scopesOwn = GetLastScope(contractId, true);
+                var scopesOwn = GetLastScope(contractId, isOwnForces: true, useArchiveData);
                 var groupOwn = GetGroupTable(scopesOwn, contractId);
                 report.Scopes.Add("scopeOwn", groupOwn);
             }
             if (type == ScopeType.NoOwn)
             {
-                var scopes = GetLastScope(contractId);
+                var scopes = GetLastScope(contractId, isOwnForces: false, useArchiveData);
                 var group = GetGroupTable(scopes, contractId);
                 report.Scopes.Add("scope", group);
             }
             if (type == ScopeType.Own)
             {
-                var scopesOwn = GetLastScope(contractId, true);
+                var scopesOwn = GetLastScope(contractId, isOwnForces: true, useArchiveData);
                 var groupOwn = GetGroupTable(scopesOwn, contractId);
                 report.Scopes.Add("scopeOwn", groupOwn);
             }

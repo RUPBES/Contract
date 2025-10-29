@@ -43,6 +43,20 @@ namespace MvcLayer.Controllers
         }
 
         [HttpGet]
+        [Route("/archive/Amendments")]
+        public ActionResult GetArchByContractId(int id, int returnContractId = 0)
+        {
+            ViewData["contractId"] = id;
+            ViewData["returnContractId"] = returnContractId;
+
+            return View(_mapper.Map<IEnumerable<AmendmentViewModel>>(
+                _amendment
+                    .Find(x => x.ContractId == id, useArchiveData: true)
+                    .OrderByDescending(x => x.Date)
+                ));
+        }
+
+        [HttpGet]
         public ActionResult GetType(int contractId, int returnContractId = 0)
         {
             ViewData["contractId"] = contractId;
@@ -105,7 +119,7 @@ namespace MvcLayer.Controllers
                 
                 if (isScope || amendment.Type == "scope")
                 {
-                    var scopes = _scopeWork.Find(x => x.ContractId == amendment.ContractId)?.LastOrDefault();
+                    var scopes = _scopeWork.Find(x => x.ContractId == amendment.ContractId && x.IsOwnForces != true)?.LastOrDefault();
 
                     var scopeWork = new PeriodChooseViewModel
                     {
@@ -175,7 +189,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetFilesOfEntity(id, FolderEnum.Amendment))
+                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Amendment))
                 {
                     _fileService.Delete(item.Id);
                 }

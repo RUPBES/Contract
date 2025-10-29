@@ -1,17 +1,15 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
+using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models;
-using BusinessLayer.Helpers;
+using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using MvcLayer.Models.Reports;
-using BusinessLayer.Interfaces.CommonInterfaces;
-using DatabaseLayer.Models.KDO;
-using BusinessLayer.Enums;
 using System.Reflection;
-using System.Diagnostics.Contracts;
-using System.ComponentModel.DataAnnotations;
 
 namespace MvcLayer.Controllers
 {
@@ -70,8 +68,33 @@ namespace MvcLayer.Controllers
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractId"] = contractId;
 
-            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetLastScope(contractId)));
+            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetLastScope(contractId, isOwnForces: false)));
         }
+
+
+        [Route("archive/ScopeWorks/")]
+        public IActionResult GetArchByContractId(int contractId, bool isEngineering, int returnContractId = 0)
+        {
+            var contract = _contractService.Find(x => x.Id == contractId, x => new() { IsEngineering = x.IsEngineering }, useArchiveData:true).FirstOrDefault();
+
+            if (!(_scopeWork.Find(x => x.ContractId == contractId && x.IsOwnForces == false, useArchiveData:true)?.LastOrDefault()?.Id > 0))
+            {
+                NotificationHelper.SetNotification(TempData, "Объем работ не заполнен!", NotificationType.Warning);
+                if (returnContractId < 1)
+                {
+                    returnContractId = contractId;
+                }
+
+                return RedirectToAction("DetailsArch", "Contracts", new { id = returnContractId });
+            }
+
+            ViewData["IsEngin"] = contract?.IsEngineering ?? false;
+            ViewData["returnContractId"] = returnContractId;
+            ViewData["contractId"] = contractId;
+
+            return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetLastScope(contractId: contractId, isOwnForces: false, useArchiveData:true)));
+        }
+
 
         [Route("ScopeWorks/Create/Period")]
         public IActionResult ChoosePeriod(int contractId, int returnContractId = 0)
@@ -195,6 +218,7 @@ namespace MvcLayer.Controllers
         public IActionResult Create(ScopeWorkViewModel viewModel, int returnContractId = 0)
         {
             ViewData["returnContractId"] = returnContractId;
+
             if (viewModel is null)
             {
                 NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Warning);
@@ -213,7 +237,7 @@ namespace MvcLayer.Controllers
 
             ContractType thisContractType;
             var parentContracts = _contractService.GetParents(contractId, out thisContractType);
-            var oldScope = _scopeWork.GetLastScope(contractId);
+            var oldScope = _scopeWork.GetLastScope(contractId, isOwnForces: false);
 
             var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
             NotificationHelper.SetNotification(TempData, "Объем работ добавлен", NotificationType.Info);
@@ -222,13 +246,19 @@ namespace MvcLayer.Controllers
                 viewModel.Id = newScpId ?? 0;
                 _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), parentContracts, CrudOp.CREATE, oldScope?.SWCosts);
             }
-            else
+            else //если генподряд, необходимо обновить соб.силами, а если новый объем работ, то добавить собственными силами
             {
-                viewModel.IsOwnForces = true;
-                _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
+                if (oldScope == null)
+                {
+                    viewModel.IsOwnForces = true;
+                    _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
+                }
+                else
+                {
+                    viewModel.Id = newScpId ?? 0;
+                    _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), new Dictionary<int, ContractType>(), CrudOp.CREATE, oldScope?.SWCosts);
+                }
             }
-
-
 
 
             if (newScpId.HasValue && viewModel.AmendmentId.HasValue)
@@ -265,13 +295,14 @@ namespace MvcLayer.Controllers
             return View(_mapper.Map<ScopeWorkViewModel>(_scopeWork.GetById(Id)));
         }
 
+
         [HttpPost]
         [Authorize(Policy = "EditPolicy")]
         public IActionResult Edit(ScopeWorkViewModel editScope, int contractId, int returnContractId = 0)
         {
             ContractType thisContractType;
             var parentContracts = _contractService.GetParents(contractId, out thisContractType);
-            var oldScope = _scopeWork.GetLastScope(editScope.ContractId ?? 0);
+            var oldScope = _scopeWork.GetLastScope(editScope.ContractId ?? 0, isOwnForces: false);
 
             foreach (var swCost in editScope.SWCosts)
             {
@@ -279,7 +310,16 @@ namespace MvcLayer.Controllers
             }
 
             NotificationHelper.SetNotification(TempData, "Объем работ обновлен", NotificationType.Info);
-            _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), parentContracts, CrudOp.UPDATE, oldScope?.SWCosts);
+
+            if (thisContractType != ContractType.GenСontract)
+            {
+                _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), parentContracts, CrudOp.UPDATE, oldScope?.SWCosts);
+            }
+            else
+            {
+                _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), new Dictionary<int, ContractType>(), CrudOp.UPDATE, oldScope?.SWCosts);
+            }
+
 
             return RedirectToAction("GetByContractId", new { contractId = contractId, returnContractId = returnContractId });
         }
@@ -295,7 +335,7 @@ namespace MvcLayer.Controllers
                     NotificationHelper.SetNotification(TempData, "Не найден объем работ", NotificationType.Info);
                     return await Task.FromResult<IActionResult>(NotFound());
                 }
-                
+
                 ScopeWorkDTO oldScope = new();
                 if (scopeWork.ChangeScopeWorkId.HasValue)
                 {
@@ -323,12 +363,12 @@ namespace MvcLayer.Controllers
         }
 
 
-        public IActionResult GetCostDeviation(string currentFilter, int? pageNum, string searchString)
+        public IActionResult GetCostDeviation(string currentFilter, int? page, string searchString)
         {
             var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
             int pageSize = 20;
             if (searchString != null)
-            { pageNum = 1; }
+            { page = 1; }
             else
             { searchString = currentFilter; }
             ViewData["CurrentFilter"] = searchString;
@@ -336,10 +376,10 @@ namespace MvcLayer.Controllers
             int count;
 
             if (!String.IsNullOrEmpty(searchString))
-                list = _contractService.GetPageFilter(pageSize, pageNum ?? 1, searchString, "Scope", out count, organizationName).ToList();
-            else list = _contractService.GetPage(pageSize, pageNum ?? 1, "Scope", out count, organizationName).ToList();
+                list = _contractService.GetPageFilter(pageSize, page ?? 1, searchString, "Scope", out count, organizationName).ToList();
+            else list = _contractService.GetPage(pageSize, page ?? 1, "Scope", out count, organizationName).ToList();
 
-            ViewData["PageNum"] = pageNum ?? 1;
+            ViewData["PageNum"] = page ?? 1;
             ViewData["TotalPages"] = (int)Math.Ceiling(count / (double)pageSize);
 
             var viewModel = new List<GetCostDeviationScopeWorkViewModel>();
