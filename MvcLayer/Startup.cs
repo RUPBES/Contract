@@ -218,7 +218,11 @@ namespace MvcLayer
                 ));
             });
 
-            services.AddMvc();            
+            services.AddMvc(options => {
+                options.Filters.Add<StatusCodeNormalizationFilter>();
+                // If you re-enable GlobalExceptionFilter globally via MVC options:
+                // options.Filters.Add<GlobalExceptionFilter>();
+            });            
             services.AddHttpClient();
             
             //services.AddControllersWithViews(options =>
@@ -238,17 +242,23 @@ namespace MvcLayer
                 return next(context);
             });
 
-            if (env.IsDevelopment())
+            //if (env.IsDevelopment())
+            //{
+            //    app.UseDeveloperExceptionPage();
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/Error");
+            //    app.UseHsts();
+            //}
+
+            app.UseExceptionHandler("/Error");
+            if (!env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 
-            //app.UseStatusCodePagesWithReExecute("/error", "?code={0}");
+            app.UseStatusCodePagesWithReExecute("/Error/{0}");
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 

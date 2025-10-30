@@ -13,5 +13,15 @@ namespace MVC_layer.Models
 
         [Display(Name = "Description")]
         public string ErrorDescription { get; set; }
+
+        // Diagnostics (shown in Development)
+        public bool IsDevelopment { get; set; }
+        public int? StatusCode { get; set; }
+        public string? Path { get; set; }
+        public string? Method { get; set; }
+        public string? QueryString { get; set; }
+        public string? UserName { get; set; }
+        public string? ExceptionType { get; set; }
+        public string? StackTrace { get; set; }
     }
 }

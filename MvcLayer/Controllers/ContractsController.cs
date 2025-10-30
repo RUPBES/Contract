@@ -54,8 +54,6 @@ namespace MvcLayer.Controllers
 
         public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
         {
-            
-            //throw new Exception("dw");
             var organizationName = _httpHelper.GetUserOrganizationCodes();
 
             if (page < 1 || searchString != null)
