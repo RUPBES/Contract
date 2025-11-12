@@ -267,7 +267,7 @@
                                     <div class="icon view" title="Детальная информация">
                                         <a asp-action="Details" asp-route-id="@item?.Id"></a>
                                     </div>
-                                    @if (item.Author.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) || permissions.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase))
+                                    @if (item?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
                                     {
                                         @if (!isEngineering && permissions.GroupeName.Contains(Constants.GRP_ESTIMATE))
                                         {

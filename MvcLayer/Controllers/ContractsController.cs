@@ -314,7 +314,8 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "CreatePolicy")]
         public IActionResult CreateSubObj(ContractViewModel viewModel)
         {
-            var organizationName = HttpContext?.User?.Claims?.FirstOrDefault(x => x.Type == "org" && x.Value != "ContrOrgMajor")?.Value ?? "ContrOrgBes";
+            var orgCode = _httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes";
+
             if (viewModel is not null)
             {
                 var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
@@ -331,8 +332,8 @@ namespace MvcLayer.Controllers
 
                 viewModel.PaymentСonditionsAvans = string.Join(", ", viewModel.PaymentCA);
                 viewModel.IsOneOfMultiple = true;
-                viewModel.Author ??= organizationName;
-                viewModel.Owner ??= organizationName;
+                viewModel.Author ??= orgCode;
+                viewModel.Owner ??= orgCode;
 
                 _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
                 return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });

@@ -4,7 +4,7 @@ namespace DatabaseLayer.Interfaces
 {
     public interface IReadonlyRepoDapper<T> where T : class
     {
-        int Count() => 0;
+        int Count(string[]? predicate =null) => 0;
         T GetById(int id);
         IEnumerable<T> GetAll();
         IEnumerable<T> GetEntitySkipTake(int skip, int take, string organizationName) => Array.Empty<T>();

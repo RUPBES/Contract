@@ -27,7 +27,7 @@ namespace MvcLayer
                     webBuilder.ConfigureKestrel(op =>
                     {
                         op.Listen(IPAddress.Parse("0.0.0.0"), 6972);
-                        op.Limits.MaxRequestBodySize = null;
+                        op.Limits.MaxRequestBodySize = int.MaxValue;
                     })
                     .UseStartup<Startup>();
                 });

@@ -63,7 +63,7 @@ namespace BusinessLayer.Services
 
             int count = useArchiveData ?
                _databaseArch.vContracts.Count() :
-               _databaseDp.Count();
+               _databaseDp.Count(org.Split(','));
 
 
             var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(items);
@@ -90,27 +90,27 @@ namespace BusinessLayer.Services
                     case "number":
                         contractsView = useArchiveData ?
                                   _databaseArch.vContracts.FindNumberContract(request, orgList) :
-                                  _databaseDp.Find($"c.Number like('%{request}%') ORDER BY Date DESC", orgList);
+                                  _databaseDp.Find($" and c.Number like('%{request}%') ORDER BY Date DESC", orgList);
                         //_database.vContracts.FindNumberContract(request, listOrganization);
 
                         break;
                     case "nameObject":
                         contractsView = useArchiveData ?
                                  _databaseArch.vContracts.FindLikeNameObj(request, orgList) :
-                                 _databaseDp.Find($"c.NameObject like('%{request}%') ORDER BY Date DESC", orgList);
+                                 _databaseDp.Find($"and c.NameObject like('%{request}%') ORDER BY Date DESC", orgList);
                         //_database.vContracts.FindLikeNameObj(request, listOrganization);
                         break;
                     case "client":
                         contractsView = useArchiveData ?
                                  _databaseArch.vContracts.FindOrganization(request, "client", orgList) :
-                                 _databaseDp.Find($"c.Client like('%{request}%') ORDER BY Date DESC", orgList);
+                                 _databaseDp.Find($"and c.Client like('%{request}%') ORDER BY Date DESC", orgList);
                         //_database.vContracts.FindOrganization(request, "client", listOrganization);
 
                         break;
                     case "general":
                         contractsView = useArchiveData ?
                                 _databaseArch.vContracts.FindOrganization(request, "general", orgList) :
-                                _databaseDp.Find($"c.GenContractor like('%{request}%') ORDER BY Date DESC", orgList);
+                                _databaseDp.Find($"and c.GenContractor like('%{request}%') ORDER BY Date DESC", orgList);
                         //_database.vContracts.FindOrganization(request, "general", listOrganization);
                         break;
                     default:
@@ -131,7 +131,7 @@ namespace BusinessLayer.Services
 
             int count = useArchiveData ?
                _databaseArch.vContracts.Count() :
-                _databaseDp.Count();
+                _databaseDp.Count(orgList);
             //_database.vContracts.Count();
 
             switch (sortOrder)

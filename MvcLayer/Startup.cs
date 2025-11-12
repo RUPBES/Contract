@@ -44,28 +44,26 @@ namespace MvcLayer
                     ForwardedHeaders.XForwardedProto |
                     ForwardedHeaders.XForwardedHost;
             });
+
+            #region снять лимиты на загрузку файлов через форму <form><input type=file /></form> (+ в файлк applicationconfig => security/request limit установить )
+
             services.Configure<FormOptions>(options =>
-            {
-                // Set the limit to 512 MB
+            {              
                 options.ValueLengthLimit = int.MaxValue;
                 options.MultipartBodyLengthLimit = int.MaxValue;
             });
-            services.AddAutoMapper(typeof(MapperViewModel));
-            //services.AddDbContext<ContractsContext>(options =>
-            //{
-            //    options.UseSqlServer(Configuration.GetConnectionString("Data"));
-            //});
-            //services.AddDbContext<ContractsArchiveContext>(options =>
-            //{
-            //    options.UseSqlServer(Configuration.GetConnectionString("DataArchive"));
-            //});
-            //services.AddDbContext<OpenIdDictDbContxt>(options =>
-            //{
-            //    options.UseSqlServer(Configuration.GetConnectionString("Authentication"));
-            //});
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = int.MaxValue;
+            });
+
+            #endregion
+
+            services.AddAutoMapper(typeof(MapperViewModel));           
 
             /*OptionsPattern*/
             services.Configure<ExcelActivityReportOptions>(Configuration.GetSection(ExcelActivityReportOptions.ExcelActivityReport));
+            services.Configure<SchedulerOptions>(Configuration.GetSection(SchedulerOptions.Scheduler));
             services.Configure<EmailOptions>(Configuration.GetSection(EmailOptions.EmailSettings));
             services.Configure<EmailRecipient>(Configuration.GetSection(EmailRecipient.EmailRecipients));
             services.Configure<ArchiveSettings>(Configuration.GetSection(ArchiveSettings.ConnectionStrings));
@@ -219,16 +217,24 @@ namespace MvcLayer
             });
 
             services.AddMvc(options => {
-                options.Filters.Add<StatusCodeNormalizationFilter>();
-                // If you re-enable GlobalExceptionFilter globally via MVC options:
-                // options.Filters.Add<GlobalExceptionFilter>();
+                options.Filters.Add<StatusCodeNormalizationFilter>();               
             });            
             services.AddHttpClient();
-            
-            //services.AddControllersWithViews(options =>
-            //{
-            //    options.Filters.Add<GlobalExceptionFilter>();
-            //});
+
+            // Quartz.NET scheduler for daily Admin/CreateReport
+            services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+                var jobKey = new JobKey("CreateReportJob");
+                q.AddJob<Scheduling.CreateReportJob>(opts => opts.WithIdentity(jobKey));
+                q.AddTrigger(t => t
+                    .ForJob(jobKey)
+                    .WithIdentity("CreateReportDailyTrigger")
+                    .StartNow()
+                    .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(DayOfWeek.Friday, 15, 0)) // every Friday at 15:00
+                );
+            });
+            services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);            
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

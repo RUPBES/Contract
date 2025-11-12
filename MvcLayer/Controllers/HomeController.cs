@@ -27,12 +27,7 @@ public class HomeController : Controller
     {
         return View();
     }
-
-    [Authorize]
-    public IActionResult ThrowEx()
-    {
-        throw new Exception("The END!");
-    }
+       
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
@@ -43,15 +38,11 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
-    //public IActionResult ShowDeleteMessage()
-    //{
-    //    return PartialView("_ViewDelete");
-    //}
-
-    [HttpPost("init-session")]
+    [HttpGet("init-session")]
     public IActionResult InitializeSession()
     {
         var sessionId = Guid.NewGuid().ToString();
+        HttpContext.Session.Clear();
         HttpContext.Session.SetString("SessionId", sessionId);
 
         return Ok(new
@@ -62,21 +53,24 @@ public class HomeController : Controller
     }
 
     [HttpPost("upload-contract")]
-    public IActionResult ImportContractFrom1C([FromBody] dynamic jsonData, [FromHeader] string sessionId)
+    [SkipStatusCodePages]
+    public IActionResult ImportContractFrom1C([FromBody] dynamic jsonData, [FromHeader] string SessionId)
     {
         var storedSessionId = HttpContext.Session.GetString("SessionId");
-        if (storedSessionId != sessionId)
+        if (storedSessionId != SessionId)
         {
-            return Unauthorized("Неверный ID сессии");
+            return Unauthorized();
         }
 
-
-        string jsonString = jsonData.ToString();
-        if (jsonString == null)
+        try
+        {
+            string jsonString = jsonData.ToString();            
+            var contract2 = JsonConvert.DeserializeObject<ContractViewModel>(jsonString);
+            return Created();
+        }
+        catch (Exception)
         {
             return BadRequest("The contract data is missing or has an incorrect format");
         }
-        var contract2 = JsonConvert.DeserializeObject<ContractViewModel>(jsonString);
-        return Ok("Данные успешно получены");
     }
 }

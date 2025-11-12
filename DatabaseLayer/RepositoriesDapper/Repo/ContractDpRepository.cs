@@ -2,6 +2,7 @@
 using DatabaseLayer.Interfaces.Entities;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Data.SqlClient;
+using DatabaseLayer.RepositoriesDapper.Sql;
 using System.Data;
 
 namespace DatabaseLayer.RepositoriesDapper.Repo
@@ -61,6 +62,15 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
             }
         }
 
+        public int Count(string? databaseName)
+        {
+            string viewName = DbQualifier.Qualify(databaseName, "vContracts");
+            using (IDbConnection db = new SqlConnection(_connectionString))
+            {
+                return db.Query<int>($"SELECT COUNT(Id) FROM {viewName}").FirstOrDefault();
+            }
+        }
+
         public IEnumerable<Contract> Find(string predicate)
         {
             if (string.IsNullOrEmpty(predicate))
@@ -71,6 +81,20 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
             using (IDbConnection db = new SqlConnection(_connectionString))
             {
                 return db.Query<Contract>($"{sqlStrStart} {predicate}").ToList();
+            }
+        }
+
+        public IEnumerable<Contract> Find(string predicate, string? databaseName)
+        {
+            if (string.IsNullOrEmpty(predicate))
+            {
+                return Array.Empty<Contract>();
+            }
+
+            string sqlStart = sqlStrStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+            using (IDbConnection db = new SqlConnection(_connectionString))
+            {
+                return db.Query<Contract>($"{sqlStart} {predicate}").ToList();
             }
         }
 
@@ -87,11 +111,34 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
             }
         }
 
+        public IEnumerable<Contract> Find(string predicate, string[] orgList, string? databaseName)
+        {
+            if (string.IsNullOrEmpty(predicate))
+            {
+                return Array.Empty<Contract>();
+            }
+
+            string sqlStart = sqlStrStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+            using (IDbConnection db = new SqlConnection(_connectionString))
+            {
+                return db.Query<Contract>($"{sqlStart} CROSS APPLY STRING_SPLIT(c.Owner, ',') owners WHERE (Author IN @orgList or owners.value IN @orgList) {predicate}", new { orgList }).ToList();
+            }
+        }
+
         public IEnumerable<Contract> GetAll()
         {
             using (IDbConnection db = new SqlConnection(_connectionString))
             {
                 return db.Query<Contract>(sqlStrStart).ToList();
+            }
+        }
+
+        public IEnumerable<Contract> GetAll(string? databaseName)
+        {
+            string sqlStart = sqlStrStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+            using (IDbConnection db = new SqlConnection(_connectionString))
+            {
+                return db.Query<Contract>(sqlStart).ToList();
             }
         }
 
@@ -107,6 +154,19 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
             return null;
         }
 
+        public Contract GetById(int id, string? databaseName)
+        {
+            if (id > 0)
+            {
+                string sqlStart = sqlStrStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+                using (IDbConnection db = new SqlConnection(_connectionString))
+                {
+                    return db.Query<Contract>(@$"{sqlStart} WHERE c.Id = @id", new { id }).FirstOrDefault();
+                }
+            }
+            return null;
+        }
+
         public VContract GetById(string whereStr)
         {
             if (!string.IsNullOrEmpty(whereStr))
@@ -114,6 +174,19 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
                 using (IDbConnection db = new SqlConnection(_connectionString))
                 {
                     return db.Query<VContract>(@$"{sqlStrDetailsStart} {whereStr}").FirstOrDefault();
+                }
+            }
+            return null;
+        }
+
+        public VContract GetById(string whereStr, string? databaseName)
+        {
+            if (!string.IsNullOrEmpty(whereStr))
+            {
+                string sqlDetails = sqlStrDetailsStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+                using (IDbConnection db = new SqlConnection(_connectionString))
+                {
+                    return db.Query<VContract>(@$"{sqlDetails} {whereStr}").FirstOrDefault();
                 }
             }
             return null;
@@ -134,6 +207,21 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
             }
         }
 
+        public IEnumerable<Contract> GetEntitySkipTake(int skip, int take, string org, string? databaseName)
+        {
+            string[] orgList = org.Split(',');
+
+            var sql = @$"{sqlStrStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c")} CROSS APPLY STRING_SPLIT(c.Owner, ',') owners WHERE (Author IN @orgList or owners.value IN @orgList) 
+                        ORDER BY Id DESC
+                        OFFSET @skip ROWS
+                        FETCH NEXT @take ROWS ONLY";
+
+            using (IDbConnection db = new SqlConnection(_connectionString))
+            {
+                return db.Query<Contract>(sql, new { skip, take, orgList }).ToList();
+            }
+        }
+
         public IEnumerable<VContract> GetSubsById(int id, string where)
         {
             if (id > 0)
@@ -141,6 +229,19 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
                 using (IDbConnection db = new SqlConnection(_connectionString))
                 {
                     return db.Query<VContract>(@$"{sqlStrDetailsStart} {where} ", new { id }).ToList();
+                }
+            }
+            return Array.Empty<VContract>();
+        }
+
+        public IEnumerable<VContract> GetSubsById(int id, string where, string? databaseName)
+        {
+            if (id > 0)
+            {
+                string sqlDetails = sqlStrDetailsStart.Replace("FROM Contract c", $"FROM {DbQualifier.Qualify(databaseName, "Contract")} c");
+                using (IDbConnection db = new SqlConnection(_connectionString))
+                {
+                    return db.Query<VContract>(@$"{sqlDetails} {where} ", new { id }).ToList();
                 }
             }
             return Array.Empty<VContract>();
