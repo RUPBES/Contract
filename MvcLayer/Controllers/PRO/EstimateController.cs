@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Authorization;
@@ -861,7 +863,7 @@ public class EstimateController : Controller
         {
             var estimate = _estimateService.GetById(estimateId);
             var neestedFolderName = $"{estimate.ContractId}\\{estimate.BuildingCode}\\{estimate.Number}\\draw";
-            _file.Create(collection.Files, FolderEnum.Estimate, estimateId, neestedFolderName);
+            _file.Create(collection.Files, Folder.Estimate, estimateId, neestedFolderName);
             if (estimate.IsChange)
             {
                 estimate.ChangeDrawingDate = dateStart;
@@ -904,7 +906,7 @@ public class EstimateController : Controller
         //иначе -> по смете
         else
         {
-            var fileAll = _file.GetAttachedFiles((int)estimateId, FolderEnum.Estimate);
+            var fileAll = _file.GetAttachedFiles((int)estimateId, Folder.Estimate);
             viewModel.Add("draw", fileAll.Where(x => x.FilePath.Contains(@"\draw\")));
             viewModel.Add("doc", fileAll.Where(x => x.FilePath.Contains(@"\doc\")));
         }
@@ -931,7 +933,7 @@ public class EstimateController : Controller
         //иначе -> по смете
         else
         {
-            var fileAll = _file.GetAttachedFiles((int)estimateId, FolderEnum.Estimate, useArchiveData: true);
+            var fileAll = _file.GetAttachedFiles((int)estimateId, Folder.Estimate, useArchiveData: true);
             viewModel.Add("draw", fileAll.Where(x => x.FilePath.Contains(@"\draw\")));
             viewModel.Add("doc", fileAll.Where(x => x.FilePath.Contains(@"\doc\")));
         }
@@ -1119,7 +1121,7 @@ public class EstimateController : Controller
 
         var formFileCollection = new FormFileCollection();
         formFileCollection.Add(formFile);
-        _file.Create(formFileCollection, FolderEnum.Estimate, (int)estimateId, neestedFolderName);
+        _file.Create(formFileCollection, Folder.Estimate, (int)estimateId, neestedFolderName);
 
     }
 

@@ -2,7 +2,7 @@
 using BusinessLayer.Helpers;
 using OfficeOpenXml;
 using System.Drawing;
-using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.COMServices;
 
 namespace BusinessLayer.ServicesCOM
 {

@@ -1,7 +1,8 @@
 ﻿@using BusinessLayer.Enums
 @using BusinessLayer.Helpers
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Convertor
+@using BusinessLayer.Interfaces.Shared
+@inject IHttpContextUserProvider HttpHelper
+@inject IConverterService Convertor
 @model Dictionary<string, string>
 @{
     var permissions = HttpHelper.GetUserPermissions();
@@ -76,7 +77,7 @@
                             @if (userOrgCode == Constants.ORG_BES || userOrgCode == Constants.ORG_MAJOR)
                             {
                                 <option value="all" selected>Все</option>
-                                @foreach (var item in Enum.GetValues<OrganizationEnum>())
+                                @foreach (var item in Enum.GetValues<Organization>())
                                 {
                                     string code = item.ToString();
                                     var name = Convertor.GetNameOrganizationByCode(item.ToString());

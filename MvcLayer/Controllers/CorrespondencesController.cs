@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -61,7 +61,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int correspondenceId = (int)_correspondenceService.Create(_mapper.Map<CorrespondenceDTO>(correspondenceViewModel));
-                int fileId = (int)_fileService.Create(correspondenceViewModel.FilesEntity, FolderEnum.Correspondences, correspondenceId);
+                int fileId = (int)_fileService.Create(correspondenceViewModel.FilesEntity, Folder.Correspondences, correspondenceId);
 
                 _correspondenceService.AddFile(correspondenceId, fileId);
 
@@ -120,7 +120,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Correspondences))
+                foreach (var item in _fileService.GetAttachedFiles(id, Folder.Correspondences))
                 {
                     _fileService.Delete(item.Id);
                 }

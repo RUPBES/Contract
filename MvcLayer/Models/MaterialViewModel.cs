@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Models;
+﻿using BusinessLayer.Models.KDO;
 using DatabaseLayer.Models;
 using System.ComponentModel;
 

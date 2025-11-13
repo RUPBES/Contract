@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;
@@ -273,7 +273,7 @@ namespace BusinessLayer.Services
         public IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId)
         {
             var list = _database.Amendments.Find(a => a.ContractId == contractId).ToList();
-            List<Amendment> answer = new List<Amendment>();
+            List<DatabaseLayer.Models.KDO.Amendment> answer = new List<DatabaseLayer.Models.KDO.Amendment>();
             foreach (var item in list)
             {
                 var ob = _database.ScopeWorkAmendments.Find(s => s.AmendmentId == item.Id).FirstOrDefault();
@@ -358,7 +358,7 @@ namespace BusinessLayer.Services
         *           
         */
 
-        public bool TryUpdateParentsScopeCosts(ScopeWorkDTO scope, Dictionary<int, ContractType>? parentContracts, CrudOp method, List<SWCostDTO>? previousScope, bool isOneOfMultipleDelete)
+        public bool TryUpdateParentsScopeCosts(ScopeWorkDTO scope, Dictionary<int, Enums.Contract>? parentContracts, CrudOp method, List<SWCostDTO>? previousScope, bool isOneOfMultipleDelete)
         {
             if (scope == null /*|| parentContracts?.Count < 1*/)
             {

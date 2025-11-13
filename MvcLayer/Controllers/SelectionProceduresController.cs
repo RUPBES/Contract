@@ -2,7 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -93,7 +93,7 @@ namespace MvcLayer.Controllers
                     NotificationHelper.SetNotification(TempData, $"Данные процедуры выбора обновлены", NotificationType.Info);
                     if (selectProcedure.FilesEntity != null && selectProcedure.FilesEntity.Count() > 0)
                     {
-                        int fileId = (int)_fileService.Create(selectProcedure.FilesEntity, FolderEnum.SelectionProcedures, selectProcedure.Id);
+                        int fileId = (int)_fileService.Create(selectProcedure.FilesEntity, Folder.SelectionProcedures, selectProcedure.Id);
                         _selectProcedureService.AddFile(selectProcedure.Id, fileId);
                     }
                 }

@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -16,10 +17,10 @@ namespace MvcLayer.Controllers
         private readonly IMapper _mapper;
         private readonly IDepartmentService _departmentService;
         private readonly ILoggerContract _logger;
-        private readonly IHttpHelper _httpHelper;
+        private readonly IHttpContextUserProvider _httpHelper;
 
         public EmployeesController(IEmployeeService employeesService, IMapper mapper,
-            IDepartmentService departmentService, ILoggerContract logger, IHttpHelper httpHelper)
+            IDepartmentService departmentService, ILoggerContract logger, IHttpContextUserProvider httpHelper)
         {
             _departmentService = departmentService;
             _employeesService = employeesService;

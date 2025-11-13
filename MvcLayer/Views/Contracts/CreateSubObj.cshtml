@@ -1,7 +1,8 @@
 ﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+@inject IConverterService Converter
 
 @{
     ViewData["Title"] = "Добавление подобъекта";
@@ -60,7 +61,7 @@
                                 @{
                                     int numberCheckbox = 0;
                                 }
-                                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                                @foreach (var item in Enum.GetValues<PrepaymentCondition>())
                                 {
                                     var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                     var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();

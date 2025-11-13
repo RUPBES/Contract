@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
@@ -31,7 +31,7 @@ namespace BusinessLayer.Services
             _databaseArch = databaseArch;
         }
 
-        public int? Create(IFormFileCollection files, FolderEnum folder, int entityId, string nestedFolder = null)
+        public int? Create(IFormFileCollection files, Folder folder, int entityId, string nestedFolder = null)
         {
             int id = default;
             if (files != null)
@@ -90,7 +90,7 @@ namespace BusinessLayer.Services
 
                     id = fileNew.Id;
 
-                    if (folder != FolderEnum.Other && entityId != 0)
+                    if (folder != Folder.Other && entityId != 0)
                     {
                         AttachFileToEntity(fileNew.Id, entityId, folder);
                     }
@@ -225,13 +225,13 @@ namespace BusinessLayer.Services
             }
         }
 
-        public IEnumerable<FileDTO> GetAttachedFiles(int entityId, FolderEnum folder, bool? useArchiveData)
+        public IEnumerable<FileDTO> GetAttachedFiles(int entityId, Folder folder, bool? useArchiveData)
         {
             List<File> result = new List<File>();
 
             switch (folder)
             {
-                case FolderEnum.Acts:
+                case Folder.Acts:
                     var filesAct = (useArchiveData == true) ?
                         _databaseArch.ActFiles.Find(x => x.ActId == entityId):
                         _database.ActFiles.Find(x => x.ActId == entityId);
@@ -245,7 +245,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.Amendment:
+                case Folder.Amendment:
 
                     var filesAmend = (useArchiveData == true) ?
                         _databaseArch.AmendmentFiles.Find(x => x.AmendmentId == entityId):
@@ -260,7 +260,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.CommissionActs:
+                case Folder.CommissionActs:
 
                     var filesComm = (useArchiveData == true) ?
                         _databaseArch.CommissionActFiles.Find(x => x.СommissionActId == entityId):
@@ -275,7 +275,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.Correspondences:
+                case Folder.Correspondences:
 
                     var filesCorres = (useArchiveData == true) ?
                         _databaseArch.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId):
@@ -289,7 +289,7 @@ namespace BusinessLayer.Services
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.Estimate:
+                case Folder.Estimate:
 
                     var filesEstimate = (useArchiveData == true) ?
                         _databaseArch.EstimateFiles.Find(x => x.EstimateId == entityId):
@@ -304,7 +304,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.EstimateDocumentations:
+                case Folder.EstimateDocumentations:
 
                     var filesEstimateDoc = (useArchiveData == true) ?
                         _databaseArch.EstimateDocFiles.Find(x => x.EstimateDocId == entityId):
@@ -319,7 +319,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.Form3C:
+                case Folder.Form3C:
 
                     var filesForm = (useArchiveData == true) ?
                         _databaseArch.FormFiles.Find(x => x.FormId == entityId):
@@ -334,7 +334,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.Contracts:
+                case Folder.Contracts:
 
                     var filesContract = (useArchiveData == true) ?
                         _databaseArch.ContractFiles.Find(x => x.ContractId == entityId):
@@ -349,7 +349,7 @@ namespace BusinessLayer.Services
                     
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.PrepaymentTake:
+                case Folder.PrepaymentTake:
 
                     var filesPrepTakeId = (useArchiveData == true) ?
                         _databaseArch.PrepaymentTakes.GetById(entityId).FileId:
@@ -364,7 +364,7 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
-                case FolderEnum.SelectionProcedures:
+                case Folder.SelectionProcedures:
 
                     var filesProcedure = (useArchiveData == true) ?
                         _databaseArch.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId):
@@ -382,13 +382,13 @@ namespace BusinessLayer.Services
             return _mapper.Map<IEnumerable<FileDTO>>(result);
         }
 
-        public void AttachFileToEntity(int fileId, int entityId, FolderEnum folder)
+        public void AttachFileToEntity(int fileId, int entityId, Folder folder)
         {
             if (fileId > 0 && entityId > 0)
             {
                 switch (folder)
                 {
-                    case FolderEnum.Acts:
+                    case Folder.Acts:
                         _database.ActFiles.Create(new ActFile { FileId = fileId, ActId = entityId });
                         _database.Save();
 
@@ -399,7 +399,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.Amendment:
+                    case Folder.Amendment:
                         _database.AmendmentFiles.Create(new AmendmentFile { FileId = fileId, AmendmentId = entityId });
                         _database.Save();
 
@@ -410,7 +410,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.CommissionActs:
+                    case Folder.CommissionActs:
                         _database.CommissionActFiles.Create(new CommissionActFile { FileId = fileId, СommissionActId = entityId });
                         _database.Save();
 
@@ -421,7 +421,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.Correspondences:
+                    case Folder.Correspondences:
                         _database.CorrespondenceFiles.Create(new CorrespondenceFile { FileId = fileId, CorrespondenceId = entityId });
                         _database.Save();
 
@@ -432,7 +432,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.EstimateDocumentations:
+                    case Folder.EstimateDocumentations:
                         _database.EstimateDocFiles.Create(new EstimateDocFile { FileId = fileId, EstimateDocId = entityId });
                         _database.Save();
 
@@ -443,7 +443,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.Form3C:
+                    case Folder.Form3C:
                         _database.FormFiles.Create(new FormFile { FileId = fileId, FormId = entityId });
                         _database.Save();
 
@@ -454,7 +454,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.Contracts:
+                    case Folder.Contracts:
                         _database.ContractFiles.Create(new ContractFile { FileId = fileId, ContractId = entityId });
                         _database.Save();
 
@@ -465,7 +465,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.Estimate:
+                    case Folder.Estimate:
                         _database.EstimateFiles.Create(new EstimateFile { FileId = fileId, EstimateId = entityId });
                         _database.Save();
 
@@ -476,7 +476,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
                     
-                    case FolderEnum.SelectionProcedures:
+                    case Folder.SelectionProcedures:
                         _database.SlctnProcedureFiles.Create(new SlctnProcedureFile { FileId = fileId, SlctnProcedureId = entityId });
                         _database.Save();
 
@@ -487,7 +487,7 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
-                    case FolderEnum.Other:
+                    case Folder.Other:
                         break;
                 }
             }

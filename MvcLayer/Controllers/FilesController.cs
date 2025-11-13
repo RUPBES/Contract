@@ -27,7 +27,7 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddFile(int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
+        public ActionResult AddFile(int entityId, Folder fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
@@ -40,7 +40,7 @@ namespace MvcLayer.Controllers
 
         [Authorize(Policy = "CreatePolicy")]
         [HttpPost]
-        public ActionResult AddFile(IFormCollection collection, int entityId, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
+        public ActionResult AddFile(IFormCollection collection, int entityId, Folder fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             int fileId = (int)_file.Create(collection.Files, fileCategory, entityId);
             NotificationHelper.SetNotification(TempData, "Файл добавлен", NotificationType.Info);
@@ -56,7 +56,7 @@ namespace MvcLayer.Controllers
 
         [HttpGet]
         [Route("/archive/Files")]
-        public ActionResult GetArchByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
+        public ActionResult GetArchByContractId(int id, Folder fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
@@ -67,7 +67,7 @@ namespace MvcLayer.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetByContractId(int id, FolderEnum fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
+        public ActionResult GetByContractId(int id, Folder fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
             ViewBag.redirectAction = redirectAction;
             ViewBag.redirectController = redirectController;
@@ -79,7 +79,7 @@ namespace MvcLayer.Controllers
         }
             
         [Authorize(Policy = "DeletePolicy")]
-        public ActionResult Delete(int id, FolderEnum fileCategory, string? redirectAction = null, string? redirectController = null, int? contractId = null)
+        public ActionResult Delete(int id, Folder fileCategory, string? redirectAction = null, string? redirectController = null, int? contractId = null)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace MvcLayer.Controllers
 
                 if (redirectController is not null && redirectAction is not null)
                 {
-                    if (fileCategory == FolderEnum.SelectionProcedures)
+                    if (fileCategory == Folder.SelectionProcedures)
                     {
                         return Redirect($@"~/{redirectController}/{redirectAction}?contractId={contractId}");
 

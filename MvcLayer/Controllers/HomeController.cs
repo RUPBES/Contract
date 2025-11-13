@@ -38,6 +38,7 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 
+
     [HttpGet("init-session")]
     public IActionResult InitializeSession()
     {
@@ -51,6 +52,7 @@ public class HomeController : Controller
             message = "Сессия создана, используйте этот ID для последующих запросов"
         });
     }
+
 
     [HttpPost("upload-contract")]
     [SkipStatusCodePages]
@@ -66,6 +68,7 @@ public class HomeController : Controller
         {
             string jsonString = jsonData.ToString();            
             var contract2 = JsonConvert.DeserializeObject<ContractViewModel>(jsonString);
+
             return Created();
         }
         catch (Exception)

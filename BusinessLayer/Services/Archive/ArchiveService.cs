@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 
@@ -183,23 +183,23 @@ namespace BusinessLayer.Services.Archive
         /// <param name="id">ID Гендоговора</param>
         /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
         /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
-        public IEnumerable<ContractDTO> GetSubsByType(int? id, ContractType? contractType)
+        public IEnumerable<ContractDTO> GetSubsByType(int? id, Enums.Contract? contractType)
         {
             if (!id.HasValue || contractType == null)
             {
                 return Enumerable.Empty<ContractDTO>();
             }
-            Func<Contract, bool> selector;
+            Func<DatabaseLayer.Models.KDO.Contract, bool> selector;
 
-            if (contractType == ContractType.SubContract)
+            if (contractType == Enums.Contract.SubContract)
             {
                 selector = x => x.SubContractId == id && x.IsSubContract == true;
             }
-            else if (contractType == ContractType.Agreement)
+            else if (contractType == Enums.Contract.Agreement)
             {
                 selector = x => x.AgreementContractId == id && x.IsAgreementContract == true;
             }
-            else if (contractType == ContractType.MultipleContract)
+            else if (contractType == Enums.Contract.MultipleContract)
             {
                 selector = x => x.MultipleContractId == id && x.IsOneOfMultiple == true;
             }

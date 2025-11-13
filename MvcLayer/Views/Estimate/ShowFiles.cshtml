@@ -1,8 +1,10 @@
-﻿@using BusinessLayer.Models
+﻿@using BusinessLayer.Interfaces.Shared
+@using BusinessLayer.Models
+@using BusinessLayer.Models.KDO
 @model Dictionary<string, IEnumerable<FileDTO>>
 @using BusinessLayer.Enums;
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject IConverterService Converter
+@inject IHttpContextUserProvider HttpHelper
 <link href="~/kendoui/upload_style.css" rel="stylesheet" />
 
 @{

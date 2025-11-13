@@ -2,7 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +64,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int commissionActId = (int)_commissionActService.Create(_mapper.Map<CommissionActDTO>(commissionAct));
-                int fileId = (int)_fileService.Create(commissionAct.FilesEntity, FolderEnum.CommissionActs, commissionActId);
+                int fileId = (int)_fileService.Create(commissionAct.FilesEntity, Folder.CommissionActs, commissionActId);
 
                 _commissionActService.AddFile(commissionActId, fileId);
 
@@ -123,7 +123,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.CommissionActs))
+                foreach (var item in _fileService.GetAttachedFiles(id, Folder.CommissionActs))
                 {
                     _fileService.Delete(item.Id);
                 }

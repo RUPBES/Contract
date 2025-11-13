@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
@@ -17,7 +18,7 @@ namespace BusinessLayer.ServicesCOM;
 
 internal class ReportExcelService : IReportExcelService
 {
-    private readonly IConverter _converter;
+    private readonly IConverterService _converter;
     private readonly IContractUoW _contextDb;
     private readonly IExcelWriter _excelWriter;
     private readonly IHostingEnvironment _host;
@@ -32,12 +33,12 @@ internal class ReportExcelService : IReportExcelService
     private readonly IMapper _mapper;
     private readonly IContractArchiveUoW _databaseArch;
     private readonly IPaymentService _paymentService;
-    private readonly IHttpHelper _httpHelper;
+    private readonly IHttpContextUserProvider _httpHelper;
 
-    public ReportExcelService(IConverter converter, IContractUoW contextDb, IExcelWriter excelWriter, IHostingEnvironment hosting, IScopeWorkService scopeWork,
+    public ReportExcelService(IConverterService converter, IContractUoW contextDb, IExcelWriter excelWriter, IHostingEnvironment hosting, IScopeWorkService scopeWork,
         IFormService formService, IContractService contractService, IAmendmentService amendmentService, IVContractService vContractService,
         IMapper mapper, ISelectionProcedureService selection, IEmployeeService employee, IOrganizationService organization, IContractArchiveUoW databaseArch,
-        IPaymentService paymentService, IHttpHelper httpHelper)
+        IPaymentService paymentService, IHttpContextUserProvider httpHelper)
     {
         _converter = converter;
         _contextDb = contextDb;

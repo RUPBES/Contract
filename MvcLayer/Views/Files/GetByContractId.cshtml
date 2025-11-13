@@ -1,7 +1,9 @@
 ﻿@using BusinessLayer.Enums;
-@model List<BusinessLayer.Models.FileDTO>
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@using BusinessLayer.Interfaces.Shared
+@using BusinessLayer.Models.KDO
+@model List<FileDTO>
+@inject IConverterService Converter
+@inject IHttpContextUserProvider HttpHelper
 <link href="~/kendoui/upload_style.css" rel="stylesheet" />
 @{
     var permissions = HttpHelper.GetUserPermissions();
@@ -53,7 +55,7 @@
                                                 <a asp-controller="Files" asp-action="Delete" asp-route-id="@item.Id"
                                                    asp-route-redirectAction="GetByContractId"
                                                    asp-route-redirectController="Files"
-                                                   asp-route-fileCategory="@FolderEnum.Contracts"
+                                                   asp-route-fileCategory="@Folder.Contracts"
                                                    asp-route-contractId="@ViewBag.entityId"
                                                    asp-route-page="@ViewBag.Page"
                                                    title="Удалить файл"

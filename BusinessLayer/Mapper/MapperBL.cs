@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;

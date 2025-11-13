@@ -1,10 +1,12 @@
 ﻿@using BusinessLayer.Enums;
 @using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @using BusinessLayer.Models;
+@using BusinessLayer.Models.KDO
 @model IEnumerable<MvcLayer.Models.AmendmentViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject IHttpContextUserProvider HttpHelper
 
 
 @{
@@ -101,7 +103,7 @@
                                             @Html.DisplayFor(modelItem => item.ContractChanges)
                                         </td>
                                         <td>
-                                            @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, FolderEnum.Amendment))
+                                            @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.Amendment))
                                             {
                                                 <div>
                                                     <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
@@ -122,7 +124,7 @@
                                             @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                                             {
                                                 <span class="icon file-add" title="Добавить файл к изменению">
-                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@Folder.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                                 </span>
                                             }
                                             @if (permissions is not null && permissions.IsEditor && isGRP_Contract)

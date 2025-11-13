@@ -1,10 +1,10 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Interfaces.Shared;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BusinessLayer.Helpers
 {
-    internal class Converter : IConverter
+    internal class Converter : IConverterService
     {
         /// <summary>
         /// Получить по номеру ENUM тип финансирования

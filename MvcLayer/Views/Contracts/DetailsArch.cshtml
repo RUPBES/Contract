@@ -4,9 +4,9 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 
 @{
-    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement, useArchiveData:true);
-    var subContract = Contracts.GetSubsByType(Model.Id, ContractType.SubContract, useArchiveData: true);
-    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, ContractType.MultipleContract, useArchiveData: true);
+    var branchAgreement = Contracts.GetSubsByType(Model.Id, Contract.Agreement, useArchiveData:true);
+    var subContract = Contracts.GetSubsByType(Model.Id, Contract.SubContract, useArchiveData: true);
+    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, Contract.MultipleContract, useArchiveData: true);
 
     var isEngineering = Model.IsEngineering == true ? true : false;
     string redirectAction = "Details";
@@ -203,7 +203,7 @@
                                    asp-action="GetArchByContractId"
                                    asp-controller="Files"
                                    asp-route-id="@Model?.Id"
-                                   asp-route-fileCategory="@FolderEnum.Contracts"
+                                   asp-route-fileCategory="@Folder.Contracts"
                                    asp-route-contractId="@Model?.Id"
                                    asp-route-redirectAction=@redirectAction
                                    asp-route-redirectController=@redirectController>
@@ -455,7 +455,7 @@
                                        asp-action="GetArchByContractId"
                                        asp-controller="Files"
                                        asp-route-id="@contractBranch?.Id"
-                                       asp-route-fileCategory="@FolderEnum.Contracts"
+                                       asp-route-fileCategory="@Folder.Contracts"
                                        asp-route-contractId="@Model?.Id"
                                        asp-route-redirectAction=@redirectAction
                                        asp-route-redirectController=@redirectController>
@@ -627,7 +627,7 @@
                                        asp-action="GetArchByContractId"
                                        asp-controller="Files"
                                        asp-route-id="@contractBranch?.Id"
-                                       asp-route-fileCategory="@FolderEnum.Contracts"
+                                       asp-route-fileCategory="@Folder.Contracts"
                                        asp-route-contractId="@Model?.Id"
                                        asp-route-redirectAction=@redirectAction
                                        asp-route-redirectController=@redirectController
@@ -858,7 +858,7 @@
                                        asp-action="GetArchByContractId"
                                        asp-controller="Files"
                                        asp-route-id="@contractSub?.Id"
-                                       asp-route-fileCategory="@FolderEnum.Contracts"
+                                       asp-route-fileCategory="@Folder.Contracts"
                                        asp-route-contractId="@Model?.Id"
                                        asp-route-redirectAction=@redirectAction
                                        asp-route-redirectController=@redirectController

@@ -1,0 +1,11 @@
+﻿using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Models.KDO;
+using DatabaseLayer.Models.KDO;
+
+namespace BusinessLayer.Interfaces.ContractInterfaces
+{
+    public interface ICorrespondenceService : IService<CorrespondenceDTO, Correspondence>
+    {
+        void AddFile(int correspondenceId, int fileId);
+    }
+}

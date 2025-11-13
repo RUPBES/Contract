@@ -1,5 +1,4 @@
-﻿
-using BusinessLayer.Models;
+﻿using BusinessLayer.Models.KDO;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 

@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Interfaces.Shared;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -10,9 +10,9 @@ namespace MvcLayer.Controllers
     public class ErrorController : Controller
     {
         private readonly IWebHostEnvironment _environment;
-        private readonly IHttpHelper _httpHelper;
+        private readonly IHttpContextUserProvider _httpHelper;
 
-        public ErrorController(IWebHostEnvironment environment, IHttpHelper httpHelper)
+        public ErrorController(IWebHostEnvironment environment, IHttpContextUserProvider httpHelper)
         {
             _environment = environment;
             _httpHelper = httpHelper;

@@ -1,6 +1,7 @@
 ﻿@using BusinessLayer.Enums;
-@using MvcLayer.Models;
 @using BusinessLayer.Models;
+@using BusinessLayer.Models.KDO
+@using MvcLayer.Models;
 
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 
@@ -77,7 +78,7 @@
                     @item.ContractChanges
                 </td>                
                 <td>
-                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, FolderEnum.Amendment))
+                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, Folder.Amendment))
                     {
                         <div>
                             <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
@@ -89,7 +90,7 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
+                    <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@Folder.Amendment" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController>Добавить файл</a> |
                     <a asp-action="Edit" asp-route-id="@item.Id">Редактировать</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Детали</a> |
                     <a asp-action="Delete" asp-route-id="@item.Id">Удалить</a>|

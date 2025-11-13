@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Models;
+﻿using BusinessLayer.Models.KDO;
 using System.ComponentModel;
 
 namespace MvcLayer.Models.Reports

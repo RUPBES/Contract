@@ -1,12 +1,13 @@
 ﻿@using BusinessLayer.Enums;
 @using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @using BusinessLayer.Models;
 @model IEnumerable<MvcLayer.Models.FormViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject IHttpContextUserProvider HttpHelper
 
 
 @{
@@ -238,7 +239,7 @@
                                         }
 
                                         <td>
-                                            @foreach (var file in Files.GetAttachedFiles(item.Id, FolderEnum.Form3C, useArchiveData: true))
+                                            @foreach (var file in Files.GetAttachedFiles(item.Id, Folder.Form3C, useArchiveData: true))
                                             {
                                                 <div>
                                                     <a href="~/Files/OpenFile?id=@file.Id&useArchiveData=true" target="_blank">@file.FileName</a>
@@ -288,7 +289,7 @@
                                 <td class="text-end"> @sub?.TotalCostToBePaid.ToString("N2")  </td>
                                 <td>
                                     <div>
-                                        @foreach (var file in Files.GetAttachedFiles((int)sub?.Id, FolderEnum.Form3C, useArchiveData: true))
+                                        @foreach (var file in Files.GetAttachedFiles((int)sub?.Id, Folder.Form3C, useArchiveData: true))
                                                         {
                                                             <div>
                                                                 <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>

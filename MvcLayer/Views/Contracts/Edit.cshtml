@@ -1,10 +1,11 @@
 ﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+@inject IConverterService Converter
 @{
     ViewData["Title"] = "Редактирование договора";
     var d = Model;
@@ -101,7 +102,7 @@
                                 <label asp-for="Сurrency" class="control-label"></label>
                                 <select name="Сurrency" class="form-control js-chosen" id="CurDC">
                                     <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
-                                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                                    @foreach (var item in Enum.GetValues<Currency>())
                                     {
                                         <option value="@item">@item</option>
                                     }
@@ -389,7 +390,7 @@
                         <div class="row">
                             <fieldset class="border rounded-1 p-3 col">
                                 <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                                @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                                @foreach (var item in Enum.GetValues<FundingSource>())
                                 {
                                     var value = $"{Converter.ToFundingSourceTerm((int)item)}";
                                     var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
@@ -418,7 +419,7 @@
                                 @{
                                     int numberCheckbox = 0;
                                 }
-                                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                                @foreach (var item in Enum.GetValues<PrepaymentCondition>())
                                 {
                                     var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                     var valueArray = Model?.PaymentСonditionsAvans;
@@ -448,7 +449,7 @@
                         </div>
                         <fieldset class="border rounded-1 p-3">
                             <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
-                            @foreach (var item in Enum.GetValues<PaymentEnum>())
+                            @foreach (var item in Enum.GetValues<Payment>())
                             {
                                 var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";                                
                                 var number = Contract.GetPaymentDueDate(Model?.PaymentСonditionsRaschet, name);

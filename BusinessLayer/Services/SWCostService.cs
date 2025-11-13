@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Http;

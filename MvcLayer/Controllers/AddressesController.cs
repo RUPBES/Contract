@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
-using BusinessLayer.Models;
 using Microsoft.AspNetCore.Authorization;
+using BusinessLayer.Models.KDO;
 
 namespace MvcLayer.Controllers
 {

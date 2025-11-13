@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Azure;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.Entities;

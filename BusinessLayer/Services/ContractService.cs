@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -496,7 +496,7 @@ namespace BusinessLayer.Services
         /// <param name="id">ID Гендоговора</param>
         /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
         /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
-        public IEnumerable<ContractDTO> GetSubsByType(int? id, ContractType? contractType, bool useArchiveData)
+        public IEnumerable<ContractDTO> GetSubsByType(int? id, Enums.Contract? contractType, bool useArchiveData)
         {
             if (!id.HasValue || contractType == null)
             {
@@ -504,15 +504,15 @@ namespace BusinessLayer.Services
             }
             Func<Contract, bool> selector;
 
-            if (contractType == ContractType.SubContract)
+            if (contractType == Enums.Contract.SubContract)
             {
                 selector = x => x.SubContractId == id && x.IsSubContract == true;
             }
-            else if (contractType == ContractType.Agreement)
+            else if (contractType == Enums.Contract.Agreement)
             {
                 selector = x => x.AgreementContractId == id && x.IsAgreementContract == true;
             }
-            else if (contractType == ContractType.MultipleContract)
+            else if (contractType == Enums.Contract.MultipleContract)
             {
                 selector = x => x.MultipleContractId == id && x.IsOneOfMultiple == true;
             }
@@ -623,10 +623,10 @@ namespace BusinessLayer.Services
         /// </summary>
         /// <param name="contractId">ID договора, для которого проверяем "родительские" договора</param>
         /// <returns>Коллекция "родительских" договоров, Ключ = ID договора,  Значение = Тип договора</returns>
-        public Dictionary<int, ContractType>? GetParents(int? contractId, out ContractType thisType)
+        public Dictionary<int, Enums.Contract>? GetParents(int? contractId, out Enums.Contract thisType)
         {
-            var listParents = new Dictionary<int, ContractType>();
-            thisType = ContractType.GenСontract;
+            var listParents = new Dictionary<int, Enums.Contract>();
+            thisType = Enums.Contract.GenСontract;
             int parentId = contractId ?? 0;
             var contractProps = GetContractTypingProps(parentId);
 
@@ -634,24 +634,24 @@ namespace BusinessLayer.Services
             {
                 parentId = contractProps?.AgreementContractId ?? 0;
                 contractProps = GetContractTypingProps(parentId);
-                thisType = ContractType.Agreement;
+                thisType = Enums.Contract.Agreement;
             }
             else if (contractProps?.IsSubContract ?? false)
             {
                 parentId = contractProps?.SubContractId ?? 0;
                 contractProps = GetContractTypingProps(parentId);
-                thisType = ContractType.SubContract;
+                thisType = Enums.Contract.SubContract;
             }
             else if (contractProps?.IsOneOfMultiple ?? false)
             {
                 parentId = contractProps?.MultipleContractId ?? 0;
                 contractProps = GetContractTypingProps(parentId);
-                thisType = ContractType.MultipleContract;
+                thisType = Enums.Contract.MultipleContract;
             }
             else
             {
                 //return new ();
-                listParents.Add(parentId, ContractType.GenСontract);
+                listParents.Add(parentId, Enums.Contract.GenСontract);
                 parentId = 0;
             }
 
@@ -660,25 +660,25 @@ namespace BusinessLayer.Services
             {
                 if ((contractProps?.IsAgreementContract ?? false))
                 {
-                    listParents.Add(parentId, ContractType.Agreement);
+                    listParents.Add(parentId, Enums.Contract.Agreement);
                     parentId = contractProps?.AgreementContractId ?? 0;
                     contractProps = GetContractTypingProps(parentId);
                 }
                 else if ((contractProps?.IsSubContract ?? false))
                 {
-                    listParents.Add(parentId, ContractType.SubContract);
+                    listParents.Add(parentId, Enums.Contract.SubContract);
                     parentId = contractProps?.SubContractId ?? 0;
                     contractProps = GetContractTypingProps(parentId);
                 }
                 else if (contractProps?.IsOneOfMultiple ?? false)
                 {
-                    listParents.Add(parentId, ContractType.MultipleContract);
+                    listParents.Add(parentId, Enums.Contract.MultipleContract);
                     parentId = contractProps?.MultipleContractId ?? 0;
                     contractProps = GetContractTypingProps(parentId);
                 }
                 else
                 {
-                    listParents.Add(parentId, ContractType.GenСontract);
+                    listParents.Add(parentId, Enums.Contract.GenСontract);
                     break;
                 }
             }

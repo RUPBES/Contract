@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Interfaces.COMServices;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;

@@ -1,0 +1,12 @@
+﻿using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Models.KDO;
+using DatabaseLayer.Models.KDO;
+
+namespace BusinessLayer.Interfaces.ContractInterfaces
+{
+    public interface IServiceGCService : IService<ServiceGCDTO, ServiceGc>
+    {
+        void AddAmendmentToService(int amendmentId, int serviceId);
+        IEnumerable<AmendmentDTO> GetFreeAmendment(int contractId);
+    }
+}

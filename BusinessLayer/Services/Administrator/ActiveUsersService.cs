@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.COMServices;
+using BusinessLayer.Interfaces.Core;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using BusinessLayer.ServicesCOM;
 using DatabaseLayer.Interfaces;
@@ -18,8 +20,8 @@ namespace BusinessLayer.Services.Administrator
 {
     public class ActiveUsersService : IAdminService
     {
-        private readonly IConverter _converter;
-        private readonly IHttpHelper _httpHelper;
+        private readonly IConverterService _converter;
+        private readonly IHttpContextUserProvider _httpHelper;
         private readonly IContractUoW _contract;
         private readonly IMapper _mapper;
         private readonly IExcelWriter _excelWriter;
@@ -27,7 +29,7 @@ namespace BusinessLayer.Services.Administrator
         private readonly IHostingEnvironment _host;
         private readonly ILoggerContract _loggerContract;
 
-        public ActiveUsersService(IConverter converter, IHttpHelper httpHelper, IContractUoW contract,
+        public ActiveUsersService(IConverterService converter, IHttpContextUserProvider httpHelper, IContractUoW contract,
             IMapper mapper, IExcelWriter excelWriter, ILoggerContract loggerContract, IOptions<ExcelActivityReportOptions> options
             , IHostingEnvironment hosting)
         {

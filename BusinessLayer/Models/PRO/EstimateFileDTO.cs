@@ -1,4 +1,6 @@
-﻿namespace BusinessLayer.Models.PRO
+﻿using BusinessLayer.Models.KDO;
+
+namespace BusinessLayer.Models.PRO
 {
     public class EstimateFileDTO
     {

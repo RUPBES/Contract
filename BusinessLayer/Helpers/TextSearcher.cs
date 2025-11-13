@@ -1,5 +1,5 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
-using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+﻿using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.PRO;
 
 namespace BusinessLayer.Helpers

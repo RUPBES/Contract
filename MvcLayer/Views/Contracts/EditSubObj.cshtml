@@ -1,9 +1,10 @@
 ﻿@using BusinessLayer.Enums;
+@using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+@inject IConverterService Converter
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
@@ -61,7 +62,7 @@
                             <label asp-for="Сurrency"></label>
                             <select name="Сurrency" class="form-control js-chosen" id="CurDC">
                                 <option value="@Model.Сurrency" selected>@Model.Сurrency</option>
-                                @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                                @foreach (var item in Enum.GetValues<Currency>())
                                 {
                                     <option value="@item">@item</option>
                                 }
@@ -74,7 +75,7 @@
                                 @{
                                     int numberCheckbox = 0;
                                 }
-                                @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                                @foreach (var item in Enum.GetValues<PrepaymentCondition>())
                                 {
                                     var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                     var valueArray = Model?.PaymentСonditionsAvans;

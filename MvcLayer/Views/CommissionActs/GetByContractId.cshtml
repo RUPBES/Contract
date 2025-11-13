@@ -1,10 +1,12 @@
 ﻿@using BusinessLayer.Enums;
 @using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @using BusinessLayer.Models;
+@using BusinessLayer.Models.KDO
 @model IEnumerable<MvcLayer.Models.CommissionActViewModel>
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject IHttpContextUserProvider HttpHelper
 
 
 @{
@@ -66,7 +68,7 @@
                                     </td>
 
                                     <td>
-                                        @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, FolderEnum.CommissionActs))
+                                        @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.CommissionActs))
                                         {
                                             <div>
                                                 <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
@@ -87,7 +89,7 @@
                                         @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
                                         {
                                             <span class="icon file-add" title="Добавить файл к акту">
-                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@FolderEnum.CommissionActs" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
+                                                <a asp-action="AddFile" asp-controller="Files" asp-route-entityId="@item.Id" asp-route-fileCategory="@Folder.CommissionActs" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-contractId="@item.ContractId" asp-route-returnContractId="@ViewBag.returnContractId"></a>
                                             </span>
                                         }
                                         @if (permissions is not null && (permissions.IsAdmin || permissions.IsDeleter) && isGRP_Contract)

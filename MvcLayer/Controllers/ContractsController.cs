@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,12 +28,12 @@ namespace MvcLayer.Controllers
         private readonly IAmendmentService _amendmentService;
         private readonly ITypeWorkService _typeWork;
         private readonly IMapper _mapper;
-        private readonly IHttpHelper _httpHelper;
+        private readonly IHttpContextUserProvider _httpHelper;
         private readonly ArchiveSettings _archiveOptions;
 
         public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IEmployeeService employee, ITypeWorkService typeWork, IVContractService vContractService, IVContractEnginService vContractEnginService,
-            IScopeWorkService scopeWorkService, IFormService formService, IAmendmentService amendmentService, IHttpHelper httpHelper,
+            IScopeWorkService scopeWorkService, IFormService formService, IAmendmentService amendmentService, IHttpContextUserProvider httpHelper,
             IOptions<ArchiveSettings> archiveOptions)
         {
             _contractService = contractService;
@@ -539,19 +540,19 @@ namespace MvcLayer.Controllers
                 return View();
             }
 
-            ContractType thisContractType;
+            Contract thisContractType;
             var parentContracts = _contractService.GetParents(id, out thisContractType);
 
             /*
              * Обновление информации у родительских договоров
              */
 
-            if (parentContracts?.Count > 0 && thisContractType != ContractType.GenСontract)
+            if (parentContracts?.Count > 0 && thisContractType != Contract.GenСontract)
             {
                 var forms = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false);
                 var scopes = _scopeWorkService.GetLastScope(id, isOwnForces: false);
 
-                if (thisContractType == ContractType.MultipleContract) //если подобъект => обновление родит. договоров только вычитанием существующих данных, запрещая создание новой в случае отсутствия соответствующей записи
+                if (thisContractType == Contract.MultipleContract) //если подобъект => обновление родит. договоров только вычитанием существующих данных, запрещая создание новой в случае отсутствия соответствующей записи
                 {
                     var scopeOwns = _scopeWorkService.GetLastScope(id, isOwnForces: true);
                     var formsOwns = _formService.Find(x => x.ContractId == id && x.IsOwnForces == true);
@@ -596,7 +597,7 @@ namespace MvcLayer.Controllers
                 _contractService.Delete(chieldId);
             }
 
-            int? genContrId = parentContracts?.Where(x => x.Value == ContractType.GenСontract)?.FirstOrDefault().Key;
+            int? genContrId = parentContracts?.Where(x => x.Value == Contract.GenСontract)?.FirstOrDefault().Key;
 
 
             if (genContrId.HasValue) //после удаления, проверяем есть у генподряда договора подобъекты, если нет, устанавливаем флаг, что он больше не составной 
@@ -630,7 +631,7 @@ namespace MvcLayer.Controllers
             }
 
 
-            if (thisContractType != ContractType.GenСontract && genContrId.HasValue)
+            if (thisContractType != Contract.GenСontract && genContrId.HasValue)
             {
                 return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Details), new { id = genContrId.Value }));
             }

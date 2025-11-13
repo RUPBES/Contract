@@ -1,19 +1,20 @@
-﻿@using BusinessLayer.Enums;
-@using System.Diagnostics
+﻿@using System.Diagnostics
+@using BusinessLayer.Enums;
 @using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IVContractService Contracts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Convertor
+@inject IHttpContextUserProvider HttpHelper
+@inject IConverterService Convertor
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
 
-    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement);
-    var subContract = Contracts.GetSubsByType(Model.Id, ContractType.SubContract);
-    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, ContractType.MultipleContract);
+    var branchAgreement = Contracts.GetSubsByType(Model.Id, Contract.Agreement);
+    var subContract = Contracts.GetSubsByType(Model.Id, Contract.SubContract);
+    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, Contract.MultipleContract);
 
     var isEngineering = Model.IsEngineering == true ? true : false;
     var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple != true ? true : false;
@@ -191,7 +192,7 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@Model?.Id">Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@Model?.Id">ПСД</a>
                                     }
-                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@Model.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@Model?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
+                                    <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@Model.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@Model?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
 
                                 </div>
                             </div>
@@ -265,7 +266,7 @@
                                                 <a class="dropdown-item" asp-action="UpdateStatus" asp-controller="Contracts" asp-route-contractId="@Model?.Id" asp-route-returnContractId="@Model.Id" asp-route-status="@status">Изменить статус договора</a>
                                             }
                                         }
-                                        <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@Model?.Id" asp-route-contractId="@Model?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
+                                        <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@Model?.Id" asp-route-contractId="@Model?.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
 
                                     </div>
                                 </div>
@@ -467,7 +468,7 @@
                                             <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Переписка с заказчиком</a>
                                             <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">ПСД</a>
                                         }
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@Model?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@Model?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">Файлы</a>
                                     </div>
                                 </div>
                                 @if (permissions is not null && permissions.IsCreator && isGRP_Contract)
@@ -508,7 +509,7 @@
                                                 <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">+ Переписка с заказчиком</a>
                                                 <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model?.Id">+ ПСД</a>
                                             }
-                                            <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractBranch?.Id" asp-route-contractId="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
+                                            <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractBranch?.Id" asp-route-contractId="@contractBranch?.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="">+Файлы</a>
                                         </div>
                                     </div>
                                 }
@@ -629,7 +630,7 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-Id="@contractBranch.Id" asp-route-returnContractId="@Model.Id">Акт ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@contractBranch.Id" asp-route-returnContractId="@Model.Id">ПСД</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@contractBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">Файлы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractBranch?.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@contractBranch?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">Файлы</a>
 
                                     </div>
                                 </div>
@@ -651,7 +652,7 @@
                                             <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">+ Акт ввода</a>
                                             <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">+ Переписка с заказчиком</a>
                                             <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-contractId="@contractBranch.Id" asp-route-returnContractId="@Model.Id">+ ПСД</a>
-                                            <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractBranch?.Id" asp-route-contractId="@contractBranch?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">+Файлы</a>
+                                            <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractBranch?.Id" asp-route-contractId="@contractBranch?.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">+Файлы</a>
 
                                         </div>
                                     </div>
@@ -843,7 +844,7 @@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-Id="@contractSub.Id" asp-route-returnContractId="@Model.Id">Акт ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Переписка с заказчиком</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="EstimateDocs" asp-route-Id="@contractSub?.Id" asp-route-returnContractId="@Model.Id">ПСД</a>
-                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractSub?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-contractId="@contractSub?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">Файлы</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Files" asp-route-id="@contractSub?.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-contractId="@contractSub?.Id" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">Файлы</a>
 
                                     </div>
                                 </div>
@@ -874,7 +875,7 @@
                                             <a class="dropdown-item" asp-action="Create" asp-controller="CommissionActs" asp-route-contractId="@contractSub.Id" asp-route-returnContractId="@Model.Id">+ Акт ввода</a>
                                             <a class="dropdown-item" asp-action="Create" asp-controller="Correspondences" asp-route-contractId="@contractSub.Id" asp-route-returnContractId="@Model.Id">+ Переписка с заказчиком</a>
                                             <a class="dropdown-item" asp-action="Create" asp-controller="EstimateDocs" asp-route-contractId="@contractSub.Id" asp-route-returnContractId="@Model.Id">+ ПСД</a>
-                                            <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractSub?.Id" asp-route-contractId="@contractSub?.Id" asp-route-fileCategory="@FolderEnum.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">+Файлы</a>
+                                            <a class="dropdown-item" asp-action="AddFile" asp-controller="Files" asp-route-entityId="@contractSub?.Id" asp-route-contractId="@contractSub?.Id" asp-route-fileCategory="@Folder.Contracts" asp-route-redirectAction=@redirectAction asp-route-redirectController=@redirectController asp-route-isEngineering="" asp-route-returnContractId="@Model.Id">+Файлы</a>
                                         </div>
                                     </div>
                                 }

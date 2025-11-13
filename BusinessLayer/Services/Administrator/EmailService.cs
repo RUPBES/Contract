@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.Settings;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;

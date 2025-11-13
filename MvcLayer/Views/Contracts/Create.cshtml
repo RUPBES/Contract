@@ -1,8 +1,9 @@
 @using BusinessLayer.Enums;
+@using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+@inject IConverterService Converter
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
 
 @{
@@ -298,7 +299,7 @@
                             @{
                                 int numberCheckbox = 0;
                             }
-                            @foreach (var item in Enum.GetValues<PrepaymentConditionEnum>())
+                            @foreach (var item in Enum.GetValues<PrepaymentCondition>())
                             {
                                 var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
                                 var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
@@ -328,7 +329,7 @@
 
                         <fieldset class="border rounded-3 p-3">
                             <legend class="float-none w-auto px-3">Процедура выбора</legend>
-                            @foreach (var item in Enum.GetValues<ProcedureTypeEnum>())
+                            @foreach (var item in Enum.GetValues<Procedure>())
                             {
                                 var name = $"{Converter.ToProcedureType((int)item)}";
                                 int numberEnum = (int)item;
@@ -392,7 +393,7 @@
                                     {
                                         <option selected value="@Model?.Сurrency">@Model?.Сurrency</option>
                                     }
-                                    @foreach (var item in Enum.GetValues<CurrencyEnum>())
+                                    @foreach (var item in Enum.GetValues<Currency>())
                                     {
                                         <option value="@item">@item</option>
                                     }
@@ -424,7 +425,7 @@
 
                         <fieldset class="border rounded-1 p-3">
                             <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                            @foreach (var item in Enum.GetValues<FundingSourceEnum>())
+                            @foreach (var item in Enum.GetValues<FundingSource>())
                             {
                                 var value = $"{Converter.ToFundingSourceTerm((int)item)}";
                                 var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
@@ -453,7 +454,7 @@
                     <div class="col-8 mt-1 fieldset_container">
                         <fieldset class="border rounded-1 p-3 fieldset_mr">
                             <legend class="float-none w-auto px-3">Расчет за выполненные @(Model.IsEngineering ? "услуги" : "работы")</legend>
-                            @foreach (var item in Enum.GetValues<PaymentEnum>())
+                            @foreach (var item in Enum.GetValues<Payment>())
                             {
                                 var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";
                                 bool hasMatchingPaymentTerm = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false;

@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using MvcLayer.Models;
-using BusinessLayer.Models;
 using DatabaseLayer.Models.KDO;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Diagnostics.Contracts;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Org.BouncyCastle.Ocsp;
 using BusinessLayer.Helpers;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using BusinessLayer.Models.KDO;
 
 namespace MvcLayer.Controllers
 {

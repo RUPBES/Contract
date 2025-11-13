@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Interfaces.Shared;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
@@ -8,8 +8,8 @@ namespace BusinessLayer.Helpers
     internal class LoggerDb : ILoggerContract
     {
         private readonly IContractUoW _contract;
-        private readonly IHttpHelper _httpHelper;
-        public LoggerDb(IContractUoW contract, IHttpHelper httpHelper)
+        private readonly IHttpContextUserProvider _httpHelper;
+        public LoggerDb(IContractUoW contract, IHttpContextUserProvider httpHelper)
         {
             _contract = contract;
             _httpHelper = httpHelper;

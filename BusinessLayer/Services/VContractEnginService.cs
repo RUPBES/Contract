@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 

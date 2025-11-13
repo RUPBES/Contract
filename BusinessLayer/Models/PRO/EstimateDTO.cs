@@ -1,4 +1,5 @@
-﻿using DatabaseLayer.Models.PRO;
+﻿using BusinessLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

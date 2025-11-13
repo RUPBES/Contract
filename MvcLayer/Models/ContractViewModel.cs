@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Models;
+﻿using BusinessLayer.Models.KDO;
 using Newtonsoft.Json;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

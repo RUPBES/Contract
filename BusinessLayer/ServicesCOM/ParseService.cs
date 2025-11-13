@@ -1,7 +1,8 @@
 ﻿using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.PRO;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
@@ -12,13 +13,13 @@ namespace BusinessLayer.ServicesCOM
     internal class ParseService : IParseService
     {
         private readonly IExcelReader _excelReader;
-        private readonly IConverter _converter;
+        private readonly IConverterService _converter;
         private readonly ILoggerContract _logger;
         private readonly ITextSearcher _textSearcher;
         private readonly IEstimateService _estimateService;
-        private readonly IHttpHelper _httpHelper;
-        public ParseService(IExcelReader excelReader, IConverter converter, ILoggerContract logger,
-            ITextSearcher textSearcher, IEstimateService estimateService, IHttpHelper httpHelper)
+        private readonly IHttpContextUserProvider _httpHelper;
+        public ParseService(IExcelReader excelReader, IConverterService converter, ILoggerContract logger,
+            ITextSearcher textSearcher, IEstimateService estimateService, IHttpContextUserProvider httpHelper)
         {
             _excelReader = excelReader;
             _converter = converter;

@@ -1,9 +1,11 @@
 ﻿@using BusinessLayer.Enums
 @using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @using BusinessLayer.Models
+@using BusinessLayer.Models.KDO
 @model MvcLayer.Models.SelectionProcedureViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject IHttpContextUserProvider HttpHelper
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 
 @{
@@ -105,7 +107,7 @@
                             </td>
                             <td>
 
-                                @foreach (FileDTO item2 in Files.GetAttachedFiles(Model.Id, FolderEnum.SelectionProcedures, useArchiveData: true))
+                                @foreach (FileDTO item2 in Files.GetAttachedFiles(Model.Id, Folder.SelectionProcedures, useArchiveData: true))
                                 {
                                     <div>
                                         <a href="~/Files/OpenFile?id=@item2.Id&fileType=@item2.FileType&useArchiveData=true" target="_blank">@item2.FileName</a>

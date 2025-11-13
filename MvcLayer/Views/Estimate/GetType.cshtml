@@ -1,5 +1,6 @@
 ﻿@using BusinessLayer.Enums
-@inject BusinessLayer.Interfaces.CommonInterfaces.IConverter Converter
+@using BusinessLayer.Interfaces.Shared
+@inject IConverterService Converter
 @model string
 @{
     ViewData["Title"] = ViewBag?.IsUpdate != true ? "Выберите программный комплекс, из которого выгружены данные" : "Выберите программный комплекс и название документа Excel, для обновления данных";
@@ -51,7 +52,7 @@
                         <input name="isUpdate" id="isUpdateId" value="@ViewBag.IsUpdate" hidden />
                         
                         <select name="type" class="form-select" id="selectTypeId">
-                            @foreach (var item in Enum.GetValues<EstimateType>())
+                            @foreach (var item in Enum.GetValues<Estimate>())
                             {
                                 <option value="@item.ToString()">
                                     <span>

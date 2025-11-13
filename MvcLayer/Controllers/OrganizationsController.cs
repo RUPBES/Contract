@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
 using AutoMapper;
-using BusinessLayer.Models;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Reflection;
 using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 
 namespace MvcLayer.Controllers
 {

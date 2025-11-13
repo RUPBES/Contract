@@ -2,7 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -113,7 +113,7 @@ namespace MvcLayer.Controllers
                 }
 
                 int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
-                int fileId = (int)_fileService.Create(amendment.FilesEntity, FolderEnum.Amendment, amendId);
+                int fileId = (int)_fileService.Create(amendment.FilesEntity, Folder.Amendment, amendId);
                 NotificationHelper.SetNotification(TempData, "Создано доп.соглашение", NotificationType.Info);
                 _amendment.AddFile(amendId, fileId);
                 
@@ -189,7 +189,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Amendment))
+                foreach (var item in _fileService.GetAttachedFiles(id, Folder.Amendment))
                 {
                     _fileService.Delete(item.Id);
                 }

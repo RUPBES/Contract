@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
@@ -239,7 +239,7 @@ public class FormService : IFormService
     */
 
 
-    public bool TryUpdateParentsForms(FormDTO form, Dictionary<int, ContractType>? parentContracts, CrudOp method, FormDTO? previousStateForm, bool isOneOfMultipleDelete)
+    public bool TryUpdateParentsForms(FormDTO form, Dictionary<int, Enums.Contract>? parentContracts, CrudOp method, FormDTO? previousStateForm, bool isOneOfMultipleDelete)
     {
         if (form == null || parentContracts?.Count < 1)
         {

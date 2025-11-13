@@ -1,9 +1,11 @@
 ﻿@model IEnumerable<MvcLayer.Models.CommissionActViewModel>
 @using BusinessLayer.Enums;
 @using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
 @using BusinessLayer.Models;
+@using BusinessLayer.Models.KDO
 @inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
-@inject BusinessLayer.Interfaces.CommonInterfaces.IHttpHelper HttpHelper
+@inject IHttpContextUserProvider HttpHelper
 
 
 @{
@@ -46,7 +48,7 @@
                 </td>
 
                 <td>
-                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, FolderEnum.CommissionActs))
+                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, Folder.CommissionActs))
                     {
                         <div>
                             <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
@@ -62,7 +64,7 @@
                     {
                         <a asp-action="AddFile" asp-controller="Files"
                            asp-route-entityId="@item.Id"
-                           asp-route-fileCategory="@FolderEnum.CommissionActs"
+                           asp-route-fileCategory="@Folder.CommissionActs"
                            asp-route-redirectAction=@redirectAction
                            asp-route-redirectController=@redirectController>Добавить файл</a>
                         <span>|</span>

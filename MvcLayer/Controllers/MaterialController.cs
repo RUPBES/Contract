@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,4 @@
-﻿using BusinessLayer.Interfaces.CommonInterfaces;
+﻿using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Models.Settings;
 using Microsoft.AspNetCore.Mvc;
 

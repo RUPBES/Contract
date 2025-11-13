@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Interfaces;
 using BusinessLayer.Helpers;
@@ -9,6 +7,8 @@ using DatabaseLayer.Models.PRO;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 
 namespace BusinessLayer.Services
 {

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.PRO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.PRO;

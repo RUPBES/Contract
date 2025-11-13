@@ -1,7 +1,9 @@
 ﻿using BusinessLayer.Helpers;
-using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Interfaces.Core;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Mapper;
 using BusinessLayer.Services;
 using BusinessLayer.Services.Administrator;
@@ -37,7 +39,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IContractUoW, ContractUoW>();
             services.AddScoped<IContractArchiveUoW, ContractArchiveUoW>();
             services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IConverter, Converter>();
+            services.AddScoped<IConverterService, Converter>();
             services.AddScoped<ILoggerContract, LoggerDb>();
 
             services.AddScoped<IActService, ActService>();
@@ -56,7 +58,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IFormService, FormService>();
-            services.AddScoped<IHttpHelper, HttpHelper>();
+            services.AddScoped<IHttpContextUserProvider, UserContextProvider>();
             services.AddScoped<IMaterialService, MaterialService>();
             services.AddScoped<IMaterialCostService, MaterialCostService>();
             services.AddScoped<IOrganizationService, OrganizationService>();

@@ -2,7 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -62,7 +62,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int estimateDocId = (int)_estimateDocService.Create(_mapper.Map<EstimateDocDTO>(estimateDoc));
-                int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, FolderEnum.EstimateDocumentations, estimateDocId);
+                int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, Folder.EstimateDocumentations, estimateDocId);
 
                 _estimateDocService.AddFile(estimateDocId, fileId);
                 NotificationHelper.SetNotification(TempData, "Создан ПСД", NotificationType.Info);
@@ -128,7 +128,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.EstimateDocumentations))
+                foreach (var item in _fileService.GetAttachedFiles(id, Folder.EstimateDocumentations))
                 {
                     _fileService.Delete(item.Id);
                 }

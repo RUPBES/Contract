@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.Entities;
 using DatabaseLayer.Models.KDO;
@@ -210,25 +210,25 @@ namespace BusinessLayer.Services
         /// <param name="id">ID Гендоговора</param>
         /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
         /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
-        public IEnumerable<VContractDTO> GetSubsByType(int? id, ContractType? contractType, bool useArchiveData)
+        public IEnumerable<VContractDTO> GetSubsByType(int? id, Enums.Contract? contractType, bool useArchiveData)
         {
             if (!id.HasValue || contractType == null)
             {
                 return Enumerable.Empty<VContractDTO>();
             }
-            
-            Func<Contract, bool> selector;
+
+            Func<DatabaseLayer.Models.KDO.Contract, bool> selector;
             string sqlPredicate = string.Empty;
 
-            if (contractType == ContractType.SubContract)
+            if (contractType == Enums.Contract.SubContract)
             {
                 sqlPredicate = $"where c.SubContractId = @id and c.IsSubContract = 1  ORDER BY Date DESC";
             }
-            else if (contractType == ContractType.Agreement)
+            else if (contractType == Enums.Contract.Agreement)
             {
                 sqlPredicate = $"where c.AgreementContractId = @id and c.IsAgreementContract = 1  ORDER BY Date DESC";
             }
-            else if (contractType == ContractType.MultipleContract)
+            else if (contractType == Enums.Contract.MultipleContract)
             {
                 sqlPredicate = $"where c.MultipleContractId = @id and c.IsOneOfMultiple = 1  ORDER BY Date DESC";
             }

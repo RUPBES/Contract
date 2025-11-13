@@ -2,7 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -61,7 +61,7 @@ namespace MvcLayer.Controllers
             {
                 int actId = (int)_actService.Create(_mapper.Map<ActDTO>(actViewModel));
                 NotificationHelper.SetNotification(TempData, "Создан акт приостановки/возобновления работ", NotificationType.Info);
-                int fileId = (int)_fileService.Create(actViewModel.FilesEntity, FolderEnum.Acts, actId);
+                int fileId = (int)_fileService.Create(actViewModel.FilesEntity, Folder.Acts, actId);
                 
                 _actService.AddFile(actId, fileId);
                 
@@ -124,7 +124,7 @@ namespace MvcLayer.Controllers
         {
             try
             {
-                foreach (var item in _fileService.GetAttachedFiles(id, FolderEnum.Acts))
+                foreach (var item in _fileService.GetAttachedFiles(id, Folder.Acts))
                 {
                     _fileService.Delete(item.Id);                   
                 }

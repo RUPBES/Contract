@@ -1,4 +1,5 @@
-using BusinessLayer.Interfaces.CommonInterfaces;
+using BusinessLayer.Interfaces.Core;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.Settings;
 using Microsoft.Extensions.Options;
 using Quartz;

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-using BusinessLayer.Interfaces.CommonInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Interfaces.Core;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.PRO;
 using BusinessLayer.Models.Settings;
 using Microsoft.AspNetCore.Authorization;

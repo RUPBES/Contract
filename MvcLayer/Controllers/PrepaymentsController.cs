@@ -2,7 +2,7 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
-using BusinessLayer.Models;
+using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -182,7 +182,7 @@ namespace MvcLayer.Controllers
             foreach (var item in formId)
             {
                 var obj = new FileWithDate();
-                obj.file = _file.GetAttachedFiles(item.Id, FolderEnum.Form3C);
+                obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
                 obj.date = item.Period;
                 answer.listFiles.Add(obj);
             }
@@ -409,7 +409,7 @@ namespace MvcLayer.Controllers
             foreach (var item in formId)
             {
                 var obj = new FileWithDate();
-                obj.file = _file.GetAttachedFiles(item.Id, FolderEnum.Form3C);
+                obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
                 obj.date = item.Period;
                 answer.listFiles.Add(obj);
             }
@@ -599,7 +599,7 @@ namespace MvcLayer.Controllers
                                     itemPrepViewModel.CurrentFact += prepFactItem.Total;
                                 }
                             }
-                            itemPrepViewModel.Files.AddRange(_file.GetAttachedFiles((int)prepFactItem.FileId, FolderEnum.PrepaymentTake, useArchiveData: true));
+                            itemPrepViewModel.Files.AddRange(_file.GetAttachedFiles((int)prepFactItem.FileId, Folder.PrepaymentTake, useArchiveData: true));
                         }
                     }
                     if (returnContractId == 0)
@@ -643,7 +643,7 @@ namespace MvcLayer.Controllers
                                                     itemPrepViewModel.CurrentFact += item.Total;
                                                 }
                                             }
-                                            itemPrepViewModel.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, FolderEnum.PrepaymentTake, useArchiveData: true));
+                                            itemPrepViewModel.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, Folder.PrepaymentTake, useArchiveData: true));
                                         }
                                     }
                                 }
@@ -734,7 +734,7 @@ namespace MvcLayer.Controllers
             foreach (var item in formId)
             {
                 var obj = new FileWithDate();
-                obj.file = _file.GetAttachedFiles(item.Id, FolderEnum.Form3C);
+                obj.file = _file.GetAttachedFiles(item.Id, Folder.Form3C);
                 obj.date = item.Period;
                 answer.listFiles.Add(obj);
             }
@@ -1012,7 +1012,7 @@ namespace MvcLayer.Controllers
                                     obj.CurrentFact += item.Total;
                                 }
                             }
-                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, FolderEnum.PrepaymentTake));
+                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, Folder.PrepaymentTake));
                         }
                     }
                     if (returnContractId == 0)
@@ -1049,7 +1049,7 @@ namespace MvcLayer.Controllers
                                                     obj.CurrentFact += item.Total;
                                                 }
                                             }
-                                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, FolderEnum.PrepaymentTake));
+                                            obj.Files.AddRange(_file.GetAttachedFiles((int)item.FileId, Folder.PrepaymentTake));
                                         }
                                     }
                                 }
@@ -1144,7 +1144,7 @@ namespace MvcLayer.Controllers
                     if (item.PrepaymentId == null)
                         item.PrepaymentId = model[0].PrepaymentId;
                     var obj = _mapper.Map<PrepaymentTakeDTO>(item);
-                    obj.FileId = _file.Create(item.FileEntity, FolderEnum.Other, 0);
+                    obj.FileId = _file.Create(item.FileEntity, Folder.Other, 0);
                     _prepaymentTake.Create(obj);
                     NotificationHelper.SetNotification(TempData, "Добавлена оплата", NotificationType.Info);
                 }
