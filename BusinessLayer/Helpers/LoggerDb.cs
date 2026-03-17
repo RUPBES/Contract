@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace BusinessLayer.Helpers
 {
-    internal class LoggerDb : ILoggerContract
+    internal class LoggerDb : IContractsLogger
     {
         private readonly IContractUoW _contract;
         private readonly IHttpContextUserProvider _httpHelper;

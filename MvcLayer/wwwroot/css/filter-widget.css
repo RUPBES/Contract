@@ -1,0 +1,745 @@
+﻿/* MD3 Color System */
+:root {
+    /* Основной цвет и его производные */
+    --md-primary: #4a6583;
+    --md-on-primary: #ffffff;
+    --md-primary-container: #d2e4ff;
+    --md-on-primary-container: #001c38;
+    /* Более светлый вариант */
+    --md-primary-light: #7c97b4;
+    --md-primary-dark: #334b68;
+    /* Surface */
+    --md-surface: #fefbff;
+    --md-on-surface: #1c1b1f;
+    --md-surface-variant: #e1e2ec;
+    --md-on-surface-variant: #44474f;
+    /* Outline */
+    --md-outline: #75777f;
+    --md-outline-variant: #c5c7cf;
+    /* Secondary (комплементарный к #4a6583) */
+    --md-secondary: #835d4a;
+    --md-on-secondary: #ffffff;
+    --md-secondary-container: #ffdbcc;
+    --md-on-secondary-container: #321a0b;
+    /* Tertiary (триадный цвет) */
+    --md-tertiary: #4a8365;
+    --md-on-tertiary: #ffffff;
+    --md-tertiary-container: #cbf7d8;
+    --md-on-tertiary-container: #002112;
+    /* Остальные цвета */
+    --md-error: #ba1b1b;
+    --md-on-error: #ffffff;
+    --md-error-container: #ffdad4;
+    --md-on-error-container: #410001;
+    --md-success: #0d6e42;
+    --md-on-success: #ffffff;
+    --md-success-container: #a3f5c8;
+    --md-on-success-container: #002112;
+}
+
+/** {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f3edf7 0%, #e8e0ec 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}*/
+
+/* SVG иконки - inline */
+.md3-icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.md3-icon-small {
+    width: 20px;
+    height: 20px;
+}
+
+.md3-icon-xsmall {
+    width: 16px;
+    height: 16px;
+}
+
+/* Контейнер и карточка */
+.contract-filter-container {
+    display: none;
+    position: absolute;
+    justify-content: center;
+    align-items:center;
+    width: 100%;
+    height:100%;
+    z-index: 10000000;
+    background: rgba(0, 0, 0, 30%); /*linear-gradient(135deg, #2e354e 0%, black 100%); */
+}
+
+.md3-card {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    max-height:fit-content;
+    width: 100%;
+    background: var(--md-surface);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.2s ease;
+}
+
+    .md3-card:hover {
+        box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+/* Заголовок */
+.md3-card-header {
+    display: flex;
+    margin-bottom: 20px;
+    flex-direction: column;
+}
+
+.md3-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    /*margin-bottom: 8px;*/
+}
+
+.md3-title-icon {
+    color: var(--md-primary);
+}
+
+.md3-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    margin: 0;
+}
+
+.md3-subtitle {
+    font-size: 14px;
+    color: var(--md-on-surface-variant);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Формы */
+.md3-form-group {
+    margin-bottom: 5px;
+}
+
+.md3-form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700 !important;
+    color: var(--md-on-surface-variant);
+    margin-bottom: 5px;
+}
+
+.md3-label-icon {
+    color: var(--md-primary);
+}
+
+/* Select */
+.md3-select-wrapper {
+    position: relative;
+}
+
+.md3-select {
+    width: 100%;
+    height: 25px;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--md-on-surface);
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline);
+    border-radius: 8px;
+    appearance: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .md3-select:hover {
+        border-color: var(--md-primary);
+    }
+
+    .md3-select:focus {
+        outline: none;
+        border-color: var(--md-primary);
+        box-shadow: 0 0 0 2px rgba(46, 53, 78, 0.2);
+    }
+
+.md3-select-arrow {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--md-outline);
+    pointer-events: none;
+}
+
+/* Input с кнопкой */
+.md3-input-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-container {
+    position: relative;
+    flex: 1;
+}
+
+.md3-text-input {
+    flex: 1;
+    height: 25px;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--md-on-surface);
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+    /*.md3-text-input.input-search-filter:focus {
+        outline: none;
+        border-color: var(--md-sys-color-primary);
+        border-width: 2px;
+        padding: 11px 39px 11px 15px;*/ /* Учитываем увеличенный border */
+    /*}*/
+    .md3-text-input:focus {
+        outline: none;
+        border-color: var(--md-primary);
+        box-shadow: 0 0 0 2px rgba(46, 53, 78, 0.2);
+        /*background: var(--md-primary-container);*/
+    }
+
+    .md3-text-input::placeholder {
+        color: var(--md-outline);
+    }
+
+.clear-btn {
+    position: absolute;
+    left: 70%;
+    top: 47%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    display: none; /* Скрыта по умолчанию */
+    color: #666;
+}
+
+    .clear-btn:hover {
+        color: #333;
+    }
+
+    .clear-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+    }
+
+.md3-icon-button {
+    width: 40px;
+    height: 25px;
+    border: none;
+    border-radius: 8px;
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+    .md3-icon-button:hover {
+        background: color-mix(in srgb, var(--md-primary) 90%, black);
+        transform: translateY(-1px);
+    }
+
+    .md3-icon-button:active {
+        transform: translateY(0);
+    }
+
+.md3-input-hint {
+    font-size: 12px;
+    color: var(--md-outline);
+    margin-top: 4px;
+    margin-left: 8px;
+}
+
+/* Чипы */
+.md3-chip-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.md3-chip {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--md-surface-variant);
+    color: var(--md-on-surface-variant);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+    .md3-chip:hover {
+        background: color-mix(in srgb, var(--md-surface-variant) 90%, black);
+    }
+
+    .md3-chip.active {
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+/* Разделитель */
+.md3-divider {
+    height: 1px;
+    background: var(--md-outline-variant);
+    margin: 10px 0;
+}
+
+/* Секция периода */
+.md3-period-section {
+    margin-bottom: 0px;
+}
+
+.md3-section-header {
+    margin-bottom: 10px;
+}
+
+.md3-section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+    margin: 0 0 10px 0;
+}
+
+.md3-section-icon {
+    color: var(--md-primary);
+}
+
+/* Переключатель типа выбора */
+.md3-period-type-toggle,
+.md3-sort-type-toggle {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    height: 25px;
+}
+
+.md3-period-type-btn,
+.md3-sort-type-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--md-outline);
+    border-radius: 8px;
+    background: var(--md-surface);
+    color: var(--md-on-surface-variant);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+    .md3-period-type-btn:hover,
+    .md3-sort-type-btn:hover{
+        border-color: var(--md-primary);
+        background: var(--md-primary-container);
+    }
+
+    .md3-period-type-btn.active,
+    .md3-sort-type-btn.active{
+        border-color: var(--md-primary);
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .md3-period-type-btn.disabled,
+    md3-sort-type-btn.disabled{
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+/* Контейнеры для периода */
+.md3-period-container {
+    display: flex;
+}
+
+    .md3-period-container.active {
+        display: block;
+    }
+
+/* Виджет месяца/года */
+.md3-month-year-widget {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.md3-month-year-input {
+    width: 100%;
+    height: 25px;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--md-on-surface);
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .md3-month-year-input:hover {
+        border-color: var(--md-primary);
+    }
+
+.md3-month-year-picker {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 250px;
+    background: var(--md-surface);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    border: 1px solid var(--md-outline-variant);
+}
+
+    .md3-month-year-picker.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+.md3-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.md3-current-year {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--md-on-surface);
+}
+
+.md3-nav-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--md-on-surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+    .md3-nav-btn:hover {
+        background: var(--md-surface-variant);
+    }
+
+.md3-months-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.month-btn {
+    height: 25px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--md-on-surface);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .month-btn:hover {
+        background: var(--md-surface-variant);
+    }
+
+    .month-btn.selected {
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+    }
+
+    .month-btn.current-month {
+        /*color: var(--md-on-primary*//*--md-primary*/);
+        font-weight: 600;
+    }
+
+.md3-picker-footer {
+    display: flex;
+    gap: 8px;
+}
+
+/* Период "с-по" */
+.md3-period-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  /*  margin-bottom: 16px;*/
+}
+
+.md3-range-input {
+    position: relative;
+}
+
+.md3-range-label {
+    display: block;
+    font-size: 12px;
+    color: var(--md-on-surface-variant);
+    margin-bottom: 4px;
+    margin-left: 4px;
+}
+
+/* Выбранное значение */
+.md3-selected-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: var(--md-surface-variant);
+    border-radius: 8px;
+    font-size: 11px;
+    height: 15px;
+}
+
+.md3-selected-icon {
+    color: var(--md-primary);
+}
+
+.md3-selected-label {
+    color: var(--md-on-surface-variant);
+}
+
+.md3-selected-text {
+    color: var(--md-on-surface);
+    font-weight: 500;
+}
+
+/* Кнопки */
+.md3-btn {
+    flex: 1;
+    height: 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.md3-today-btn {
+    background: var(--md-secondary-container);
+    color: var(--md-on-secondary-container);
+}
+
+.md3-clear-btn {
+    background: transparent;
+    color: var(--md-on-surface);
+    border: 1px solid var(--md-outline);
+}
+
+/* Кнопки действий */
+.md3-action-buttons {
+    display: flex;
+    gap: 5px;
+    /*margin-bottom: 20px;*/
+}
+
+.md3-primary-btn {
+    flex: 1;
+    height: 30px;
+    background: var(--md-primary);
+    color: var(--md-on-primary);
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+    .md3-primary-btn:hover {
+        background: color-mix(in srgb, var(--md-primary) 90%, black);
+        transform: translateY(-1px);
+    }
+
+.md3-secondary-btn {
+    flex: 1;
+    height: 30px;
+    background: var(--md-surface-variant);
+    color: var(--md-on-surface-variant);
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+    .md3-secondary-btn:hover {
+        background: color-mix(in srgb, var(--md-surface-variant) 90%, black);
+        transform: translateY(-1px);
+    }
+
+/* Статус
+        .md3-filter-status {
+            padding: 12px 16px;
+            background: var(--md-surface-variant);
+            border-radius: 12px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        } */
+
+/* .md3-status-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        } */
+
+/* .md3-status-icon {
+            color: var(--md-primary);
+        } */
+
+/* .md3-status-text {
+            color: var(--md-on-surface);
+        } */
+
+/* Анимации */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+    .contract-filter-container {
+        max-width: 100%;
+    }
+
+    .md3-card {
+        padding: 20px;
+    }
+
+    .md3-month-year-picker {
+        width: calc(100vw - 40px);
+        left: 0;
+    }
+
+    .md3-period-range {
+        grid-template-columns: 1fr;
+        /*gap: 16px;*/
+    }
+
+    .md3-chip-group {
+        justify-content: center;
+    }
+}
+
+
+
+
+/***
+
+    поиск в таблице
+*/
+
+.filtering-container,
+.search-container {
+    position: relative;
+    display: inline-block;
+}
+
+
+.search-form-wrapper {
+    position: fixed;
+    top: 175px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+}
+
+/*.input-group {
+    display: flex;
+    margin-top: 10px;
+}*/
+
+/*.form-control {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    font-size: 14px;
+}*/

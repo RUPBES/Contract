@@ -93,7 +93,7 @@ namespace MvcLayer.Controllers
                     NotificationHelper.SetNotification(TempData, $"Данные процедуры выбора обновлены", NotificationType.Info);
                     if (selectProcedure.FilesEntity != null && selectProcedure.FilesEntity.Count() > 0)
                     {
-                        int fileId = (int)_fileService.Create(selectProcedure.FilesEntity, Folder.SelectionProcedures, selectProcedure.Id);
+                        int fileId = (int)_fileService.Create(selectProcedure.FilesEntity, Folder.SelectionProcedures, selectProcedure.Id, selectProcedure?.ContractId?.ToString());
                         _selectProcedureService.AddFile(selectProcedure.Id, fileId);
                     }
                 }

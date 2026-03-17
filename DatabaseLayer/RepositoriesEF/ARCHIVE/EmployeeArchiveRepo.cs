@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseLayer.Repositories.ARCHIVE
 {
-    internal class EmployeeArchiveRepo : IEntityWithPagingRepository<Employee>
+    internal class EmployeeArchiveRepo : IPageRepository<Employee>
     {
         private readonly ContractsArchiveContext _context;
         public EmployeeArchiveRepo(ContractsArchiveContext context)

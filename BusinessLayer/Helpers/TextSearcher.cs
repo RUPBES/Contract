@@ -1,6 +1,8 @@
 ﻿using BusinessLayer.Interfaces.ContractInterfaces.PRO;
 using BusinessLayer.Interfaces.Shared;
+using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.PRO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BusinessLayer.Helpers
 {
@@ -125,6 +127,22 @@ namespace BusinessLayer.Helpers
             }
 
             return abbr;
+        }
+
+        public float GetSimilarityPercent(string firstString, string secondString)
+        {
+            if (string.IsNullOrEmpty(firstString) || string.IsNullOrEmpty(secondString))
+            {
+                return 0f;
+            }
+
+            var ratio = FuzzySharp.Fuzz.Ratio(firstString, secondString);
+            var tokenSet = FuzzySharp.Fuzz.TokenSetRatio(firstString, secondString);
+            var tokenSort = FuzzySharp.Fuzz.TokenSortRatio(firstString, secondString);
+            var weightRatio = FuzzySharp.Fuzz.WeightedRatio(firstString, secondString);
+            //var d4 = FuzzySharp.Fuzz.TokenDifferenceRatio(firstString, secondString);
+
+           return ((ratio + tokenSet + tokenSort + weightRatio /*+ d4*/) / 4);
         }
     }
 }

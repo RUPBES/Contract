@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace BusinessLayer.Models.Settings
 {
-    public class ArchiveSettings
+    public class DbSettings
     {
         public static string ConnectionStrings = "ConnectionStrings";
 

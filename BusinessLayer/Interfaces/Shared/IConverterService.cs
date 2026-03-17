@@ -12,6 +12,7 @@
         string? ToAmendmentType(int number);
         DateTime? GetDateFromString(string str);
         string? GetNameOrganizationByCode(string code);
+        string? GetCodeOrganizationByName(string name);
         string? GetEstimateAppType(int number);
         string ToRussianMethodName(string name);
         string ToRussianNameSpace(string name);

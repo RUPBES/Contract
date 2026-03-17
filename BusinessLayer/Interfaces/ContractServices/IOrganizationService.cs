@@ -11,5 +11,8 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         OrganizationDTO GetByEmployeeId(int employeeId);
         string? GetNameByContractId(int contrId, bool? useArchiveData = null);
         OrganizationDTO FindByContractOrganization(Func<ContractOrganization, bool> predicate);
+
+        IndexViewModel Filter(int pageSize, int pageNum, string type, string? sortDirection, string? searchText);
+        List<OrganizationDTO> FindBestMatch(string? inputOrganizationName = null);
     }
 }

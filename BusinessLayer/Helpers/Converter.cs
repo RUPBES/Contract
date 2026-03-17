@@ -211,6 +211,34 @@ namespace BusinessLayer.Helpers
             _ => null
         };
 
+
+        /// <summary>
+        /// Получить по названию орган-ции ее код
+        /// </summary>
+        /// <param name="name">значение ENUM</param>
+        /// <returns>строка с кодом организации</returns>
+        public string? GetCodeOrganizationByName(string name) => name switch
+        {
+            "Республиканское унитарное предприятие «Белэнергострой» - управляющая компания холдинга»" => "ContrOrgBes",
+
+            "ФИЛИАЛ «СТРОИТЕЛЬНОЕ УПРАВЛЕНИЕ МОГИЛЕВСКОЙ ТЭЦ-2»" => "ContrOrgTec2",
+            "СУ «Могилевской ТЭЦ-2»" => "ContrOrgTec2",
+
+            "ФИЛИАЛ «УПРАВЛЕНИЕ СТРОИТЕЛЬСТВОМ МИНСКОЙ ТЭЦ-5»" => "ContrOrgTec5",
+            "УС «Минской ТЭЦ-5»" => "ContrOrgTec5",
+
+            "ФИЛИАЛ «УПРАВЛЕНИЕ МЕХАНИЗАЦИИ «БЕЛЭНЕРГОСТРОЙМЕХАНИЗАЦИЯ»" => "ContrOrgBesm",
+            "УМ «Белэнергостроймеханизация»" => "ContrOrgBesm",
+
+            "ФИЛИАЛ «БЕЛЭНЕРГОТЕПЛОСЕТЬСТРОЙ»" => "ContrOrgBetss",
+            "«Белэнерготеплосетьстрой»" => "ContrOrgBetss",
+
+            "СМУ «Гомельэнергострой»" => "ContrOrgGes",
+            "ФИЛИАЛ «СТРОИТЕЛЬНО-МОНТАЖНОЕ УПРАВЛЕНИЕ ГОМЕЛЬЭНЕРГОСТРОЙ»" => "ContrOrgGes",
+
+            _ => "ContrOrgBes"
+        };
+
         public string ToRussianMethodName(string name) => name switch
         {
             "Create" => "Создание",

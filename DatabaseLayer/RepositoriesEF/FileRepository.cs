@@ -1,10 +1,14 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.EntityFramework;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
 using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class FileRepository : IRepository<File>
+    internal class FileRepository : IFileRepository
     {
         private readonly ContractsContext _context;
         public FileRepository(ContractsContext context)
@@ -68,6 +72,23 @@ namespace DatabaseLayer.Repositories
                     _context.Files.Update(file);
                 }
             }
+        }
+
+        public IEnumerable<File> GetByContractId(int contractId, string targetDb)
+        {
+            if (contractId > 0)
+            {
+                var param1 = new SqlParameter("@Param1", contractId);
+                var param2 = new SqlParameter("@Param2", targetDb);
+
+
+                var result = _context.Files
+                    .FromSqlRaw("EXEC [dbo].[usp_GetContractRelatedFiles] @Param1, @Param2", param1, param2)
+                    .ToList();
+
+                return result;              
+            }
+            return Array.Empty<File>();
         }
     }
 }

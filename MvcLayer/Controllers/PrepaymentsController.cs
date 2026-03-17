@@ -1144,7 +1144,7 @@ namespace MvcLayer.Controllers
                     if (item.PrepaymentId == null)
                         item.PrepaymentId = model[0].PrepaymentId;
                     var obj = _mapper.Map<PrepaymentTakeDTO>(item);
-                    obj.FileId = _file.Create(item.FileEntity, Folder.Other, 0);
+                    obj.FileId = _file.Create(item.FileEntity, Folder.Other, 0, contractId == 0? null : contractId.ToString());
                     _prepaymentTake.Create(obj);
                     NotificationHelper.SetNotification(TempData, "Добавлена оплата", NotificationType.Info);
                 }
@@ -1211,7 +1211,7 @@ namespace MvcLayer.Controllers
                 #region Проверка на наличие объема работ и периода, иначе вернуть на страницу котнракта с сообщением.
                 if (period is null)
                 {
-                    TempData["Message"] = "Заполните объем работ";
+                    NotificationHelper.SetNotification(TempData, "Заполните объем работ", NotificationType.Warning);                   
                     var urlReturn = returnContractId == 0 ? contractId : returnContractId;
                     return RedirectToAction("Details", "Contracts", new { id = urlReturn });
                 }

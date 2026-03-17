@@ -121,5 +121,6 @@ namespace BusinessLayer.Models.KDO
 
         public string? ResponsibleForWork { get; set; }
         public string? Client { get; set; }
+        public string? WorkflowRef { get; set; }
     }
 }

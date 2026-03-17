@@ -31,6 +31,5 @@ namespace MvcLayer
                     })
                     .UseStartup<Startup>();
                 });
-
     }
 }

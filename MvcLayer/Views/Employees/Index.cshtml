@@ -1,32 +1,11 @@
-﻿@model IndexViewModel
-@inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
-@inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
-@inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
-@inject BusinessLayer.Interfaces.ContractInterfaces.IPhoneService Phone
-@using BusinessLayer.Interfaces.Shared
-@using BusinessLayer.Models;
-@using BusinessLayer.Models.KDO
+﻿@using BusinessLayer.Interfaces.Shared
 @inject IHttpContextUserProvider HttpHelper
-
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
     ViewData["Title"] = "Cотрудники";
 }
-<style>    
-    .input-group_flex {
-        justify-content: right;
-    }
-    .up::after {
-        content: "▲";
-        margin-left: 5px;
-    }
 
-    .down::after {
-        content: "▼";
-        margin-left: 5px;
-    }
-</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
@@ -36,225 +15,142 @@
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Home" asp-action="" class="close-btn"></a>
                     </div>
-                    <div class="input-group m-2 input-group_flex">
-                        <div class="nav_panel_btns">
-                            <div class="link_add_emp"></div>
-                            <div class="btn_panel_search">
-                                <form asp-controller="Employees" asp-action="Index" style="search-form" method="get">
-                                    <input class="btn-ctr" type="text" name="searchString" placeholder="Поиск по ФИО" value="@ViewData["CurrentFilter"]" />
-                                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск сотрудника" alt="Поиск сотрудника" /></button>
-                                </form>
-                                @if (permissions is not null && permissions.IsCreator)
-                                {
-                                    <button type="button" class="btn btn-success btn-ctr" onclick="location.href='@Url.Action("Create", "Employees")'"><img class="icon" src="~/icons/plus-circle.svg" />Добавить сотрудника</button>
-                                }
-                            </div>
+                    
+                    <div class="header-view no-title">
+                        <div class="box-btn">
+                            <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
+                            <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
+                                <img class="icon" src="~/icons/funnel.svg" />Фильтр
+                            </button>
+                            @if (permissions is not null && permissions.IsCreator)
+                            {
+                                <button type="button" class="btn btn-success btn-ctr" onclick="location.href='@Url.Action("Create", "Employees")'"><img class="icon" src="~/icons/plus-circle.svg" />Добавить сотрудника</button>
+                            }
                         </div>
                     </div>
-                    <div style="max-height:500px; overflow-y:scroll">
-                        <table class="table table-bordered table-main table-hover">
-                            <thead>
-                                <tr>
-                                    <th>
-                                        <span class="column_300">
-                                            Фамилия, имя, отчество
-                                            @* @Html.ActionLink(" ", "Index", 
-                                                new { 
-                                                    sortOrder = ViewBag.FullNameSortParm, 
-                                                    currentFilter = ViewData["CurrentFilter"],
-                                                    page = Model.PageViewModel.PageNumber 
-                                                }, 
-                                                new { id = "arrayFullName", @class = "up" }) *@
-                                        </span>
-                                    </th>
-                                    <th>
-                                        <span class="column_150">
-                                            Электронная почта
-                                            @* @Html.ActionLink(" ", "Index", 
-                                                new { 
-                                                    sortOrder = ViewBag.EmailSortParm, 
-                                                    currentFilter = ViewData["CurrentFilter"],
-                                                    page = Model.PageViewModel.PageNumber 
-                                                }, 
-                                                new { id = "arrayEmail", @class = "up" }) *@
-                                        </span>
-                                    </th>
-                                    <th>
-                                        <span class="column_130">
-                                            Телефон
-                                        </span>
-                                    </th>
-                                    <th>
-                                        <span class="column_100">
-                                            Действие
-                                        </span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (EmployeeDTO item in Model.Objects)
-                                {
+                    <hr class="modal-line" />
+                    <div id="containerTable">
+                        <!-- Форма поиска -->
+                        <div class="search-container">
+                            <div class="search-form-wrapper" style="display: none;">
+                                <div class="md3-input-with-button">
+                                    <input type="text" class="md3-text-input input-sarch-filter" id="searchKeyword"
+                                           placeholder="Введите текст для поиска...">
+                                    <button class="md3-icon-button" type="button" id="search-button" title="Выполнить поиск">
+                                        <svg class="md3-icon md3-icon" viewBox="0 0 24 24" width="16" height="16">
+                                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                        </svg>
+                                    </button>
+                                    <button class="clear-btn" id="clearButton" title="Очистить">
+                                        <svg viewBox="0 0 24 24" width="16" height="16">
+                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                        </svg>
+                                    </button>
+                                    @*<div class="md3-input-hint">
+                        Используйте * для поиска по маске
+                    </div>*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wrapper-table" style="max-height:500px; overflow-y:scroll">
+                            <table class="table table-bordered table-main table-hover">
+                                <thead>
                                     <tr>
-                                        <td>
-                                            <span class="column_300">
-                                                @Html.DisplayFor(modelItem => item.FullName)
-                                            </span>
-                                        </td>                                      
-                                        <td>
-                                            <span class="column_250">
-                                                @Html.DisplayFor(modelItem => item.Email)
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="column_130">
-                                                @foreach (var phone in Phone.Find(x => x.EmployeeId == item.Id))
-                                                {
-                                                    <span>@phone.Number</span>
-                                                }
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex flex-row">
-                                                @if (permissions is not null && permissions.IsReader)
-                                                {
-                                                    <span class="icon info" title="Детальная информация">
-                                                        <a asp-action="Details" asp-route-id="@item.Id" asp-route-page="@ViewBag.Page" asp-route-filter="@ViewData["CurrentFilter"]"></a>
+                                        <th>
+                                            <span class="column_300">ФИО</span>
+                                            <div class="inline-block-icons">
+                                                <div class="sort-btn" data-content-sort="fullName">
+                                                    <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                        </svg>
                                                     </span>
-                                                }
-                                                @if (permissions is not null && permissions.IsEditor)
-                                                {
-                                                    <span class="icon edit" title="Редактировать">
-                                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
+                                                    <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                        </svg>
                                                     </span>
-                                                }
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
-                                                {
-                                                    <span class="icon delete" title="Удалить">
-                                                        <a asp-action="Delete"
-                                                           asp-route-id="@item.Id"
-                                                           asp-route-page="@Model.PageViewModel.PageNumber"
-                                                           class="modal-link"
-                                                           data-message="Сотрудник будет удален. Продолжить?"></a>
-                                                    </span>
-                                                }
+                                                </div>
+                                                <div class="icon-sm search_icon search_img_btn" data-content-search="fullName" title="Поиск сотрудника по ФИО" alt="Поиск сотрудника"></div>
                                             </div>
-                                        </td>
+                                        </th>
+                                        <th>
+                                            <span class="column_150">Электронная почта</span>
+                                            <div class="inline-block-icons">
+                                                <div class="sort-btn" data-content-sort="email">
+                                                    <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                        </svg>
+                                                    </span>
+                                                    <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <div class="icon-sm search_icon search_img_btn" data-content-search="email" title="Поиск сотрудника по электронной почте" alt="Поиск сотрудника по Email"></div>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <span class="column_130">Телефон</span>
+                                        </th>
+                                        <th>
+                                            <span class="column_100">Действие</span>
+                                        </th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <nav aria-label="Page navigation example" style="margin-top:10px;">
-                        <ul class="pagination justify-content-center">
-                            <li class="page-item previous_btn">
-                                @{
-                                    @if (Model.PageViewModel.PageNumber > 1)
-                                    {
-                                        <a class="page-link" asp-action="Index"
-                                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]">&lt;</a>
-                                    }
-                                    @if (Model.PageViewModel.PageNumber <= 1)
-                                    {
-                                        <a class="page-link" asp-action="Index"
-                                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                           tabindex="-1" aria-disabled="true">&lt;</a>
-                                    }
-                                }
-
-                            </li>
-                            @{
-                                int counter = 1;
-                                int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
-                                for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
-                                {
-                                    <li class="page-item pag_btn_num">
-                                        <a class="page-link"
-                                           asp-action="Index"
-                                           asp-route-page="@i"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                           value="@i">@i</a>
-                                    </li>
-                                    if (counter == 5)
-                                    {
-                                        counter = 1;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            <li class="page-item next_btn">
-                                @{
-                                    @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
-                                    {
-                                        <a class="page-link" asp-action="Index"
-                                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]">&gt;</a>
-                                    }
-                                    else
-                                    {
-                                        <a class="page-link" asp-action="Index"
-                                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
-                                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                                           aria-disabled="true">&gt;</a>
-                                    }
-                                }
-                            </li>
-                        </ul>
-                    </nav>
+                                </thead>
+                                <tbody class="table_tbody">                                    
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="footer-page">
+                            <!-- Pagination block -->
+                            <ul class="panel-pagination">
+                                <li title="Предыдущая страница" class="prev_btn">
+                                    <button class="pagination-item-link" type="button" tabindex="-1">
+                                        <span role="img" aria-label="left" class="anticon anticon-left">
+                                            <svg viewBox="64 64 896 896" focusable="false" data-icon="left" width="1em" height="1em"
+                                                 fill="currentColor" aria-hidden="true">
+                                                <path d="M724 218.3V141c0-6.7-7.7-10.4-12.9-6.3L260.3 486.8a31.86 31.86 0 000 50.3l450.8 352.1c5.3 4.1 12.9.4 12.9-6.3v-77.3c0-4.9-2.3-9.6-6.1-12.6l-360-281 360-281.1c3.8-3 6.1-7.7 6.1-12.6z">
+                                                </path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="pagination-items_block">
+                                </li>
+                                <li title="Следующая страница" class="next_btn">
+                                    <button class="pagination-item-link" type="button" tabindex="-1">
+                                        <span role="img" aria-label="right" class="anticon anticon-right">
+                                            <svg viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                                <path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                                                </path>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="page-item page-info">
+                                </li>
+                            </ul>
+                        </div>
+                    </div>                   
                 </div>
             </div>
         </div>
     </div>
 </div>
 @section Scripts {
-    <script type="text/javascript">
-        addition_nav_bar();
-        ////// Pagination
-        paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
-        //////ENd pagination
-       
-        window.onload = function () {
-            const actualUrl = window.location.search;
-            const elementArrayFullName = document.getElementById("arrayFullName");
-            const elementArrayEmail = document.getElementById("arrayEmail");
-            
-            if (actualUrl.includes('fullNameDesc')) {
-                elementArrayFullName.classList.remove("up");
-                elementArrayFullName.classList.add("up-down-active", "down");
-            }
-            else if (actualUrl.includes('fullName')) {
-                elementArrayFullName.classList.add("up-down-active");
-                elementArrayFullName.classList.add("up");
-            }
-            
-            if (actualUrl.includes('emailDesc')) {
-                elementArrayEmail.classList.remove("up");
-                elementArrayEmail.classList.add("up-down-active", "down");
-            }
-            else if (actualUrl.includes('email')) {
-                elementArrayEmail.classList.add("up-down-active");
-                elementArrayEmail.classList.add("up");
-            }
-        }
-        $(document).ready(function() {
-            // Get current sort order from ViewData
-            var currentSort = '@ViewData["CurrentSort"]';
-            
-            // Update sort icons based on current sort
-            if (currentSort) {
-                if (currentSort.includes('Desc')) {
-                    $('#array' + currentSort.replace('Desc', '')).removeClass('up').addClass('down');
-                } else {
-                    $('#array' + currentSort).removeClass('down').addClass('up');
-                }
-            }
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = new DataWithoutDatesTableController({
+                container: '#containerTable',
+                apiUrl: '/Employees/Filter',
+                apiFilterModalUrl: `/Employees/GetModalFiltering`,
+                itemsPerPage: 50,
+                permissions: @Html.Raw(Json.Serialize(permissions)),
+                table: 'employees',
+            });
         });
     </script>
 }

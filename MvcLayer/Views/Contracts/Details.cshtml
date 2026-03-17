@@ -12,9 +12,9 @@
 @{
     var permissions = HttpHelper.GetUserPermissions();
 
-    var branchAgreement = Contracts.GetSubsByType(Model.Id, Contract.Agreement);
-    var subContract = Contracts.GetSubsByType(Model.Id, Contract.SubContract);
-    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, Contract.MultipleContract);
+    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement);
+    var subContract = Contracts.GetSubsByType(Model.Id, ContractType.SubContract);
+    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, ContractType.MultipleContract);
 
     var isEngineering = Model.IsEngineering == true ? true : false;
     var isThereScopeWorks = Scopes.Find(x => x.ContractId == Model.Id)?.Count() > 0 && Model.IsMultiple != true ? true : false;
@@ -53,6 +53,10 @@
             <a class="btn btn-info" asp-action="Details" asp-controller="Contracts" asp-route-id="@ContractMainid">К главному контракту</a>
         </span>
     }
+    <!-- Сохранить состояние и восстановить при возвращении -->
+    <a href="/Contracts@(isEngineering? "/Engineerings":"")" class="restore-page-state">
+        ← Вернуться к списку
+    </a>
     <table class="table table-main table-main-full table-bordered table-hover table-condensed" id="contractTable">
         <thead>
             <tr class="tr-head-main-table">
@@ -211,10 +215,7 @@
                                             {
                                                 <a class="dropdown-item" asp-action="CreateSubObj" asp-controller="Contracts" asp-route-Id="@Model?.Id" asp-route-returnContractId="@Model.Id">+ Подобъект</a>
                                                 <a class="dropdown-item text-muted" asp-action="ChangeOwner" asp-controller="Contracts" asp-route-contrId="@Model?.Id" asp-route-isSubobjectCreation="true">+ Подобъект для субподрядчика</a>
-
                                             }
-
-
 
                                             <div class="dropdown-divider"></div>
                                             @if (Model?.IsMultiple != true)
@@ -289,7 +290,7 @@
                 </td>
                 <td>
                     <span>
-                        @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true)
+                        @if (Model?.Author?.Equals(permissions.Company, StringComparison.OrdinalIgnoreCase) == true || permissions?.Company.Equals("ContrOrgBes", StringComparison.OrdinalIgnoreCase) == true)
                         {
                             <a asp-action="GetByContractId" asp-controller="SelectionProcedures" asp-route-contractId="@Model.Id">@Model?.ProcedureName</a>
                         }
@@ -514,7 +515,7 @@
                                     </div>
                                 }
 
-                                <div class="icon view" title="Просмотр детальной информации">
+                                <div class="icon info" title="Просмотр детальной информации">
                                     <a asp-action="Details" asp-route-id="@contractBranch?.Id"></a>
                                 </div>
                                 <div class="icon scope_work" title="@titleScope">

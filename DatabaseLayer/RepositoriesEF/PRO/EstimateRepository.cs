@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class EstimateRepository : IEntityWithPagingRepository<Estimate>
+    internal class EstimateRepository : IPageRepository<Estimate>
     {
         private readonly ContractsContext _context;
         public EstimateRepository(ContractsContext context)

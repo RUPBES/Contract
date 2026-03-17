@@ -7,5 +7,6 @@ namespace BusinessLayer.Interfaces.Shared
         string? SearchNumberWithEnd(string args);
         string? SearchNumberWithStart(string args);
         AbbreviationKindOfWorkDTO? SearchKindOfWork(string args);
+        float GetSimilarityPercent(string firstString, string secondString);
     }
 }

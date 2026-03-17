@@ -10,12 +10,11 @@ using BusinessLayer.Services.Administrator;
 using BusinessLayer.Services.Archive;
 using BusinessLayer.Services.PRO;
 using BusinessLayer.ServicesCOM;
-using DatabaseLayer;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.RepositoriesDapper.Repo;
-using DatabaseLayer.RepositoriesDapper.ViewRepo;
+using DatabaseLayer.UOW;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +26,10 @@ namespace BusinessLayer.IoC
         {
             services.AddTransient<IReadonlyPaymentDapperRepo, PaymentDpRepository>(provider => new PaymentDpRepository(connectionString));
             services.AddTransient<IReadonlyRepoDapper<VContract>, VContractDpRepository>(provider => new VContractDpRepository(connectionString));
+            services.AddTransient<IReadonlyRepoDapper<VContractEngin>, VContractEnginDpRepository>(provider => new VContractEnginDpRepository(connectionString));
             services.AddTransient<IReadonlyContractDapperRepo, ContractDpRepository>(provider => new ContractDpRepository(connectionString));
+            services.AddTransient<IReadonlyEmployeeDapperRepo, EmployeeDpRepository>(provider => new EmployeeDpRepository(connectionString));
+            services.AddTransient<IReadonlyOrganizationDapperRepo, OrganizationDpRepository>(provider => new OrganizationDpRepository(connectionString));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAutoMapper(typeof(MapperBL));
@@ -40,7 +42,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IContractArchiveUoW, ContractArchiveUoW>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IConverterService, Converter>();
-            services.AddScoped<ILoggerContract, LoggerDb>();
+            services.AddScoped<IContractsLogger, LoggerDb>();
 
             services.AddScoped<IActService, ActService>();
             services.AddScoped<IAddressService, AddressService>();

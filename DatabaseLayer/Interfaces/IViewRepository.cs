@@ -1,16 +1,13 @@
-﻿using DatabaseLayer.Models.KDO;
+﻿
+using DatabaseLayer.Interfaces.EntityFramework;
 
 namespace DatabaseLayer.Interfaces
 {
-    public interface IViewRepository<T> where T : class
+    public interface IViewRepository<T>: IReadonlyRepoEF<T> where T : class
     {
-        int Count();
-        T GetById(int id, int? secondId = null);
-        IEnumerable<T> GetAll();
+        int Count();       
         IEnumerable<T> GetEntitySkipTake(int skip, int take, string organizationName);
-        IEnumerable<T> Find(Func<T, bool> predicate);
-
-        //IEnumerable<T> GetEntityWithSkipTake(int skip, int take, int organizationId);      
+     
         IEnumerable<T> FindLikeNameObj(string queryString, string[] listOwners = null);
         IEnumerable<T> FindContract(string queryString, string[] listOwners = null);
         IEnumerable<T> FindOrganization(string queryString, string typeOrganization, string[] listOwners);

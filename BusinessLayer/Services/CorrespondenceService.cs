@@ -14,9 +14,9 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
 
-        public CorrespondenceService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
+        public CorrespondenceService(IContractUoW database, IMapper mapper, IContractsLogger logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;

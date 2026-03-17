@@ -15,6 +15,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         ScopeWorkDTO GetByAmendmentId(int amendmentId);       
         ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type = ScopeType.NoOwn, bool? useArchiveData = null);
         bool? HasNewAmendment(int contractId);
-        bool TryUpdateParentsScopeCosts(ScopeWorkDTO scope, Dictionary<int, Enums.Contract>? parentContracts, CrudOp method, List<SWCostDTO>? previousScopeId = null, bool isOneOfMultipleDelete = false);
+        bool TryUpdateParentsScopeCosts(ScopeWorkDTO scope, Dictionary<int, Enums.ContractType>? parentContracts, CrudOp method, List<SWCostDTO>? previousScopeId = null, bool isOneOfMultipleDelete = false);
     }
 }

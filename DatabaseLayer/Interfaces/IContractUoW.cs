@@ -1,4 +1,4 @@
-﻿using DatabaseLayer.Interfaces.Entities;
+﻿using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 
@@ -6,7 +6,7 @@ namespace DatabaseLayer.Interfaces
 {
     public interface IContractUoW : IDisposable
     {
-        IEntityWithPagingRepository<Estimate> Estimates { get; }
+        IPageRepository<Estimate> Estimates { get; }
         IRepository<EstimateFile> EstimateFiles { get; }
         IRepository<SlctnProcedureFile> SlctnProcedureFiles { get; }
         IRepository<KindOfWork> KindOfWorks { get; }
@@ -28,17 +28,17 @@ namespace DatabaseLayer.Interfaces
         IRepository<CommissionActFile> CommissionActFiles { get; }
         IRepository<Correspondence> Correspondences { get; }
         IRepository<CorrespondenceFile> CorrespondenceFiles { get; }
-        IEntityWithPagingRepository<Employee> Employees { get; }
+        IPageRepository<Employee> Employees { get; }
         IRepository<EstimateDoc> EstimateDocs { get; }
         IRepository<EstimateDocFile> EstimateDocFiles { get; }
         IRepository<FormC3a> Forms { get; }
-        IRepository<Models.KDO.File> Files { get; }
+        IFileRepository Files { get; }
         IRepository<FormFile> FormFiles { get; }
         IRepository<MaterialAmendment> MaterialAmendments { get; }
         IRepository<MaterialGc> Materials { get; }
         IRepository<MaterialCost> MaterialCosts { get; }
 
-        IEntityWithPagingRepository<Organization> Organizations { get; }
+        IPageRepository<Organization> Organizations { get; }
         IRepository<Phone> Phones { get; }
         IRepository<Payment> Payments { get; }
         IRepository<Prepayment> Prepayments { get; }

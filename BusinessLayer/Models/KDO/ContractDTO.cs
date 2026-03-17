@@ -71,17 +71,17 @@ namespace BusinessLayer.Models.KDO
         /// <summary>
         /// Флаг, является ли договором субподряда
         /// </summary>
-        public bool? IsSubContract { get; set; }
+        public bool IsSubContract { get; set; }
 
         /// <summary>
         /// является ли договор инжиниринговыми услугами
         /// </summary>
-        public bool? IsEngineering { get; set; }
+        public bool IsEngineering { get; set; }
 
         /// <summary>
         /// является ли соглашением с филиалом
         /// </summary>
-        public bool? IsAgreementContract { get; set; }
+        public bool IsAgreementContract { get; set; }
 
         /// <summary>
         /// условия оплаты (авансы)
@@ -99,7 +99,7 @@ namespace BusinessLayer.Models.KDO
         public double? PaymentСonditionsPrice { get; set; }
 
         public string? WorkType { get; set; }
-
+        public string? WorkflowRef { get; set; }
         public bool IsMultiple { get; set; }
         public int? MultipleContractId { get; set; }
         public bool IsOneOfMultiple { get; set; }

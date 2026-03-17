@@ -1,8 +1,6 @@
 ﻿using BusinessLayer.Models.KDO;
 using Newtonsoft.Json;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace MvcLayer.Models
 {
@@ -40,6 +38,7 @@ namespace MvcLayer.Models
         /// Срок ввода
         /// </summary>
         [DisplayName("Срок ввода")]
+        [JsonProperty("СрокВВодаОбъекта")]
         public DateTime? EnteringTerm { get; set; }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace MvcLayer.Models
         /// Наименование объекта
         /// </summary>
         [DisplayName("Наименование объекта")]
-        [JsonProperty("Наименование")]
+        [JsonProperty("КраткоеСодержание")]
         public string? NameObject { get; set; }
 
 
@@ -91,6 +90,7 @@ namespace MvcLayer.Models
         /// </summary>
         /// 
         [DisplayName("Источник финансирования")]
+        [JsonProperty("ИсточникФинансирования")]
         public string? FundingSource { get; set; }
 
         public List<string> FundingFS { get; set; } = new List<string>();
@@ -120,6 +120,7 @@ namespace MvcLayer.Models
         /// условия оплаты (авансы)
         /// </summary>
         [DisplayName("Условия авансирования")]
+        [JsonProperty("УсловияАвансирования")]
         public string? PaymentСonditionsAvans { get; set; }
 
         /// <summary>
@@ -138,18 +139,22 @@ namespace MvcLayer.Models
         public string? WorkType { get; set; }
 
 
-
+        [JsonProperty("ПодписалСоСтороныОрганизации")]
         public string? SignatoryEmp { get; set; }
 
+        [JsonProperty("Отвественный")]
         public string? ResponsibleEmp { get; set; }
 
-        //[JsonProperty("РегистрационныйНомер")]
+        [JsonProperty("Филиал")]
         public string? GenContractor { get; set; }
 
         public string? ResponsibleForWork { get; set; }
 
-        //[JsonProperty("РегистрационныйНомер")]
+        [JsonProperty("Контрагент")]
         public string? Client { get; set; }
+
+        [JsonProperty("НавигационнаяСсылка")]
+        public string? WorkflowRef { get; set; }
 
         public int? PaymentConditionsDaysRaschet { get; set; }
         public int? PaymentConditionsDaysRaschet2 { get; set; }
@@ -168,7 +173,11 @@ namespace MvcLayer.Models
         public decimal? PreYearSum { get; set; }
         public decimal? RemainingSum { get; set; }
 
+        [JsonProperty("ПроцедураВыбора")]
         public string? ProcedureName { get; set; }
+
+        [JsonProperty("ВидДокумента")]
+        public string? DocName { get; set; }
 
         public int? ProcedureId { get; set; }
         public DateTime? ArchivedDate { get; set; }

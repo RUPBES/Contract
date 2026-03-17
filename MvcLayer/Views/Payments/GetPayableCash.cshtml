@@ -1,16 +1,16 @@
 ﻿@* @model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel> *@
-@model IndexViewModel
-@using BusinessLayer.Helpers;
+@* @model IndexViewModel *@
+@* @using BusinessLayer.Helpers;
 @using BusinessLayer.Models
 @using BusinessLayer.Models.KDO
 @using MvcLayer.Models.Data
 @using MvcLayer.Models.Reports;
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
+@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract *@
 
 @{
-    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";   
-    int PageNumber = ViewBag.PageNum;
-    var formModel = ViewData["FilterViewModel"] as FilterViewModel;
+    ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
+    // int PageNumber = ViewBag.PageNum;
+    // var formModel = ViewData["FilterViewModel"] as FilterViewModel;
 }
 @section Table {
 
@@ -54,25 +54,35 @@
                 border-color: #373b3e;
             }
     </style>
-    
-    <div class="modal-window_filter">
+
+    @* <div class="modal-window_filter">
         <div class="content-window">
             <div class="modal-window_filter__close-btn">
                 <div class="close-btn"></div>
             </div>
+
+           
+
             <div class="laber-window">Выберете настройки поиска</div>
             <div class="content-window__hr"></div>
             <div class="form-window">
             </div>
         </div>
-    </div>
-    <input type="text" id="client_filter" value="@formModel?.Client" hidden/>
-    <input type="text" id="gencontr_filter" value="@formModel?.GenContractor" hidden />
+    </div> *@
+
+   @*  <input type="text" id="client_filter" value="@formModel?.Client" hidden />
+    <input type="text" id="gencontr_filter" value="@formModel?.GenContractor" hidden /> *@
 
 
     <div class="header-view">
         <h3>@ViewData["Title"]</h3>
-        <div class="nav_panel_btns">
+        <div class="box-btn">
+            <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
+            <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
+                <img class="icon" src="~/icons/funnel.svg" />Фильтр
+            </button>
+        </div>
+        @* <div class="nav_panel_btns">
             <div class="link_add_emp"></div>
             <div class="btn_panel_search">
                 <button type="button" class="btn btn-primary btn-ctr to_filter">Фильтр<img class="icon" src="~/icons/funnel.svg" /></button>
@@ -81,53 +91,154 @@
                     <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
                 </form>
             </div>
-        </div>
+        </div> *@
     </div>
-    <hr class="modal-line" />
-    <div class="wrapper-table">
-        <table class="table table-bordered table-main table-main-short table-hover">
-            <thead class="text-center text-white align-top" style="position:sticky">
-                <tr>
-                    <th rowspan="2">
-                        Номер и дата договора
-                    </th>
-                    <th rowspan="2">
-                        Наименование объекта
-                    </th>
-                    <th rowspan="2">
-                        Заказчик
-                    </th>
-                    <th rowspan="2">
-                        Генподрядчик (филиал-исполнитель по приказу)
-                    </th>
-                    <th rowspan="2">
-                        Сроки выполнения работ
-                    </th>
-                    <th rowspan="2">
-                        Срок ввода
-                    </th>
-                    <th rowspan="2">
-                        Валюта расчетов
-                    </th>
-                    <th rowspan="2">
-                        Всего по договору с НДС
-                    </th>
-                    <th rowspan="2">
-                        Остаток по выполнению
-                    </th>
-                    <th rowspan="2">
-                        Объем на текущий год
-                    </th>
-                    <th rowspan="2">
-                        Фактическое выполнение по справке С-3а
-                    </th>
-                    <th rowspan="2">
-                        Зарезервированные средства
-                    </th>
-                </tr>
-            </thead>
-            <tbody style="height:70vh;">
-                @foreach (VPaymentCashDTO item in Model.Objects)
+    @* <hr class="modal-line" /> *@
+    <div id="payableCashTable">
+        <!-- Форма поиска -->
+        <div class="search-container">
+            <div class="search-form-wrapper" style="display: none;">
+                <div class="md3-input-with-button">
+                    <input type="text" class="md3-text-input input-sarch-filter" id="searchKeyword"
+                           placeholder="Введите текст для поиска...">
+                    <button class="md3-icon-button" type="button" id="search-button" title="Выполнить поиск">
+                        <svg class="md3-icon md3-icon" viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                    </button>
+                    <button class="clear-btn" id="clearButton" title="Очистить">
+                        <svg viewBox="0 0 24 24" width="16" height="16">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                    </button>
+                    @*<div class="md3-input-hint">
+                        Используйте * для поиска по маске
+                    </div>*@
+                </div>
+            </div>
+        </div>
+        <div class="wrapper-table">
+            <table class="table table-bordered table-main table-main-short table-hover" id="cotractTableId">
+                <thead class="text-center text-white align-top" style="position:sticky">
+                    <tr>
+                        <th>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-numberanddate">
+                                    Номер и дата договора
+                                </span>
+                                <div class="inline-block-icons">
+                                    <div class="sort-btn" data-content-sort="number">
+                                        <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                        <span class="column-sorter-down" title="Сортировка по убыванию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="icon-sm search_icon search_img_btn" data-content-search="number" title="Поиск по номеру договора" alt="Поиск договора по номеру"></div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-nameobject">
+                                    Наименование объекта
+                                </span>
+                                <div class="inline-block-icons">
+                                    <div class="sort-btn" data-content-sort="nameObject">
+                                        <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                        <span class="column-sorter-down" title="Сортировка по убыванию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="icon-sm search_icon search_img_btn" data-content-search="nameObject" title="Поиск объекта" alt="Поиск объекта"></div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-customer">
+                                    Заказчик
+                                </span>
+                                <div class="inline-block-icons">
+                                    <div class="sort-btn" data-content-sort="client">
+                                        <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                        <span class="column-sorter-down" title="Сортировка по убыванию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="icon-sm search_icon search_img_btn" data-content-search="client" title="Поиск заказчика" alt="Поиск заказчика"></div>
+
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="inline-center-blocks-in-th">
+                                <span class="table_span-contractor">
+                                    <span> Генподрядчик </span>
+                                </span>
+                                <div class="inline-block-icons">
+                                    <div class="sort-btn" data-content-sort="general">
+                                        <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                        <span class="column-sorter-down" title="Сортировка по убыванию">
+                                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    <div class="icon-sm search_icon search_img_btn" data-content-search="general" title="Поиск генподрядчика" alt="Поиск генподрядчика"></div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <span class="table_span-deadlines"> Сроки </span>
+                            @* выполнения работ
+                        </th>
+                        <th rowspan="2">
+                            Срок ввода *@
+                        </th>
+                        <th>
+                            Валюта
+                        </th>
+                        <th>
+                            <span class="table_span-contractprice"> Всего по договору с НДС </span>
+                        </th>
+                        <th>
+                            <span class="table_span-contractprice"> Остаток </span>
+                        </th>
+                        <th>
+                            <span class="table_span-volume">        Объем на текущий год        </span>
+                        </th>
+                        <th>
+                            <span class="table_span-work"> Фактическое выполнение по справке С-3а </span>
+                        </th>
+                        <th>
+                            <span class="table_span-work">Зарезервированные средства </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="table_tbody" style="height:70vh;">
+                    @*  @foreach (VPaymentCashDTO item in Model.Objects)
                 {
                     <tr>
                         <td>
@@ -171,121 +282,54 @@
                             @((item?.ReserveSum??0).ToString("N2"))
                         </td>
                     </tr>
-                }
-            </tbody>
-        </table>
+                } *@
+                </tbody>
+            </table>
+        </div>
+        <div class="footer-page">
+            <!-- Pagination block -->
+            <ul class="panel-pagination">
+                <li title="Предыдущая страница" class="prev_btn">
+                    <button class="pagination-item-link" type="button" tabindex="-1">
+                        <span role="img" aria-label="left" class="anticon anticon-left">
+                            <svg viewBox="64 64 896 896" focusable="false" data-icon="left" width="1em" height="1em"
+                                 fill="currentColor" aria-hidden="true">
+                                <path d="M724 218.3V141c0-6.7-7.7-10.4-12.9-6.3L260.3 486.8a31.86 31.86 0 000 50.3l450.8 352.1c5.3 4.1 12.9.4 12.9-6.3v-77.3c0-4.9-2.3-9.6-6.1-12.6l-360-281 360-281.1c3.8-3 6.1-7.7 6.1-12.6z">
+                                </path>
+                            </svg>
+                        </span>
+                    </button>
+                </li>
+                <li class="pagination-items_block">
+                </li>
+                <li title="Следующая страница" class="next_btn">
+                    <button class="pagination-item-link" type="button" tabindex="-1">
+                        <span role="img" aria-label="right" class="anticon anticon-right">
+                            <svg viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                <path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                                </path>
+                            </svg>
+                        </span>
+                    </button>
+                </li>
+                <li class="page-item page-info">
+                </li>
+            </ul>
+        </div>
     </div>
-    <nav aria-label="Page navigation example" style="margin-top:10px;">
-        <ul class="pagination justify-content-center">
-            <li class="page-item previous_btn">
-                @{
-                    @if (Model.PageViewModel.PageNumber > 1)
-                    {
-                        <a class="page-link" asp-action="GetPayableCash"
-                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]">
-                            &lt;
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="page-link disabled" href="#"
-                           tabindex="-1">
-                            &lt;
-                        </a>
-                    }
-                }
 
-            </li>
-            @{
-                int counter = 1;
-                int index = Model.PageViewModel.PageNumber <= 3 ? 1 : Model.PageViewModel.PageNumber - 2;
-                int end = 0;
-                if (Model.PageViewModel.PageNumber <= 3) end = Model.PageViewModel.TotalPages > 5 ? 5 : Model.PageViewModel.TotalPages;
-                else if (Model.PageViewModel.TotalPages <= 5)
-                    end = Model.PageViewModel.TotalPages;
-                else if (Model.PageViewModel.TotalPages >= Model.PageViewModel.PageNumber + 2)
-                    end = Model.PageViewModel.PageNumber + 2;
-                else
-                {
-                    end = Model.PageViewModel.TotalPages;
-                    index = Model.PageViewModel.TotalPages - 4;
-                }
 
-                for (int i = index; i <= end; i++)
-                {
-                    <li class="page-item pag_btn_num @(i == Model.PageViewModel.PageNumber ? "active":"")">
-                        <a class="page-link "                           
-                           asp-action="GetPayableCash"
-                           asp-route-page="@i"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                           value="@i">@i</a>
-                    </li>
-                    if (counter == 5)
-                    {
-                        counter = 1;
-                        break;
-                    }
-                }
-            }
-
-            <li class="page-item next_btn">
-                @{
-                    @if (Model.PageViewModel.PageNumber < Model.PageViewModel.TotalPages)
-                    {
-                        <a class="page-link" asp-action="GetPayableCash"
-                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]">
-                            &gt;
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="page-link disabled" href="#"
-                           tabindex="-1">
-                            &gt;
-                        </a>
-                    }
-                }
-            </li>
-        </ul>
-    </nav>
 }
 }
 @section Scripts {
-    @{
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                let window_filter = document.querySelector(" .modal-window_filter");
-                let btn_filter = document.querySelector("button.to_filter");
-                let btn_close = document.querySelector(".close-btn");
-
-                btn_filter.addEventListener('click', function(){
-                    $.ajax({
-                        type: 'POST',
-                        url: '@Url.Action("GetFilterForm", "Payments")',
-                        // contentType: "application/html; charset=utf-8",
-                        data: { client: $("#client_filter").val(), genContractor: $("#gencontr_filter").val() },
-                        // dataType: 'html',
-                        success: function (result) {
-                            $('.form-window').html(result);
-                        },
-                        error: function (result) {
-                            alert("Ошибка отображения");
-                        }
-                    });
-
-                    window_filter.classList.add("open");
-                });
-                btn_close.addEventListener('click', function(){
-                    window_filter.classList.remove("open");
-                    });
-                document.addEventListener('keydown', function(event) {
-                    if (event.key === 'Escape') {
-                        window_filter.classList.remove("open");
-                    }
-                });
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = new DataPayableCashTableController({
+                container: '#payableCashTable',
+                apiUrl: '/Payments/Filter',
+                apiFilterModalUrl: `/Contracts/GetHTMLModalFiltering`,
+                itemsPerPage: 50,
             });
-        </script>
-    }
+        });
+    </script>
 }

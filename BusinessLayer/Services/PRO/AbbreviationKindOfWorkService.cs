@@ -15,10 +15,10 @@ namespace BusinessLayer.Services.PRO
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly IHttpContextAccessor _http;
 
-        public AbbreviationKindOfWorkService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
+        public AbbreviationKindOfWorkService(IContractUoW database, IMapper mapper, IContractsLogger logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;

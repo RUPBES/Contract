@@ -36,7 +36,6 @@ namespace MvcLayer.Controllers
         }
 
         [Route("/archive/Correspondences")]
-        //todo: убрать из метода название ID
         public IActionResult GetArchByContractId(int id, bool isEngineering, int returnContractId = 0)
         {
             ViewBag.IsEngineering = isEngineering;
@@ -61,7 +60,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int correspondenceId = (int)_correspondenceService.Create(_mapper.Map<CorrespondenceDTO>(correspondenceViewModel));
-                int fileId = (int)_fileService.Create(correspondenceViewModel.FilesEntity, Folder.Correspondences, correspondenceId);
+                int fileId = (int)_fileService.Create(correspondenceViewModel.FilesEntity, Folder.Correspondences, correspondenceId, correspondenceViewModel.ContractId?.ToString());
 
                 _correspondenceService.AddFile(correspondenceId, fileId);
 

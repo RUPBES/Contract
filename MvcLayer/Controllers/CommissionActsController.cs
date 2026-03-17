@@ -64,7 +64,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int commissionActId = (int)_commissionActService.Create(_mapper.Map<CommissionActDTO>(commissionAct));
-                int fileId = (int)_fileService.Create(commissionAct.FilesEntity, Folder.CommissionActs, commissionActId);
+                int fileId = (int)_fileService.Create(commissionAct.FilesEntity, Folder.CommissionActs, commissionActId, commissionAct.ContractId?.ToString());
 
                 _commissionActService.AddFile(commissionActId, fileId);
 

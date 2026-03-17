@@ -78,13 +78,19 @@
                     @item.ContractChanges
                 </td>                
                 <td>
-                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, Folder.Amendment))
+                    @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.Amendment))
                     {
                         <div>
-                            <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
                             @if (isAdmin)
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new {id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, page= @ViewBag.Page}, new { @class = "del-btn", @onclick = "return confirmDelete();"})
+                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                   asp-route-redirectAction="@redirectAction"
+                                   asp-route-redirectController="@redirectController"
+                                   asp-route-page="@ViewBag.Page"
+                                   title="Удалить файл"
+                                   class="modal-link del-btn"
+                                   data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
                             }
                         </div>
                     }
@@ -99,26 +105,3 @@
         }
     </tbody>
 </table>
-@* <div class="pages">
-    <div class="npPage page-items">
-        <a class="@(!Model.PageViewModel.HasPreviousPage ? "disabled" : "")" asp-action="Index" asp-route-page="@(Model.PageViewModel.PageNumber - 1)">&lt;</a>
-    </div>
-    <div class="page-items">
-        Cтраница: @Model.PageViewModel.PageNumber / @Model.PageViewModel.TotalPages
-    </div>
-    <div class="npPage page-items">
-        <a class="@(!Model.PageViewModel.HasNextPage ? "disabled" : "")" asp-action="Index" asp-route-page="@(Model.PageViewModel.PageNumber + 1)">&gt;</a>
-    </div>
-</div> *@
-@section Scripts {
-    <script type="text/javascript">
-        function confirmDelete() {
-            if (confirm('Вы уверены, что хотите удалить?')) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    </script>
-}

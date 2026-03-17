@@ -4,9 +4,9 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contracts
 
 @{
-    var branchAgreement = Contracts.GetSubsByType(Model.Id, Contract.Agreement, useArchiveData:true);
-    var subContract = Contracts.GetSubsByType(Model.Id, Contract.SubContract, useArchiveData: true);
-    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, Contract.MultipleContract, useArchiveData: true);
+    var branchAgreement = Contracts.GetSubsByType(Model.Id, ContractType.Agreement, useArchiveData:true);
+    var subContract = Contracts.GetSubsByType(Model.Id, ContractType.SubContract, useArchiveData: true);
+    var subObjectsOfContract = Contracts.GetSubsByType(Model.Id, ContractType.MultipleContract, useArchiveData: true);
 
     var isEngineering = Model.IsEngineering == true ? true : false;
     string redirectAction = "Details";
@@ -464,7 +464,7 @@
                                 </div>
                             </div>
 
-                            <div class="icon view" title="Просмотр детальной информации">   
+                            <div class="icon info" title="Просмотр детальной информации">
                                 <a asp-action="DetailsArch" asp-route-id="@contractBranch?.Id"></a>
                             </div>
 

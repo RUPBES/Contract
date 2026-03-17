@@ -1,5 +1,5 @@
 ﻿using DatabaseLayer.Data;
-using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.OID;
 using Microsoft.EntityFrameworkCore;
 

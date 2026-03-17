@@ -1,11 +1,11 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories.ARCHIVE;
 
-namespace DatabaseLayer
+namespace DatabaseLayer.UOW
 {
     public class ContractArchiveUoW : IContractArchiveUoW
     {
@@ -121,7 +121,7 @@ namespace DatabaseLayer
             }
         }
 
-        public IEntityWithPagingRepository<Estimate> Estimates
+        public IPageRepository<Estimate> Estimates
         {
             get
             {
@@ -589,7 +589,7 @@ namespace DatabaseLayer
             }
         }
 
-        public IEntityWithPagingRepository<Employee> Employees
+        public IPageRepository<Employee> Employees
         {
             get
             {
@@ -613,7 +613,7 @@ namespace DatabaseLayer
             }
         }
 
-        public IEntityWithPagingRepository<Organization> Organizations
+        public IPageRepository<Organization> Organizations
         {
             get
             {

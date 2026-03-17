@@ -18,5 +18,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         void AttachFileToEntity(int fileId, int entityId, Folder folder);
 
         IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder, bool? useArchiveData = null);
+        void DeleteFromFolderByContractId(int contractId, IEnumerable<File> files);
     }
 }

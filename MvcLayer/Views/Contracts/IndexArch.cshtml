@@ -1,28 +1,13 @@
-﻿@using System.Diagnostics;
-@using BusinessLayer.Enums;
-@using BusinessLayer.Helpers
+﻿@using BusinessLayer.Helpers
 @using BusinessLayer.Interfaces.Shared
-@using BusinessLayer.Models;
 @using BusinessLayer.Models.KDO
-
 @model IndexViewModel
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
-@inject BusinessLayer.Interfaces.ContractInterfaces.ISWCostService SWCost
-@inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService ScopeWork
-@inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
-@inject BusinessLayer.Interfaces.ContractInterfaces.IFormService Form
-@inject BusinessLayer.Interfaces.ContractInterfaces.IServiceGCService ServiceGc
-@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
 @inject IHttpContextUserProvider HttpHelper
-
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
-    var isEngineering = (bool)ViewData["IsEngineering"];
-    var actionMethod = isEngineering is true ? "Engineerings" : "Index";
-    var isGRP_Contract = permissions.GroupeName.Contains(Constants.GRP_CONTRACT);
-    if (ViewBag.CurrentType == null)
-        ViewBag.CurrentType = "none";
+    // var actionMethod = isEngineering is true ? "Engineerings" : "Index";
+    ViewData["Title"] = "Список архивных договоров";
 }
 
 
@@ -42,384 +27,205 @@
             width: 100%;
         }
     </style>
+
     <div>
         <div class="header-view">
-            <h1 class="list_agreement">Список договоров</h1>           
+            <h1 class="list_agreement">@ViewData["Title"]</h1>
+            @if (permissions is { IsCreator: true } && permissions.GroupeName.Contains(Constants.GRP_CONTRACT))
+            {
+                <div class="box-btn">
+                    <div class="btn reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
+                    <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
+                        <img class="icon" src="~/icons/funnel.svg" />Фильтр
+                    </button>                   
+                </div>
+            }
         </div>
-        <div class="full-width">
-            <table class="table table-main table-main-short table-bordered table-hover table-condensed" id="contractTable">
-                <thead>
-                    <tr class="tr-head-main-table">
-                        <th>
-                            <div class="inline-center-blocks-in-th">
-                                <span class="table_span-numberanddate">
-                                    Номер и дата договора
-                                </span>
-                                <div class="inline-block-icons">
-                                    @Html.ActionLink(" ", @actionMethod, new { sortOrder = ViewData["NumberSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNumberanddate", @class = "up" })
-                                    <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="number" title="Поиск организации" alt="Поиск организации">
-                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="inline-center-blocks-in-th">
-                                <span class="table_span-nameobject">
-                                    Наименование объекта
-                                </span>
-                                <div class="inline-block-icons">
-                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["NameObjectSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayNameObject", @class = "up" })
-                                    <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="nameObject" title="Поиск объекта" alt="Поиск объекта">
-                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </th>
-                        <th>
-                            <div class="inline-center-blocks-in-th">
-                                <span class="table_span-customer">
-                                    Заказчик
-                                </span>
-                                <div class="inline-block-icons">
-                                    @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["ClientSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayCustomer", @class = "up" })
-                                    <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="client" title="Поиск заказчика" alt="Поиск заказчика">
-                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </th>
-                        @if (isEngineering != true)
-                        {
+
+        <!-- контейнер для таблицы, фильтрации, сортировки id="contractTable"-->
+        <div id="contractTable">
+
+            <!-- Форма поиска -->
+            <div class="search-container">
+                <div class="search-form-wrapper" style="display: none;">
+                    <div class="md3-input-with-button">
+                        <input type="text" class="md3-text-input input-sarch-filter" id="searchKeyword"
+                               placeholder="Введите текст для поиска...">
+                        <button class="md3-icon-button" type="button" id="search-button" title="Выполнить поиск">
+                            <svg class="md3-icon md3-icon" viewBox="0 0 24 24" width="16" height="16">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                            </svg>
+                        </button>
+                        <button class="clear-btn" id="clearButton" title="Очистить">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                        </button>
+                        @*<div class="md3-input-hint">
+                        Используйте * для поиска по маске
+                    </div>*@
+                    </div>
+                </div>
+            </div>
+
+            <!-- Таблица договоров -->
+            <div class="full-width">
+                <table class="table table-main table-main-short table-bordered table-hover table-condensed">
+                    <thead>
+                        <tr class="tr-head-main-table">
                             <th>
                                 <div class="inline-center-blocks-in-th">
-                                    <span class="table_span-contractor">
-                                        <span>Генподрядчик</span>
+                                    <span class="table_span-numberanddate">
+                                        Номер и дата договора
                                     </span>
                                     <div class="inline-block-icons">
-                                        @Html.ActionLink("", actionMethod, new { sortOrder = ViewData["GenSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayGeneralContractor", @class = "up" })
-                                        <svg width="16" height="16" fill="currentColor" class="search_img_btn" viewBox="0 0 16 16" data-content-search="general" title="Поиск генподрядчика" alt="Поиск генподрядчика">
-                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                                        </svg>
+                                        <div class="sort-btn" data-content-sort="number">
+                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                </svg>
+                                            </span>
+                                            <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="icon-sm search_icon search_img_btn" data-content-search="number" title="Поиск по номеру договора" alt="Поиск договора по номеру"></div>
+                                    </div>
+                                    </div>
+                            </th>
+                            <th>
+                                <div class="inline-center-blocks-in-th">
+                                    <span class="table_span-nameobject">
+                                        Наименование объекта
+                                    </span>
+                                    <div class="inline-block-icons">
+                                        <div class="sort-btn" data-content-sort="nameObject">
+                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                </svg>
+                                            </span>
+                                            <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="icon-sm search_icon search_img_btn" data-content-search="nameObject" title="Поиск объекта" alt="Поиск объекта"></div>
                                     </div>
                                 </div>
                             </th>
-                        }
-                        <th>
-                            <span class="table_span-deadlines">
-                                Cроки
-                                @Html.ActionLink(" ", actionMethod, new { sortOrder = ViewData["EnterSortParm"], currentFilter = ViewData["CurrentFilter"], currentType = ViewData["CurrentType"] }, new { id = "arrayTerms", @class = "up" })
-                            </span>
-                        </th>
-                        <th><span class="table_span-conditions">    Условия оплаты              </span></th>
-                        <th><span class="table_span-currency">      Валюта                      </span></th>
-                        @if (isEngineering)
-                        {
                             <th>
-                                <span class="table_span-work">    Условия формирования договорной цены, %      </span>
-                            </th>
-                        }
-                        @if (!isEngineering)
-                        {
-                            <th><span class="table_span-work">          Виды работ по договору      </span></th>
-                        }
-                        <th><span class="table_span-contractprice"> Всего по договору с НДС </span></th>
-                        <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
-                        <th><span class="table_span-remains">       Остаток                     </span></th>
-                        <th><span class="table_span-volume">        Объем на текущий год        </span></th>
-                        <th><span class="table_span-action-main">        Действия с договором        </span></th>
-                    </tr>
-                </thead>
-                <tbody class="table_tbody">
-
-                    @foreach (VContractDTO item in Model.Objects)
-                    {                       
-
-                        <tr>
-                            @*Номер и дата договора*@
-                            <td>
-                                <span class="table_span-numberanddate">
-                                    <a asp-action="DetailsArch" asp-route-id="@item.Id">
-                                        @item.Number от @item.Date?.ToShortDateString()
-                                    </a>
-                                </span>
-                            </td>
-
-                            @*Наименование объекта*@
-                            <td>
-                                <span class="table_span-nameobject">@item.NameObject</span>
-                            </td>
-                            @*Заказчик*@
-                            <td>
-                                <span class="table_span-customer">@item.Client</span>
-                            </td>
-                            @*Генподрядчик*@
-                            @if (isEngineering != true)
-                            {
-                                <td>
-                                    <div>
-                                        <span class="table_span-contractor">@item.GenContractor</span>
-                                    </div>
-                                    @if (item.ResponsibleForWork is not null)
-                                    {
-                                        <div>
-                                            <span class="table_span-contractor">
-                                                <hr />
-                                                <span>Ответственный за производство работ:</span><br />
-                                                @item.ResponsibleForWork
+                                <div class="inline-center-blocks-in-th">
+                                    <span class="table_span-customer">
+                                        Заказчик
+                                    </span>
+                                    <div class="inline-block-icons">
+                                        <div class="sort-btn" data-content-sort="client">
+                                            <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                </svg>
+                                            </span>
+                                            <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                </svg>
                                             </span>
                                         </div>
-                                    }
-                                </td>
-                            }
-                            @*Сроки: выполнения работ - ввода *@
-                            <td>
-                                <span class="table_span-deadlines">
-                                    @if (@item.DateBeginWork?.ToShortDateString() is not null || @item.DateEndWork?.ToShortDateString() is not null)
-                                    {
-                                        <b>выполнения работ:</b>
+                                        <div class="icon-sm search_icon search_img_btn" data-content-search="client" title="Поиск заказчика" alt="Поиск заказчика"></div>
 
-                                        <br>
-                                        <span>@item.DateBeginWork?.ToShortDateString() - @item.DateEndWork?.ToShortDateString()</span>
-
-                                        <br>
-                                    }
-                                    @if (@item.EnteringTerm?.ToShortDateString() is not null)
-                                    {
-                                        <b>ввода:</b>
-                                        <span>@item.EnteringTerm?.ToShortDateString()</span>
-
-                                        <br>
-
-                                        <br>
-                                    }
-                                </span>
-                            </td>
-                            @*Условия оплаты: Аванс - Оплата*@
-                            <td>
-                                <span class="table_span-conditions">
-                                    <a asp-action="GetByContractId" asp-controller="Prepayments" asp-route-contractId="@item?.Id">
-                                        @item?.PaymentСonditionsAvans
-                                    </a>
-                                    <br /><br />
-                                    <a asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@item?.Id">
-                                        @item?.PaymentСonditionsRaschet
-                                    </a>
-                                </span>
-                            </td>
-                            @*Валюта*@
-                            <td>
-                                <span class="table_span-currency">@item?.Сurrency</span>
-                            </td>
-
-                            @*Условия формирования договорной цены*@
-                            @if (isEngineering)
-                            {
-                                <td>
-                                    <span class="table_span-work">@item?.PaymentСonditionsPrice</span>
-                                </td>
-                            }
-                            @*Виды работ по договору*@
-                            @if (!isEngineering)
-                            {
-                                <td>
-                                    <span class="table_span-work">@item?.WorkType</span>
-                                </td>
-                            }
-                            @*Контрактная цена*@
-                            <td class="text-end">
-                                <span class="table_span-contractprice">@item?.ContractPrice?.ToString("N2")</span>
-                            </td>
-                            @*Выполнено на начало года*@
-                            <td class="text-end">
-                                <span class="table_span-realization">@item?.PreYearSum?.ToString("N2")</span>
-                            </td>
-                            @*Остаток*@
-                            <td class="text-end">
-                                <span class="table_span-remains">@item?.RemainingSum?.ToString("N2")</span>
-                            </td>
-                            @*Объем*@
-                            <td>
-                                <span class="table_span-volume">@item?.ThisYearSum?.ToString("N2")</span>
-                            </td>
-                            @*Действия с договором*@
-                            <td>
-                                <span class="table_span-action-main">
-
-                                    <div class="icon view" title="Детальная информация">
-                                        <a asp-action="DetailsArch" asp-route-id="@item?.Id"></a>
                                     </div>
-                                    
-                                   @if (!isEngineering && permissions.GroupeName.Contains(Constants.GRP_ESTIMATE))
-                                    {
-                                        <div class="icon estimate" title="Сметы">
-                                            <a asp-action="IndexArch" asp-controller="Estimate" asp-route-contractId="@item?.Id"></a>
-                                        </div>
-                                    }
-@*
-                                    @if (isGRP_Contract)
-                                    {                                         
-                                        @if (permissions is not null && (permissions.IsReader && permissions.GroupeName.Contains(Constants.GRP_REPORT)))
-                                        {
-                                            <div class="icon view" title="Печать объемов работ">
-                                                <a asp-action="PrintScope"
-                                                   asp-controller="Report"
-                                                   asp-route-contractId="@item?.Id"
-                                                   asp-route-numberContr="@item?.Number"></a>
+                                </div>
+                            </th>
+                            @if (ViewBag?.IsEngineering != true)
+                            {
+                                <th>
+                                    <div class="inline-center-blocks-in-th">
+                                        <span class="table_span-contractor">
+                                            <span>Генподрядчик</span>
+                                        </span>
+                                        <div class="inline-block-icons">
+                                            <div class="sort-btn" data-content-sort="general">
+                                                <span class="column-sorter-up" title="Сортировка по возрастанию">
+                                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z" />
+                                                    </svg>
+                                                </span>
+                                                <span class="column-sorter-down" title="Сортировка по убыванию">
+                                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                        <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+                                                    </svg>
+                                                </span>
                                             </div>
-                                        }
-                                    }
-                                    *@
-                                </span>
-                            </td>
+                                            <div class="icon-sm search_icon search_img_btn" data-content-search="general" title="Поиск генподрядчика" alt="Поиск генподрядчика"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                            }
+                            <th><span class="table_span-deadlines"> Cроки   </span></th>
+                            <th><span class="table_span-conditions">    Условия оплаты              </span></th>
+                            @* <th><span class="table_span-currency">      Валюта                      </span></th> *@
+                            <th><span class="table_span-work">  @(ViewBag?.IsEngineering is true ? "Условия формирования договорной цены, %" : "Виды работ по договору") </span></th>
+                            <th><span class="table_span-contractprice"> Всего по договору с НДС </span></th>
+                            <th><span class="table_span-realization">   Выполнено на 01.01 тек. года</span></th>
+                            <th><span class="table_span-remains">       Остаток                     </span></th>
+                            <th><span class="table_span-volume">        Объем на текущий год        </span></th>
+                            <th><span class="table_span-action-main">   Действия  </span></th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="table_tbody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="footer-page">
+                <!-- Pagination block -->
+                <ul class="panel-pagination">
+                    <li title="Предыдущая страница" class="prev_btn">
+                        <button class="pagination-item-link" type="button" tabindex="-1">
+                            <span role="img" aria-label="left" class="anticon anticon-left">
+                                <svg viewBox="64 64 896 896" focusable="false" data-icon="left" width="1em" height="1em"
+                                     fill="currentColor" aria-hidden="true">
+                                    <path d="M724 218.3V141c0-6.7-7.7-10.4-12.9-6.3L260.3 486.8a31.86 31.86 0 000 50.3l450.8 352.1c5.3 4.1 12.9.4 12.9-6.3v-77.3c0-4.9-2.3-9.6-6.1-12.6l-360-281 360-281.1c3.8-3 6.1-7.7 6.1-12.6z">
+                                    </path>
+                                </svg>
+                            </span>
+                        </button>
+                    </li>
+                    <li class="pagination-items_block">
+                    </li>
+                    <li title="Следующая страница" class="next_btn">
+                        <button class="pagination-item-link" type="button" tabindex="-1">
+                            <span role="img" aria-label="right" class="anticon anticon-right">
+                                <svg viewBox="64 64 896 896" focusable="false" data-icon="right" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+                                    <path d="M765.7 486.8L314.9 134.7A7.97 7.97 0 00302 141v77.3c0 4.9 2.3 9.6 6.1 12.6l360 281.1-360 281.1c-3.9 3-6.1 7.7-6.1 12.6V883c0 6.7 7.7 10.4 12.9 6.3l450.8-352.1a31.96 31.96 0 000-50.4z">
+                                    </path>
+                                </svg>
+                            </span>
+                        </button>
+                    </li>
+                    <li class="page-item page-info">
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
-    <nav aria-label="Page navigation example" style="margin-top:10px;">        
-        <ul class="pagination justify-content-center">
-            <li class="page-item previous_btn">
-                @{
-                    @if (Model.PageViewModel.PageNumber > 1)
-                    {
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
-                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                           asp-route-currentType="@ViewData["CurrentType"]">
-                            &lt;
-                        </a>
-                    }
-                    @if (Model.PageViewModel.PageNumber <= 1)
-                    {
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
-                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                           asp-route-currentType="@ViewData["CurrentType"]"
-                           tabindex="-1" aria-disabled="true">
-                            &lt;
-                        </a>
-                    }
-                }
-
-            </li>
-            @{
-                int counter = 1;
-                int index = Model.PageViewModel.PageNumber <= 5 ? 1 : Model.PageViewModel.PageNumber;
-                for (int i = index; i <= Model.PageViewModel.TotalPages; i++)
-                {
-                    <li class="page-item pag_btn_num">
-                        <a class="page-link " asp-action="Index"
-                           asp-route-page="@i"
-                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                           value="@i">@i</a>
-                    </li>
-                    if (counter == 5)
-                    {
-                        counter = 1;
-                        break;
-                    }
-                }
-            }
-
-            <li class="page-item next_btn">
-                @{
-                    @if (Model.PageViewModel.PageNumber <= Model.PageViewModel.TotalPages)
-                    {
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
-                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                           asp-route-currentType="@ViewData["CurrentType"]">
-                            &gt;
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="page-link" asp-action="Index"
-                           asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
-                           asp-route-sortOrder="@ViewData["CurrentSort"]"
-                           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-                           asp-route-currentType="@ViewData["CurrentType"]"
-                           aria-disabled="true">
-                            &gt;
-                        </a>
-                    }
-                }
-            </li>
-        </ul>
-    </nav>
 }
 
 @section Scripts {
     <script type="text/javascript">
-        // Этот код управляет отображением стрелок сортировки в заголовках таблицы:
-        // - Добавляет/удаляет классы для стилизации стрелок вверх/вниз
-        // - Реагирует на параметр sortOrder в URL, который указывает текущую сортировку
-        // - Поддерживает сортировку по номеру, названию объекта, клиенту, подрядчику и датам
-        window.onload = function () {
-            const actualUrl = window.location.search;
-            const sortElements = {
-                'number': document.getElementById("arrayNumberanddate"),
-                'nameObject': document.getElementById("arrayNameObject"),
-                'client': document.getElementById("arrayCustomer"),
-                'genContractor': document.getElementById("arrayGeneralContractor"),
-                'dateEnter': document.getElementById("arrayTerms")
-            };
-
-            for (const [key, element] of Object.entries(sortElements)) {
-                if (!element) continue;
-
-                if (actualUrl.includes(`sortOrder=${key}Desc`)) {
-                    // Сортировка по убыванию - стрелка вниз
-                    element.classList.remove("up");
-                    element.classList.add("up-down-active", "down");
-                } else if (actualUrl.includes(`sortOrder=${key}`)) {
-                    // Сортировка по возрастанию - стрелка вверх
-                    element.classList.add("up-down-active");
-                }
-            }
-        };
-
-        ////// Pagination
-        paginationFunc(@Model.PageViewModel.PageNumber, @Model.PageViewModel.TotalPages);
-        //////ENd pagination
-
-
-        $('.search_img_btn').click(function (e) {
-            closeModalForms();
-
-            const searchType = e.target.dataset.contentSearch;
-            const currentType = '@ViewBag.CurrentType';
-            const searchValue = (currentType !== "none" && searchType === currentType) ? "@ViewBag.CurrentFilter" : "";
-
-            const modalForm = document.createElement('div');
-            modalForm.classList.add('modal_form_searching');
-
-            const coords = getCoords(e.target);
-            modalForm.style.left = `${coords.left - 120}px`;
-            modalForm.style.top = `${coords.bottom + 25}px`;
-
-            modalForm.innerHTML = `
-                                        <div class="cursor-icon"></div>
-                                        <form asp-action="@actionMethod" asp-controller="Contracts" method="GET" class="form_search">
-                                            <input name="typeSearch" value="${searchType}" hidden />
-                                            <div class="btn-close-modal-searching" onclick="return closeModalForms();">X</div>
-                                            <div class="input-group">
-                                                <input type="text" value="${searchValue}" class="form-control" name="searchString" aria-describedby="search-button">
-                                                <button class="btn btn-primary" type="submit" id="search-button">Поиск</button>
-                                            </div>
-                                        </form>`;
-
-            document.body.append(modalForm);
+        document.addEventListener('DOMContentLoaded', () => {
+            const table = new DataTableController({
+                container: '#contractTable',
+                apiUrl: '/Contracts/Filter',
+                apiFilterModalUrl: `/Contracts/GetHTMLModalFiltering`,
+                itemsPerPage: 50,
+                isEngineering: @Html.Raw(Json.Serialize(ViewBag.IsEngineering)),
+                isArchive:  @Html.Raw(Json.Serialize(ViewBag.UseArchiveData)),
+                permissions: @Html.Raw(Json.Serialize(permissions))
+            });
         });
-
-        function closeModalForms() {
-            document.querySelectorAll('.modal_form_searching').forEach(modal => modal.remove());
-        }
     </script>
 }

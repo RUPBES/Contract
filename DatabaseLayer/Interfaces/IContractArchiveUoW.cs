@@ -1,4 +1,4 @@
-﻿using DatabaseLayer.Interfaces.Entities;
+﻿using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 
@@ -6,7 +6,7 @@ namespace DatabaseLayer.Interfaces
 {
     public interface IContractArchiveUoW : IDisposable
     {
-        IEntityWithPagingRepository<Estimate> Estimates { get; }
+        IPageRepository<Estimate> Estimates { get; }
         IReadonlyRepoEF<EstimateFile> EstimateFiles { get; }
         IReadonlyRepoEF<SlctnProcedureFile> SlctnProcedureFiles { get; }
         IReadonlyRepoEF<KindOfWork> KindOfWorks { get; }
@@ -28,7 +28,7 @@ namespace DatabaseLayer.Interfaces
         IReadonlyRepoEF<CommissionActFile> CommissionActFiles { get; }
         IReadonlyRepoEF<Correspondence> Correspondences { get; }
         IReadonlyRepoEF<CorrespondenceFile> CorrespondenceFiles { get; }
-        IEntityWithPagingRepository<Employee> Employees { get; }
+        IPageRepository<Employee> Employees { get; }
         IReadonlyRepoEF<EstimateDoc> EstimateDocs { get; }
         IReadonlyRepoEF<EstimateDocFile> EstimateDocFiles { get; }
         IReadonlyRepoEF<FormC3a> Forms { get; }
@@ -38,7 +38,7 @@ namespace DatabaseLayer.Interfaces
         IReadonlyRepoEF<MaterialGc> Materials { get; }
         IReadonlyRepoEF<MaterialCost> MaterialCosts { get; }
 
-        IEntityWithPagingRepository<Organization> Organizations { get; }
+        IPageRepository<Organization> Organizations { get; }
         IReadonlyRepoEF<Phone> Phones { get; }
         IReadonlyRepoEF<Payment> Payments { get; }
         IReadonlyRepoEF<Prepayment> Prepayments { get; }

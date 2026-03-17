@@ -13,21 +13,22 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div id="existOrgId" style="padding-right: 20px; padding-left: 20px; width:350px;"></div>
                 <form action="@Url.Action("AddNewOrganization","Contracts")" method="post" id="theFormOrg" style="padding-right: 20px; padding-left: 20px; width:350px;">
-                     <input asp-for="IsSubContract" hidden />
+                    <input asp-for="IsSubContract" hidden />
                     <input asp-for="SubContractId" type="number" hidden />
                     <input asp-for="IsAgreementContract" hidden />
                     <input asp-for="AgreementContractId" hidden />
                     <input asp-for="IsEngineering" hidden />
 
-                    <input asp-for="Date" type="datetime" hidden/>
+                    <input asp-for="Date" type="datetime" hidden />
                     <input asp-for="DateBeginWork" type="datetime" class="form-control" hidden>
                     <input asp-for="DateEndWork" type="datetime" hidden>
                     <input asp-for="EnteringTerm" type="datetime" hidden>
                     <input asp-for="ContractTerm" type="datetime" hidden>
 
                     <input asp-for="Number" hidden />
-                    <input asp-for="FundingSource"  hidden />
+                    <input asp-for="FundingSource" hidden />
                     <input asp-for="NameObject" hidden />
                     <input asp-for="EmployeeContracts[0].EmployeeId" hidden />
                     <input asp-for="EmployeeContracts[1].EmployeeId" hidden />
@@ -35,13 +36,11 @@
                     <input asp-for="ContractOrganizations[1].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[2].OrganizationId" type="number" hidden />
 
-                    
-
                     <input asp-for="ContractPrice" hidden />
                     <input asp-for="Сurrency" hidden />
                     <input asp-for="TypeWorkContracts[0].TypeWorkId" hidden />
-                    <input asp-for="PaymentСonditionsPrice" type="text"hidden>
-                    
+                    <input asp-for="PaymentСonditionsPrice" type="text" hidden>
+
                     @foreach (var item in Model.PaymentCA)
                     {
                         <input asp-for="PaymentCA[index]" hidden />
@@ -58,21 +57,20 @@
                     <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />
 
 
-
                     <div class="form-group">
                         <label asp-for="ContractOrganizations[3].Organization.Name" class="control-label">Полное название</label>
-                        <input asp-for="ContractOrganizations[3].Organization.Name" class="form-control" required/>
+                        <input asp-for="ContractOrganizations[3].Organization.Name" class="form-control" id="checkNameOrgId" required />
                     </div>
                     <div class="form-group">
                         <label asp-for="ContractOrganizations[3].Organization.Abbr" class="control-label">Аббревиатура</label>
                         <input asp-for="ContractOrganizations[3].Organization.Abbr" class="form-control" required />
                     </div>
-                    <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.Unp" >УНП организации</label>
+                    <div class="form-group ">
+                        <label asp-for="ContractOrganizations[3].Organization.Unp">УНП организации</label>
                         <input asp-for="ContractOrganizations[3].Organization.Unp" class="form-control" />
-                    </div> 
+                    </div>
                     <div class="form-group">
-                        <label asp-for="ContractOrganizations[3].Organization.Email" >Электронная почта</label>
+                        <label asp-for="ContractOrganizations[3].Organization.Email">Электронная почта</label>
                         <input asp-for="ContractOrganizations[3].Organization.Email" class="form-control" />
                     </div>
                     <div class="form-group">
@@ -87,7 +85,8 @@
                         <label asp-for="ContractOrganizations[3].Organization.Addresses[0].PostIndex">Почтовый индекс</label>
                         <input asp-for="ContractOrganizations[3].Organization.Addresses[0].PostIndex" class="form-control" />
                     </div>
-                    <button class="btn btn-primary mt-3" type="submit" id="submitForm">Добавить</button>
+                    <button class="btn btn-primary mt-3" type="button" id="submitForm" hidden>Добавить</button>
+                    <button class="btn btn-secondary mt-3" type="button" id="searchButton">Проверить наличие</button>
                 </form>
             </div>
         </div>
@@ -97,6 +96,33 @@
 <script type="text/javascript">
     $('button.btn-close').click(function () {
         $('#modDialog').modal('hide');
-    });   
+    });
 
+    $("#searchButton").click(function (e) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("FindDuplicates", "Organizations")',
+                    dataType: 'json',
+                    data: { orgName: $("#checkNameOrgId").val() },
+                    success: function (resultChecking) {
+                         $("#existOrgId").html('');
+                        if (resultChecking.length > 0) {
+                            let count = 0;
+                            $.each(resultChecking, function (index, value) {
+                                $("#existOrgId").append('<span class="text-secondary">' + value.name  +'</span><br /><br />');
+                                count++;
+                            });
+                            $("#existOrgId").prepend('<h5 class="text-danger"> Найдено ' + count  +' совпадений с таким названием</h5>');
+                        }
+                        else {                            
+                            $("#submitForm").attr('type','submit');
+                            $("#submitForm").removeAttr("hidden");
+                            $("#existOrgId").prepend('<h5 class="text-secondary"> Совпадений не найдено</h5><br />');
+                        }
+                    },
+                    error: function (ex) {
+                        alert('Ошибка поиска');
+                    }
+                });
+            });
 </script> 

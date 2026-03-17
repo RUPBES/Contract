@@ -42,7 +42,7 @@ namespace MvcLayer.Controllers
         [HttpPost]
         public ActionResult AddFile(IFormCollection collection, int entityId, Folder fileCategory, string redirectAction = null, string redirectController = null, int? contractId = null, int returnContractId = 0)
         {
-            int fileId = (int)_file.Create(collection.Files, fileCategory, entityId);
+            int fileId = (int)_file.Create(collection.Files, fileCategory, entityId, contractId?.ToString());
             NotificationHelper.SetNotification(TempData, "Файл добавлен", NotificationType.Info);
             if (redirectAction.Equals("Details", StringComparison.OrdinalIgnoreCase) && redirectController.Equals("Contracts", StringComparison.OrdinalIgnoreCase))
             {

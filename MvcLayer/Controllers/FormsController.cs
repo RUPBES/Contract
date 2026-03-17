@@ -198,17 +198,17 @@ public class FormsController : Controller
             var formDTO = _mapper.Map<FormDTO>(formViewModel);
 
             int formId = _formService.Create(formDTO) ?? 0;
-            _fileService.Create(formViewModel.FilesEntity, Folder.Form3C, formId);
+            _fileService.Create(formViewModel.FilesEntity, Folder.Form3C, formId, formViewModel.ContractId?.ToString());
             NotificationHelper.SetNotification(TempData, "Создана форма С3-а", NotificationType.Info);
 
             //проверяем тип договора, и обновляем "родительские" справки C3-a
-            Contract thisType;
+            ContractType thisType;
             var parentContracts = _contractService.GetParents(formDTO.ContractId, out thisType);
             _formService.TryUpdateParentsForms(formDTO, parentContracts, CrudOp.CREATE);
 
 
             //если добавляется справка для генподрядного или подобъекта, дополнительно создаем собственными силами
-            if (thisType == Contract.GenСontract || thisType == Contract.MultipleContract)
+            if (thisType == ContractType.GenСontract || thisType == ContractType.MultipleContract)
             {
                 var formOwnForce = _formService.Find(x => x.IsOwnForces == true && x.ContractId == formViewModel.ContractId).LastOrDefault();
                 if (formOwnForce is null)
@@ -301,7 +301,7 @@ public class FormsController : Controller
             NotificationHelper.SetNotification(TempData, "Обновлена форма С3-а", NotificationType.Info);
 
             //проверяем тип договора, и обновляем "родительские" справки C3-a
-            Contract thisType;
+            ContractType thisType;
             var parentContracts = _contractService.GetParents(newForm.ContractId, out thisType);
             _formService.TryUpdateParentsForms(newForm, parentContracts, CrudOp.UPDATE, previousStateForm);
 
@@ -370,12 +370,12 @@ public class FormsController : Controller
             _formService.Delete(id);
 
             //проверяем тип договора, и обновляем "родительские" справки C3-a
-            Contract thisType;
+            ContractType thisType;
             var parentContracts = _contractService.GetParents(removingForm.ContractId, out thisType);
             _formService.TryUpdateParentsForms(removingForm, parentContracts, CrudOp.DELETE);
 
             //если удаляется справка генподрядного или подобъекта, дополнительно удаляем собственными силами
-            if (thisType == Contract.GenСontract || thisType == Contract.MultipleContract)
+            if (thisType == ContractType.GenСontract || thisType == ContractType.MultipleContract)
             {
                 var formOwn = _formService
                     .Find(x => x.ContractId == removingForm.ContractId && x.IsOwnForces == true &&

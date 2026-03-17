@@ -1,5 +1,5 @@
 ﻿using DatabaseLayer.Data;
-using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -86,7 +86,7 @@ namespace DatabaseLayer.Repositories.ARCHIVE
             }
         }
 
-        public bool RemoveArchivedContractData(int contractId, string user, string targetDB = "ContrArchiveTest")
+        public bool RemoveContractData(int contractId, string user, string targetDB = "ContrArchiveTest")
         {
             throw new NotImplementedException();
         }

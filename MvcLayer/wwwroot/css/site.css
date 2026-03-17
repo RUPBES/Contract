@@ -1,3 +1,45 @@
+:root {
+    /* Основной цвет и его производные */
+    --md-primary: #4a6583;
+    --md-on-primary: #ffffff;
+    --md-primary-container: #d2e4ff;
+    --md-on-primary-container: #001c38;
+    /* Более светлый вариант */
+    --md-primary-light: #7c97b4;
+    --md-primary-dark: #334b68;
+    /* Surface */
+    --md-surface: #fefbff;
+    --md-on-surface: #1c1b1f;
+    --md-surface-variant: #e1e2ec;
+    --md-on-surface-variant: #44474f;
+    /* Outline */
+    --md-outline: #75777f;
+    --md-outline-variant: #c5c7cf;
+    /* Secondary (комплементарный к #4a6583) */
+    --md-secondary: #835d4a;
+    --md-on-secondary: #ffffff;
+    --md-secondary-container: #ffdbcc;
+    --md-on-secondary-container: #321a0b;
+    /* Tertiary (триадный цвет) */
+    --md-tertiary: #4a8365;
+    --md-on-tertiary: #ffffff;
+    --md-tertiary-container: #cbf7d8;
+    --md-on-tertiary-container: #002112;
+    /* Остальные цвета */
+    --md-error: #ba1b1b;
+    --md-on-error: #ffffff;
+    --md-error-container: #ffdad4;
+    --md-on-error-container: #410001;
+    --md-success: #0d6e42;
+    --md-on-success: #ffffff;
+    --md-success-container: #a3f5c8;
+    --md-on-success-container: #002112;
+}
+
+
+
+
+
 html {
     font-size: 14px;
     position: relative;
@@ -119,7 +161,6 @@ label {
     background-size: 100%;
     width: 20px;
     height: 20px;
-    /*padding: 2px;*/
     margin: 4px;
     cursor: pointer;
 }
@@ -130,11 +171,31 @@ label {
         height: inherit;
     }
 
+.icon-sm {
+    display: inline-flex;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    width: 16px;
+    height: 16px;
+    margin: 4px;
+    cursor: pointer;
+}
+
+    .icon-sm > a,
+    .icon-sm > span {
+        width: inherit;
+        height: inherit;
+    }
+
+
 .filter {
     background-image: url(../icons/funnel.svg);
     filter: brightness(0) saturate(100%) invert(49%) sepia(40%) saturate(1578%) hue-rotate(190deg) brightness(98%) contrast(92%);
 }
-
+    .filter:hover {
+        filter: brightness(0) saturate(100%) invert(94%) sepia(59%) saturate(213%) hue-rotate(13deg) brightness(107%) contrast(104%);
+    }
 .transfer {
     background-image: url(../icons/move_group.svg);
 }
@@ -150,6 +211,10 @@ label {
 .view {
     background-image: url(../icons/eye.svg);
 }
+    .view:hover,
+    .link_to_page:hover {
+        filter: brightness(0) saturate(100%) invert(61%) sepia(59%) saturate(7125%) hue-rotate(167deg) brightness(96%) contrast(101%);
+    }
 
 .info {
     background-image: url(../icons/info.svg);
@@ -158,6 +223,15 @@ label {
     .info:hover {
         filter: brightness(0) saturate(100%) invert(24%) sepia(93%) saturate(2261%) hue-rotate(205deg) brightness(101%) contrast(112%);
     }
+
+.content-copy {
+    background-image: url(../icons/content_copy.svg);
+}
+
+    .content-copy:hover {
+        filter: brightness(0) saturate(100%) invert(96%) sepia(31%) saturate(4539%) hue-rotate(344deg) brightness(97%) contrast(107%);
+    }
+
 
 .file-add {
     background-image: url(../icons/file-earmark-plus.svg);
@@ -184,11 +258,14 @@ label {
 .edit {
     background-image: url(../icons/pencil-square.svg);
 }
+    .edit:hover, .transfer:hover,
+    .view_list_pages:hover {
+        filter: invert(0.5) sepia(2) saturate(23) hue-rotate(9deg);
+    }
 
 .delete {
     background-image: url(../icons/trash.svg);
 }
-
     .delete:hover {
         filter: invert(0.3) sepia(1) saturate(6) hue-rotate(11112deg);
     }
@@ -197,7 +274,6 @@ label {
 .print {
     background-image: url(../icons/print.svg);
 }
-
     .print:hover {
         filter: invert(0.3) sepia(1) saturate(6) hue-rotate(11112deg);
     }
@@ -206,7 +282,6 @@ label {
 .archive {
     background-image: url(../icons/archive.svg);
 }
-
     .archive:hover {
         filter: brightness(0) saturate(100%) invert(48%) sepia(31%) saturate(1008%) hue-rotate(314deg) brightness(109%) contrast(103%);
     }
@@ -214,7 +289,6 @@ label {
 .expired {
     background-image: url(../icons/alarm_off.svg);
 }
-
     .expired:hover {
         filter: brightness(0) saturate(100%) invert(48%) sepia(31%) saturate(1008%) hue-rotate(314deg) brightness(109%) contrast(103%);
     }
@@ -222,7 +296,6 @@ label {
 .closed {
     background-image: url(../icons/alarm.svg);
 }
-
     .closed:hover {
         filter: brightness(0) saturate(100%) invert(48%) sepia(31%) saturate(1008%) hue-rotate(314deg) brightness(109%) contrast(103%);
     }
@@ -234,7 +307,6 @@ label {
 .scope_work {
     background-image: url(../icons/monitoring.svg);
 }
-
     .scope_work:hover {
         filter: invert(50%) sepia(90%) saturate(1689%) hue-rotate(72deg);
     }
@@ -246,34 +318,28 @@ label {
 .view_list_pages {
     background-image: url(../icons/folder.svg);
 }
+    .view_list_pages:hover {
+        background-image: url(../icons/folder-open.svg);
+    }
 
 .view_to_add_pages {
     background-image: url(../icons/folder-plus.svg);
 }
-
     .view_to_add_pages:hover {
         filter: invert(50%) sepia(90%) saturate(1689%) hue-rotate(72deg);
     }
 
-.view_list_pages:hover {
-    background-image: url(../icons/folder-open.svg);
+.sort_icon {
+    background-image: url(../icons/sort.svg);
+    
 }
-
-.edit:hover, .transfer:hover,
-.view_list_pages:hover {
-    filter: invert(0.5) sepia(2) saturate(23) hue-rotate(9deg);
+.search_icon {
+    background-image: url(../icons/search.svg);
+    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7426%) hue-rotate(141deg) brightness(100%) contrast(94%);
 }
-
-
-.view:hover,
-.link_to_page:hover {
-    filter: brightness(0) saturate(100%) invert(61%) sepia(59%) saturate(7125%) hue-rotate(167deg) brightness(96%) contrast(101%);
-}
-
-
-
-
-
+    .search_icon:hover {
+        filter: brightness(0) saturate(100%) invert(94%) sepia(59%) saturate(213%) hue-rotate(13deg) brightness(107%) contrast(104%);
+    }
 
 .dropbtn {
     /*background-color: white;*/
@@ -325,7 +391,6 @@ label {
 .nav_panel_btns {
     display: flex;
 }
-
 
 .img_add_emp {
     display: flex;
@@ -469,11 +534,9 @@ form {
 .close-btn {
     color: red !important;
 }
-
     .close-btn::after {
         border: 2px solid #F00 !important;
     }
-
     .close-btn:hover::after {
         border-color: red !important;
         color: red !important;
@@ -515,7 +578,12 @@ a {
 .header-view {
     display: flex;
     justify-content: space-between;
+    margin:0 10px;
 }
+
+    .header-view.no-title {        
+        justify-content: end;
+    }
 
 .control-label:before {
     content: "*";
@@ -670,8 +738,7 @@ a {
     grid-template-rows: 50px 1fr 1fr;
 }
 
-.cost-summary__list,
-.price-breakdown__list {
+.cost-summary__list {
     row-gap: 1px;
 }
 
@@ -801,5 +868,917 @@ label {
         background-color: black;
     }
 
-/*.form-window > .content-window {
+
+/**
+    Пагинация
+*/
+
+
+/* Общие стили для панели пагинации */
+.panel-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    margin: 0;
+    list-style: none;
+    gap: 8px;
+    font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    background-color: var(--md-surface);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    /* Стили для элементов списка */
+    .panel-pagination > li {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+/* Кнопки навигации (предыдущая/следующая) */
+.prev_btn, .next_btn {
+    margin: 0 4px;
+}
+
+.pagination-item-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    padding: 8px;
+    background-color: transparent;
+    border: 1px solid var(--md-outline-variant);
+    border-radius: 20px;
+    color: var(--md-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+    .pagination-item-link:hover:not(:disabled) {
+        background-color: var(--md-primary-container);
+        border-color: var(--md-primary);
+        color: var(--md-on-primary-container);
+    }
+
+    .pagination-item-link:focus-visible {
+        outline: 2px solid var(--md-primary);
+        outline-offset: 2px;
+    }
+
+    .pagination-item-link:disabled {
+        opacity: 0.38;
+        cursor: not-allowed;
+        border-color: var(--md-outline-variant);
+        color: var(--md-outline);
+    }
+
+/* Блок элементов пагинации */
+.pagination-items_block {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 8px;
+}
+
+.pagination-items_block__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 35px;
+    height: 35px;
+    padding: 0 8px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    color: var(--md-on-surface);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+    .pagination-items_block__item:hover:not(.active-btn-pag):not(.item-ellipsis__next) {
+        background-color: var(--md-surface-variant);
+        color: var(--md-primary);
+    }
+
+   
+    .pagination-items_block__item:hover:not(.active-btn-pag):not(.item-ellipsis__prev) {
+        background-color: var(--md-surface-variant);
+        color: var(--md-primary);
+    }
+
+    .pagination-items_block__item:focus-visible {
+        outline: 2px solid var(--md-primary);
+        outline-offset: 2px;
+    }
+
+/* Активная страница */
+.active-btn-pag {
+    background-color: var(--md-primary);
+    color: var(--md-on-primary);
+    border-color: var(--md-primary);
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(74, 101, 131, 0.2);
+}
+
+    .active-btn-pag:hover {
+        background-color: var(--md-primary-dark);
+        border-color: var(--md-primary-dark);
+    }
+
+/* Эллипсис (многоточие) */
+.item-ellipsis__next, .item-ellipsis__prev {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .item-ellipsis__next::before,
+    .item-ellipsis__prev::before{
+        content: "...";
+        color: var(--md-outline);
+        font-size: 18px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+
+    .item-ellipsis__next:hover::before {
+        color: var(--md-primary);
+        content: url(../icons/keyboard_double_arrow_right.png);        
+    }
+
+    .item-ellipsis__prev:hover::before {
+        color: var(--md-primary);
+        content: url(../icons/keyboard_double_arrow_left.png);
+    }
+
+/* Элементы, скрытые с помощью hidden */
+.pagination-items_block__item[hidden] {
+    display: none !important;
+}
+
+/* Информация о странице */
+.page-info {
+    justify-content: flex-end !important;
+    margin-left: 16px;
+    padding: 8px 12px;
+    color: var(--md-on-surface-variant);
+    font-size: 13px;
+    background-color: var(--md-surface-variant);
+    border-radius: 6px;
+    white-space: nowrap;
+    min-width: 160px;
+}
+
+/* Иконки */
+.anticon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.anticon-left svg,
+.anticon-right svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .panel-pagination {
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .pagination-items_block {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin: 8px 0;
+    }
+
+    .page-info {
+        order: 4;
+        width: 100%;
+        text-align: center;
+        margin-left: 0;
+    }
+
+    .prev_btn, .next_btn {
+        order: 1;
+    }
+
+    .next_btn {
+        order: 2;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-items_block__item {
+        min-width: 36px;
+        height: 36px;
+        font-size: 13px;
+    }
+
+    .pagination-item-link {
+        width: 36px;
+        height: 36px;
+    }
+
+    .page-info {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
+
+/* Эффект нажатия */
+.pagination-item-link:active:not(:disabled),
+.pagination-items_block__item:active:not(.item-ellipsis__next) {
+    transform: scale(0.97);
+    transition: transform 0.12s ease;
+}
+
+/* Состояния для кнопок навигации при недоступности */
+.prev_btn .pagination-item-link[disabled],
+.next_btn .pagination-item-link[disabled] {
+    background-color: var(--md-surface-variant);
+}
+
+/* Кастомный скроллбар (если понадобится) */
+.pagination-items_block::-webkit-scrollbar {
+    height: 4px;
+}
+
+.pagination-items_block::-webkit-scrollbar-track {
+    background: var(--md-surface-variant);
+    border-radius: 2px;
+}
+
+.pagination-items_block::-webkit-scrollbar-thumb {
+    background: var(--md-outline-variant);
+    border-radius: 2px;
+}
+
+    .pagination-items_block::-webkit-scrollbar-thumb:hover {
+        background: var(--md-outline);
+    }
+
+    /**
+        СТИЛИЗАЦИЯ КНОПОК СОРТИРОВКИ В ТАБЛИЦЕ
+    */
+
+
+/* ===== СТИЛИ ДЛЯ КНОПОК СОРТИРОВКИ ===== */
+
+/* Базовые стили для контейнера кнопки сортировки */
+.sort-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative; 
+
+}
+  
+/* Контейнеры для стрелок */
+.column-sorter-up,
+.column-sorter-down {
+    display: flex;
+    align-items: center;
+    justify-content: center;    
+    position: relative;
+    transition: all 0.15s ease;
+    max-height:fit-content;
+}
+
+/* Стили для SVG иконок */
+.sort-btn svg {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== СОСТОЯНИЕ БЕЗ СОРТИРОВКИ (начальное) ===== */
+.sort-btn:hover .column-sorter-up svg,
+.sort-btn:hover .column-sorter-down svg {
+    fill: var(--md-tertiary);
+    opacity: 0.9;
+}
+
+/* ===== СОРТИРОВКА ПО ВОЗРАСТАНИЮ ===== */
+/* Верхняя стрелка активна - цветная */
+.sort-btn.sort-asc .column-sorter-up svg {
+    fill: var(--md-tertiary);
+    opacity: 1;
+}
+
+/* Нижняя стрелка неактивна - серая */
+.sort-btn.sort-asc .column-sorter-down svg {
+    fill: var(--md-tertiary);
+    opacity: 0.5;
+}
+
+/* Анимация при активации верхней стрелки */
+.sort-btn.sort-asc .column-sorter-up {
+    animation: arrowPulseUp 0.3s ease;
+}
+
+@keyframes arrowPulseUp {
+    0% {
+        transform: translateY(2px);
+        opacity: 0.5;
+    }
+
+    70% {
+        transform: translateY(-1px);
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ===== СОРТИРОВКА ПО УБЫВАНИЮ ===== */
+/* Верхняя стрелка неактивна - серая */
+.sort-btn.sort-desc .column-sorter-up svg {
+    fill: var(--md-tertiary);
+    opacity: 0.5;
+}
+
+/* Нижняя стрелка активна - цветная */
+.sort-btn.sort-desc .column-sorter-down svg {
+    fill: var(--md-tertiary);
+    opacity: 1;
+}
+
+/* Анимация при активации нижней стрелки */
+.sort-btn.sort-desc .column-sorter-down {
+    animation: arrowPulseDown 0.3s ease;
+}
+
+@keyframes arrowPulseDown {
+    0% {
+        transform: translateY(-2px);
+        opacity: 0.5;
+    }
+
+    70% {
+        transform: translateY(1px);
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ===== КОМБИНАЦИЯ С ТЕКСТОМ ===== */
+/* Если кнопка сортировки с текстом */
+.sort-btn.with-text {
+    min-width: auto;
+    padding: 0 8px;
+    gap: 6px;
+    color: var(--md-on-surface);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+    .sort-btn.with-text .column-sorter-up {
+        margin-right: 0;
+    }
+
+    .sort-btn.with-text .column-sorter-down {
+        margin-left: 0;
+    }
+
+    /* Цвет текста при активной сортировке */
+    .sort-btn.with-text.sort-asc,
+    .sort-btn.with-text.sort-desc {
+        color: var(--md-primary);
+    }
+
+/* ===== РАЗНЫЕ РАЗМЕРЫ ===== */
+/* Маленький размер */
+.sort-btn.small {
+    min-width: 20px;
+    height: 20px;
+}
+
+    .sort-btn.small .column-sorter-up,
+    .sort-btn.small .column-sorter-down {
+        width: 14px;
+        height: 14px;
+    }
+
+    .sort-btn.small svg {
+        width: 14px;
+        height: 14px;
+    }
+
+/* Средний размер */
+.sort-btn.medium {
+    min-width: 28px;
+    height: 28px;
+}
+
+    .sort-btn.medium .column-sorter-up,
+    .sort-btn.medium .column-sorter-down {
+        width: 18px;
+        height: 18px;
+    }
+
+    .sort-btn.medium svg {
+        width: 18px;
+        height: 18px;
+    }
+
+/* ===== ОТКЛЮЧЕННОЕ СОСТОЯНИЕ ===== */
+.sort-btn.disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+}
+
+    .sort-btn.disabled .column-sorter-up svg,
+    .sort-btn.disabled .column-sorter-down svg {
+        fill: var(--md-outline);
+        opacity: 0.5;
+    }
+
+    .sort-btn.disabled:hover .column-sorter-up svg,
+    .sort-btn.disabled:hover .column-sorter-down svg {
+        opacity: 0.5;
+        transform: none;
+    }
+
+/* ===== ТЕМНАЯ ТЕМА ===== */
+.sort-btn.dark-theme .column-sorter-up svg,
+.sort-btn.dark-theme .column-sorter-down svg {
+    fill: rgba(255, 255, 255, 0.6);
+}
+
+.sort-btn.dark-theme:hover .column-sorter-up svg,
+.sort-btn.dark-theme:hover .column-sorter-down svg {
+    fill: rgba(255, 255, 255, 0.8);
+}
+
+.sort-btn.dark-theme.sort-asc .column-sorter-up svg,
+.sort-btn.dark-theme.sort-desc .column-sorter-down svg {
+    fill: var(--md-primary-light);
+}
+
+.sort-btn.dark-theme.with-text {
+    color: rgba(255, 255, 255, 0.87);
+}
+
+    .sort-btn.dark-theme.with-text.sort-asc,
+    .sort-btn.dark-theme.with-text.sort-desc {
+        color: var(--md-primary-light);
+    }
+
+/* ===== АДАПТАЦИЯ ДЛЯ УМЕНЬШЕННОЙ АНИМАЦИИ ===== */
+@media (prefers-reduced-motion: reduce) {
+    .sort-btn svg,
+    .column-sorter-up,
+    .column-sorter-down {
+        transition: none;
+        animation: none;
+    }
+
+    .sort-btn:active .column-sorter-up svg,
+    .sort-btn:active .column-sorter-down svg {
+        transform: none;
+    }
+}
+
+/* ===== УБИРАЕМ СТАНДАРТНЫЕ СТИЛИ ===== */
+.sort-btn::-moz-focus-inner {
+    border: 0;
+}
+
+.sort-btn:focus:not(:focus-visible) {
+    outline: none;
+}
+
+
+/* ===== СТИЛИ ДЛЯ КНОПОК В СТИЛЕ MATERIAL DESIGN 3 ===== */
+
+/* Контейнер кнопок */
+.box-btn {
+    gap: 10px;  
+}
+
+/* Базовые стили для всех кнопок */
+.btn-ctr {
+    border: none;
+    border-radius: 20px; /* Pill shape как в MD3 */
+    font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.1px;
+    text-transform: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+    /* Иконки в кнопках */
+    .btn-ctr .icon {
+        width: 14px;
+        height: 14px;
+        transition: all 0.2s ease;
+    }
+
+/* ===== PRIMARY BUTTON (Filled) ===== */
+.btn-primary {
+    background-color: var(--md-primary);
+    color: var(--md-on-primary);
+}
+
+    .btn-primary:hover:not(:disabled) {
+        background-color: var(--md-primary-dark);
+        box-shadow: 0 2px 6px rgba(74, 101, 131, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .btn-primary:active:not(:disabled) {
+        background-color: var(--md-primary-dark);
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(74, 101, 131, 0.2);
+    }
+
+    .btn-primary:focus-visible {
+        outline: 2px solid var(--md-primary);
+        outline-offset: 2px;
+    }
+
+    .btn-primary .icon {
+        filter: brightness(0) invert(1);
+    }
+
+/* ===== SUCCESS BUTTON (Filled) ===== */
+.btn-success {
+    background-color: var(--md-success);
+    color: var(--md-on-success);
+}
+
+    .btn-success:hover:not(:disabled) {
+        background-color: #0a5a36; /* Темнее --md-success */
+        box-shadow: 0 2px 6px rgba(13, 110, 66, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .btn-success:active:not(:disabled) {
+        background-color: #0a5a36;
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(13, 110, 66, 0.2);
+    }
+
+    .btn-success:focus-visible {
+        outline: 2px solid var(--md-success);
+        outline-offset: 2px;
+    }
+
+    .btn-success .icon {
+        filter: brightness(0) invert(1);
+    }
+
+/* ===== WARNING BUTTON (Outlined/Tonal) ===== */
+.btn-warning {
+    background-color: var(--md-surface);
+    color: var(--md-on-surface);
+    border: 1px solid var(--md-outline);
+}
+
+    .btn-warning:hover:not(:disabled) {
+        background-color: var(--md-surface-variant);
+        border-color: var(--md-on-surface-variant);
+    }
+
+    .btn-warning:active:not(:disabled) {
+        background-color: var(--md-outline-variant);
+        border-color: var(--md-on-surface-variant);
+        transform: translateY(0);
+    }
+
+    .btn-warning:focus-visible {
+        outline: 2px solid var(--md-primary);
+        outline-offset: 2px;
+    }
+
+    .btn-warning .icon {
+        opacity: 0.7;
+    }
+
+    .btn-warning:hover .icon {
+        opacity: 0.9;
+    }
+
+/* ===== RESET BUTTON (Text button) ===== */
+.reset-btn {
+    background-color: transparent;
+    color: var(--md-primary);
+    border: none;
+    box-shadow: none;
+    padding: 0 12px;
+    height: 36px;
+}
+
+    .reset-btn:hover:not(:disabled) {
+        background-color: var(--md-primary-container);
+        color: var(--md-on-primary-container);
+        transform: none;
+        box-shadow: none;
+    }
+
+    .reset-btn:active:not(:disabled) {
+        background-color: var(--md-primary-container);
+        opacity: 0.8;
+        transform: scale(0.98);
+    }
+
+    .reset-btn:focus-visible {
+        outline: 2px solid var(--md-primary);
+        outline-offset: 2px;
+        background-color: var(--md-primary-container);
+    }
+
+/* ===== ЭФФЕКТ RIPPLE (ВОЛНА) ДЛЯ MD3 ===== */
+.btn-ctr::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.btn-ctr:active::before {
+    width: 200%;
+    height: 200%;
+    opacity: 0.1;
+    transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+
+.btn-warning::before,
+.reset-btn::before {
+    background-color: rgba(74, 101, 131, 0.1);
+}
+
+/* ===== DISABLED STATE ===== */
+.btn-ctr:disabled,
+.btn-ctr.disabled {
+    opacity: 0.38;
+    pointer-events: none;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-primary:disabled,
+.btn-success:disabled {
+    background-color: var(--md-outline-variant);
+    color: var(--md-on-surface-variant);
+}
+
+.btn-warning:disabled {
+    background-color: transparent;
+    border-color: var(--md-outline-variant);
+    color: var(--md-outline);
+}
+
+.reset-btn:disabled {
+    color: var(--md-outline);
+    background-color: transparent;
+}
+
+/* ===== ЗАГОЛОВОК ===== */
+.list_agreement {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--md-on-surface);
+    margin: 0 0 8px 0;
+    padding: 0;
+    letter-spacing: 0.15px;
+    font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+/*@media (max-width: 768px) {
+    .box-btn {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 8px;
+        padding: 12px 0;
+    }
+
+    .btn-ctr {
+        height: 36px;
+        padding: 0 16px;
+        font-size: 13px;
+    }
+
+        .btn-ctr .icon {
+            width: 16px;
+            height: 16px;
+        }
+
+    .list_agreement {
+        font-size: 20px;
+    }
 }*/
+
+@media (max-width: 480px) {
+    .box-btn {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-ctr {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .reset-btn {
+        order: -1;
+    }
+}
+
+/* ===== ТЕМНАЯ ТЕМА (опционально) ===== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --md-surface: #1c1b1f;
+        --md-on-surface: #e4e1e6;
+        --md-surface-variant: #49454f;
+        --md-on-surface-variant: #c9c5d0;
+        --md-outline: #938f99;
+        --md-outline-variant: #49454f;
+    }
+
+    .btn-primary {
+        background-color: var(--md-primary-light);
+    }
+
+        .btn-primary:hover {
+            background-color: var(--md-primary);
+        }
+
+    .btn-warning {
+        background-color: transparent;
+        border-color: var(--md-outline);
+        color: var(--md-on-surface);
+    }
+
+    .reset-btn {
+        color: var(--md-primary-light);
+    }
+
+        .reset-btn:hover {
+            background-color: rgba(210, 228, 255, 0.12);
+        }
+}
+
+/* ===== АНИМАЦИИ ===== */
+@keyframes buttonAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.btn-ctr {
+    animation: buttonAppear 0.2s ease-out;
+}
+
+    /* ===== СОСТОЯНИЯ ДЛЯ РАЗНЫХ РАЗМЕРОВ ===== */
+    .btn-ctr.small {
+        height: 32px;
+        padding: 0 16px;
+        font-size: 13px;
+        border-radius: 16px;
+    }
+
+    .btn-ctr.large {
+        height: 48px;
+        padding: 0 28px;
+        font-size: 16px;
+        border-radius: 24px;
+    }
+
+    .btn-ctr.small .icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .btn-ctr.large .icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* ===== КНОПКИ С ТОЛЬКО ИКОНКОЙ ===== */
+    .btn-ctr.icon-only {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 20px;
+        gap: 0;
+    }
+
+        .btn-ctr.icon-only.small {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+        }
+
+        .btn-ctr.icon-only.large {
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+        }
+
+    /* ===== ФОКУС СОСТОЯНИЯ ДЛЯ КЛАВИАТУРЫ ===== */
+    .btn-ctr:focus {
+        outline: none;
+    }
+
+        .btn-ctr:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+/* ===== УЛУЧШЕНИЯ ДЛЯ ДОСТУПНОСТИ ===== */
+@media (prefers-reduced-motion: reduce) {
+    .btn-ctr,
+    .btn-ctr::before,
+    .btn-ctr .icon {
+        transition: none;
+        animation: none;
+    }
+
+        .btn-ctr:hover:not(:disabled) {
+            transform: none;
+        }
+
+        .btn-ctr:active::before {
+            display: none;
+        }
+}
+
+/* ===== СПЕЦИФИЧЕСКИЕ СТИЛИ ДЛЯ FILTER ===== */
+.filtering-contract_btn {
+    /* Специфичные стили для кнопки фильтра при необходимости */
+}
+
+/* ===== КНОПКА СБРОСА ФИЛЬТРОВ (изначально скрыта) ===== */
+.reset-btn[style*="display:none"] {
+    display: none !important;
+}
+
+/* ===== ЛЕГКАЯ ПОДСВЕТКА ПРИ HOVER ДЛЯ ВСЕХ КНОПОК ===== */
+.btn-ctr {
+    will-change: transform, background-color, box-shadow;
+}
+
+    .btn-ctr:hover:not(:disabled) {
+        filter: brightness(1.02);
+    }
+
+    .btn-ctr:active:not(:disabled) {
+        filter: brightness(0.98);
+    }
+
+/* ===== ГРУППИРОВКА КНОПОК ===== */
+.box-btn .btn-ctr:not(:last-child) {
+    margin-right: 0; /* Используем gap вместо margin */
+}
+
+/* ===== ПОДСКАЗКИ (TOOLTIPS) ===== */
+.btn-ctr[title] {
+    position: relative;
+}
+
+/* ===== ИМПОРТ ШРИФТОВ ===== */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');

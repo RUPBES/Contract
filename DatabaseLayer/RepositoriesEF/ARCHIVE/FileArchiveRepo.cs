@@ -1,5 +1,5 @@
 ﻿using DatabaseLayer.Data;
-using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.EntityFramework;
 using File = DatabaseLayer.Models.KDO.File;
 
 namespace DatabaseLayer.Repositories.ARCHIVE

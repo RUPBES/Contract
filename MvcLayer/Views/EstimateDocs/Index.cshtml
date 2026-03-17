@@ -68,13 +68,19 @@
                     @Html.DisplayFor(modelItem => item.IsChange)
                 </td>
                 <td>
-                    @foreach (FileDTO item2 in Files.GetAttachedFiles(item.Id, Folder.EstimateDocumentations))
+                    @foreach (FileDTO file in Files.GetAttachedFiles(item.Id, Folder.EstimateDocumentations))
                     {
                         <div>
-                            <a href="~/Files/OpenFile?id=@item2.Id" target="_blank">@item2.FileName</a>
+                            <a href="~/Files/OpenFile?id=@file.Id" target="_blank">@file.FileName</a>
                             @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin) && isGRP_Contract)
                             {
-                                @Html.ActionLink("×", "Delete", "Files", new { id = item2.Id, redirectAction = redirectAction, redirectController = redirectController, page = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                <a asp-controller="Files" asp-action="Delete" asp-route-id="@file.Id"
+                                   asp-route-redirectAction="@redirectAction"
+                                   asp-route-redirectController="@redirectController"
+                                   asp-route-page="@ViewBag.Page"
+                                   title="Удалить файл"
+                                   class="modal-link del-btn"
+                                   data-message="Прикрепленный файл будет удален. Продолжить?"> × </a>
                             }
                         </div>
                     }
@@ -105,15 +111,3 @@
         }
     </tbody>
 </table>
-@section Scripts {
-    <script type="text/javascript">
-        function confirmDelete() {
-            if (confirm('Вы уверены, что хотите удалить?')) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    </script>
-}

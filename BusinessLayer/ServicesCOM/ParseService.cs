@@ -14,11 +14,11 @@ namespace BusinessLayer.ServicesCOM
     {
         private readonly IExcelReader _excelReader;
         private readonly IConverterService _converter;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly ITextSearcher _textSearcher;
         private readonly IEstimateService _estimateService;
         private readonly IHttpContextUserProvider _httpHelper;
-        public ParseService(IExcelReader excelReader, IConverterService converter, ILoggerContract logger,
+        public ParseService(IExcelReader excelReader, IConverterService converter, IContractsLogger logger,
             ITextSearcher textSearcher, IEstimateService estimateService, IHttpContextUserProvider httpHelper)
         {
             _excelReader = excelReader;

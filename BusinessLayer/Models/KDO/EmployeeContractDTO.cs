@@ -16,12 +16,12 @@ namespace BusinessLayer.Models.KDO
         /// <summary>
         /// подписант договора
         /// </summary>
-        public bool? IsSignatory { get; set; }
+        public bool IsSignatory { get; set; }
 
         /// <summary>
         /// ответственный за ведение договора
         /// </summary>
-        public bool? IsResponsible { get; set; }
+        public bool IsResponsible { get; set; }
 
         public virtual ContractDTO Contract { get; set; }
 

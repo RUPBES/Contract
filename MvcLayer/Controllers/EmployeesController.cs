@@ -2,11 +2,13 @@
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
-using BusinessLayer.Models;
 using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using MvcLayer.Models.JSONSerializer;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MvcLayer.Controllers
 {
@@ -16,11 +18,11 @@ namespace MvcLayer.Controllers
         private readonly IEmployeeService _employeesService;
         private readonly IMapper _mapper;
         private readonly IDepartmentService _departmentService;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly IHttpContextUserProvider _httpHelper;
 
         public EmployeesController(IEmployeeService employeesService, IMapper mapper,
-            IDepartmentService departmentService, ILoggerContract logger, IHttpContextUserProvider httpHelper)
+            IDepartmentService departmentService, IContractsLogger logger, IHttpContextUserProvider httpHelper)
         {
             _departmentService = departmentService;
             _employeesService = employeesService;
@@ -29,27 +31,32 @@ namespace MvcLayer.Controllers
             _httpHelper = httpHelper;
         }
 
-        public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)
+        public async Task<IActionResult> Index()
         {
-            var organizations = _httpHelper.GetUserOrganizationCodes();
-            ViewBag.CurrentSort = sortOrder;
-
-            if (searchString != null)
-            {
-                page = 1;
-            }
-            else
-            {
-                searchString = currentFilter;
-            }
-
-            ViewData["CurrentFilter"] = searchString;
-            ViewBag.Page = page;
-
-            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-                return await Task.FromResult<IActionResult>(View(_employeesService.GetPageFilter(100, page ?? 1, searchString, sortOrder, organizations)));
-            else return await Task.FromResult<IActionResult>(View(_employeesService.GetPage(100, page ?? 1, organizations)));
+           return await Task.FromResult<IActionResult>(View());
         }
+
+        //public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)
+        //{
+        //    var organizations = _httpHelper.GetUserOrganizationCodes();
+        //    ViewBag.CurrentSort = sortOrder;
+
+        //    if (searchString != null)
+        //    {
+        //        page = 1;
+        //    }
+        //    else
+        //    {
+        //        searchString = currentFilter;
+        //    }
+
+        //    ViewData["CurrentFilter"] = searchString;
+        //    ViewBag.Page = page;
+
+        //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
+        //        return await Task.FromResult<IActionResult>(View(_employeesService.GetPageFilter(100, page ?? 1, searchString, sortOrder, organizations)));
+        //    else return await Task.FromResult<IActionResult>(View(_employeesService.GetPage(100, page ?? 1, organizations)));
+        //}
 
         public async Task<IActionResult> Details(int? id, int? page, string? filter)
         {
@@ -169,20 +176,52 @@ namespace MvcLayer.Controllers
         }
 
         [Authorize(Policy = "DeletePolicy")]
-        [Route("/Employees/Delete/{id}/{page}")]
-        public IActionResult Delete(int id, int page)
+        //[Route("/Employees/Delete/{id}/{page}")]
+        public IActionResult Delete(int id/*, int page*/)
         {
-            try
+            if (id > 0)
             {
-                _employeesService.Delete(id);
-                NotificationHelper.SetNotification(TempData, "Сотрудник удален", NotificationType.Info);
-            }
-            catch (Exception)
-            {
-                NotificationHelper.SetNotification(TempData, "Не удалось удалить сотрудника", NotificationType.Error);
+                try
+                {
+                    _employeesService.Delete(id);
+                    NotificationHelper.SetNotification(TempData, "Сотрудник удален", NotificationType.Info);
+                }
+                catch (Exception)
+                {
+                    NotificationHelper.SetNotification(TempData, "Не удалось удалить сотрудника", NotificationType.Error);
+                }
             }
 
-            return RedirectToAction(nameof(Index), new { page = page });
+            return RedirectToAction(nameof(Index)/*, new { page = page }*/);
         }
+
+
+        public async Task<IActionResult> Filter(string selectedField, int pageSize, int page, string sortDirection, string? searchText)
+        {
+            var organizations = _httpHelper.GetUserOrganizationCodes();
+            var employees = _employeesService.Filter(pageSize, page, selectedField, sortDirection, organizations, searchText);
+
+            return await Task.FromResult<IActionResult>(Json(employees, new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters =
+                {
+                    new DecimalConverter(),
+                    new DateFormatConverter(),
+                }
+            }));
+        }
+
+        public async Task<IActionResult> GetModalFiltering()
+        {
+            Dictionary<string, string> selection = new()
+            {
+                {"fullName","ФИО сотрудника" },
+                {"email","Электронная почта" },   
+                {"position","Должность" },
+            };
+            return await Task.FromResult<IActionResult>(PartialView("../Shared/Partial/_FilterDataWithoutDates", selection));
+        }
+
     }
 }

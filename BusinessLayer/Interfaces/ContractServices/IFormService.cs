@@ -15,6 +15,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         ScopeWorkReportModel GetScopeWorksInfoTable(int contractId, ScopeType type, bool? useArchiveData = null);
 
-        bool TryUpdateParentsForms(FormDTO newForm, Dictionary<int, Enums.Contract>? parentContracts, CrudOp operation, FormDTO? previousStateForm = null, bool isOneOfMultipleDelete = false);
+        bool TryUpdateParentsForms(FormDTO newForm, Dictionary<int, Enums.ContractType>? parentContracts, CrudOp operation, FormDTO? previousStateForm = null, bool isOneOfMultipleDelete = false);
     }
 }

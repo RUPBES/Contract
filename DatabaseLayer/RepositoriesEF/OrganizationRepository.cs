@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class OrganizationRepository : IEntityWithPagingRepository<Organization>
+    internal class OrganizationRepository : IPageRepository<Organization>
     {
         private readonly ContractsContext _context;
         public OrganizationRepository(ContractsContext context)

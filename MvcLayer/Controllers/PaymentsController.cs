@@ -1,13 +1,17 @@
 ﻿using AutoMapper;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
+using MvcLayer.Models.JSONSerializer;
 using MvcLayer.Models.Reports;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MvcLayer.Controllers
 {
@@ -23,10 +27,19 @@ namespace MvcLayer.Controllers
         private readonly ISWCostService _swCostService;
         private readonly IContractOrganizationService _contractOrganizationService;
         private readonly IOrganizationService _organization;
+        private readonly IHttpContextUserProvider _httpHelper;
 
-        public PaymentsController(IContractService contractService, IMapper mapper, IPaymentService payment, 
-            IScopeWorkService scopeWork, IAmendmentService amendmentService, IFormService formService, 
-            ISWCostService swCostService, IContractOrganizationService contractOrganizationService, IOrganizationService organization)
+        public PaymentsController(
+            IContractService contractService,
+            IMapper mapper,
+            IPaymentService payment,
+            IScopeWorkService scopeWork,
+            IAmendmentService amendmentService,
+            IFormService formService,
+            IHttpContextUserProvider httpHelper,
+            ISWCostService swCostService,
+            IContractOrganizationService contractOrganizationService,
+            IOrganizationService organization)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -37,6 +50,7 @@ namespace MvcLayer.Controllers
             _swCostService = swCostService;
             _contractOrganizationService = contractOrganizationService;
             _organization = organization;
+            _httpHelper = httpHelper;
         }
 
         public IActionResult Index()
@@ -157,7 +171,7 @@ namespace MvcLayer.Controllers
             {
                 foreach (var item in payment)
                 {
-                     _payment.Create(_mapper.Map<PaymentDTO>(item));
+                    _payment.Create(_mapper.Map<PaymentDTO>(item));
                     NotificationHelper.SetNotification(TempData, "Добавлена оплата", NotificationType.Info);
                 }
                 return RedirectToAction("GetByContractId", new { contractId = payment.FirstOrDefault().ContractId, returnContractId = returnContractId });
@@ -183,29 +197,30 @@ namespace MvcLayer.Controllers
             return RedirectToAction("Index", "Contracts");
         }
 
-        public IActionResult GetPayableCash(string currentFilter, int? page, string searchString, FilterPayableModel? filter)
+        public IActionResult GetPayableCash(/*string currentFilter, int? page, string searchString, FilterPayableModel? filter*/)
         {
-            var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-            int pageSize = 100;
-            if (searchString != null)
-            { 
-                page = 1; 
-            }
-            else
-            { 
-                searchString = currentFilter; 
-            }
+            //var organizationName = String.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+            //int pageSize = 100;
+            //if (searchString != null)
+            //{
+            //    page = 1;
+            //}
+            //else
+            //{
+            //    searchString = currentFilter;
+            //}
 
-            ViewData["CurrentFilter"] = searchString;
-            ViewData["FilterViewModel"] = filter ?? new FilterPayableModel();            
+            //ViewData["CurrentFilter"] = searchString;
+            //ViewData["FilterViewModel"] = filter ?? new FilterPayableModel();
 
-            var newList = _payment.GetPayableCash(pageSize, page?? 1, filter, organizationName.Split(','), useArchiveData: false);
-            int count = newList.PageViewModel.TotalPages;
-            ViewData["PageNum"] = newList.PageViewModel.PageNumber;
-            ViewData["TotalPages"] = newList.PageViewModel.TotalPages; 
+            //var newList = _payment.GetPayableCash(pageSize, page ?? 1, filter, organizationName.Split(','), useArchiveData: false);
+            //int count = newList.PageViewModel.TotalPages;
+            //ViewData["PageNum"] = newList.PageViewModel.PageNumber;
+            //ViewData["TotalPages"] = newList.PageViewModel.TotalPages;
 
-            return View(newList);
+            return View(/*newList*/);
         }
+
 
         public IActionResult DetailsPayableCash(int contractId)
         {
@@ -382,9 +397,111 @@ namespace MvcLayer.Controllers
         [HttpPost]
         public IActionResult GetFilterForm(string client, string genContractor, DateTime? dateEnteringTerm, DateTime? starEnteringTerm, DateTime? endEnteringTerm)
         {
-            return PartialView("_PartialFilter",new FilterPayableModel
-            { Client = client , GenContractor = genContractor, DateEnteringTerm = dateEnteringTerm,
-            StarEnteringTerm = starEnteringTerm, EndEnteringTerm = endEnteringTerm});
+            return PartialView("_PartialFilter", new FilterPayableModel
+            {
+                Client = client,
+                GenContractor = genContractor,
+                DateEnteringTerm = dateEnteringTerm,
+                StarEnteringTerm = starEnteringTerm,
+                EndEnteringTerm = endEnteringTerm
+            });
         }
+
+
+        public async Task<IActionResult> Filter(
+            string selectedField,
+            int pageSize,
+            int page,
+            string sortDirection,
+            string? searchText,
+            string? startSW,
+            string? endSW,
+            string? startEW,
+            string? endEW,
+            string? startET,
+            string? endET)
+        {
+            var organizationName = _httpHelper.GetUserOrganizationCodes();
+            var queryDateRange = GenerateDateRangeWhereClause(startSW, endSW, startEW, endEW, startET, endET);
+            var contracts = _payment.Filter(pageSize, page, selectedField, sortDirection, organizationName, searchText, queryDateRange);
+
+            return await Task.FromResult<IActionResult>(Json(contracts, new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters =
+                {
+                    new DecimalConverter(),
+                    new DateFormatConverter(),
+                }
+            }));
+        }
+
+
+
+
+        private string? GenerateDateRangeWhereClause(string? startDateBeginWork, string? endDateBeginWork, string? stratDateEndWork, string? endDateEndWork, string? startEnteringTerm, string? endEnteringTerm)
+        {
+            string? whereClause = null;
+            /////
+            if (!string.IsNullOrEmpty(startDateBeginWork) || !string.IsNullOrEmpty(endDateBeginWork))
+            {
+                if (!string.IsNullOrEmpty(startDateBeginWork) && !string.IsNullOrEmpty(endDateBeginWork))
+                {
+                    whereClause += $" (FORMAT(c.DateBeginWork, 'yyyy-MM') BETWEEN '{startDateBeginWork}' AND '{endDateBeginWork}')";
+                }
+
+                if (!string.IsNullOrEmpty(startDateBeginWork) && string.IsNullOrEmpty(endDateBeginWork))
+                {
+                    whereClause += $" (FORMAT(c.DateBeginWork, 'yyyy-MM') >= '{startDateBeginWork}')";
+                }
+                if (string.IsNullOrEmpty(startDateBeginWork) && !string.IsNullOrEmpty(endDateBeginWork))
+                {
+                    whereClause += $" (FORMAT(c.DateBeginWork, 'yyyy-MM') <= '{endDateBeginWork}')";
+                }
+            }
+
+            /////
+            if (!string.IsNullOrEmpty(stratDateEndWork) || !string.IsNullOrEmpty(endDateEndWork))
+            {
+                whereClause += string.IsNullOrEmpty(whereClause) ? "" : " AND ";
+
+                if (!string.IsNullOrEmpty(stratDateEndWork) && !string.IsNullOrEmpty(endDateEndWork))
+                {
+                    whereClause += $" (FORMAT(c.DateEndWork, 'yyyy-MM') BETWEEN '{stratDateEndWork}' AND '{endDateEndWork}')";
+                }
+
+                if (!string.IsNullOrEmpty(stratDateEndWork) && string.IsNullOrEmpty(endDateEndWork))
+                {
+                    whereClause += $" (FORMAT(c.DateEndWork, 'yyyy-MM') >= '{stratDateEndWork}')";
+                }
+                if (string.IsNullOrEmpty(stratDateEndWork) && !string.IsNullOrEmpty(endDateEndWork))
+                {
+                    whereClause += $" (FORMAT(c.DateEndWork, 'yyyy-MM') <= '{endDateEndWork}')";
+                }
+            }
+
+            /////
+            if (!string.IsNullOrEmpty(startEnteringTerm) || !string.IsNullOrEmpty(endEnteringTerm))
+            {
+                whereClause += string.IsNullOrEmpty(whereClause) ? "" : " AND ";
+
+                if (!string.IsNullOrEmpty(startEnteringTerm) && !string.IsNullOrEmpty(endEnteringTerm))
+                {
+                    whereClause += $" (FORMAT(c.EnteringTerm, 'yyyy-MM') BETWEEN '{startEnteringTerm}' AND '{endEnteringTerm}')";
+                }
+
+                if (!string.IsNullOrEmpty(startEnteringTerm) && string.IsNullOrEmpty(endEnteringTerm))
+                {
+                    whereClause += $" (FORMAT(c.EnteringTerm, 'yyyy-MM') >= '{startEnteringTerm}')";
+                }
+                if (string.IsNullOrEmpty(startEnteringTerm) && !string.IsNullOrEmpty(endEnteringTerm))
+                {
+                    whereClause += $" (FORMAT(c.EnteringTerm, 'yyyy-MM') <= '{endEnteringTerm}')";
+                }
+            }
+
+            return whereClause;
+        }
+
     }
 }

@@ -23,7 +23,7 @@ public class EstimateController : Controller
     private readonly IParseService _pars;
     private readonly IContractService _contractService;
     private readonly IMapper _mapper;
-    private readonly ILoggerContract _logger;
+    private readonly IContractsLogger _logger;
     private readonly IEstimateService _estimateService;
     private readonly IAbbreviationKindOfWorkService _abbreviationKindOfWorkService;
     private readonly IKindOfWorkService _kindOfWorkService;
@@ -32,7 +32,7 @@ public class EstimateController : Controller
 
     public EstimateController(IFileService file, IWebHostEnvironment env, IParseService pars, ITextSearcher textSearcher,
         IContractService contractService, IMapper mapper, IEstimateService estimateService,
-        IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService, IExcelReader excelReader, ILoggerContract logger)
+        IAbbreviationKindOfWorkService abbreviationKindOfWorkService, IKindOfWorkService kindOfWorkService, IExcelReader excelReader, IContractsLogger logger)
     {
         _file = file;
         _env = env;

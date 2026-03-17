@@ -1,13 +1,13 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
 using DatabaseLayer.Repositories.PRO;
 using DatabaseLayer.Repositories.ViewRepo;
 
-namespace DatabaseLayer
+namespace DatabaseLayer.UOW
 {
     public class ContractUoW : IContractUoW
     {
@@ -118,7 +118,7 @@ namespace DatabaseLayer
             }
         }
 
-        public IEntityWithPagingRepository<Estimate> Estimates
+        public IPageRepository<Estimate> Estimates
         {
             get
             {
@@ -445,7 +445,7 @@ namespace DatabaseLayer
                 return estimateDocFileRepository;
             }
         }
-        public IRepository<Models.KDO.File> Files
+        public IFileRepository Files
         {
             get
             {
@@ -556,7 +556,7 @@ namespace DatabaseLayer
                 return contractRepository;
             }
         }
-        public IEntityWithPagingRepository<Employee> Employees
+        public IPageRepository<Employee> Employees
         {
             get
             {
@@ -578,7 +578,7 @@ namespace DatabaseLayer
                 return departmentRepository;
             }
         }
-        public IEntityWithPagingRepository<Organization> Organizations
+        public IPageRepository<Organization> Organizations
         {
             get
             {

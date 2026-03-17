@@ -15,7 +15,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         IEnumerable<ContractDTO> GetPageFilter(int pageSize, int pageNum, string request, string filter, out int count, string org, bool useArchiveData = false);
         
-        IEnumerable<ContractDTO> GetSubsByType(int? id, Enums.Contract? contractType, bool useArchiveData = false);
+        IEnumerable<ContractDTO> GetSubsByType(int? id, Enums.ContractType? contractType, bool useArchiveData = false);
 
         ContractDTO GetById(int id, int? secondId = null, bool useArchiveData = false);
 
@@ -25,11 +25,11 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         int? GetPaymentDueDate(string? paymentDescription, string? subPaymentDescription);
 
-        Dictionary<int, Enums.Contract>? GetParents(int? contractId, out Enums.Contract thisType);
+        Dictionary<int, Enums.ContractType>? GetParents(int? contractId, out Enums.ContractType thisType);
 
         List<int> GetChildren(int contractId);
 
-        Task<bool> MoveToArchive(int contrId, string user, string sourceDB = "ContrTest", string targetDB = "ContrArchiveTest");
-        Task<int> Restructure(int contrId, string user);
+        Task<bool> MoveToArchive(int contrId);
+        Task<int> Restructure(int contrId);
     }
 }

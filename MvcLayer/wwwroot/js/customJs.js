@@ -1,4 +1,12 @@
-﻿function checkTwoSelectValues(firstId, secondId, areaId, buttonId, valueStyle) {
+﻿/** Проверка на выбор select с одним и тем же значением. Если хотябы один совпадает, все select помечаются в красный цвет, а кнопка отправки/сохранения блокируется!
+ * /
+ * @param {any} firstId
+ * @param {any} secondId
+ * @param {any} areaId
+ * @param {any} buttonId
+ * @param {any} valueStyle
+ */
+function checkTwoSelectValues(firstId, secondId, areaId, buttonId, valueStyle) {
     $(firstId).change(function () {
         let firstValue = $(firstId).find(":selected").val();
         let secondValue = $(secondId).find(":selected").val();
@@ -17,7 +25,6 @@
 
     });
 }
-
 function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, buttonId, styleName = 'same_value_chosen') {
 
     $(firstId).change(function () {
@@ -30,7 +37,6 @@ function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, butto
         changeStatusSelectValue(firstId, secondId, thirdId, buttonId, styleName);
     });
 }
-
 function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleName) {
     const button = $(buttonId);
 
@@ -83,7 +89,6 @@ function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleNam
         button.attr("type", "submit");
     }
 }
-
 function changeButtonType(buttonId, NumDCId) {
     let button = $(buttonId);
     let input = $(NumDCId);
@@ -91,6 +96,7 @@ function changeButtonType(buttonId, NumDCId) {
     input.attr("disabled", true);
 }
 
+/** */
 $(document).ready(function () {
 
     datepickerNull("input.datepickersNull");
@@ -157,60 +163,111 @@ function fillPhoneInput() {
     });
 }
 
-function confirmDelete() {
-    if (confirm('Вы уверены, что хотите удалить?')) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
 
 function handleError(error/*, urlRequest, progressObjID = null*/) {
-    var errorMes = error.responseText;//.substring(18, error.responseText.indexOf("\r"));
+    var errorMes = error.responseText;
     alert(errorMes);
-    //$.ajax({
-    //    type: 'GET',
-    //    url: urlRequest,
-    //    data: { message: errorMes },
-    //    dataType: 'html',
-    //    success: function (data) {
-    //        showResultMessage("#result", data);
-    //        if (progressObjID) {
-    //            $(progressObjID).attr('style', `display:none`);
-    //        }
-
-    //    }
-    //});
 }
 
 
 
-const modal = document.getElementById('alert-modal');
-const modalTitle = document.getElementById('alert-modal_title');
-const modalMessage = document.getElementById('alert-modal_message');
-const modalConfirm = document.getElementById('alert-modal_confirm');
-const modalCancel = document.getElementById('alert-modal_cancel');
 
-let currentUrl = '';
+// ----- Сообщение о подтверждении действия, либо да либо нет!
+/*
+В ссылку вставить class и data-message атрибуты!
+ <a asp-action="******" ..........
+            class="modal-link"
+            data-message="........ будут удалены. Продолжить?"></a>
 
-document.querySelectorAll('.modal-link').forEach(link => {
-    link.addEventListener('click', function (e) {
-        e.preventDefault();
+*/
+function contractAlert() {
+    //const modal = document.getElementById('alert-modal');
+    //const modalTitle = document.getElementById('alert-modal_title');
+    //const modalMessage = document.getElementById('alert-modal_message');
+    //const modalConfirm = document.getElementById('alert-modal_confirm');
+    //const modalCancel = document.getElementById('alert-modal_cancel');
 
-        currentUrl = this.href;
-        modalTitle.textContent = this.getAttribute('data-title') || 'Предупреждение';
-        modalMessage.textContent = this.getAttribute('data-message') || 'Вы уверены?';
+    let currentUrl = '';
 
-        modal.style.display = 'block';
+    document.querySelectorAll('.modal-link').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            currentUrl = this.href;
+            document.getElementById('alert-modal_title').textContent = this.getAttribute('data-title') || 'Предупреждение';
+            document.getElementById('alert-modal_message').textContent = this.getAttribute('data-message') || 'Вы уверены?';
+
+            document.getElementById('alert-modal').style.display = 'block';
+        });
     });
-});
 
-modalConfirm.addEventListener('click', function () {
-    window.location.href = currentUrl;
-});
+    document.getElementById('alert-modal_confirm').addEventListener('click', function () {
+        window.location.href = currentUrl;
+    });
 
-modalCancel.addEventListener('click', function () {
-    modal.style.display = 'none';
-});
+    document.getElementById('alert-modal_cancel').addEventListener('click', function () {
+        document.getElementById('alert-modal').style.display = 'none';
+    });
+};
+
+contractAlert();
+
+//// ----- Сортировка через AJAX !
+
+//const modal2 = document.querySelector('.table_tbody');
+//const viewDataElement = document.querySelector('#viewDataId');
+
+//document.querySelectorAll('.sort-btn').forEach(link => {
+//    link.addEventListener('click', function (e) {
+//        e.preventDefault();
+
+//        //currentUrl = this.href;
+//        modal2.textContent = '';
+//        let selectedType = this.getAttribute('data-content-sort') || 'Number1'; 
+//        const currentPage = viewDataElement.dataset.currentPage || 1;
+
+//        getSortContractsHTML(selectedType, currentPage, true, modal2);
+//    });
+//});
+
+//function getSortContractsJSON(type, page, isDesc, elemInput) {
+//    $.ajax({
+//        type: 'GET',
+//        url: '/Contracts/Sort',
+//        dataType: 'json',
+//        data: { type: type, page: page, isDesc: isDesc },
+//        success: function (indexModel) {
+
+//            if (indexModel.length == 0)
+//                return;
+//            //console.log(indexModel);
+//            //elemInput.append(indexModel);
+//            elemInput.innerHTML = setContractTableRow(emp, '');
+//            //const sdsfdf = indexModel.objects;
+//            //$.each(sdsfdf, function (r, emp) {
+//            //    elemInput.innerHTML += setContractTableRow(emp, '');
+//            //});
+//        },
+//        error: function (ex) {
+//            elemInput.append('Ошибка загрузки данных');
+            
+//        }
+//    });
+//}
+
+//function getSortContractsHTML(type, page, isDesc, elemInput) {
+//    $.ajax({
+//        type: 'GET',
+//        url: '/Contracts/Sort',
+//        dataType: 'html',
+//        data: { type: type, page: page, isDesc: isDesc },
+//        success: (function (result) {
+//            elemInput.innerHTML = result;
+        
+//        }),
+//        error: function (ex) {
+//            elemInput.append('Ошибка загрузки данных');
+
+//        }
+//    });
+//}

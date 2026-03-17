@@ -27,10 +27,10 @@ namespace BusinessLayer.Services.Administrator
         private readonly IExcelWriter _excelWriter;
         private readonly ExcelActivityReportOptions _reportOptions;
         private readonly IHostingEnvironment _host;
-        private readonly ILoggerContract _loggerContract;
+        private readonly IContractsLogger _loggerContract;
 
         public ActiveUsersService(IConverterService converter, IHttpContextUserProvider httpHelper, IContractUoW contract,
-            IMapper mapper, IExcelWriter excelWriter, ILoggerContract loggerContract, IOptions<ExcelActivityReportOptions> options
+            IMapper mapper, IExcelWriter excelWriter, IContractsLogger loggerContract, IOptions<ExcelActivityReportOptions> options
             , IHostingEnvironment hosting)
         {
             _converter = converter;

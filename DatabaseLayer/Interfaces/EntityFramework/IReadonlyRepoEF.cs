@@ -1,4 +1,4 @@
-﻿namespace DatabaseLayer.Interfaces
+﻿namespace DatabaseLayer.Interfaces.EntityFramework
 {
     public interface IReadonlyRepoEF<T> where T : class
     {

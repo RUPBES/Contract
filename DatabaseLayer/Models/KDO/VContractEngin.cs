@@ -46,5 +46,6 @@
         public decimal? ThisYearSum { get; set; }
         public decimal? PreYearSum { get; set; }
         public decimal? RemainingSum { get; set; }
+        public string? WorkflowRef { get; set; }
     }
 }

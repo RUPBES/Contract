@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Models.KDO;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models.KDO;
+using Microsoft.Extensions.Options;
 
 namespace BusinessLayer.Services
 {
@@ -10,12 +13,17 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
+        private readonly DbSettings _archiveOptions;
+        private readonly IReadonlyRepoDapper<VContractEngin> _vContractEnginDpr;
         private readonly IContractArchiveUoW _databaseArch;
-        public VContractEnginService(IContractUoW database, IMapper mapper, IContractArchiveUoW databaseArch)
+        public VContractEnginService(IContractUoW database, IMapper mapper, IContractArchiveUoW databaseArch, 
+            IOptions<DbSettings> archiveOptions, IReadonlyRepoDapper<VContractEngin> databaseDp)
         {
             _database = database;
             _mapper = mapper;
             _databaseArch = databaseArch;
+            _archiveOptions = archiveOptions.Value;
+            _vContractEnginDpr = databaseDp;
         }
 
         public IEnumerable<VContractDTO> Find(Func<VContractEngin, bool> predicate)
@@ -160,6 +168,111 @@ namespace BusinessLayer.Services
             };
 
             return viewModel;
+        }
+
+
+
+        public IndexViewModel Filter(int pageSize, int pageNum, string type, string? sortDirection, string org, string? searchText, string? whereCondition, bool? useArchiveData)
+        {
+            int skipEntities = (pageNum - 1) * pageSize;
+            (IEnumerable<VContractEngin>, int) contractsView;
+
+            switch (type)
+            {
+                case "date":
+                    contractsView = _vContractEnginDpr.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                        searchText is null ? "" : $@" and Date LIKE ('%{searchText}%')",
+                         $@" ORDER BY Date {sortDirection} ",
+                        (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+                case "number":
+                    contractsView = _vContractEnginDpr.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                         GetWhereCondition("Number", searchText, whereCondition),
+                         $@" ORDER BY Number {sortDirection} ",
+                        (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+                case "nameObject":
+                    contractsView = _vContractEnginDpr.Filter(
+                         skipEntities,
+                         pageSize,
+                         org,
+                         GetWhereCondition("NameObject", searchText, whereCondition),
+                          $@" ORDER BY NameObject {sortDirection} ",
+                         (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+                case "client":
+                    contractsView = _vContractEnginDpr.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                        GetWhereCondition("Client", searchText, whereCondition),
+                         $@" ORDER BY Client {sortDirection} ",
+                        (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+                case "general":
+                    contractsView = _vContractEnginDpr.Filter(
+                         skipEntities,
+                         pageSize,
+                         org,
+                         GetWhereCondition("GenContractor", searchText, whereCondition),
+                          $@" ORDER BY GenContractor {sortDirection} ",
+                         (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+                case "enteringTerm":
+                    contractsView = _vContractEnginDpr.Filter(
+                         skipEntities,
+                         pageSize,
+                         org,
+                         GetWhereCondition("EnteringTerm", searchText, whereCondition),
+                         $@" ORDER BY EnteringTerm {sortDirection} ",
+                         (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+                default:
+                    contractsView = _vContractEnginDpr.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                        !string.IsNullOrEmpty(whereCondition) ? $" and {whereCondition} " : "",
+                        $@" ORDER BY Id {sortDirection} ",
+                        (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+                    break;
+            }
+                       
+            var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(contractsView.Item1);
+            PageViewModel pageViewModel = new PageViewModel(contractsView.Item2, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = objIndexModel
+            };
+
+            return viewModel;
+        }
+
+        private string GetWhereCondition(string columnName, string? text, string? whereClause)
+        {
+            if (string.IsNullOrEmpty(whereClause) && !string.IsNullOrEmpty(text))
+            {
+                return $" and ( {columnName} LIKE ('%{text}%')) ";
+            }
+
+            if (!string.IsNullOrEmpty(whereClause) && string.IsNullOrEmpty(text))
+            {
+                return $" and {whereClause} ";
+            }
+
+            if (!string.IsNullOrEmpty(whereClause) && !string.IsNullOrEmpty(text))
+            {
+                return $" and ( {columnName} LIKE ('%{text}%')) and {whereClause}";
+            }
+
+            return string.Empty;
         }
     }
 }

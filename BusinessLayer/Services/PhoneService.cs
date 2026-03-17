@@ -15,10 +15,10 @@ namespace BusinessLayer.Services
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly IHttpContextAccessor _http;
 
-        public PhoneService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHttpContextAccessor http)
+        public PhoneService(IContractUoW database, IMapper mapper, IContractsLogger logger, IHttpContextAccessor http)
         {
             _database = database;
             _mapper = mapper;

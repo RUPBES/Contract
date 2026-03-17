@@ -1,4 +1,5 @@
-﻿using DatabaseLayer.Models.OID;
+﻿using DatabaseLayer.Interfaces.EntityFramework;
+using DatabaseLayer.Models.OID;
 
 namespace DatabaseLayer.Interfaces
 {

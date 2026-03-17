@@ -1,9 +1,10 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.OID;
 using DatabaseLayer.Repositories.OID;
 
-namespace DatabaseLayer
+namespace DatabaseLayer.UOW
 {
     public class OpenIdDictUoW: IOpenIdDictUoW
     {

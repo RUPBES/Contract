@@ -1,6 +1,6 @@
 ﻿namespace BusinessLayer.Enums;
 
-public enum Contract
+public enum ContractType
 {
     GenСontract,
     SubContract,

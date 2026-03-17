@@ -32,6 +32,8 @@ namespace DatabaseLayer.Models.KDO
         public int? MultipleContractId { get; set; }
         public bool IsOneOfMultiple { get; set; }
 
+        public string? WorkflowRef { get; set; }
+
         public string Author { get; set; }
         public string Owner { get; set; }
         public bool IsExpired { get; set; }

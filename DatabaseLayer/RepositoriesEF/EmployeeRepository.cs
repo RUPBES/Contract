@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DatabaseLayer.Repositories
 {
-    internal class EmployeeRepository : IEntityWithPagingRepository<Employee>
+    internal class EmployeeRepository : IPageRepository<Employee>
     {
         private readonly ContractsContext _context;
         public EmployeeRepository(ContractsContext context)

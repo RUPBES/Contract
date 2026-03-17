@@ -61,7 +61,7 @@ namespace MvcLayer.Controllers
             {
                 int actId = (int)_actService.Create(_mapper.Map<ActDTO>(actViewModel));
                 NotificationHelper.SetNotification(TempData, "Создан акт приостановки/возобновления работ", NotificationType.Info);
-                int fileId = (int)_fileService.Create(actViewModel.FilesEntity, Folder.Acts, actId);
+                int fileId = (int)_fileService.Create(actViewModel.FilesEntity, Folder.Acts, actId, actViewModel?.ContractId?.ToString());
                 
                 _actService.AddFile(actId, fileId);
                 
@@ -130,7 +130,7 @@ namespace MvcLayer.Controllers
                 }
 
                 _actService.Delete(id);
-                NotificationHelper.SetNotification(TempData, "Удален акт", NotificationType.Error);
+                NotificationHelper.SetNotification(TempData, "Удален акт", NotificationType.Info);
 
                 if (contractId is not null && contractId > 0)
                 {

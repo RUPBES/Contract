@@ -12,7 +12,7 @@
     // var permissions = HttpHelper.GetPermissionForUser(http);
     ViewData["Title"] = $"Список загруженных файлов";
     var routeValue = ViewBag.contractId is not null ? ViewBag.contractId : null;
-   
+
     if (ViewBag.contractId == 0)
         routeValue = ViewBag.returnContractId;
 }
@@ -63,7 +63,7 @@
                                             @if (!(typeFileValue.Contains("docx") || typeFileValue.Contains("xlsx")))
                                             {
                                                 <span>Название:</span>
-                                                <a href="~/Files/OpenFile?id=@item?.Id&fileType=@item?.FileType" target="_blank">@item?.FileName</a>                                                
+                                                <a href="~/Files/OpenFile?id=@item?.Id&fileType=@item?.FileType" target="_blank">@item?.FileName</a>
                                             }
                                             <span>&nbsp; &nbsp; Загружен:</span>
                                             @item?.DateUploud?.ToShortDateString()
@@ -73,7 +73,15 @@
                                             @*   @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
                                 {
                                 <div class="icon delete">
-                                @Html.ActionLink("", "Delete", "Files", new { id = item.Id, redirectAction = "GetByContractId", redirectController = "Files", fileCategory = FolderEnum.Contracts, contractId = @ViewBag.entityId, page = @ViewBag.Page }, new { @class = "del-btn", @onclick = "return confirmDelete();" })
+                                 <a asp-controller="Files" asp-action="Delete" asp-route-id="@item.Id"
+                                   asp-route-redirectAction="@GetByContractId"
+                                   asp-route-redirectController="@Files"
+                                    asp-route-fileCategory="@FolderEnum.Contracts"
+                                    asp-route-contractId="@ViewBag.entityId"
+                                   asp-route-page="@ViewBag.Page"
+                                   title="Удалить файл"
+                                   class="modal-link"
+                                   data-message="Прикрепленный файл будет удален. Продолжить?"></a>                                
                                 </div>
                                 }*@
                                         </strong>

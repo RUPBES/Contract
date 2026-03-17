@@ -1,5 +1,5 @@
 ﻿using DatabaseLayer.Data;
-using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -132,6 +132,7 @@ namespace DatabaseLayer.Repositories
                     contract.IsExpired = entity.IsExpired;
                     contract.Author = entity.Author;
                     contract.Owner = entity.Owner;
+                    contract.WorkflowRef = entity.WorkflowRef;
 
                     #endregion
 
@@ -296,7 +297,7 @@ namespace DatabaseLayer.Repositories
             return result;
         }
 
-        public bool RemoveArchivedContractData(int contractId, string user, string targetDB)
+        public bool RemoveContractData(int contractId, string user, string targetDB)
         {
             bool result = false;
             if (contractId > 0)

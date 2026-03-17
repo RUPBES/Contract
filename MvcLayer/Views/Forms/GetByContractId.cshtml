@@ -24,7 +24,7 @@
     if (id is not null)
     {
         var number = Contract.GetById((int)id).Number;
-        ViewData["Title"] = ViewBag.IsEngineering == false ?
+        ViewData["Title"] = ViewBag.IsEngineering != true ?
         $"Фактическое выполнение работ (услуг) согласно справкам о стоимости выполненных работ формы С-3а, договору № {number}" :
         $"Акты оказанных услуг согласно договору № {number}";
     }
@@ -277,7 +277,7 @@
                                                 @if (permissions.IsDeleter || permissions.IsAdmin)
                                                 {
                                                     <span class="icon delete" title="Удалить форму">
-                                                        <a onclick="delete(@item.Id)"
+                                                        <a onclick="deleteForm(@item.Id)"
                                                            class="modal-link"
                                                            data-message="Форма С3-а и прикрепленные файлы будут удалены. Продолжить?"></a>
                                                     </span>
@@ -489,40 +489,40 @@
         }
         toggeleColumnTable();
 
-        async function deleteForm(id) {
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ShowDeleteMessage", "Home")',
-                contentType: "application/html; charset=utf-8",
-                dataType: 'html',
-                success: function (result) {
-                    $('#dialogContent').html(result);
-                    $('#modDialog').modal({ backdrop: false });
-                    $('#modDialog').modal('show');
+        // async function deleteForm(id) {
+        //     $.ajax({
+        //         type: 'POST',
+        //         url: '@Url.Action("ShowDeleteMessage", "Home")',
+        //         contentType: "application/html; charset=utf-8",
+        //         dataType: 'html',
+        //         success: function (result) {
+        //             $('#dialogContent').html(result);
+        //             $('#modDialog').modal({ backdrop: false });
+        //             $('#modDialog').modal('show');
 
-                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
-                    elementDeleteButton[0].addEventListener('click', () => {
-                        $.ajax({
-                            type: 'GET',
-                            url: '@Url.Action("Delete", "Forms")',
-                            data: { id: id },
-                            success: function (result) {
-                                window.location.reload();
-                            },
-                            error: function (result) {
-                                window.location.reload();
-                            }
-                        });
-                    });
-                },
-                error: function (result) {
-                    // alert("Ошибка отображения");
-                }
-            });
-        }
+        //             let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
+        //             elementDeleteButton[0].addEventListener('click', () => {
+        //                 $.ajax({
+        //                     type: 'GET',
+        //                     url: '@Url.Action("Delete", "Forms")',
+        //                     data: { id: id },
+        //                     success: function (result) {
+        //                         window.location.reload();
+        //                     },
+        //                     error: function (result) {
+        //                         window.location.reload();
+        //                     }
+        //                 });
+        //             });
+        //         },
+        //         error: function (result) {
+        //             // alert("Ошибка отображения");
+        //         }
+        //     });
+        // }
 
 
-        async function delete(id){
+        async function deleteForm(id){
             $.ajax({
                             type: 'GET',
                             url: '@Url.Action("Delete", "Forms")',

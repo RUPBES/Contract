@@ -1,13 +1,11 @@
-﻿using DatabaseLayer.Models.KDO;
-
-namespace DatabaseLayer.Interfaces
+﻿namespace DatabaseLayer.Interfaces.Dapper
 {
-    public interface IReadonlyRepoDapper<T> where T : class
+    public interface IReadOnlyRepository<T> where T : class
     {
         int Count(string[]? predicate =null) => 0;
         T GetById(int id);
         IEnumerable<T> GetAll();
-        IEnumerable<T> GetEntitySkipTake(int skip, int take, string organizationName) => Array.Empty<T>();
+        IEnumerable<T> GetPage(int skip, int take, string organizationName) => Array.Empty<T>();
 
         IEnumerable<T> Find(string predicate);
         IEnumerable<T> Find(string predicate, string[] orgList);

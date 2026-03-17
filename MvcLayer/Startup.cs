@@ -66,7 +66,7 @@ namespace MvcLayer
             services.Configure<SchedulerOptions>(Configuration.GetSection(SchedulerOptions.Scheduler));
             services.Configure<EmailOptions>(Configuration.GetSection(EmailOptions.EmailSettings));
             services.Configure<EmailRecipient>(Configuration.GetSection(EmailRecipient.EmailRecipients));
-            services.Configure<ArchiveSettings>(Configuration.GetSection(ArchiveSettings.ConnectionStrings));
+            services.Configure<DbSettings>(Configuration.GetSection(DbSettings.ConnectionStrings));
 
             services.AddAuthentication(options =>
             {
@@ -172,7 +172,7 @@ namespace MvcLayer
 
             services.AddSession(op =>
             {
-                op.IdleTimeout = TimeSpan.FromMinutes(5);
+                op.IdleTimeout = TimeSpan.FromMinutes(25);
                 op.Cookie.HttpOnly = true;
                 op.Cookie.IsEssential = true;
             });
@@ -225,13 +225,24 @@ namespace MvcLayer
             services.AddQuartz(q =>
             {
                 q.UseMicrosoftDependencyInjectionJobFactory();
+
                 var jobKey = new JobKey("CreateReportJob");
-                q.AddJob<Scheduling.CreateReportJob>(opts => opts.WithIdentity(jobKey));
+                var jobKey2 = new JobKey("SendReportJob");
+
+                q.AddJob<Scheduling.CreateReportJob>(opts => opts.WithIdentity(jobKey));               
+                q.AddJob<Scheduling.SendReportJob>(opts => opts.WithIdentity(jobKey2));
+
                 q.AddTrigger(t => t
                     .ForJob(jobKey)
                     .WithIdentity("CreateReportDailyTrigger")
                     .StartNow()
-                    .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(DayOfWeek.Friday, 15, 0)) // every Friday at 15:00
+                    .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(DayOfWeek.Friday, 14, 59)) // every Friday at 15:00
+                );
+                q.AddTrigger(t => t
+                    .ForJob(jobKey2)
+                    .WithIdentity("SendReportDailyTrigger")
+                    .StartNow()
+                    .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(DayOfWeek.Friday, 15, 00)) // every Friday at 15:00
                 );
             });
             services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);            

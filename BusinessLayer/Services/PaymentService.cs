@@ -5,9 +5,10 @@ using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
-using DatabaseLayer.Interfaces.Entities;
+using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Drawing.Printing;
 using System.Reflection;
 
@@ -18,16 +19,23 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
-        private readonly ILoggerContract _logger;
-        private readonly IReadonlyPaymentDapperRepo _paymentCash;
+        private readonly IContractsLogger _logger;
+        private readonly DbSettings _archiveOptions;
+        private readonly IReadonlyPaymentDapperRepo _paymentDprCash;
 
-        public PaymentService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch, IReadonlyPaymentDapperRepo paymentCash)
+        public PaymentService(IContractUoW database, 
+            IMapper mapper, 
+            IContractsLogger logger, 
+            IContractArchiveUoW databaseArch, 
+            IReadonlyPaymentDapperRepo paymentCash, 
+            IOptions<DbSettings> archiveOptions)
         {
             _database = database;
             _mapper = mapper;
             _logger = logger;
             _databaseArch = databaseArch;
-            _paymentCash = paymentCash;
+            _paymentDprCash = paymentCash;
+            _archiveOptions = archiveOptions.Value;
         }
 
         public int? Create(PaymentDTO item)
@@ -152,10 +160,10 @@ namespace BusinessLayer.Services
         public IndexViewModel GetPayableCash(int pageSize, int page, FilterPayableModel filter, string[] organizationName, bool? useArchiveData)
         {
             int skip = (page - 1) * pageSize;
-            int count = _paymentCash.Count();
+            int count = _paymentDprCash.Count();
             string queryString = CreateQueryString(filter);
 
-            var items = _mapper.Map<IEnumerable<VPaymentCashDTO>>(_paymentCash.GetEntitySkipTake(skip, pageSize, queryString, organizationName));
+            var items = _mapper.Map<IEnumerable<VPaymentCashDTO>>(_paymentDprCash.GetEntitySkipTake(skip, pageSize, queryString, organizationName));
 
             PageViewModel pageViewModel = new PageViewModel(count, page, pageSize);
             IndexViewModel viewModel = new IndexViewModel
@@ -170,8 +178,107 @@ namespace BusinessLayer.Services
         public IEnumerable<VPaymentCashDTO> GetPayableCash(FilterPayableModel filter, string[] organizationName)
         { 
             string queryString = CreateQueryString(filter);
-            return _mapper.Map<IEnumerable<VPaymentCashDTO>>(_paymentCash.Find(queryString, organizationName));                    
+            return _mapper.Map<IEnumerable<VPaymentCashDTO>>(_paymentDprCash.Find(queryString, organizationName));                    
         }
+
+
+        public IndexViewModel Filter(int pageSize, int pageNum, string type, string? sortDirection, string org, string? searchText, string? whereCondition)
+        {
+            int skipEntities = (pageNum - 1) * pageSize;
+            (IEnumerable<VPaymentCash>, int) contractsView;
+
+            switch (type)
+            {
+                case "date":
+                    contractsView = _paymentDprCash.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                        searchText is null ? "" : $@" and Date LIKE ('%{searchText}%')",
+                         $@" ORDER BY Date {sortDirection} ");
+                    break;
+                case "number":
+                    contractsView = _paymentDprCash.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                         GetWhereCondition("Number", searchText, whereCondition), 
+                         $@" ORDER BY Number {sortDirection} ");
+                    break;
+                case "nameObject":
+                    contractsView = _paymentDprCash.Filter(
+                         skipEntities,
+                         pageSize,
+                         org,
+                         GetWhereCondition("NameObject", searchText, whereCondition),
+                          $@" ORDER BY NameObject {sortDirection} ");
+                    break;
+                case "client":
+                    contractsView = _paymentDprCash.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                        GetWhereCondition("Client", searchText, whereCondition),
+                         $@" ORDER BY Client {sortDirection} ");
+                    break;
+                case "general":
+                    contractsView = _paymentDprCash.Filter(
+                         skipEntities,
+                         pageSize,
+                         org,
+                         GetWhereCondition("GenContractor", searchText, whereCondition),
+                          $@" ORDER BY GenContractor {sortDirection} ");
+                    break;
+                case "enteringTerm":
+                    contractsView = _paymentDprCash.Filter(
+                         skipEntities,
+                         pageSize,
+                         org,
+                         GetWhereCondition("EnteringTerm", searchText, whereCondition),
+                         $@" ORDER BY EnteringTerm {sortDirection} ");
+                    break;
+                default:
+                    contractsView = _paymentDprCash.Filter(
+                        skipEntities,
+                        pageSize,
+                        org,
+                        !string.IsNullOrEmpty(whereCondition) ? $" and {whereCondition} " : "",
+                        $@" ORDER BY Id {sortDirection} ");
+                    break;
+            }
+
+            var objIndexModel = _mapper.Map<IEnumerable<VPaymentCashDTO>>(contractsView.Item1);
+
+            PageViewModel pageViewModel = new PageViewModel(contractsView.Item2, pageNum, pageSize);
+            IndexViewModel viewModel = new IndexViewModel
+            {
+                PageViewModel = pageViewModel,
+                Objects = objIndexModel
+            };
+
+            return viewModel;
+        }
+
+        private string GetWhereCondition(string columnName, string? text, string? whereClause)
+        {
+            if (string.IsNullOrEmpty(whereClause) && !string.IsNullOrEmpty(text))
+            {
+                return $" and ( {columnName} LIKE ('%{text}%')) ";
+            }
+
+            if (!string.IsNullOrEmpty(whereClause) && string.IsNullOrEmpty(text))
+            {
+                return $" and {whereClause} ";
+            }
+
+            if (!string.IsNullOrEmpty(whereClause) && !string.IsNullOrEmpty(text))
+            {
+                return $" and ( {columnName} LIKE ('%{text}%')) and {whereClause}";
+            }
+
+            return string.Empty;
+        }
+
 
         private string CreateQueryString(FilterPayableModel filter)
         {

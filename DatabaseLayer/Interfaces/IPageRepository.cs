@@ -1,7 +1,6 @@
-﻿
-namespace DatabaseLayer.Interfaces
+﻿namespace DatabaseLayer.Interfaces
 {
-    public interface IEntityWithPagingRepository<T> : IRepository<T> where T : class
+    public interface IPageRepository<T> : IRepository<T> where T : class
     {
         int Count();
         IEnumerable<T> GetEntitySkipTake(int skip, int take);

@@ -1,12 +1,4 @@
-﻿using DatabaseLayer.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BusinessLayer.Models.KDO
+﻿namespace BusinessLayer.Models.KDO
 {
     public class EmployeeDTO
     {
@@ -26,6 +18,8 @@ namespace BusinessLayer.Models.KDO
 
         public string? Email { get; set; }
         public string? Author { get; set; }
+
+        public string? PhoneNumbers { get; set; }
 
         public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
 

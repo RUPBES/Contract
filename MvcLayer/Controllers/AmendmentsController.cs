@@ -113,7 +113,7 @@ namespace MvcLayer.Controllers
                 }
 
                 int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
-                int fileId = (int)_fileService.Create(amendment.FilesEntity, Folder.Amendment, amendId);
+                int fileId = (int)_fileService.Create(amendment.FilesEntity, Folder.Amendment, amendId, amendment.ContractId?.ToString());
                 NotificationHelper.SetNotification(TempData, "Создано доп.соглашение", NotificationType.Info);
                 _amendment.AddFile(amendId, fileId);
                 

@@ -20,10 +20,10 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly IHttpContextAccessor _http;
 
-        public PrepaymentTakeService(IMapper mapper, IContractUoW database, ILoggerContract logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
+        public PrepaymentTakeService(IMapper mapper, IContractUoW database, IContractsLogger logger, IHttpContextAccessor http, IContractArchiveUoW databaseArch)
         {
             _mapper = mapper;
             _database = database;

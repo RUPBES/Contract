@@ -19,10 +19,10 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly IHostingEnvironment _env;
 
-        public FileService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env, IContractArchiveUoW databaseArch)
+        public FileService(IContractUoW database, IMapper mapper, IContractsLogger logger, IHostingEnvironment env, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
@@ -176,6 +176,43 @@ namespace BusinessLayer.Services
             }
         }
 
+        public void DeleteFromFolderByContractId(int contractId, IEnumerable<File> files)
+        {
+            if (contractId is 0 || !files.Any())
+            {
+                _logger.WriteLog(logLevel: LogLevel.Warning,
+                                   message: $"not delete file, ID is not more than zero",
+                                   nameSpace: typeof(FileService).Name,
+                                   methodName: MethodBase.GetCurrentMethod().Name);
+                return;
+            }
+
+            try
+            {
+                foreach (var file in files)
+                {
+                    file.FilePath = _env.WebRootPath + file.FilePath;
+
+                    if (System.IO.File.Exists(file.FilePath))
+                    {
+                        System.IO.File.Delete(file.FilePath);
+                    }
+                }
+                _logger.WriteLog(logLevel: LogLevel.Information,
+                                  message: $"files has been removed from folder",
+                                  nameSpace: typeof(FileService).Name,
+                                  methodName: MethodBase.GetCurrentMethod().Name);
+
+            }
+            catch (Exception e)
+            {
+                _logger.WriteLog(logLevel: LogLevel.Error,
+                                   message: e.Message,
+                                   nameSpace: typeof(FileService).Name,
+                                   methodName: MethodBase.GetCurrentMethod().Name);
+            }
+        }
+
         public IEnumerable<FileDTO> GetAll()
         {
             return _mapper.Map<IEnumerable<FileDTO>>(_database.Files.GetAll());
@@ -189,7 +226,7 @@ namespace BusinessLayer.Services
         public FileDTO? GetById(int id, bool? useArchiveData)
         {
             var file = (useArchiveData == true) ?
-                _databaseArch.Files.GetById(id):
+                _databaseArch.Files.GetById(id) :
                 _database.Files.GetById(id);
 
             if (file is not null)
@@ -233,13 +270,13 @@ namespace BusinessLayer.Services
             {
                 case Folder.Acts:
                     var filesAct = (useArchiveData == true) ?
-                        _databaseArch.ActFiles.Find(x => x.ActId == entityId):
+                        _databaseArch.ActFiles.Find(x => x.ActId == entityId) :
                         _database.ActFiles.Find(x => x.ActId == entityId);
 
                     foreach (var file in filesAct)
                     {
                         result.AddRange((useArchiveData == true) ?
-                            _databaseArch.Files.Find(x => x.Id == file.FileId):
+                            _databaseArch.Files.Find(x => x.Id == file.FileId) :
                             _database.Files.Find(x => x.Id == file.FileId));
                     }
 
@@ -248,7 +285,7 @@ namespace BusinessLayer.Services
                 case Folder.Amendment:
 
                     var filesAmend = (useArchiveData == true) ?
-                        _databaseArch.AmendmentFiles.Find(x => x.AmendmentId == entityId):
+                        _databaseArch.AmendmentFiles.Find(x => x.AmendmentId == entityId) :
                         _database.AmendmentFiles.Find(x => x.AmendmentId == entityId);
 
                     foreach (var file in filesAmend)
@@ -263,7 +300,7 @@ namespace BusinessLayer.Services
                 case Folder.CommissionActs:
 
                     var filesComm = (useArchiveData == true) ?
-                        _databaseArch.CommissionActFiles.Find(x => x.СommissionActId == entityId):
+                        _databaseArch.CommissionActFiles.Find(x => x.СommissionActId == entityId) :
                         _database.CommissionActFiles.Find(x => x.СommissionActId == entityId);
 
                     foreach (var file in filesComm)
@@ -278,7 +315,7 @@ namespace BusinessLayer.Services
                 case Folder.Correspondences:
 
                     var filesCorres = (useArchiveData == true) ?
-                        _databaseArch.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId):
+                        _databaseArch.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId) :
                         _database.CorrespondenceFiles.Find(x => x.CorrespondenceId == entityId);
 
                     foreach (var file in filesCorres)
@@ -292,7 +329,7 @@ namespace BusinessLayer.Services
                 case Folder.Estimate:
 
                     var filesEstimate = (useArchiveData == true) ?
-                        _databaseArch.EstimateFiles.Find(x => x.EstimateId == entityId):
+                        _databaseArch.EstimateFiles.Find(x => x.EstimateId == entityId) :
                         _database.EstimateFiles.Find(x => x.EstimateId == entityId);
 
                     foreach (var file in filesEstimate)
@@ -307,7 +344,7 @@ namespace BusinessLayer.Services
                 case Folder.EstimateDocumentations:
 
                     var filesEstimateDoc = (useArchiveData == true) ?
-                        _databaseArch.EstimateDocFiles.Find(x => x.EstimateDocId == entityId):
+                        _databaseArch.EstimateDocFiles.Find(x => x.EstimateDocId == entityId) :
                         _database.EstimateDocFiles.Find(x => x.EstimateDocId == entityId);
 
                     foreach (var file in filesEstimateDoc)
@@ -322,7 +359,7 @@ namespace BusinessLayer.Services
                 case Folder.Form3C:
 
                     var filesForm = (useArchiveData == true) ?
-                        _databaseArch.FormFiles.Find(x => x.FormId == entityId):
+                        _databaseArch.FormFiles.Find(x => x.FormId == entityId) :
                         _database.FormFiles.Find(x => x.FormId == entityId);
 
                     foreach (var file in filesForm)
@@ -337,7 +374,7 @@ namespace BusinessLayer.Services
                 case Folder.Contracts:
 
                     var filesContract = (useArchiveData == true) ?
-                        _databaseArch.ContractFiles.Find(x => x.ContractId == entityId):
+                        _databaseArch.ContractFiles.Find(x => x.ContractId == entityId) :
                         _database.ContractFiles.Find(x => x.ContractId == entityId);
 
                     foreach (var file in filesContract)
@@ -346,19 +383,19 @@ namespace BusinessLayer.Services
                            _databaseArch.Files.Find(x => x.Id == file.FileId) :
                            _database.Files.Find(x => x.Id == file.FileId));
                     }
-                    
+
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
                 case Folder.PrepaymentTake:
 
                     var filesPrepTakeId = (useArchiveData == true) ?
-                        _databaseArch.PrepaymentTakes.GetById(entityId).FileId:
+                        _databaseArch.PrepaymentTakes.GetById(entityId).FileId :
                         _database.PrepaymentTakes.GetById(entityId).FileId;
 
 
                     result.AddRange(
                         (useArchiveData == true) ?
-                            _databaseArch.Files.Find(x => x.Id == filesPrepTakeId):
+                            _databaseArch.Files.Find(x => x.Id == filesPrepTakeId) :
                             _database.Files.Find(x => x.Id == filesPrepTakeId)
                     );
 
@@ -367,7 +404,7 @@ namespace BusinessLayer.Services
                 case Folder.SelectionProcedures:
 
                     var filesProcedure = (useArchiveData == true) ?
-                        _databaseArch.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId):
+                        _databaseArch.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId) :
                         _database.SlctnProcedureFiles.Find(x => x.SlctnProcedureId == entityId);
 
                     foreach (var file in filesProcedure)
@@ -475,7 +512,7 @@ namespace BusinessLayer.Services
                             nameSpace: typeof(FileService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
-                    
+
                     case Folder.SelectionProcedures:
                         _database.SlctnProcedureFiles.Create(new SlctnProcedureFile { FileId = fileId, SlctnProcedureId = entityId });
                         _database.Save();
@@ -504,7 +541,7 @@ namespace BusinessLayer.Services
         public IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder, bool? useArchiveData)
         {
             return (useArchiveData == true) ?
-                _mapper.Map<IEnumerable<FileDTO>>(_databaseArch.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\"))):
+                _mapper.Map<IEnumerable<FileDTO>>(_databaseArch.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\"))) :
                 _mapper.Map<IEnumerable<FileDTO>>(_database.Files.Find(x => x.FilePath.Contains($@"\{contractId}\{buildingCode}\") && x.FilePath.Contains($@"\{keyFolder}\")));
         }
     }

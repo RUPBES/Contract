@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MvcLayer.Models;
-using AutoMapper;
-using BusinessLayer.Interfaces.ContractInterfaces;
-using Microsoft.AspNetCore.Authorization;
-using System.Reflection;
+﻿using AutoMapper;
 using BusinessLayer.Helpers;
+using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using MvcLayer.Models;
+using MvcLayer.Models.JSONSerializer;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MvcLayer.Controllers
 {
@@ -15,34 +17,61 @@ namespace MvcLayer.Controllers
     {
         private readonly IOrganizationService _organizationService;
         private readonly IMapper _mapper;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
+        private readonly IHttpContextUserProvider _httpHelper;
 
-        public OrganizationsController(IOrganizationService organizationService, IMapper mapper, ILoggerContract logger)
+        public OrganizationsController(IOrganizationService organizationService,
+            IMapper mapper,
+            IContractsLogger logger,
+            IHttpContextUserProvider httpHelper)
         {
             _organizationService = organizationService;
             _mapper = mapper;
             _logger = logger;
+            _httpHelper = httpHelper;
         }
 
         // GET: Organizations
-        public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)   
+        public async Task<IActionResult> Index(/*string currentFilter, int? page, string searchString, string sortOrder*/)
         {
-            ViewBag.CurrentSort = sortOrder;
-            ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
-            ViewBag.AbbrSortParm = sortOrder == "abbr" ? "abbrDesc" : "abbr";
-            ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
+            //ViewBag.CurrentSort = sortOrder;
+            //ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
+            //ViewBag.AbbrSortParm = sortOrder == "abbr" ? "abbrDesc" : "abbr";
+            //ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
 
-            if (searchString != null)
-            { page = 1; }
-            else
-            { searchString = currentFilter; }
-            ViewBag.CurrentFilter = searchString;
-            ViewBag.Page = page;
+            //if (searchString != null)
+            //{ page = 1; }
+            //else
+            //{ searchString = currentFilter; }
+            //ViewBag.CurrentFilter = searchString;
+            //ViewBag.Page = page;
 
-            if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
-                return await Task.FromResult<IActionResult>(View(_organizationService.GetPageFilter(100, page ?? 1, searchString, sortOrder)));
-            else return await Task.FromResult<IActionResult>(View(_organizationService.GetPage(100, page ?? 1)));
+            //if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+            //    return await Task.FromResult<IActionResult>(View(_organizationService.GetPageFilter(100, page ?? 1, searchString, sortOrder)));
+            //else return await Task.FromResult<IActionResult>(View(_organizationService.GetPage(100, page ?? 1)));
+
+            return await Task.FromResult<IActionResult>(View());
         }
+
+        //// GET: Organizations
+        //public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)
+        //{
+        //    ViewBag.CurrentSort = sortOrder;
+        //    ViewBag.NameSortParm = sortOrder == "name" ? "nameDesc" : "name";
+        //    ViewBag.AbbrSortParm = sortOrder == "abbr" ? "abbrDesc" : "abbr";
+        //    ViewBag.UnpSortParm = sortOrder == "unp" ? "unpDesc" : "unp";
+
+        //    if (searchString != null)
+        //    { page = 1; }
+        //    else
+        //    { searchString = currentFilter; }
+        //    ViewBag.CurrentFilter = searchString;
+        //    ViewBag.Page = page;
+
+        //    if (!String.IsNullOrEmpty(searchString) || !String.IsNullOrEmpty(sortOrder))
+        //        return await Task.FromResult<IActionResult>(View(_organizationService.GetPageFilter(100, page ?? 1, searchString, sortOrder)));
+        //    else return await Task.FromResult<IActionResult>(View(_organizationService.GetPage(100, page ?? 1)));
+        //}
 
         // GET: Organizations/Details/5
         public async Task<IActionResult> Details(int? id, int? page, string? filter)
@@ -86,18 +115,18 @@ namespace MvcLayer.Controllers
                 return await Task.FromResult<IActionResult>(View("Create", organization));
             }
 
-            var existingOrg = _organizationService.Find(o => o.Name == organization.Name).FirstOrDefault();
+            var existingOrg = _organizationService.FindBestMatch(organization.Name); // _organization.Find(o => o.Name == viewModel.ContractOrganizations[3].Organization.Name).FirstOrDefault();
 
-            if (existingOrg != null)
+            if (existingOrg.Count > 0)
             {
-                NotificationHelper.SetNotification(TempData, "Организация с таким названием уже существует", NotificationType.Warning);
+                NotificationHelper.SetNotification(TempData, $"Найдены совпадения по названию организации: {string.Join(", ", existingOrg.Select(n => n.Name))}", NotificationType.Warning);
                 return await Task.FromResult<IActionResult>(View("Create", organization));
             }
 
-            organization.Departments.RemoveAll(x=>x.Name == null);
-            organization.Phones.RemoveAll(x=>x.Number == null);
-            organization.PaymentAccount = organization.PaymentAccount?.Replace("-", "");          
-            
+            organization.Departments.RemoveAll(x => x.Name == null);
+            organization.Phones.RemoveAll(x => x.Number == null);
+            organization.PaymentAccount = organization.PaymentAccount?.Replace("-", "");
+
             _organizationService.Create(_mapper.Map<OrganizationDTO>(organization));
 
             NotificationHelper.SetNotification(TempData, $"Организация добавлена", NotificationType.Info);
@@ -113,7 +142,7 @@ namespace MvcLayer.Controllers
                 NotificationHelper.SetNotification(TempData, "Введены некорректные данные", NotificationType.Warning);
                 return await Task.FromResult<IActionResult>(NotFound());
             }
-                
+
             var organization = _organizationService.GetById((int)id);
             if (organization == null)
             {
@@ -138,7 +167,7 @@ namespace MvcLayer.Controllers
         {
             if (organization is null)
             {
-                NotificationHelper.SetNotification(TempData, "Введены некорректные данные", NotificationType.Warning);                
+                NotificationHelper.SetNotification(TempData, "Введены некорректные данные", NotificationType.Warning);
                 return await Task.FromResult<IActionResult>(View(organization));
             }
             try
@@ -147,13 +176,13 @@ namespace MvcLayer.Controllers
                 organization.Addresses.RemoveAll(x => x.FullAddress == null && x.PostIndex == null);
                 var org = _mapper.Map<OrganizationDTO>(organization);
                 _organizationService.Update(org);
-                
-                NotificationHelper.SetNotification(TempData, "Организация обновлена", NotificationType.Info);                 
+
+                NotificationHelper.SetNotification(TempData, "Организация обновлена", NotificationType.Info);
                 return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
             }
             catch
             {
-                NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);                
+                NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);
                 return await Task.FromResult<IActionResult>(View(organization));
             }
         }
@@ -177,21 +206,58 @@ namespace MvcLayer.Controllers
         //}
 
         [Authorize(Policy = "DeletePolicy")]
-        [Route("/Organizations/Delete/{id}/{page}")]
-        public IActionResult Delete(int id, int page)
+        //[Route("/Organizations/Delete/{id}/{page}")]
+        public IActionResult Delete(int id/*, int page*/)
         {
-            try
+            if (id > 0)
             {
-                _organizationService.Delete(id);                
-                NotificationHelper.SetNotification(TempData, "Организация удалена", NotificationType.Info);                
+                try
+                {
+                    _organizationService.Delete(id);
+                    NotificationHelper.SetNotification(TempData, "Организация удалена", NotificationType.Info);
+                }
+                catch (Exception)
+                {
+                    NotificationHelper.SetNotification(TempData, "Не удалось удалить организацию", NotificationType.Error);
+                }
             }
-            catch (Exception)
-            {
-                NotificationHelper.SetNotification(TempData, "Не удалось удалить организацию", NotificationType.Error);
-            }
-            return RedirectToAction(nameof(Index), new { page = page });
+            return RedirectToAction(nameof(Index)/*, new { page = page }*/);
         }
 
+
+        public async Task<IActionResult> Filter(string selectedField, int pageSize, int page, string sortDirection, string? searchText)
+        {
+            var organizations = _organizationService.Filter(pageSize, page, selectedField, sortDirection, searchText);
+
+            return await Task.FromResult<IActionResult>(Json(organizations, new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters =
+                {
+                    new DecimalConverter(),
+                    new DateFormatConverter(),
+                }
+            }));
+        }
+
+        public async Task<IActionResult> GetModalFiltering()
+        {
+            Dictionary<string, string> selection = new()
+            {
+                {"name","Полное название организации" },
+                //{"abbr","Сокращенное название организации" },
+                {"unp","УНП организации" },                
+                //{"addressFact","Адрес организации" },
+                {"address","Юр.адрес организации" },
+            };
+            return await Task.FromResult<IActionResult>(PartialView("../Shared/Partial/_FilterDataWithoutDates", selection));
+        }
+
+        public JsonResult FindDuplicates(string orgName)
+        {
+            var organizations = _organizationService.FindBestMatch(orgName);
+            return Json(_mapper.Map<IEnumerable<OrganizationsJson>>(organizations));
+        }
 
         public JsonResult GetJsonOrganizations()
         {

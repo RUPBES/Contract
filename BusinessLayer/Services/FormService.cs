@@ -16,9 +16,9 @@ public class FormService : IFormService
     private IMapper _mapper;
     private readonly IContractUoW _database;
     private readonly IContractArchiveUoW _databaseArch;
-    private readonly ILoggerContract _logger;
+    private readonly IContractsLogger _logger;
 
-    public FormService(IContractUoW database, IMapper mapper, ILoggerContract logger, IContractArchiveUoW databaseArch)
+    public FormService(IContractUoW database, IMapper mapper, IContractsLogger logger, IContractArchiveUoW databaseArch)
     {
         _database = database;
         _mapper = mapper;
@@ -239,7 +239,7 @@ public class FormService : IFormService
     */
 
 
-    public bool TryUpdateParentsForms(FormDTO form, Dictionary<int, Enums.Contract>? parentContracts, CrudOp method, FormDTO? previousStateForm, bool isOneOfMultipleDelete)
+    public bool TryUpdateParentsForms(FormDTO form, Dictionary<int, Enums.ContractType>? parentContracts, CrudOp method, FormDTO? previousStateForm, bool isOneOfMultipleDelete)
     {
         if (form == null || parentContracts?.Count < 1)
         {
@@ -385,7 +385,7 @@ public class FormService : IFormService
                return new FormDTO
                {
                    Period = forms.Period,
-                   SmrCost = forms.SmrCost,
+                   SmrCost = forms.SmrContractCost + forms.SmrNdsCost, //стоимость неизменной договорной цены
                    PnrCost = forms.PnrCost,
 
                    EquipmentCost = forms.EquipmentCost,
@@ -394,8 +394,8 @@ public class FormService : IFormService
 
                    MaterialCost = forms.MaterialCost,
                    GenServiceCost = forms.GenServiceCost,
-                   TotalCost = forms.TotalCost,
-                   TotalNoNdsCost = (forms.TotalCost / 1.2m),
+                   TotalCost = forms.TotalCostToBePaid,
+                   TotalNoNdsCost = (forms.TotalCostToBePaid/ 1.2m), //из-за ошибки вычисления TotalCost в БД, вместо + должен быть минус
                };
            })
            .OrderBy(x => x.Period)
@@ -413,7 +413,7 @@ public class FormService : IFormService
                return new FormDTO
                {
                    Period = forms.Period,
-                   SmrCost = forms.SmrCost,
+                   SmrCost = forms.SmrContractCost + forms.SmrNdsCost, //стоимость неизменной договорной цены
                    PnrCost = forms.PnrCost,
 
                    EquipmentCost = forms.EquipmentCost,
@@ -422,8 +422,8 @@ public class FormService : IFormService
 
                    MaterialCost = forms.MaterialCost,
                    GenServiceCost = forms.GenServiceCost,
-                   TotalCost = forms.TotalCost,
-                   TotalNoNdsCost = (forms.TotalCost / 1.2m),
+                   TotalCost = forms.TotalCostToBePaid,
+                   TotalNoNdsCost = (forms.TotalCostToBePaid / 1.2m), //из-за ошибки вычисления TotalCost в БД, вместо + должен быть минус
                };
            })
            .OrderBy(x => x.Period)

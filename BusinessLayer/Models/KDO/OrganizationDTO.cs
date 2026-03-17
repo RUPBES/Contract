@@ -36,6 +36,12 @@ namespace BusinessLayer.Models.KDO
         /// </summary>
         public string? PaymentAccount { get; set; }
 
+        public string FullAddress { get; set; }
+        public string FullAddressFact { get; set; }
+        public string PostIndex { get; set; }
+        public string SiteAddress { get; set; }
+        public string PhoneNumbers { get; set; }
+
         public List<AddressDTO> Addresses { get; set; } = new List<AddressDTO>();
 
         public List<ContractOrganizationDTO> ContractOrganizations { get; set; } = new List<ContractOrganizationDTO>();

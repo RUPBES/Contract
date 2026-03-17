@@ -9,5 +9,6 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     {
         IEnumerable<VPaymentCashDTO> GetPayableCash(FilterPayableModel filter, string[] organizationName);
         IndexViewModel GetPayableCash(int pageSize, int page, FilterPayableModel filter, string[] organizationName, bool? useArchiveData);
+        IndexViewModel Filter(int pageSize, int pageNum, string type, string? sortDirection, string org, string? searchText, string? whereCondition);
     }
 }

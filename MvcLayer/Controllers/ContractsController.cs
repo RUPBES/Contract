@@ -3,1113 +3,1285 @@ using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
-using BusinessLayer.Models;
 using BusinessLayer.Models.KDO;
-using BusinessLayer.Models.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using MvcLayer.Models;
-using System.Diagnostics;
+using MvcLayer.Models.JSONSerializer;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace MvcLayer.Controllers
+namespace MvcLayer.Controllers;
+
+[Authorize(Policy = "ViewPolicy")]
+public class ContractsController : Controller
 {
-    [Authorize(Policy = "ViewPolicy")]
-    public class ContractsController : Controller
+    private readonly IVContractService _vContractService;
+    private readonly IVContractEnginService _vContractEnginService;
+    private readonly IContractService _contractService;
+    private readonly IScopeWorkService _scopeWorkService;
+    private readonly IOrganizationService _organization;
+    private readonly IEmployeeService _employee;
+    private readonly IFormService _formService;
+    private readonly IAmendmentService _amendmentService;
+    private readonly ITypeWorkService _typeWork;
+    private readonly IMapper _mapper;
+    private readonly IHttpContextUserProvider _httpHelper;
+
+    public ContractsController(IContractService contractService,
+        IMapper mapper,
+        IOrganizationService organization,
+        IEmployeeService employee,
+        ITypeWorkService typeWork,
+        IVContractService vContractService,
+        IVContractEnginService vContractEnginService,
+        IScopeWorkService scopeWorkService,
+        IFormService formService,
+        IAmendmentService amendmentService,
+        IHttpContextUserProvider httpHelper
+   )
     {
-        private readonly IVContractService _vContractService;
-        private readonly IVContractEnginService _vContractEnginService;
-        private readonly IContractService _contractService;
-        private readonly IScopeWorkService _scopeWorkService;
-        private readonly IOrganizationService _organization;
-        private readonly IEmployeeService _employee;
-        private readonly IFormService _formService;
-        private readonly IAmendmentService _amendmentService;
-        private readonly ITypeWorkService _typeWork;
-        private readonly IMapper _mapper;
-        private readonly IHttpContextUserProvider _httpHelper;
-        private readonly ArchiveSettings _archiveOptions;
+        _contractService = contractService;
+        _mapper = mapper;
+        _organization = organization;
+        _employee = employee;
+        _typeWork = typeWork;
+        _vContractService = vContractService;
+        _vContractEnginService = vContractEnginService;
+        _scopeWorkService = scopeWorkService;
+        _formService = formService;
+        _amendmentService = amendmentService;
+        _httpHelper = httpHelper;
+    }
 
-        public ContractsController(IContractService contractService, IMapper mapper, IOrganizationService organization,
-            IEmployeeService employee, ITypeWorkService typeWork, IVContractService vContractService, IVContractEnginService vContractEnginService,
-            IScopeWorkService scopeWorkService, IFormService formService, IAmendmentService amendmentService, IHttpContextUserProvider httpHelper,
-            IOptions<ArchiveSettings> archiveOptions)
+
+    #region CRUD CONTRACT
+
+    public IActionResult Index()
+    {
+        ViewBag.IsEngineering = false;
+        ViewBag.UseArchiveData = false;
+        return View();
+    }
+
+    public IActionResult Engineerings()
+    {
+        ViewBag.IsEngineering = true;
+        ViewBag.UseArchiveData = false;
+        return View("Index");
+    }
+
+    //public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+    //{
+    //    var organizationName = _httpHelper.GetUserOrganizationCodes();
+
+    //    if (page < 1 || searchString != null)
+    //    {
+    //        page = 1;
+    //    }
+    //    else
+    //    {
+    //        searchString = currentFilter;
+    //        typeSearch = currentType;
+    //    }
+
+    //    ViewData["Page"] = page; //для скрипта загрузки отсортированного списка договоров через AJAX 
+    //    ViewData["IsEngineering"] = false;
+    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
+
+    //    ViewData["CurrentSort"] = sortOrder;
+    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
+    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
+    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+
+    //    ViewData["CurrentFilter"] = searchString;
+    //    ViewData["CurrentType"] = typeSearch;
+
+    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
+    //    {
+    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(150, page ?? 1, searchString, typeSearch, sortOrder, organizationName)));
+    //    }
+    //    else
+    //    {
+    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(150, page ?? 1, organizationName)));
+    //    }
+
+    //    //return View();
+    //}
+
+    //public async Task<IActionResult> Engineerings(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+    //{
+    //    var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+
+    //    if (searchString != null)
+    //    {
+    //        page = 1;
+    //    }
+    //    else
+    //    {
+    //        searchString = currentFilter;
+    //        typeSearch = currentType;
+    //    }
+
+    //    ViewBag.IsEngineering = false;
+    //    ViewBag.UseArchiveData = false;
+
+    //    //ViewData["IsEngineering"] = true;
+    //    ViewData["CurrentSort"] = sortOrder;
+    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
+    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
+    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+    //    ViewData["CurrentFilter"] = searchString;
+    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
+
+    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
+    //    {
+    //        return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName)));
+    //    }
+    //    else
+    //    {
+    //        return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPage(100, page ?? 1, organizationName)));
+    //    }
+    //}
+
+
+    public async Task<IActionResult> Details(int? id)
+    {
+        if (!id.HasValue)
         {
-            _contractService = contractService;
-            _mapper = mapper;
-            _organization = organization;
-            _employee = employee;
-            _typeWork = typeWork;
-            _vContractService = vContractService;
-            _vContractEnginService = vContractEnginService;
-            _scopeWorkService = scopeWorkService;
-            _formService = formService;
-            _amendmentService = amendmentService;
-            _httpHelper = httpHelper;
-            _archiveOptions = archiveOptions.Value;
+            NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
+            return BadRequest();
         }
 
-
-        #region CRUD CONTRACT
-
-        public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+        var contract = _vContractService.GetById(id.Value);
+        if (contract == null)
         {
-            var organizationName = _httpHelper.GetUserOrganizationCodes();
+            return NotFound();
+        }
+        return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
+    }
 
-            if (page < 1 || searchString != null)
+    [Authorize(Policy = "CreatePolicy")]
+    public async Task<IActionResult> Create(int? genContrId = null, bool isAgreement = false, bool isEngineering = false, bool isSubContract = false)
+    {
+        var orgCode = _httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes";
+        var model = new ContractViewModel
+        {
+            IsAgreementContract = isAgreement,
+            IsEngineering = isEngineering,
+            IsSubContract = isSubContract,
+            Author = orgCode,
+            Owner = orgCode,
+        };
+
+        if (genContrId.HasValue)
+        {
+            if (isAgreement)
             {
-                page = 1;
+                model.AgreementContractId = genContrId;
+                var agreementContract = _contractService.GetById(genContrId.Value);
+                if (agreementContract != null)
+                {
+                    model.NameObject = agreementContract.NameObject;
+                }
             }
-            else
+            else if (isSubContract)
             {
-                searchString = currentFilter;
-                typeSearch = currentType;
+                model.SubContractId = genContrId;
+                var subContract = _contractService.GetById(genContrId.Value);
+                if (subContract != null)
+                {
+                    model.NameObject = subContract.NameObject;
+                }
             }
-
-            ViewData["IsEngineering"] = false;
-            ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-            ViewData["CurrentSort"] = sortOrder;
-            ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-            ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-            ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-            ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-            ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-
-            ViewData["CurrentFilter"] = searchString;
-            ViewData["CurrentType"] = typeSearch;
-
-            
-
-            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
+            if (isAgreement || isSubContract || isEngineering)
             {
-                return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(150, page ?? 1, searchString, typeSearch, sortOrder, organizationName)));
-            }
-            else
-            {
-                return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(150, page ?? 1, organizationName)));
+                var mainContract = _contractService.GetById((int)genContrId);
+                model.NameObject = mainContract.NameObject;
             }
         }
 
-        public async Task<IActionResult> Engineerings(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+        for (int i = 0; i < 3; i++)
         {
-            var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-
-            if (searchString != null)
-            {
-                page = 1;
-            }
-            else
-            {
-                searchString = currentFilter;
-                typeSearch = currentType;
-            }
-
-            ViewData["IsEngineering"] = true;
-            ViewData["CurrentSort"] = sortOrder;
-            ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-            ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-            ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-            ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-            ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            ViewData["CurrentFilter"] = searchString;
-            ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-            {
-                return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName)));
-            }
-            else
-            {
-                return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPage(100, page ?? 1, organizationName)));
-            }
+            model.EmployeeContracts.Add(new EmployeeContractDTO());
         }
-        public async Task<IActionResult> Details(int? id)
+        for (int i = 0; i < 4; i++)
         {
-            if (!id.HasValue)
-            {
-                NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
-                return BadRequest();
-            }
-
-            var contract = _vContractService.GetById(id.Value);
-            if (contract == null)
-            {
-                return NotFound();
-            }
-            return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
+            model.ContractOrganizations.Add(new ContractOrganizationDTO());
         }
 
-        [Authorize(Policy = "CreatePolicy")]
-        public async Task<IActionResult> Create(int? genContrId = null, bool isAgreement = false, bool isEngineering = false, bool isSubContract = false)
+        model.TypeWorkContracts.Add(new TypeWorkContractDTO());
+        model.SelectionProcedures.Add(new SelectionProcedureDTO());
+
+        return await Task.FromResult<IActionResult>(View(model));
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "CreatePolicy")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(ContractViewModel contract)
+    {
+        if (contract is null)
         {
-            var orgCode = _httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes";
-            var model = new ContractViewModel
-            {
-                IsAgreementContract = isAgreement,
-                IsEngineering = isEngineering,
-                IsSubContract = isSubContract,
-                Author = orgCode,
-                Owner = orgCode,
-            };
-
-            if (genContrId.HasValue)
-            {
-                if (isAgreement)
-                {
-                    model.AgreementContractId = genContrId;
-                    var agreementContract = _contractService.GetById(genContrId.Value);
-                    if (agreementContract != null)
-                    {
-                        model.NameObject = agreementContract.NameObject;
-                    }
-                }
-                else if (isSubContract)
-                {
-                    model.SubContractId = genContrId;
-                    var subContract = _contractService.GetById(genContrId.Value);
-                    if (subContract != null)
-                    {
-                        model.NameObject = subContract.NameObject;
-                    }
-                }
-                if (isAgreement || isSubContract || isEngineering)
-                {
-                    var mainContract = _contractService.GetById((int)genContrId);
-                    model.NameObject = mainContract.NameObject;
-                }
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                model.EmployeeContracts.Add(new EmployeeContractDTO());
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                model.ContractOrganizations.Add(new ContractOrganizationDTO());
-            }
-
-            model.TypeWorkContracts.Add(new TypeWorkContractDTO());
-            model.SelectionProcedures.Add(new SelectionProcedureDTO());
-
-            return await Task.FromResult<IActionResult>(View(model));
+            NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
+            return await Task.FromResult<IActionResult>(View(contract));
         }
 
-        [HttpPost]
-        [Authorize(Policy = "CreatePolicy")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(ContractViewModel contract)
+        int returnContractId = 0;
+
+        if (contract?.IsSubContract == true || contract?.IsAgreementContract == true)
         {
-            if (contract is null)
+            returnContractId = (int)(contract?.SubContractId ?? contract?.AgreementContractId);
+
+            var gencontract = _contractService?.Find(x => x.Id == (contract?.SubContractId ?? contract?.AgreementContractId))
+                ?.Select(x => new
+                {
+                    x.Id,
+                    Price = x.ContractPrice ?? 0,
+                    StartDate = x.Date,
+                    EndDate = x.EnteringTerm
+                })
+                ?.FirstOrDefault();
+
+            //проверка на доп.соглашение. если есть, у него берем даты и стоимость!
+
+            var genContrAmendment = _amendmentService.Find(x => x.ContractId == gencontract?.Id && x.ContractId != null).OrderBy(x => x.Date);
+
+            if (genContrAmendment.Any())
             {
-                NotificationHelper.SetNotification(TempData, "Некорректные данные", NotificationType.Warning);
-                return await Task.FromResult<IActionResult>(View(contract));
+                gencontract = genContrAmendment?.Select(x => new
+                {
+                    Id = x.ContractId ?? 0,
+                    Price = x.ContractPrice ?? 0,
+                    StartDate = x.DateBeginWork,
+                    EndDate = x.DateEntryObject
+                })
+                ?.LastOrDefault();
             }
 
-            int returnContractId = 0;
 
-            if (contract?.IsSubContract == true || contract?.IsAgreementContract == true)
+
+            ///проверяем стоимость субподрядных договоров и соглашений, чтобы не больше генподрядного договора была
+            if (gencontract?.Price < contract.ContractPrice)
             {
-                returnContractId = (int)(contract?.SubContractId ?? contract?.AgreementContractId);
-                
-                var gencontract = _contractService?.Find(x => x.Id == (contract?.SubContractId ?? contract?.AgreementContractId))
-                    ?.Select(x => new
-                    {
-                        x.Id,
-                        Price = x.ContractPrice ?? 0,
-                        StartDate = x.Date,
-                        EndDate = x.EnteringTerm
-                    })
-                    ?.FirstOrDefault();
-
-                //проверка на доп.соглашение. если есть, у него берем даты и стоимость!
-
-                var genContrAmendment = _amendmentService.Find(x => x.ContractId == gencontract?.Id && x.ContractId != null).OrderBy(x => x.Date);
-
-                if (genContrAmendment.Any())
-                {
-                    gencontract = genContrAmendment?.Select(x => new
-                    {
-                        Id = x.ContractId ?? 0,
-                        Price = x.ContractPrice ?? 0,
-                        StartDate = x.DateBeginWork,
-                        EndDate = x.DateEntryObject
-                    })
-                    ?.LastOrDefault();
-                }
-
-
-
-                ///проверяем стоимость субподрядных договоров и соглашений, чтобы не больше генподрядного договора была
-                if (gencontract?.Price < contract.ContractPrice)
-                {
-                    NotificationHelper.SetNotification(TempData, $"Договорная цена не может быть больше цены ген.подрядного договора!", NotificationType.Warning);
-                    return View(contract);
-                }
-
-                ///проверяем даты начала и срока действия субподрядных договоров и соглашений, чтобы не больше генподрядного договора были
-                if (gencontract?.StartDate?.Date > contract.Date || gencontract?.EndDate?.Date < contract.EnteringTerm)
-                {
-                    NotificationHelper.SetNotification(
-                        TempData,
-                        $"Период действия довогора не должен выходить за период действия ген.подрядного договора ({gencontract?.StartDate?.ToShortDateString()} - {gencontract?.EndDate?.ToShortDateString()})",
-                        NotificationType.Warning);
-                    return View(contract);
-                }
-            }
-
-            // проверка, существует ли договор с таким номером
-            if (_contractService.IsContractNumberExists(contract.Number) || contract.Number is null)
-            {
-                NotificationHelper.SetNotification(TempData, $"Договор с номером № {contract.Number} уже существует!", NotificationType.Warning);
+                NotificationHelper.SetNotification(TempData, $"Договорная цена не может быть больше цены ген.подрядного договора!", NotificationType.Warning);
                 return View(contract);
             }
 
-            if (contract.PaymentCA.Count == 0)
+            ///проверяем даты начала и срока действия субподрядных договоров и соглашений, чтобы не больше генподрядного договора были
+            if (gencontract?.StartDate?.Date > contract.Date || gencontract?.EndDate?.Date < contract.EnteringTerm)
             {
-                contract.PaymentCA.Add("Без авансов");
+                NotificationHelper.SetNotification(
+                    TempData,
+                    $"Период действия довогора не должен выходить за период действия ген.подрядного договора ({gencontract?.StartDate?.ToShortDateString()} - {gencontract?.EndDate?.ToShortDateString()})",
+                    NotificationType.Warning);
+                return View(contract);
             }
-           
-            contract.FundingSource = string.Join(", ", contract.FundingFS);
-            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-            contract.PaymentСonditionsRaschet =
-                GeneratePaymentDescription(contract.PaymentConditionsDaysRaschet, contract?.PaymentСonditionsRaschet, contract?.IsEngineering);
+        }
 
-            contract.ContractOrganizations.RemoveAll(x => x.OrganizationId == 0);
-            contract.EmployeeContracts.RemoveAll(x => x.EmployeeId == 0);
-            contract.TypeWorkContracts.RemoveAll(x => x.TypeWorkId == 0);
+        //todo: наверное удалить надо, бывает много одних и тех же номеров
+        //// проверка, существует ли договор с таким номером
+        //if (_contractService.IsContractNumberExists(contract.Number) || contract.Number is null)
+        //{
+        //    NotificationHelper.SetNotification(TempData, $"Договор с номером № {contract.Number} уже существует!", NotificationType.Warning);
+        //    return View(contract);
+        //}
 
-            var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
+        if (contract.PaymentCA.Count == 0)
+        {
+            contract.PaymentCA.Add("Без авансов");
+        }
 
-            if (contractId is null)
+        contract.FundingSource = string.Join(", ", contract.FundingFS);
+        contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+        contract.PaymentСonditionsRaschet =
+            GeneratePaymentDescription(contract.PaymentConditionsDaysRaschet, contract?.PaymentСonditionsRaschet, contract?.IsEngineering);
+
+        contract.ContractOrganizations.RemoveAll(x => x.OrganizationId == 0);
+        contract.EmployeeContracts.RemoveAll(x => x.EmployeeId == 0);
+        contract.TypeWorkContracts.RemoveAll(x => x.TypeWorkId == 0);
+
+        var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
+
+        if (contractId is null)
+        {
+            NotificationHelper.SetNotification(TempData, $"Ошибка добавления", NotificationType.Warning);
+            return await Task.FromResult<IActionResult>(View(nameof(Index)));
+        }
+
+        NotificationHelper.SetNotification(TempData, $"Договор создан", NotificationType.Info);
+        ///если с подобъектами перенаправляем на заполнение подобъектов
+        if (contract.IsMultiple == true)
+        {
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(CreateSubObj), new { Id = contractId, returnContractId = returnContractId }));
+        }
+        return await Task.FromResult<IActionResult>(RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = returnContractId }));
+    }
+
+
+    [Authorize(Policy = "CreatePolicy")]
+    public IActionResult CreateSubObj(int? id, int returnContractId = 0)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+        ViewData["returnContractId"] = returnContractId;
+        ViewBag.MultipleContractId = id;
+
+        return View();
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "CreatePolicy")]
+    public IActionResult CreateSubObj(ContractViewModel viewModel)
+    {
+        var orgCode = _httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes";
+
+        if (viewModel is not null)
+        {
+            var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
+            if (!oldContract.IsMultiple)
             {
-                NotificationHelper.SetNotification(TempData, $"Ошибка добавления", NotificationType.Warning);
-                return await Task.FromResult<IActionResult>(View(nameof(Index)));
+                oldContract.IsMultiple = true;
+                _contractService.Update(oldContract);
             }
 
-            NotificationHelper.SetNotification(TempData, $"Договор создан", NotificationType.Info);
-            ///если с подобъектами перенаправляем на заполнение подобъектов
-            if (contract.IsMultiple == true)
+            if (viewModel.PaymentCA.Count == 0)
             {
-                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(CreateSubObj), new { Id = contractId, returnContractId = returnContractId }));
+                viewModel.PaymentCA.Add("Без авансов");
             }
-            return await Task.FromResult<IActionResult>(RedirectToAction("ChoosePeriod", "ScopeWorks", new { contractId = contractId, returnContractId = returnContractId }));
+
+            viewModel.PaymentСonditionsAvans = string.Join(", ", viewModel.PaymentCA);
+            viewModel.IsOneOfMultiple = true;
+            viewModel.Author ??= orgCode;
+            viewModel.Owner ??= orgCode;
+
+            _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
+            return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });
+        }
+        return View();
+    }
+
+    [Authorize(Policy = "EditPolicy")]
+    public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
+    {
+        if (!id.HasValue)
+        {
+            NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
+            return BadRequest();
+        }
+
+        var contract = _contractService.GetById(id.Value);
+
+        if (contract is null)
+        {
+            NotificationHelper.SetNotification(TempData, $"Не найден договор", NotificationType.Warning);
+            return NotFound();
+        }
+
+        if (contract is { IsSubContract: false, IsAgreementContract: false })
+        {
+            contract = AddOrganization(contract, o => o.IsClient == true, org => org.IsClient = true);
+            contract = AddOrganization(contract, o => o.IsGenContractor == true, org => org.IsGenContractor = true);
+            contract = AddOrganization(contract, o => o.IsResponsibleForWork == true, org => org.IsResponsibleForWork = true);
+        }
+        else if (!contract.ContractOrganizations.Any())
+        {
+            contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = id.Value });
         }
 
 
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreateSubObj(int? id, int returnContractId = 0)
+        if (!contract.EmployeeContracts.Any())
         {
-            if (id == null)
+            contract.EmployeeContracts.Add(new EmployeeContractDTO { ContractId = id.Value, IsSignatory = true });
+            contract.EmployeeContracts.Add(new EmployeeContractDTO { ContractId = id.Value, IsResponsible = true });
+        }
+        else if (contract.EmployeeContracts.Count < 2
+            && (!contract.EmployeeContracts[0].IsSignatory || !contract.EmployeeContracts[0].IsResponsible))
+        {
+            contract.EmployeeContracts.Add(new EmployeeContractDTO
             {
-                return NotFound();
-            }
-            ViewData["returnContractId"] = returnContractId;
-            ViewBag.MultipleContractId = id;
+                ContractId = id.Value,
+                IsResponsible = contract.EmployeeContracts[0].IsResponsible == true ? false : true,
+                IsSignatory = contract.EmployeeContracts[0].IsResponsible == true ? true : false
+            });
+        }
 
+        if (!contract.TypeWorkContracts.Any())
+        {
+            contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = id.Value });
+        }
+
+        var viewContract = _mapper.Map<ContractViewModel>(contract);
+
+        if (contract?.FundingSource is not null)
+        {
+            viewContract.FundingFS.AddRange(contract?.FundingSource?.Split(", "));
+        }
+
+        if (_amendmentService.Find(x => x.ContractId == contract?.Id).Select(x => x.Id).Any())
+        {
+            ViewData["IsAmendment"] = true;
+        }
+
+        ViewData["returnContractId"] = returnContractId;
+
+        return await Task.FromResult<IActionResult>(View(viewContract));
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "EditPolicy")]
+    public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
+    {
+        contract.ContractOrganizations.RemoveAll(ec => ec.OrganizationId == 0);
+        contract.EmployeeContracts.RemoveAll(ec => ec.EmployeeId == 0);
+        contract.TypeWorkContracts.RemoveAll(ec => ec.TypeWorkId == 0);
+
+        contract.FundingSource = string.Join(", ", contract.FundingFS);
+        contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+        contract.PaymentСonditionsRaschet = GeneratePaymentDescription(contract.PaymentConditionsDaysRaschet, contract.PaymentСonditionsRaschet, contract.IsEngineering);
+
+        try
+        {
+            // если у просроченного договора изменили дату окончания работ, проверяем - если больше сегодняшнего дня то удаляем (если есть) статус ЗАКРЫТ и ПРОСРОЧЕН
+            if (contract?.DateEndWork > DateTime.Now)
+            {
+                contract.IsClosed = false;
+                contract.IsExpired = false;
+            }
+
+            _contractService.Update(_mapper.Map<ContractDTO>(contract));
+            NotificationHelper.SetNotification(TempData, "Договор обновлен", NotificationType.Info);
+        }
+        catch (Exception)
+        {
+            NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);
+        }
+
+        if (returnContractId != 0)
+        {
+            return await Task.FromResult<IActionResult>(RedirectToAction("Details", new { id = returnContractId }));
+        }
+
+        if (contract?.IsEngineering == true)
+        {
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
+        }
+        else
+        {
+            return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
+        }
+    }
+
+
+    [Authorize(Policy = "EditPolicy")]
+    public async Task<IActionResult> EditSubObj(int? id, int returnContractId = 0)
+    {
+        ViewData["returnContractId"] = returnContractId;
+
+        var contract = _contractService.GetById((int)id);
+        if (contract == null)
+        {
+            return NotFound();
+        }
+
+        var viewContract = _mapper.Map<ContractViewModel>(contract);
+
+        return await Task.FromResult<IActionResult>(View(viewContract));
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "EditPolicy")]
+    public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
+    {
+        contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+        try
+        {
+            _contractService.Update(_mapper.Map<ContractDTO>(contract));
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+        }
+
+        if (returnContractId != 0)
+        {
+            return RedirectToAction(nameof(Details), new { id = returnContractId });
+        }
+        else if (contract.IsEngineering == true)
+        {
+            return RedirectToAction(nameof(Engineerings));
+        }
+        else
+        {
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
+        }
+    }
+
+
+    [Authorize(Policy = "DeletePolicy")]
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null || id < 1)
+        {
+            return await Task.FromResult<IActionResult>(NotFound());
+        }
+
+        var contract = _contractService.GetById((int)id);
+        if (contract == null)
+        {
+            return await Task.FromResult<IActionResult>(NotFound());
+        }
+
+        return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
+    }
+
+    [Authorize(Policy = "DeletePolicy")]
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id, bool IsEngineering)
+    {
+        if (id < 1)
+        {
+            NotificationHelper.SetNotification(TempData, $"Ошибка удаления", NotificationType.Warning);
             return View();
         }
 
-        [HttpPost]
-        [Authorize(Policy = "CreatePolicy")]
-        public IActionResult CreateSubObj(ContractViewModel viewModel)
+        ContractType thisContractType;
+        var parentContracts = _contractService.GetParents(id, out thisContractType);
+
+        /* если генподрядный договор просто удаляем всю инфу */
+
+        if (parentContracts?.Count > 0 && thisContractType is ContractType.GenСontract)
         {
-            var orgCode = _httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes";
-
-            if (viewModel is not null)
-            {
-                var oldContract = _contractService.GetById((int)viewModel.MultipleContractId);
-                if (!oldContract.IsMultiple)
-                {
-                    oldContract.IsMultiple = true;
-                    _contractService.Update(oldContract);
-                }
-
-                if (viewModel.PaymentCA.Count == 0)
-                {
-                    viewModel.PaymentCA.Add("Без авансов");
-                }
-
-                viewModel.PaymentСonditionsAvans = string.Join(", ", viewModel.PaymentCA);
-                viewModel.IsOneOfMultiple = true;
-                viewModel.Author ??= orgCode;
-                viewModel.Owner ??= orgCode;
-
-                _contractService.Create(_mapper.Map<ContractDTO>(viewModel));
-                return RedirectToAction(nameof(Details), new { id = viewModel.MultipleContractId });
-            }
-            return View();
-        }
-
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> Edit(int? id, int returnContractId = 0)
-        {
-            ViewData["returnContractId"] = returnContractId;
-
-            if (!id.HasValue)
-            {
-                NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
-                return BadRequest();
-            }
-
-            var contract = _contractService.GetById(id.Value);
-            if (contract == null)
-            {
-                NotificationHelper.SetNotification(TempData, $"Не найден договор", NotificationType.Warning);
-                return NotFound();
-            }
-
-            //todo: удалить и переписать
-            #region удалить все в модели и заполнить новым!
-
-
-            if (contract.IsSubContract != true && contract.IsAgreementContract != true)
-            {
-                if (contract.ContractOrganizations.FirstOrDefault(x => x.IsClient == true) is null)
-                {
-                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsClient = true });
-                }
-
-                if (contract.ContractOrganizations.FirstOrDefault(x => x.IsGenContractor == true) is null)
-                {
-                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsGenContractor = true });
-                }
-
-                if (contract.ContractOrganizations.FirstOrDefault(x => x.IsResponsibleForWork == true) is null)
-                {
-                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id, IsResponsibleForWork = true });
-                }
-            }
-            else
-            {
-                if (contract.ContractOrganizations.Count < 1)
-                {
-                    contract.ContractOrganizations.Add(new ContractOrganizationDTO { ContractId = (int)id });
-                }
-            }
-
-            if (contract.EmployeeContracts.Count < 1)
-            {
-                contract.EmployeeContracts.Add(new EmployeeContractDTO { ContractId = (int)id, IsSignatory = true });
-                contract.EmployeeContracts.Add(new EmployeeContractDTO { ContractId = (int)id, IsResponsible = true });
-            }
-            else if (contract.EmployeeContracts.Count < 2)
-            {
-                if (contract.EmployeeContracts[0].IsSignatory != true || contract.EmployeeContracts[0].IsResponsible != true)
-                {
-                    contract.EmployeeContracts.Add(new EmployeeContractDTO
-                    {
-                        ContractId = (int)id,
-                        IsResponsible = contract.EmployeeContracts[0].IsResponsible == true ? false : true,
-                        IsSignatory = contract.EmployeeContracts[0].IsResponsible == true ? true : false
-                    });
-                }
-            }
-
-            if (contract.TypeWorkContracts.Count < 1)
-            {
-                contract.TypeWorkContracts.Add(new TypeWorkContractDTO { ContractId = (int)id });
-            }
-            #endregion
-
-            var viewContract = _mapper.Map<ContractViewModel>(contract);
-            if (contract?.FundingSource is not null)
-            {
-                viewContract.FundingFS.AddRange(contract?.FundingSource?.Split(", "));
-            }
-            if (_amendmentService.Find(x => x.ContractId == contract.Id).Select(x => x.Id).FirstOrDefault() != 0)
-            {
-                ViewData["IsAmendment"] = true;
-            }
-            return await Task.FromResult<IActionResult>(View(viewContract));
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> Edit(ContractViewModel contract, int returnContractId = 0)
-        {
-            contract.ContractOrganizations.RemoveAll(ec => ec.OrganizationId == 0);
-            contract.EmployeeContracts.RemoveAll(ec => ec.EmployeeId == 0);
-            contract.TypeWorkContracts.RemoveAll(ec => ec.TypeWorkId == 0);
-            contract.FundingSource = string.Join(", ", contract.FundingFS);
-            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-            contract.PaymentСonditionsRaschet = GeneratePaymentDescription(contract.PaymentConditionsDaysRaschet, contract.PaymentСonditionsRaschet, contract.IsEngineering);
-
-            try
-            {
-                // если у просроченного договора изменили дату окончания работ, проверяем - если больше сегодняшнего дня то удаляем (если есть) статус ЗАКРЫТ и ПРОСРОЧЕН
-                if (contract?.DateEndWork > DateTime.Now)
-                {
-                    contract.IsClosed = false;
-                    contract.IsExpired = false;
-                }
-
-                _contractService.Update(_mapper.Map<ContractDTO>(contract));
-                NotificationHelper.SetNotification(TempData, "Договор обновлен", NotificationType.Info);
-            }
-            catch (Exception)
-            {
-                NotificationHelper.SetNotification(TempData, "Ошибка обновления", NotificationType.Error);
-            }
-
-            if (returnContractId != 0)
-            {
-                return await Task.FromResult<IActionResult>(RedirectToAction("Details", new { id = returnContractId }));
-            }
-            else if (contract?.IsEngineering == true)
-            {
-                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
-            }
-            else
-            {
-                return await Task.FromResult<IActionResult>(RedirectToAction("Index"));
-            }
-        }
-
-
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> EditSubObj(int? id, int returnContractId = 0)
-        {
-            ViewData["returnContractId"] = returnContractId;
-
-            var contract = _contractService.GetById((int)id);
-            if (contract == null)
-            {
-                return NotFound();
-            }
-
-            var viewContract = _mapper.Map<ContractViewModel>(contract);
-
-            return await Task.FromResult<IActionResult>(View(viewContract));
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "EditPolicy")]
-        public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
-        {
-            contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
-            try
-            {
-                _contractService.Update(_mapper.Map<ContractDTO>(contract));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-            }
-
-            if (returnContractId != 0)
-            {
-                return RedirectToAction(nameof(Details), new { id = returnContractId });
-            }
-            else if (contract.IsEngineering == true)
-            {
-                return RedirectToAction(nameof(Engineerings));
-            }
-            else
-            {
-                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
-            }
-        }
-
-
-        [Authorize(Policy = "DeletePolicy")]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || id < 1)
-            {
-                return await Task.FromResult<IActionResult>(NotFound());
-            }
-
-            var contract = _contractService.GetById((int)id);
-            if (contract == null)
-            {
-                return await Task.FromResult<IActionResult>(NotFound());
-            }
-
-            return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
-        }
-
-        [Authorize(Policy = "DeletePolicy")]
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id, bool IsEngineering)
-        {
-            if (id < 1)
-            {
-                NotificationHelper.SetNotification(TempData, $"Ошибка удаления", NotificationType.Warning);
-                return View();
-            }
-
-            Contract thisContractType;
-            var parentContracts = _contractService.GetParents(id, out thisContractType);
-
-            /*
-             * Обновление информации у родительских договоров
-             */
-
-            if (parentContracts?.Count > 0 && thisContractType != Contract.GenСontract)
-            {
-                var forms = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false);
-                var scopes = _scopeWorkService.GetLastScope(id, isOwnForces: false);
-
-                if (thisContractType == Contract.MultipleContract) //если подобъект => обновление родит. договоров только вычитанием существующих данных, запрещая создание новой в случае отсутствия соответствующей записи
-                {
-                    var scopeOwns = _scopeWorkService.GetLastScope(id, isOwnForces: true);
-                    var formsOwns = _formService.Find(x => x.ContractId == id && x.IsOwnForces == true);
-
-                    _scopeWorkService.TryUpdateParentsScopeCosts(scopeOwns, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
-                    _scopeWorkService.TryUpdateParentsScopeCosts(scopes, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
-
-                    foreach (var form in formsOwns) // обновляем справки с3-а родительских договоров
-                    {
-                        _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
-                    }
-                    foreach (var form in forms) // обновляем справки с3-а родительских договоров соб.силами
-                    {
-                        _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
-                    }
-                }
-                else
-                {
-                    foreach (var form in forms) // обновляем справки с3-а родительских договоров соб.силами
-                    {
-                        _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE);
-                    }
-                    _scopeWorkService.TryUpdateParentsScopeCosts(scopes, parentContracts, CrudOp.DELETE);
-                }
-            }
-
-            var childrenContracts = _contractService.GetChildren(id);
-
-            /*
-            *  Удаление договора
-            */
-
             _contractService.Delete(id);
             NotificationHelper.SetNotification(TempData, $"Договор удален", NotificationType.Info);
 
-            /*
-            *  Удаление вложенных договоров
-            */
-
-            foreach (var chieldId in childrenContracts) // удаляем вложенные договора
-            {
-                _contractService.Delete(chieldId);
-            }
-
-            int? genContrId = parentContracts?.Where(x => x.Value == Contract.GenСontract)?.FirstOrDefault().Key;
-
-
-            if (genContrId.HasValue) //после удаления, проверяем есть у генподряда договора подобъекты, если нет, устанавливаем флаг, что он больше не составной 
-            {
-                var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == genContrId.Value).Count();
-                if (subObj == 0)
-                {
-                    try
-                    {
-                        var contractEdit = _contractService.GetById(genContrId.Value);
-                        if (contractEdit != null)
-                        {
-                            contractEdit.IsMultiple = false;
-                            _contractService.Update(contractEdit);
-                            var scopesGen = _scopeWorkService.Find(x => x.ContractId == genContrId);
-                            var hasChildren = _contractService.GetChildren(genContrId.Value).Count() > 0 ? true : false;
-                            if (!hasChildren) // если нет вложенных договоров удаляем объемы работ все у генподрядного договора
-                            {
-                                foreach (var item in scopesGen)
-                                {
-                                    _scopeWorkService.Delete(item.Id);
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
-                    }
-                }
-            }
-
-
-            if (thisContractType != Contract.GenСontract && genContrId.HasValue)
-            {
-                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Details), new { id = genContrId.Value }));
-            }
-            if (IsEngineering)
-            {
-                return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
-            }
             return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
         }
 
+        /*
+         * Обновление информации по объему работ и справкам с3-а у родительских договоров
+         */
 
-        [Authorize(Policy = "EditPolicy")]
-        public IActionResult Restructure(int contrId, int returnContractId = 0)
+        if (parentContracts?.Count > 0 && thisContractType is not ContractType.GenСontract)
         {
-            ViewData["returnContractId"] = returnContractId;
-            var user = _httpHelper.GetUserName();
-            var subobjId = _contractService.Restructure(contrId, user);
+            var forms = _formService.Find(x => x.ContractId == id && x.IsOwnForces == false);
+            var scopes = _scopeWorkService.GetLastScope(id, isOwnForces: false);
 
-            if (subobjId.Result > 0)
+            if (thisContractType == BusinessLayer.Enums.ContractType.MultipleContract) //если подобъект => обновление родит. договоров только вычитанием существующих данных, запрещая создание новой в случае отсутствия соответствующей записи
             {
-                return RedirectToAction(nameof(EditSubObj), new { id  = subobjId.Result , returnContractId  = contrId });
+                var scopeOwns = _scopeWorkService.GetLastScope(id, isOwnForces: true);
+                var formsOwns = _formService.Find(x => x.ContractId == id && x.IsOwnForces == true);
+
+                _scopeWorkService.TryUpdateParentsScopeCosts(scopeOwns, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
+                _scopeWorkService.TryUpdateParentsScopeCosts(scopes, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
+
+                foreach (var form in formsOwns) // обновляем справки с3-а родительских договоров
+                {
+                    _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
+                }
+                foreach (var form in forms) // обновляем справки с3-а родительских договоров соб.силами
+                {
+                    _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE, isOneOfMultipleDelete: true);
+                }
             }
-            return RedirectToAction(nameof(Details), new { id = contrId });
+            else
+            {
+                foreach (var form in forms) // обновляем справки с3-а родительских договоров соб.силами
+                {
+                    _formService.TryUpdateParentsForms(form, parentContracts, CrudOp.DELETE);
+                }
+                _scopeWorkService.TryUpdateParentsScopeCosts(scopes, parentContracts, CrudOp.DELETE);
+            }
         }
 
-        #endregion
+        var childrenContracts = _contractService.GetChildren(id);
 
-        #region AJAX-ADD-ENTITY
+        /*
+        *  Удаление договора
+        */
 
+        _contractService.Delete(id);
+        NotificationHelper.SetNotification(TempData, $"Договор удален", NotificationType.Info);
 
+        /*
+        *  Удаление вложенных договоров
+        */
 
-        [Authorize(Policy = "CreatePolicy")]
-        public async Task<IActionResult> AddOrganization(ContractViewModel model)
+        foreach (var chieldId in childrenContracts) // удаляем вложенные договора
         {
-            return await Task.FromResult<IActionResult>(PartialView("_PartialAddOrganization", model));
+            _contractService.Delete(chieldId);
         }
 
-        [Authorize(Policy = "CreatePolicy")]
-        public async Task<IActionResult> AddEmployee(ContractViewModel model)
+        int? genContrId = parentContracts?.Where(x => x.Value == ContractType.GenСontract)?.FirstOrDefault().Key;
+
+
+        if (genContrId.HasValue) //после удаления, проверяем есть у генподряда договора подобъекты, если нет, устанавливаем флаг, что он больше не составной 
         {
-            return await Task.FromResult<IActionResult>(PartialView("_PartialAddEmployee", model));
+            var subObj = _contractService.Find(x => x.IsOneOfMultiple == true && x.MultipleContractId == genContrId.Value).Count();
+            if (subObj == 0)
+            {
+                try
+                {
+                    var contractEdit = _contractService.GetById(genContrId.Value);
+                    if (contractEdit != null)
+                    {
+                        contractEdit.IsMultiple = false;
+                        _contractService.Update(contractEdit);
+                        var scopesGen = _scopeWorkService.Find(x => x.ContractId == genContrId);
+                        var hasChildren = _contractService.GetChildren(genContrId.Value).Count() > 0 ? true : false;
+                        if (!hasChildren) // если нет вложенных договоров удаляем объемы работ все у генподрядного договора
+                        {
+                            foreach (var item in scopesGen)
+                            {
+                                _scopeWorkService.Delete(item.Id);
+                            }
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
+                }
+            }
         }
 
-        [Authorize(Policy = "CreatePolicy")]
-        public async Task<IActionResult> AddTypeWork(ContractViewModel model)
+
+        if (genContrId.HasValue)
         {
-            if (model.NameObject is null && model.IsSubContract == true)
-            {
-                model.NameObject = _contractService.GetById((int)model.SubContractId).NameObject;
-            }
-            return await Task.FromResult<IActionResult>(PartialView("_PartialAddTypeWork", model));
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Details), new { id = genContrId.Value }));
         }
-
-
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddNewOrganization(ContractViewModel viewModel)
+        if (IsEngineering)
         {
-            if (viewModel?.ContractOrganizations[3].Organization == null)
-            {
-                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
-                return View("Create", viewModel);
-            }
+            return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Engineerings)));
+        }
+        return await Task.FromResult<IActionResult>(RedirectToAction(nameof(Index)));
+    }
 
-            var existingOrg = _organization.Find(o => o.Name == viewModel.ContractOrganizations[3].Organization.Name).FirstOrDefault();
 
-            if (existingOrg != null)
-            {
-                NotificationHelper.SetNotification(TempData, "Организация с таким названием уже существует", NotificationType.Warning);
-                return View("Create", viewModel);
-            }
+    [Authorize(Policy = "EditPolicy")]
+    public IActionResult Restructure(int contrId, int returnContractId = 0)
+    {
+        ViewData["returnContractId"] = returnContractId;
+        var subobjId = _contractService.Restructure(contrId);
 
-            _organization.Create(viewModel.ContractOrganizations[3].Organization);
+        if (subobjId.Result > 0)
+        {
+            return RedirectToAction(nameof(EditSubObj), new { id = subobjId.Result, returnContractId = contrId });
+        }
+        return RedirectToAction(nameof(Details), new { id = contrId });
+    }
 
-            NotificationHelper.SetNotification(TempData, "Добавлена новая организация", NotificationType.Info);
+    #endregion
+
+    #region AJAX-ADD-ENTITY
+
+
+
+    [Authorize(Policy = "CreatePolicy")]
+    public async Task<IActionResult> AddOrganization(ContractViewModel model)
+    {
+        return await Task.FromResult<IActionResult>(PartialView("_PartialAddOrganization", model));
+    }
+
+    [Authorize(Policy = "CreatePolicy")]
+    public async Task<IActionResult> AddEmployee(ContractViewModel model)
+    {
+        return await Task.FromResult<IActionResult>(PartialView("_PartialAddEmployee", model));
+    }
+
+    [Authorize(Policy = "CreatePolicy")]
+    public async Task<IActionResult> AddTypeWork(ContractViewModel model)
+    {
+        if (model.NameObject is null && model.IsSubContract == true)
+        {
+            model.NameObject = _contractService.GetById((int)model.SubContractId).NameObject;
+        }
+        return await Task.FromResult<IActionResult>(PartialView("_PartialAddTypeWork", model));
+    }
+
+
+    [Authorize(Policy = "CreatePolicy")]
+    public ActionResult AddNewOrganization(ContractViewModel viewModel)
+    {
+        if (viewModel?.ContractOrganizations[3].Organization == null)
+        {
+            NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
             return View("Create", viewModel);
         }
 
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddNewEmployee(ContractViewModel viewModel)
+        var existingOrg = _organization.FindBestMatch(viewModel.ContractOrganizations[3].Organization.Name); // _organization.Find(o => o.Name == viewModel.ContractOrganizations[3].Organization.Name).FirstOrDefault();
+
+        if (existingOrg.Count > 0)
         {
-            if (viewModel?.EmployeeContracts[2]?.Employee is null)
-            {
-                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
-                return View("Create", viewModel);
-            }
-
-            var fullname = $"{viewModel.EmployeeContracts[2].Employee.LastName} {viewModel.EmployeeContracts[2].Employee.FirstName} {viewModel.EmployeeContracts[2].Employee.FatherName}";
-            var existingOrg = _employee.Find(o => o.FullName.Contains(fullname)).FirstOrDefault();
-
-            if (existingOrg != null)
-            {
-                NotificationHelper.SetNotification(TempData, $"Сотрудник {fullname} уже существует", NotificationType.Warning);
-                return View("Create", viewModel);
-            }
-
-            _employee.Create(viewModel.EmployeeContracts[2].Employee);
-
-            NotificationHelper.SetNotification(TempData, "Добавлен новый сотрудник", NotificationType.Info);
+            NotificationHelper.SetNotification(TempData, $"Найдены совпадения по названию организации: {string.Join(", ", existingOrg.Select(n => n.Name))}", NotificationType.Warning);
             return View("Create", viewModel);
         }
 
-        [Authorize(Policy = "CreatePolicy")]
-        public ActionResult AddNewTypeWork(ContractViewModel viewModel)
+        _organization.Create(viewModel.ContractOrganizations[3].Organization);
+
+        NotificationHelper.SetNotification(TempData, "Добавлена новая организация", NotificationType.Info);
+        return View("Create", viewModel);
+    }
+
+    [Authorize(Policy = "CreatePolicy")]
+    public ActionResult AddNewEmployee(ContractViewModel viewModel)
+    {
+        if (viewModel?.EmployeeContracts[2]?.Employee is null)
         {
-            if (viewModel?.TypeWorkContracts[1]?.TypeWork is null)
-            {
-                NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
-                return View("Create", viewModel);
-            }
-
-            var existingOrg = _typeWork.Find(o => o.Name == viewModel.TypeWorkContracts[1].TypeWork.Name).FirstOrDefault();
-
-            if (existingOrg != null)
-            {
-                NotificationHelper.SetNotification(TempData, "Вид работ с таким названием уже существует", NotificationType.Warning);
-                return View("Create", viewModel);
-            }
-
-            _typeWork.Create(viewModel.TypeWorkContracts[1].TypeWork);
-
-            NotificationHelper.SetNotification(TempData, "Добавлен новый вид работ", NotificationType.Info);
+            NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
             return View("Create", viewModel);
         }
 
-        #endregion
+        var fullname = $"{viewModel.EmployeeContracts[2].Employee.LastName} {viewModel.EmployeeContracts[2].Employee.FirstName} {viewModel.EmployeeContracts[2].Employee.FatherName}";
+        var existingOrg = _employee.Find(o => o.FullName.Contains(fullname)).FirstOrDefault();
 
-        public ActionResult ExistContractByNumber(string contractNumber)
+        if (existingOrg != null)
         {
-            var result = _contractService.IsContractNumberExists(contractNumber);
-            return Json(result);
+            NotificationHelper.SetNotification(TempData, $"Сотрудник {fullname} уже существует", NotificationType.Warning);
+            return View("Create", viewModel);
         }
 
-        public ActionResult OpenScope(int id, int? mainId)
+        _employee.Create(viewModel.EmployeeContracts[2].Employee);
+
+        NotificationHelper.SetNotification(TempData, "Добавлен новый сотрудник", NotificationType.Info);
+        return View("Create", viewModel);
+    }
+
+    [Authorize(Policy = "CreatePolicy")]
+    public ActionResult AddNewTypeWork(ContractViewModel viewModel)
+    {
+        if (viewModel?.TypeWorkContracts[1]?.TypeWork is null)
         {
-            // Получаем базовую информацию о договоре
-            var contractProp = _contractService
-                  .Find(x => x.Id == id)
-                  .Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering })
-                  .FirstOrDefault();
-
-            if (contractProp == null)
-            {
-                return NotFound();
-            }
-
-            var type = ScopeType.Both;
-            mainId = mainId is null ? id : mainId;
-
-            if (contractProp.IsAgreementContract == true || contractProp.IsSubContract == true || contractProp.IsEngineering == true)
-            {
-                type = ScopeType.NoOwn;
-            }
-
-            var viewModel = new ScopeWorkReportModel();
-            var scopes = _scopeWorkService.GetScopeWorksInfoTable(id, type);
-            var forms = _formService.GetScopeWorksInfoTable(id, type);
-
-
-
-            ViewBag.AmendmentInfo = _scopeWorkService.HasNewAmendment(id) == false ?
-                Constants.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : string.Empty;
-
-            foreach (var item in scopes.Scopes)
-            {
-                viewModel.Scopes.TryAdd(item.Key, item.Value);
-            }
-
-            foreach (var item in forms.Scopes)
-            {
-                viewModel.Scopes.TryAdd(item.Key, item.Value);
-            }
-
-            var contract = _contractService
-                 .Find(x => x.Id == id)
-                 .Select(x => new { x.DateBeginWork, x.DateEndWork, x.ContractTerm })
-                 .FirstOrDefault();
-
-            var dates = new List<DateTime>();
-            var currentDate = contract?.DateBeginWork;
-
-            while (DateComparer.IsLessOrSameYearAndMonth(currentDate, contract.DateEndWork))
-            {
-                dates.Add((DateTime)currentDate);
-                currentDate = currentDate?.AddMonths(1);
-            }
-
-            ViewBag.Periods = dates;
-
-            return View("_ScopeWork", viewModel);
+            NotificationHelper.SetNotification(TempData, "Ошибка добавления", NotificationType.Error);
+            return View("Create", viewModel);
         }
 
+        var existingOrg = _typeWork.Find(o => o.Name == viewModel.TypeWorkContracts[1].TypeWork.Name).FirstOrDefault();
 
-        [Authorize(Policy = "AdminPolicy")]
-        public IActionResult ChangeOwner(int contrId, bool? isSubobjectCreation)
+        if (existingOrg != null)
         {
-            if (contrId > 0)
-            {
-                ViewBag.ContrId = contrId;
-                ViewBag.IsSubobjectCreation = isSubobjectCreation ?? false;
-                return View();
-            }
-            return RedirectToAction("Index", "Contracts");
+            NotificationHelper.SetNotification(TempData, "Вид работ с таким названием уже существует", NotificationType.Warning);
+            return View("Create", viewModel);
         }
 
-        [HttpPost]
-        [Authorize(Policy = "AdminPolicy")]
-        public IActionResult ChangeOwner(int contrId, string codeName, bool? isSubobjectCreation)
+        _typeWork.Create(viewModel.TypeWorkContracts[1].TypeWork);
+
+        NotificationHelper.SetNotification(TempData, "Добавлен новый вид работ", NotificationType.Info);
+        return View("Create", viewModel);
+    }
+
+    #endregion
+
+    public ActionResult ExistContractByNumber(string contractNumber)
+    {
+        var result = _contractService.IsContractNumberExists(contractNumber);
+        return Json(result);
+    }
+
+    public async Task<ActionResult> OpenScope(int id, int? mainId)
+    {
+        // Получаем базовую информацию о договоре
+        var contractProp = _contractService
+              .Find(x => x.Id == id)
+              .Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering })
+              .FirstOrDefault();
+
+        if (contractProp == null)
         {
-            if (contrId > 0 && !string.IsNullOrWhiteSpace(codeName))
-            {
-                var contract = _contractService.GetById(contrId);
+            return await Task.FromResult<ActionResult>(RedirectToAction(nameof(Details), new { id = mainId ?? id }));
+        }
+       
+        var type = ScopeType.Both;
+        mainId = mainId is null ? id : mainId;
 
-                if (isSubobjectCreation.HasValue)
-                {
-                    var newSuboblect = new ContractDTO
-                    {
-                        IsOneOfMultiple = true,
-                        MultipleContractId = contrId,
-                        Author = codeName,
-                        Owner = codeName,
-                        Date = contract.Date,
-                        DateBeginWork = contract.DateBeginWork,
-                        DateEndWork = contract.DateEndWork,
-                        EnteringTerm = contract.EnteringTerm,
-                        Сurrency = contract.Сurrency
-                    };
+        if (contractProp.IsAgreementContract == true || contractProp.IsSubContract == true || contractProp.IsEngineering == true)
+        {
+            type = ScopeType.NoOwn;
+        }
 
-                    _contractService.Create(newSuboblect);
+        var viewModel = new ScopeWorkReportModel();
+        var scopes = _scopeWorkService.GetScopeWorksInfoTable(id, type);
+        var forms = _formService.GetScopeWorksInfoTable(id, type);
 
-                    if (!contract.IsMultiple)
-                    {
-                        contract.IsMultiple = true;
-                    }
-                    if (contract?.Owner?.Contains(codeName) != true)
-                    {
-                        contract.Owner = $"{contract.Owner},{codeName}";                        
-                    }
 
-                    _contractService.Update(contract);
-                    return RedirectToAction(nameof(Details), new { id = contrId });
-                }
-                else
-                {
-                    contract.Owner = codeName;
-                    _contractService.Update(contract);
-                }
-            }
-            return RedirectToAction(nameof(Index));
+
+        ViewBag.AmendmentInfo = _scopeWorkService.HasNewAmendment(id) == false ?
+            Constants.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : string.Empty;
+
+        foreach (var item in scopes.Scopes)
+        {
+            viewModel.Scopes.TryAdd(item.Key, item.Value);
+        }
+
+        foreach (var item in forms.Scopes)
+        {
+            viewModel.Scopes.TryAdd(item.Key, item.Value);
+        }
+
+        var contract = _amendmentService
+            .Find(x => x.ContractId == id)
+            .Select(s => new { s.DateBeginWork, s.DateEndWork, ContractTerm = s.DateEntryObject })
+            .LastOrDefault();
+
+        if (contract is null)
+        {
+            contract = _contractService
+             .Find(x => x.Id == id)
+             .Select(x => new { x.DateBeginWork, x.DateEndWork, x.ContractTerm })
+             .FirstOrDefault();
         }
 
 
-        [Authorize(Policy = "EditPolicy")]
-        public IActionResult ChangeStatus(string status, int contrId, bool isEngineering)
-        {
-            if (!string.IsNullOrWhiteSpace(status) && contrId > 0)
-            {
-                var contract = _contractService.GetById(contrId);
+        var dates = new List<DateTime>();
+        var currentDate = contract?.DateBeginWork;
 
-                if (status.Equals("archive", StringComparison.OrdinalIgnoreCase))
+        while (DateComparer.IsLessOrSameYearAndMonth(currentDate, contract.DateEndWork))
+        {
+            dates.Add((DateTime)currentDate);
+            currentDate = currentDate?.AddMonths(1);
+        }
+
+        ViewBag.Periods = dates;
+
+        return View("_ScopeWork", viewModel);
+    }
+
+
+    [Authorize(Policy = "AdminPolicy")]
+    public IActionResult ChangeOwner(int contrId, bool? isSubobjectCreation)
+    {
+        if (contrId > 0)
+        {
+            ViewBag.ContrId = contrId;
+            ViewBag.IsSubobjectCreation = isSubobjectCreation ?? false;
+            return View();
+        }
+        return RedirectToAction("Index", "Contracts");
+    }
+
+    [HttpPost]
+    [Authorize(Policy = "AdminPolicy")]
+    public IActionResult ChangeOwner(int contrId, string codeName, bool? isSubobjectCreation)
+    {
+        if (contrId > 0 && !string.IsNullOrWhiteSpace(codeName))
+        {
+            var contract = _contractService.GetById(contrId);
+
+            if (isSubobjectCreation.HasValue)
+            {
+                var newSuboblect = new ContractDTO
                 {
-                    contract.IsArchive = true;
-                    NotificationHelper.SetNotification(TempData, "Статус договора изменен. \n Договор будет перемещен в архив!", NotificationType.Info);
-                    _contractService.Update(contract);
-                    _contractService.MoveToArchive(contrId, _httpHelper.GetUserName(), _archiveOptions.SourceArchiveDb, _archiveOptions.TargetArchiveDb);
-                    if (isEngineering)
-                    {
-                        return RedirectToAction(nameof(Engineerings));
-                    }
-                    return RedirectToAction(nameof(Index));
+                    IsOneOfMultiple = true,
+                    MultipleContractId = contrId,
+                    Author = codeName,
+                    Owner = codeName,
+                    Date = contract.Date,
+                    DateBeginWork = contract.DateBeginWork,
+                    DateEndWork = contract.DateEndWork,
+                    EnteringTerm = contract.EnteringTerm,
+                    Сurrency = contract.Сurrency
+                };
+
+                _contractService.Create(newSuboblect);
+
+                if (!contract.IsMultiple)
+                {
+                    contract.IsMultiple = true;
                 }
-                if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
+                if (contract?.Owner?.Contains(codeName) != true)
                 {
-                    contract.IsClosed = true;
-                }
-                if (status.Equals("expired", StringComparison.OrdinalIgnoreCase))
-                {
-                    contract.IsExpired = true;
+                    contract.Owner = $"{contract.Owner},{codeName}";
                 }
 
                 _contractService.Update(contract);
-                NotificationHelper.SetNotification(TempData, "Статус договора изменен", NotificationType.Info);
-            }
-
-            if (isEngineering)
-            {
-                return RedirectToAction(nameof(Engineerings));
-            }
-            return RedirectToAction(nameof(Index));
-        }
-
-
-
-
-        [Route("/archive/Contracts")]
-        public async Task<IActionResult> IndexArch(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
-        {
-            var organizationName = _httpHelper.GetUserOrganizationCodes();
-
-            if (page < 1 || searchString != null)
-            {
-                page = 1;
+                return RedirectToAction(nameof(Details), new { id = contrId });
             }
             else
             {
-                searchString = currentFilter;
-                typeSearch = currentType;
-            }
-
-            ViewData["IsEngineering"] = false;
-            ViewData["CurrentSort"] = sortOrder;
-            ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-            ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-            ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-            ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-            ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            ViewData["CurrentFilter"] = searchString;
-            ViewData["CurrentType"] = typeSearch;
-            ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-            {
-                return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName, useArchiveData: true)));
-            }
-            else
-            {
-                return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(100, page ?? 1, organizationName, useArchiveData: true)));
+                contract.Owner = codeName;
+                _contractService.Update(contract);
             }
         }
+        return RedirectToAction(nameof(Index));
+    }
 
-
-        [Route("/archive/Contracts/Engineerings")]
-        public async Task<IActionResult> EngineeringsArch(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+    [Authorize(Policy = "EditPolicy")]
+    public IActionResult ChangeStatus(string status, int contrId, bool isEngineering)
+    {
+        if (!string.IsNullOrWhiteSpace(status) && contrId > 0)
         {
-            var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+            var contract = _contractService.GetById(contrId);
 
-            if (searchString != null)
+            if (status.Equals("archive", StringComparison.OrdinalIgnoreCase))
             {
-                page = 1;
-            }
-            else
-            {
-                searchString = currentFilter;
-                typeSearch = currentType;
-            }
-
-            ViewData["IsEngineering"] = true;
-            ViewData["CurrentSort"] = sortOrder;
-            ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-            ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-            ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-            ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-            ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-            ViewData["CurrentFilter"] = searchString;
-            ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-            if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-            {
-                return await Task.FromResult<IActionResult>(View("IndexArch", _vContractEnginService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName, useArchiveData: true)));
-            }
-            else
-            {
-                return await Task.FromResult<IActionResult>(View("IndexArch", _vContractEnginService.GetPage(100, page ?? 1, organizationName, useArchiveData: true)));
-            }
-        }
-
-
-        [Route("/archive/Contracts/Details")]
-        public async Task<IActionResult> DetailsArch(int? id)
-        {
-            if (!id.HasValue)
-            {
-                NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
-                return BadRequest();
-            }
-
-            var contract = _contractService.GetById(id.Value, useArchiveData: true);
-            if (contract == null)
-            {
-                return NotFound();
-            }
-
-            var amendment = _amendmentService.Find(x => x.ContractId == contract.Id,
-                x => new()
+                contract.IsArchive = true;
+                NotificationHelper.SetNotification(TempData, "Статус договора изменен. \n Договор будет перемещен в архив!", NotificationType.Info);
+                _contractService.Update(contract);
+                _contractService.MoveToArchive(contrId);
+                if (isEngineering)
                 {
-                    ContractPrice = x.ContractPrice,
-                    DateBeginWork = x.DateBeginWork,
-                    DateEndWork = x.DateEndWork,
-                    DateEntryObject = x.DateEntryObject
-                },
-                useArchiveData: true)
-                .OrderBy(x => x.Date)
-                .LastOrDefault();
-
-            if (amendment is not null)
-            {
-                contract.ContractPrice = amendment.ContractPrice;
-                contract.DateBeginWork = amendment.DateBeginWork;
-                contract.DateEndWork = amendment.DateEndWork;
-                contract.EnteringTerm = amendment.DateEntryObject;
+                    return RedirectToAction(nameof(Engineerings));
+                }
+                return RedirectToAction(nameof(Index));
             }
-            return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
+            if (status.Equals("closed", StringComparison.OrdinalIgnoreCase))
+            {
+                contract.IsClosed = true;
+            }
+            if (status.Equals("expired", StringComparison.OrdinalIgnoreCase))
+            {
+                contract.IsExpired = true;
+            }
+
+            _contractService.Update(contract);
+            NotificationHelper.SetNotification(TempData, "Статус договора изменен", NotificationType.Info);
         }
 
-        [Route("/archive/Contracts/ScopesDetails")]
-        public ActionResult OpenScopeArch(int id, int? mainId)
+        if (isEngineering)
         {
-            var contractProp = _contractService
-                  .Find(x => x.Id == id, useArchiveData: true)
-                  .Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering, x.DateBeginWork, x.DateEndWork, x.ContractTerm })
-                  .FirstOrDefault();
-
-            if (contractProp == null)
-            {
-                return NotFound();
-            }
-
-            var type = ScopeType.Both;
-            mainId = mainId is null ? id : mainId;
-
-            if (contractProp.IsAgreementContract == true || contractProp.IsSubContract == true || contractProp.IsEngineering == true)
-            {
-                type = ScopeType.NoOwn;
-            }
-
-            var viewModel = new ScopeWorkReportModel();
-            var scopes = _scopeWorkService.GetScopeWorksInfoTable(id, type, useArchiveData: true);
-            var forms = _formService.GetScopeWorksInfoTable(id, type, useArchiveData: true);
-
-            foreach (var item in scopes.Scopes)
-            {
-                viewModel.Scopes.TryAdd(item.Key, item.Value);
-            }
-
-            foreach (var item in forms.Scopes)
-            {
-                viewModel.Scopes.TryAdd(item.Key, item.Value);
-            }
-
-            var dates = new List<DateTime>();
-            var currentDate = contractProp?.DateBeginWork;
-
-            while (DateComparer.IsLessOrSameYearAndMonth(currentDate, contractProp.DateEndWork))
-            {
-                dates.Add((DateTime)currentDate);
-                currentDate = currentDate?.AddMonths(1);
-            }
-
-            ViewBag.Periods = dates;
-
-            return View("_ScopeWork", viewModel);
+            return RedirectToAction(nameof(Engineerings));
         }
+        return RedirectToAction(nameof(Index));
+    }
 
 
-        private string? GeneratePaymentDescription(int? days, string? payment, bool? IsEngineering = false)
+    [Route("/archive/Contracts")]
+    public IActionResult IndexArch()
+    {
+        ViewBag.IsEngineering = false;
+        ViewBag.UseArchiveData = true;
+        return View();
+    }
+
+    //public async Task<IActionResult> IndexArch(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+    //{
+    //    var organizationName = _httpHelper.GetUserOrganizationCodes();
+
+    //    if (page < 1 || searchString != null)
+    //    {
+    //        page = 1;
+    //    }
+    //    else
+    //    {
+    //        searchString = currentFilter;
+    //        typeSearch = currentType;
+    //    }
+
+    //    ViewData["IsEngineering"] = false;
+    //    ViewData["CurrentSort"] = sortOrder;
+    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
+    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
+    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+    //    ViewData["CurrentFilter"] = searchString;
+    //    ViewData["CurrentType"] = typeSearch;
+    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
+
+    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
+    //    {
+    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName, useArchiveData: true)));
+    //    }
+    //    else
+    //    {
+    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(100, page ?? 1, organizationName, useArchiveData: true)));
+    //    }
+    //}
+
+
+    [Route("/archive/Contracts/Engineerings")]
+    public IActionResult EngineeringsArch()
+    {
+        ViewBag.IsEngineering = true;
+        ViewBag.UseArchiveData = true;
+        return View("IndexArch");
+    }
+
+    //public async Task<IActionResult> EngineeringsArch(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
+    //{
+    //    var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
+
+    //    if (searchString != null)
+    //    {
+    //        page = 1;
+    //    }
+    //    else
+    //    {
+    //        searchString = currentFilter;
+    //        typeSearch = currentType;
+    //    }
+
+    //    ViewData["IsEngineering"] = true;
+    //    ViewData["CurrentSort"] = sortOrder;
+    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
+    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
+    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
+    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
+    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
+    //    ViewData["CurrentFilter"] = searchString;
+    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
+
+    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
+    //    {
+    //        return await Task.FromResult<IActionResult>(View("IndexArch", _vContractEnginService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName, useArchiveData: true)));
+    //    }
+    //    else
+    //    {
+    //        return await Task.FromResult<IActionResult>(View("IndexArch", _vContractEnginService.GetPage(100, page ?? 1, organizationName, useArchiveData: true)));
+    //    }
+    //}
+
+
+    [Route("/archive/Contracts/Details")]
+    public async Task<IActionResult> DetailsArch(int? id)
+    {
+        if (!id.HasValue)
         {
-            if (string.IsNullOrWhiteSpace(payment) || !days.HasValue)
-            {
-                return null;
-            }
-
-            var workType = IsEngineering == true ? "услуги" : "работы";
-
-            var paymentText = payment.ToLower() switch
-            {
-                var p when p.Contains("календарных дней с момента подписания акта") =>
-                    $"Расчет за выполненные {workType} производится в течение {days} календарных дней с момента подписания акта сдачи-приемки {(IsEngineering == true ? "оказанных услуг" : "выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ")}",
-
-                var p when p.Contains("банковских дней") =>
-                    $"Расчет за выполненные {workType} производится в течение {days} банковских дней с момента подписания актов сдачи-приемки {(IsEngineering == true ? "оказанных услуг" : "выполненных работ")}",
-
-                var p when p.Contains("числа месяца, следующего") =>
-                    $"Расчет за выполненные {workType} производится не позднее {days} числа месяца, следующего за отчетным",
-
-                _ => null
-            };
-
-            return paymentText;
+            NotificationHelper.SetNotification(TempData, $"Ошибка запроса", NotificationType.Warning);
+            return BadRequest();
         }
 
+        var contract = _contractService.GetById(id.Value, useArchiveData: true);
+        if (contract == null)
+        {
+            return NotFound();
+        }
+
+        var amendment = _amendmentService.Find(x => x.ContractId == contract.Id,
+            x => new()
+            {
+                ContractPrice = x.ContractPrice,
+                DateBeginWork = x.DateBeginWork,
+                DateEndWork = x.DateEndWork,
+                DateEntryObject = x.DateEntryObject
+            },
+            useArchiveData: true)
+            .OrderBy(x => x.Date)
+            .LastOrDefault();
+
+        if (amendment is not null)
+        {
+            contract.ContractPrice = amendment.ContractPrice;
+            contract.DateBeginWork = amendment.DateBeginWork;
+            contract.DateEndWork = amendment.DateEndWork;
+            contract.EnteringTerm = amendment.DateEntryObject;
+        }
+        return await Task.FromResult<IActionResult>(View(_mapper.Map<ContractViewModel>(contract)));
+    }
+
+    [Route("/archive/Contracts/ScopesDetails")]
+    public ActionResult OpenScopeArch(int id, int? mainId)
+    {
+        var contractProp = _contractService
+              .Find(x => x.Id == id, useArchiveData: true)
+              .Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering, x.DateBeginWork, x.DateEndWork, x.ContractTerm })
+              .FirstOrDefault();
+
+        if (contractProp == null)
+        {
+            return NotFound();
+        }
+
+        var type = ScopeType.Both;
+        mainId = mainId is null ? id : mainId;
+
+        if (contractProp.IsAgreementContract == true || contractProp.IsSubContract == true || contractProp.IsEngineering == true)
+        {
+            type = ScopeType.NoOwn;
+        }
+
+        var viewModel = new ScopeWorkReportModel();
+        var scopes = _scopeWorkService.GetScopeWorksInfoTable(id, type, useArchiveData: true);
+        var forms = _formService.GetScopeWorksInfoTable(id, type, useArchiveData: true);
+
+        foreach (var item in scopes.Scopes)
+        {
+            viewModel.Scopes.TryAdd(item.Key, item.Value);
+        }
+
+        foreach (var item in forms.Scopes)
+        {
+            viewModel.Scopes.TryAdd(item.Key, item.Value);
+        }
+
+        var dates = new List<DateTime>();
+        var currentDate = contractProp?.DateBeginWork;
+
+        while (DateComparer.IsLessOrSameYearAndMonth(currentDate, contractProp.DateEndWork))
+        {
+            dates.Add((DateTime)currentDate);
+            currentDate = currentDate?.AddMonths(1);
+        }
+
+        ViewBag.Periods = dates;
+
+        return View("_ScopeWork", viewModel);
+    }
+
+
+    public async Task<IActionResult> Filter(
+        bool isEngineering,
+        bool isArchive,
+        string selectedField,
+        int pageSize,
+        int page,
+        string sortDirection,
+        string? searchText,
+        string? startSW,
+        string? endSW,
+        string? startEW,
+        string? endEW,
+        string? startET,
+        string? endET
+        )
+    {
+        var organizationName = _httpHelper.GetUserOrganizationCodes();
+        var queryDateRange = GenerateDateRangeWhereClause(startSW, endSW, startEW, endEW, startET, endET);
+        var contracts = isEngineering == true ?
+            _vContractEnginService.Filter(pageSize, page, selectedField, sortDirection, organizationName, searchText, queryDateRange, useArchiveData: isArchive)
+            : _vContractService.Filter(pageSize, page, selectedField, sortDirection, organizationName, searchText, queryDateRange, useArchiveData: isArchive);
+
+        return await Task.FromResult<IActionResult>(Json(contracts, new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters =
+            {
+                new DecimalConverter(),
+                new DateFormatConverter(),
+            }
+        }));
+    }
+
+    public async Task<IActionResult> GetHTMLModalFiltering()
+    {
+        Dictionary<string, string> selection = new()
+        {
+            {"number","Номер договора" },
+            {"nameObject","Наименование объекта" },
+            {"client","Заказчик" },
+            {"gencontractor","Генподрядчик" },
+        };
+
+        return await Task.FromResult<IActionResult>(PartialView("../Shared/Partial/_FilterDataWithDates", selection));
+    }
+
+
+    /*
+     * 
+     * 
+     * ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ                  
+     *
+     *
+     *
+     *
+     *
+     */
+
+
+    private string? GeneratePaymentDescription(int? days, string? payment, bool? IsEngineering = false)
+    {
+        if (string.IsNullOrWhiteSpace(payment) || !days.HasValue)
+        {
+            return null;
+        }
+
+        var workType = IsEngineering == true ? "услуги" : "работы";
+
+        var paymentText = payment.ToLower() switch
+        {
+            var p when p.Contains("календарных дней с момента подписания акта") =>
+                $"Расчет за выполненные {workType} производится в течение {days} календарных дней с момента подписания акта сдачи-приемки {(IsEngineering == true ? "оказанных услуг" : "выполненных строительных и иных специальных монтажных работ/справки о стоимости выполненных работ")}",
+
+            var p when p.Contains("банковских дней") =>
+                $"Расчет за выполненные {workType} производится в течение {days} банковских дней с момента подписания актов сдачи-приемки {(IsEngineering == true ? "оказанных услуг" : "выполненных работ")}",
+
+            var p when p.Contains("числа месяца, следующего") =>
+                $"Расчет за выполненные {workType} производится не позднее {days} числа месяца, следующего за отчетным",
+
+            _ => null
+        };
+
+        return paymentText;
+    }
+
+    private string? GenerateDateRangeWhereClause(string? startDateBeginWork, string? endDateBeginWork, string? stratDateEndWork, string? endDateEndWork, string? startEnteringTerm, string? endEnteringTerm)
+    {
+        string? whereClause = null;
+        /////
+        if (!string.IsNullOrEmpty(startDateBeginWork) || !string.IsNullOrEmpty(endDateBeginWork))
+        {
+            if (!string.IsNullOrEmpty(startDateBeginWork) && !string.IsNullOrEmpty(endDateBeginWork))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateBeginWork, c.DateBeginWork), 'yyyy-MM') BETWEEN '{startDateBeginWork}' AND '{endDateBeginWork}')";
+            }
+
+            if (!string.IsNullOrEmpty(startDateBeginWork) && string.IsNullOrEmpty(endDateBeginWork))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateBeginWork, c.DateBeginWork), 'yyyy-MM') >= '{startDateBeginWork}')";
+            }
+            if (string.IsNullOrEmpty(startDateBeginWork) && !string.IsNullOrEmpty(endDateBeginWork))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateBeginWork, c.DateBeginWork), 'yyyy-MM') <= '{endDateBeginWork}')";
+            }
+        }
+
+        /////
+        if (!string.IsNullOrEmpty(stratDateEndWork) || !string.IsNullOrEmpty(endDateEndWork))
+        {
+            whereClause += string.IsNullOrEmpty(whereClause) ? "" : " AND ";
+
+            if (!string.IsNullOrEmpty(stratDateEndWork) && !string.IsNullOrEmpty(endDateEndWork))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateEndWork, c.DateEndWork), 'yyyy-MM') BETWEEN '{stratDateEndWork}' AND '{endDateEndWork}')";
+            }
+
+            if (!string.IsNullOrEmpty(stratDateEndWork) && string.IsNullOrEmpty(endDateEndWork))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateEndWork, c.DateEndWork), 'yyyy-MM') >= '{stratDateEndWork}')";
+            }
+            if (string.IsNullOrEmpty(stratDateEndWork) && !string.IsNullOrEmpty(endDateEndWork))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateEndWork, c.DateEndWork), 'yyyy-MM') <= '{endDateEndWork}')";
+            }
+        }
+
+        /////
+        if (!string.IsNullOrEmpty(startEnteringTerm) || !string.IsNullOrEmpty(endEnteringTerm))
+        {
+            whereClause += string.IsNullOrEmpty(whereClause) ? "" : " AND ";
+
+            if (!string.IsNullOrEmpty(startEnteringTerm) && !string.IsNullOrEmpty(endEnteringTerm))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateEntryObject, c.EnteringTerm), 'yyyy-MM') BETWEEN '{startEnteringTerm}' AND '{endEnteringTerm}')";
+            }
+
+            if (!string.IsNullOrEmpty(startEnteringTerm) && string.IsNullOrEmpty(endEnteringTerm))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateEntryObject, c.EnteringTerm), 'yyyy-MM') >= '{startEnteringTerm}')";
+            }
+            if (string.IsNullOrEmpty(startEnteringTerm) && !string.IsNullOrEmpty(endEnteringTerm))
+            {
+                whereClause += $" (FORMAT(COALESCE(a.DateEntryObject, c.EnteringTerm), 'yyyy-MM') <= '{endEnteringTerm}')";
+            }
+        }
+
+        return whereClause;
+    }
+    private ContractDTO AddOrganization(ContractDTO contract, Func<ContractOrganizationDTO, bool> hasRole, Action<ContractOrganizationDTO> setRole)
+    {
+        if (!contract.ContractOrganizations.Any(hasRole))
+        {
+            var org = new ContractOrganizationDTO { ContractId = contract.Id };
+            setRole(org);
+            contract.ContractOrganizations.Add(org);
+        }
+        return contract;
     }
 }

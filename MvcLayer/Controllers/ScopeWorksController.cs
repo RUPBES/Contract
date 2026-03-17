@@ -27,12 +27,12 @@ namespace MvcLayer.Controllers
         private readonly IPrepaymentService _prepayment;
         private readonly IMapper _mapper;
         private readonly IParseService _pars;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
 
         public ScopeWorksController(IContractService contractService, IMapper mapper, IOrganizationService organization,
             IScopeWorkService scopeWork, IFormService formService, ISWCostService swCostService,
             IAmendmentService amendmentService, IContractOrganizationService contractOrganizationService,
-            IPrepaymentService prepayment, IParseService parser, ILoggerContract logger)
+            IPrepaymentService prepayment, IParseService parser, IContractsLogger logger)
         {
             _contractService = contractService;
             _mapper = mapper;
@@ -194,7 +194,7 @@ namespace MvcLayer.Controllers
                 var contract = _contractService.GetById(contractId);
                 var amendment = _amendmentService.GetById((int)scope?.AmendmentId);
 
-                ViewBag.IsEngin = contract.IsEngineering ?? false;
+                ViewBag.IsEngin = contract.IsEngineering;
                 ViewData["returnContractId"] = returnContractId;
                 ViewData["contractId"] = contractId;
                 ViewData["contractPrice"] = amendment != null ? amendment.ContractPrice : contract.ContractPrice;
@@ -236,13 +236,13 @@ namespace MvcLayer.Controllers
             }
 
 
-            BusinessLayer.Enums.Contract thisContractType;
+            BusinessLayer.Enums.ContractType thisContractType;
             var parentContracts = _contractService.GetParents(contractId, out thisContractType);
             var oldScope = _scopeWork.GetLastScope(contractId, isOwnForces: false);
 
             var newScpId = _scopeWork.Create(_mapper.Map<ScopeWorkDTO>(viewModel));
             NotificationHelper.SetNotification(TempData, "Объем работ добавлен", NotificationType.Info);
-            if (thisContractType != BusinessLayer.Enums.Contract.GenСontract)
+            if (thisContractType != BusinessLayer.Enums.ContractType.GenСontract)
             {
                 viewModel.Id = newScpId ?? 0;
                 _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), parentContracts, CrudOp.CREATE, oldScope?.SWCosts);
@@ -257,7 +257,7 @@ namespace MvcLayer.Controllers
                 else
                 {
                     viewModel.Id = newScpId ?? 0;
-                    _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), new Dictionary<int, BusinessLayer.Enums.Contract>(), CrudOp.CREATE, oldScope?.SWCosts);
+                    _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(viewModel), new Dictionary<int, BusinessLayer.Enums.ContractType>(), CrudOp.CREATE, oldScope?.SWCosts);
                 }
             }
 
@@ -288,7 +288,7 @@ namespace MvcLayer.Controllers
             var contract = _contractService.GetById(contractId);
             var amendment = _scopeWork.GetAmendmentByScopeId(Id);
 
-            ViewData["IsEngin"] = contract.IsEngineering ?? false;
+            ViewData["IsEngin"] = contract.IsEngineering;
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             ViewData["contractPrice"] = (amendment != null) ? amendment.ContractPrice : contract.ContractPrice;
@@ -301,7 +301,7 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "EditPolicy")]
         public IActionResult Edit(ScopeWorkViewModel editScope, int contractId, int returnContractId = 0)
         {
-            BusinessLayer.Enums.Contract thisContractType;
+            BusinessLayer.Enums.ContractType thisContractType;
             var parentContracts = _contractService.GetParents(contractId, out thisContractType);
             var oldScope = _scopeWork.GetLastScope(editScope.ContractId ?? 0, isOwnForces: false);
 
@@ -312,13 +312,13 @@ namespace MvcLayer.Controllers
 
             NotificationHelper.SetNotification(TempData, "Объем работ обновлен", NotificationType.Info);
 
-            if (thisContractType != BusinessLayer.Enums.Contract.GenСontract)
+            if (thisContractType != BusinessLayer.Enums.ContractType.GenСontract)
             {
                 _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), parentContracts, CrudOp.UPDATE, oldScope?.SWCosts);
             }
             else
             {
-                _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), new Dictionary<int, BusinessLayer.Enums.Contract>(), CrudOp.UPDATE, oldScope?.SWCosts);
+                _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(editScope), new Dictionary<int, BusinessLayer.Enums.ContractType>(), CrudOp.UPDATE, oldScope?.SWCosts);
             }
 
 
@@ -343,7 +343,7 @@ namespace MvcLayer.Controllers
                     oldScope = _scopeWork.GetById(scopeWork.ChangeScopeWorkId.Value);
                 }
 
-                BusinessLayer.Enums.Contract thisContractType;
+                BusinessLayer.Enums.ContractType thisContractType;
                 var parentContracts = _contractService.GetParents(scopeWork?.ContractId ?? 0, out thisContractType);
 
                 _scopeWork.TryUpdateParentsScopeCosts(_mapper.Map<ScopeWorkDTO>(scopeWork), parentContracts, CrudOp.DELETE, oldScope.SWCosts);

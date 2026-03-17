@@ -17,10 +17,10 @@ namespace BusinessLayer.Services
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
-        private readonly ILoggerContract _logger;
+        private readonly IContractsLogger _logger;
         private readonly IHostingEnvironment _env;
 
-        public EstimateService(IContractUoW database, IMapper mapper, ILoggerContract logger, IHostingEnvironment env, IContractArchiveUoW databaseArch)
+        public EstimateService(IContractUoW database, IMapper mapper, IContractsLogger logger, IHostingEnvironment env, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;

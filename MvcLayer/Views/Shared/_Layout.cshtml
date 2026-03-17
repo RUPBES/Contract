@@ -3,10 +3,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+       @if (ViewData["Title"] != null)
+    {
+        <title>@ViewData["Title"]</title>
+    }
+    else
+    {
     <title>Учет договоров</title>
+    }
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/filter-widget.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/chosen.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/selectize.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/selectize.default.css" asp-append-version="true" />
@@ -33,6 +41,8 @@
 <body>
     <div id="modDialog" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, 0.65);">
         <div id="dialogContent" class="modal-dialog" style="display: flex; justify-content: center; margin-top: 10vh"></div>
+    </div>
+    <div class="contract-filter-container">
     </div>
     <div class="flex-container">
         <header class="header_container">
@@ -71,7 +81,7 @@
             </div>
         }
     </div>
-
+  
 
     <!-- Alert message container -->
     <div id="alert-modal" class="md-overlay" style="display:none; align-content: center;">
@@ -104,7 +114,15 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/customJs.js" asp-append-version="true"></script>
-    <script src="~/js/open_dropdown_menu.js" asp-append-version="true"></script>
+
+    <script src="~/js/helpers/MonthYearWidget.js"></script>
+    <script src="~/js/helpers/PeriodManager.js"></script>
+    <script src="~/js/helpers/PaginationManager.js"></script>
+    <script src="~/js/helpers/ScrollManager.js"></script>
+    <script src="~/js/viewTemplate.js" asp-append-version="true"></script>
+    <script src="~/js/helpers/ActionButtonManager.js"></script>
+
+    <script src="~/js/contracts-table-manager.js" asp-append-version="true"></script>
     <script src="~/kendoui/kendo.all.min.js"></script>
     <script src="~/js/chosen.jquery.min.js"></script>
     <script src="~/js/selectize.min.js"></script>

@@ -62,7 +62,7 @@ namespace MvcLayer.Controllers
             try
             {
                 int estimateDocId = (int)_estimateDocService.Create(_mapper.Map<EstimateDocDTO>(estimateDoc));
-                int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, Folder.EstimateDocumentations, estimateDocId);
+                int fileId = (int)_fileService.Create(estimateDoc.FilesEntity, Folder.EstimateDocumentations, estimateDocId, estimateDoc.ContractId?.ToString());
 
                 _estimateDocService.AddFile(estimateDocId, fileId);
                 NotificationHelper.SetNotification(TempData, "Создан ПСД", NotificationType.Info);

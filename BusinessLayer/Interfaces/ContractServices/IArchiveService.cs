@@ -15,7 +15,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
         IndexViewModel GetContractPage(int pageSize, int pageNum, string org);
         IndexViewModel GetContractPageFilter(int pageSize, int pageNum, string request, string typeRequest, string sortOrder, string org);
 
-        IEnumerable<ContractDTO> GetSubsByType(int? id, Enums.Contract? contractType);
+        IEnumerable<ContractDTO> GetSubsByType(int? id, Enums.ContractType? contractType);
         TypeWorkDTO GetTypeWorkByContractId(int contractId);
         OrganizationDTO FindByContractOrganization(Func<ContractOrganization, bool> predicate);
         EmployeeDTO FindByContractEmployee(Func<EmployeeContract, bool> predicate);
