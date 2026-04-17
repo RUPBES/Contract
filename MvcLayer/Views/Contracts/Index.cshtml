@@ -14,7 +14,7 @@
 @section Table {
     <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
 
-        <!-- more_vert -->      
+        <!-- more_vert -->
         <symbol id="ic-more-vert" viewBox="0 0 24 24">
             <circle cx="12" cy="5" r="2.2" fill="#555" />
             <circle cx="12" cy="12" r="2.2" fill="#555" />
@@ -58,7 +58,7 @@
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <circle cx="12" cy="8" r="1"></circle>
-        </symbol> 
+        </symbol>
 
         <!-- delete -->
         <symbol id="ic-delete" viewBox="0 0 24 24">
@@ -106,18 +106,20 @@
     <div>
         <div class="header-view">
             <h1 class="list_agreement">@ViewData["Title"]</h1>
-            @if (permissions is { IsCreator: true } && permissions.GroupeName.Contains(Constants.GRP_CONTRACT))
-            {
-                <div class="box-btn">
-                    <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
-                    <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
-                        <img class="icon" src="~/icons/funnel.svg" />Фильтр
-                    </button>
+
+            <div class="box-btn">
+                <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
+                <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
+                    <img class="icon" src="~/icons/funnel.svg" />Фильтр
+                </button>
+                @if (permissions is { IsCreator: true } && permissions.GroupeName.Contains(Constants.GRP_CONTRACT))
+                {
                     <button type="button" class="btn btn-success btn-ctr " onclick="location.href='@Url.Action("Create", "Contracts")?isEngineering=@(ViewBag.IsEngineering ?? false)'">
                         <img class="icon" src="~/icons/plus-circle.svg" />Новый договор
                     </button>
-                </div>
-            }
+                }
+            </div>
+
         </div>
 
         <!-- контейнер для таблицы, фильтрации, сортировки id="contractTable"-->

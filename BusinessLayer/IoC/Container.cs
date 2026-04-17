@@ -2,6 +2,7 @@
 using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractInterfaces.PRO;
+using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Interfaces.Core;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Mapper;
@@ -47,6 +48,7 @@ namespace BusinessLayer.IoC
             services.AddScoped<IActService, ActService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IAmendmentService, AmendmentService>();
+            services.AddScoped<IAdditionalTermService, AdditionalTermService>();
             services.AddScoped<IContractService, ContractService>();
             services.AddScoped<ICommissionActService, CommissionActService>();
             services.AddScoped<ICorrespondenceService, CorrespondenceService>();

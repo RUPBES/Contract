@@ -77,7 +77,7 @@ namespace BusinessLayer.Services.Administrator
                 }
 
                 string path = _host.WebRootPath + _reportOptions.Directory + _reportOptions.FileName + _reportOptions.FileType;
-                var sheet = _excelWriter.Settup(path, _reportOptions.SheetName);
+                var sheet = _excelWriter.Settup(path, nameSheets: _reportOptions.SheetName);
 
                 int startRow = 2;
                 int startCol = 1;
@@ -99,7 +99,7 @@ namespace BusinessLayer.Services.Administrator
                             BgColor = Constants.COLOR_DARK_BLUE
                         });
                     }
-                    _excelWriter.WriteLine(sheet, startRow++, path, true, null, width: null,isTextWrap:null, ExcelHorizontalAlignment.Left, rowItems.ToArray());
+                    _excelWriter.WriteLine(sheet, startRow++, path, true, null, width: null,isTextWrap:null, ExcelHorizontalAlignment.Left, values: rowItems.ToArray());
 
                     startCol = 1;
                     foreach (var user in users)
@@ -108,7 +108,7 @@ namespace BusinessLayer.Services.Administrator
 
                         foreach (var item in user)
                         {
-                            _excelWriter.WriteLine(sheet, startRow, path, false, null, null, isTextWrap: null, align: null,
+                            _excelWriter.WriteLine(sheet, startRow, path, false, null, null, isTextWrap: null, align: null, null, null,
                                 new RowItem { Value = item.UserName, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
                                 new RowItem { Value = organization?.enterprise, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
                                 new RowItem { Value = organization?.position, Col = startCol++, FontColor = colorText, FontSize = Constants.FONT_SIZE_14 },
@@ -119,7 +119,7 @@ namespace BusinessLayer.Services.Administrator
                             startCol = 1;
                             startRow++;
                         }
-                        _excelWriter.WriteLine(sheet, startRow++, path, false, null, null, isTextWrap: null, align: null, new RowItem { Value = string.Empty, Col = startCol });
+                        _excelWriter.WriteLine(sheet, startRow++, path, false, null, null, isTextWrap: null, align: null, values: new RowItem { Value = string.Empty, Col = startCol });
                     }
                     _excelWriter.CloseExcel();
                 }

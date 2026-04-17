@@ -20,6 +20,7 @@ namespace MvcLayer.Mapper
             CreateMap<CorrespondenceDTO, CorrespondenceViewModel>().ReverseMap();
             CreateMap<CommissionActDTO, CommissionActViewModel>().ReverseMap();
             CreateMap<ScopeWorkViewModel, ScopeWorkDTO>().ReverseMap();
+            CreateMap<AdditionalTermViewModel, AdditionalTermDTO>().ReverseMap();
             CreateMap<AmendmentViewModel, AmendmentDTO>().ReverseMap();
             CreateMap<DepartmentViewModel, DepartmentDTO>().ReverseMap();
             CreateMap<EstimateDocDTO, EstimateDocViewModel>().ReverseMap();

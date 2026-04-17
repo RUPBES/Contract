@@ -16,6 +16,7 @@ namespace DatabaseLayer.Models.KDO
             СommissionActFiles = new HashSet<CommissionActFile>();
             ContractFiles = new HashSet<ContractFile>();
             EstimateFiles = new HashSet<EstimateFile>();
+            AdditionalTermFiles = new HashSet<AdditionalTermFile>();
         }
 
         public int Id { get; set; }
@@ -26,6 +27,8 @@ namespace DatabaseLayer.Models.KDO
 
         public virtual ICollection<EstimateFile> EstimateFiles { get; set; }
 
+        public virtual ICollection<AdditionalTermFile> AdditionalTermFiles { get; set; }
+
         public virtual ICollection<ActFile> ActFiles { get; set; }
         public virtual ICollection<FormFile> FormFiles { get; set; }
         public virtual ICollection<AmendmentFile> AmendmentFiles { get; set; }
@@ -35,5 +38,7 @@ namespace DatabaseLayer.Models.KDO
         public virtual ICollection<CommissionActFile> СommissionActFiles { get; set; }
         public virtual ICollection<SlctnProcedureFile> SlctnProcedureFiles { get; set; }
         public virtual ICollection<PrepaymentTake> PrepaymentTakesFiles { get; set; }
+
+
     }
 }

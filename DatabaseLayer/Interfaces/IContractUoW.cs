@@ -16,6 +16,8 @@ namespace DatabaseLayer.Interfaces
         IRepository<Address> Addresses { get; }
         IRepository<AmendmentFile> AmendmentFiles { get; }
         IRepository<Amendment> Amendments { get; }
+        IRepository<AdditionalTerm> AdditionalTerms { get; }
+        IRepository<AdditionalTermFile> AdditionalTermFiles { get; }
         IRepository<ActFile> ActFiles { get; }
         IRepository<Department> Departments { get; }
 

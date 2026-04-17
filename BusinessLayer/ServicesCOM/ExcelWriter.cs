@@ -12,7 +12,8 @@ namespace BusinessLayer.ServicesCOM
         private ExcelWorkbook _excelWorkbook;
         private ExcelWorksheet _excelWorksheet;
 
-        public ExcelWorksheet Settup(string path, params string[] nameSheets)
+        public ExcelWorksheet Settup(string path, bool FitToPage, int FitToWidth, int FitToHeight,
+            eOrientation Orientation, ePaperSize PageSize, params string[] nameSheets)
         {
             if (File.Exists(path))
                 File.Delete(path);
@@ -30,14 +31,29 @@ namespace BusinessLayer.ServicesCOM
             {
                 _excelWorksheet = _excelWorkbook.Worksheets.Add(Constants.WORKSHEET_NAME_DEFAULT);
             }
+
             _excelWorksheet.DefaultColWidth = 15;
             _excelWorksheet.TabColor = Color.Black;
             _excelWorksheet.DefaultRowHeight = 14;
+            _excelWorksheet.PrinterSettings.Orientation = eOrientation.Landscape;
+            _excelWorksheet.PrinterSettings.PaperSize = PageSize;
+            _excelWorksheet.PrinterSettings.FitToHeight = FitToHeight;
+
+            ///// <summary> 
+            //    /// 1 — всё на 1 странице по ширине
+            //    //2 — растянуть на 2 страницы по ширине
+            //    //0 — неограниченно
+            ///// </summary>
+            _excelWorksheet.PrinterSettings.FitToPage = FitToPage;
+            _excelWorksheet.PrinterSettings.FitToWidth = FitToWidth;
+
 
             return _excelWorksheet;
         }
 
-        public bool WriteLine(ExcelWorksheet sheet, int rowLine, string path, bool isHeader = false, double? headerHeight = null, double? width = null, bool? isTextWrap = null, ExcelHorizontalAlignment? align = null, params RowItem[] values)
+        public bool WriteLine(ExcelWorksheet sheet, int rowLine, 
+            string path, bool isHeader = false, double? headerHeight = null, double? width = null, bool? isTextWrap = null, 
+            ExcelHorizontalAlignment? align = null, int? mergeStartCell = null, int? mergeCountCell = null, params RowItem[] values)
         {
             if (rowLine > 0 && values.Length != 0)
             {
@@ -82,6 +98,13 @@ namespace BusinessLayer.ServicesCOM
                     {
                         sheet.Column(value.Col).AutoFit();
                     }
+
+                    //объединяем ячейки в строке
+                    if (mergeStartCell.HasValue && mergeCountCell.HasValue)
+                    {
+                        sheet.Cells[rowLine, mergeStartCell.Value, rowLine, (mergeStartCell.Value + mergeCountCell.Value - 1)].Merge = true;
+                    }
+
                 }
 
                 try
@@ -113,7 +136,7 @@ namespace BusinessLayer.ServicesCOM
                     sheet.Row(setting.RowLine).Style.HorizontalAlignment = setting.horizAligment;
                     sheet.Row(setting.RowLine).Style.VerticalAlignment = setting.vertAligment;
                     sheet.Row(setting.RowLine).Style.Font.Bold = setting.isBold ?? false;
-                    
+
                     foreach (var value in values)
                     {
                         sheet.Cells[setting.RowLine, value.Col].Style.Font.Size = setting.FontSize;
@@ -233,7 +256,6 @@ namespace BusinessLayer.ServicesCOM
         public int mergeStartCell { get; set; }
         public int mergeCountCell { get; set; }
         public int RowLine { get; set; }
-
         public Color FontColor { get; set; } = Color.Black;
         public Color BgColor { get; set; }
         public ExcelHorizontalAlignment horizAligment { get; set; } = ExcelHorizontalAlignment.Left;

@@ -88,7 +88,8 @@ namespace BusinessLayer.Helpers
             3 => "Сроки выполнения работ",
             4 => "Договорная цена",
             5 => "Сроки выполнения работ и Договорная цена",
-            6 => "Другое",
+            6 => "Согласование",
+            7 => "Другое",
             _ => null
         };
         public string? GetEstimateAppType(int number) => number switch

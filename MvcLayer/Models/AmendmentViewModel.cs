@@ -51,8 +51,16 @@ namespace MvcLayer.Models
         public string? Type { get; set; }
 
         public ContractDTO Contract { get; set; }
+
         [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }
+
+        [DisplayName("Срок исполнения обязательств по договору по согласованию")]
+        [Required(ErrorMessage = "Заполните срок исполнения обязательств по договору по согласованию")]
+        public DateTime? DueDate { get; set; }
+
+        [DisplayName("Претензионно-исковая работа?")]
+        public bool IsClaimLitigation { get; set; }
 
         public List<AmendmentFileDTO> AmendmentFiles { get; set; }
         public List<MaterialAmendmentDTO> MaterialAmendments { get; set; } = new List<MaterialAmendmentDTO>();

@@ -37,7 +37,7 @@ class ScrollManager {
     // Сброс скролла в начало
     reset() {
         this.setPosition(0);
-        console.log('🧹 Скролл сброшен в положение 0');
+        //console.log('🧹 Скролл сброшен в положение 0');
         return true;
     }
 
@@ -50,7 +50,7 @@ class ScrollManager {
             setTimeout(() => {
                 el.style.scrollBehavior = '';
             }, 500);
-            console.log('🎯 Анимированный сброс скролла');
+            //console.log('🎯 Анимированный сброс скролла');
             return true;
         }
         return false;
@@ -66,7 +66,7 @@ class ScrollManager {
             sessionStorage.setItem(this.storageKey, JSON.stringify(currentState));
             return true;
         } catch (e) {
-            console.warn('Failed to save scroll position:', e);
+            //console.warn('Failed to save scroll position:', e);
             return false;
         }
     }
@@ -84,7 +84,7 @@ class ScrollManager {
                 const state = JSON.parse(saved);
                 if (state.scrollPosition) {
                     this.setPosition(state.scrollPosition);
-                    console.log('📜 Скролл восстановлен:', state.scrollPosition);
+                    //console.log('📜 Скролл восстановлен:', state.scrollPosition);
                     return true;
                 }
             }
@@ -101,7 +101,7 @@ class ScrollManager {
                 const el = this.getElement();
                 if (el && position) {
                     el.scrollTop = position;
-                    console.log(`📜 Скролл восстановлен (${delay}ms):`, position);
+                    //console.log(`📜 Скролл восстановлен (${delay}ms):`, position);
                 }
             }, delay);
         });
@@ -118,7 +118,7 @@ class ScrollManager {
                     this.savePosition();
                 }, debounceTime);
             });
-            console.log('✅ Автосохранение скролла включено');
+            //console.log('✅ Автосохранение скролла включено');
         }
     }
 
@@ -128,7 +128,7 @@ class ScrollManager {
         if (el) {
             const newEl = el.cloneNode(true);
             el.parentNode.replaceChild(newEl, el);
-            console.log('⏹ Автосохранение скролла отключено');
+            //console.log('⏹ Автосохранение скролла отключено');
         }
     }
 
@@ -204,7 +204,7 @@ class ScrollManager {
     clearSavedPosition() {
         try {
             sessionStorage.removeItem(this.storageKey);
-            console.log('🧹 Сохраненная позиция скролла очищена');
+            //console.log('🧹 Сохраненная позиция скролла очищена');
         } catch (e) {
             console.warn('Failed to clear scroll position:', e);
         }

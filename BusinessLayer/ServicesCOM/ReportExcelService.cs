@@ -6,6 +6,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.Settings;
+using Castle.Components.DictionaryAdapter.Xml;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
 using Microsoft.AspNetCore.Hosting;
@@ -88,44 +89,48 @@ internal class ReportExcelService : IReportExcelService
         string path = _host.WebRootPath + "\\Temp" + "\\Договора.xlsx";
         await Task.Run(() =>
         {
-            var sheet = _excelWriter.Settup(path, "Учет договоров");
+            var sheet = _excelWriter.Settup(path, true, 1, nameSheets: "Учет договоров");
             int startRow = 2;
             int startCol = 1;
-
+            string[] extraWidthCol = { "NameObject", "Client", "GenContractor", "PaymentСonditionsRaschet", "ResponsibleForWork", "PaymentСonditionsRaschet" };
+            int colWidthExtra = 55;
+            int colWidth = 15;
             try
             {
                 ///ЗАПОЛНЯЕМ ШАПКУ ТАБЛИЦЫ
                 List<RowItem> rowItems = new List<RowItem>();
                 foreach (var colName in contracts.FirstOrDefault()?.Select(x => x.Key) ?? Array.Empty<string>())
                 {
+
                     rowItems.Add(new RowItem
                     {
                         Value = _converter.ToRussianContractProps(colName),
                         Col = startCol++,
+                        ColWidth = extraWidthCol.Contains(colName) ? colWidthExtra : colWidth,
                         FontColor = Constants.COLOR_WHITE,
                         FontSize = Constants.FONT_SIZE_14,
                         BgColor = Constants.COLOR_DARK_BLUE
                     });
                 }
-                _excelWriter.WriteLine(sheet, startRow++, path, true, null, width: null, isTextWrap: null, ExcelHorizontalAlignment.Left, rowItems.ToArray());
+                _excelWriter.WriteLine(sheet, startRow++, path, true, 60, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, values: rowItems.ToArray());
 
                 ///ЗАПОЛНЯЕМ ТАБЛИЦУ
                 startCol = 1;
-                foreach (var contractValues in contracts.Select(x => x.Values))
+                foreach (var contractValues in contracts) //.Select(x => x.Values))
                 {
                     List<RowItem> rowItems2 = new List<RowItem>();
                     foreach (var value in contractValues)
                     {
-
                         rowItems2.Add(new RowItem
                         {
-                            Value = value,
+                            Value = value.Value,
                             Col = startCol++,
+                            ColWidth = extraWidthCol.Contains(value.Key) ? colWidthExtra : colWidth,
                             FontColor = Constants.COLOR_BLACK,
                             FontSize = Constants.FONT_SIZE_14,
                         });
                     }
-                    _excelWriter.WriteLine(sheet, startRow, path, false, null, width: 25, isTextWrap: true, align: null, rowItems2.ToArray());
+                    _excelWriter.WriteLine(sheet, startRow, path, false, null, width: 25, isTextWrap: true, align: null, values: rowItems2.ToArray());
                     startCol = 1;
                     startRow++;
 
@@ -150,20 +155,26 @@ internal class ReportExcelService : IReportExcelService
 
         await Task.Run(() =>
         {
-            var sheet = _excelWriter.Settup(path, sheetName);
-            var contractProp = _contextDb.Contracts
+            var sheet = _excelWriter.Settup(path,true,1, nameSheets: sheetName);
+
+            var contract = _contextDb.Contracts
              .Find(x => x.Id == contractId)
              .Select(x => new { x.IsAgreementContract, x.IsSubContract, x.IsOneOfMultiple, x.IsEngineering, x.DateBeginWork, x.DateEndWork, x.ContractTerm })
              .FirstOrDefault();
 
-            if (contractProp == null)
+            var vContract = _contextDb.vContracts
+            .Find(x => x.Id == contractId)
+            .Select(x => new { x.Number, x.Date, x.NameObject, x.Client, x.GenContractor})
+            .FirstOrDefault();
+
+            if (contract == null)
             {
                 return null;
             }
 
             var type = ScopeType.Both;
 
-            if (contractProp.IsAgreementContract == true || contractProp.IsSubContract == true || contractProp.IsEngineering == true)
+            if (contract.IsAgreementContract == true || contract.IsSubContract == true || contract.IsEngineering == true)
             {
                 type = ScopeType.NoOwn;
             }
@@ -172,20 +183,36 @@ internal class ReportExcelService : IReportExcelService
             var forms = _formService.GetScopeWorksInfoTable(contractId, type);
 
             var dates = new List<DateTime>();
-            var currentDate = contractProp?.DateBeginWork;
+            var currentDate = contract?.DateBeginWork;
 
-            while (currentDate <= contractProp?.DateEndWork)
+            while (currentDate <= contract?.DateEndWork)
             {
                 dates.Add((DateTime)currentDate);
                 currentDate = currentDate?.AddMonths(1);
             }
 
-
-            int startRow = 2;
+            int startRow = 1;
             int startCol = 1;
 
             try
             {
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, 1, 11,
+                    new RowItem { Value = $"Номер договора: {vContract.Number}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
+
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, 1, 11,
+                    new RowItem { Value = $"Дата договора: {vContract.Date?.ToShortDateString()}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
+                
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true,    ExcelHorizontalAlignment.Left,1,11,
+                    new RowItem { Value = $"Наименование объекта: {vContract.NameObject}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
+
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left,1,11,
+                    new RowItem { Value = $"Заказчик: {vContract.Client}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
+
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left,1,11,
+                    new RowItem { Value = $"Генподрядчик: {vContract.GenContractor}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
+
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, values: new RowItem { });
+
                 // Set headers
                 List<RowItem> headerItems = new List<RowItem>
             {
@@ -210,7 +237,7 @@ internal class ReportExcelService : IReportExcelService
                 }
 
                 headerItems.AddRange(periodsRow);
-                _excelWriter.WriteLine(sheet, startRow++, path, true, null, width: null, isTextWrap: null, ExcelHorizontalAlignment.Left, headerItems.ToArray());
+                _excelWriter.WriteLine(sheet, startRow++, path, true, null, width: null, isTextWrap: null, ExcelHorizontalAlignment.Left, values: headerItems.ToArray());
 
                 // Set body
                 int nextRow = FillPeriodsTable(sheet, scopes, startRow, path, dates);
@@ -250,7 +277,7 @@ internal class ReportExcelService : IReportExcelService
 
         await Task.Run(() =>
         {
-            var sheet = _excelWriter.Settup(path, "Детальная информация по договору");
+            var sheet = _excelWriter.Settup(path, true, 1, nameSheets: "Детальная информация по договору");
             int startCol = 1;
             var settings = new ExcelSettings
             {
@@ -437,7 +464,7 @@ internal class ReportExcelService : IReportExcelService
 
         await Task.Run(() =>
         {
-            var sheet = _excelWriter.Settup(path, docName);
+            var sheet = _excelWriter.Settup(path, nameSheets: docName);
             int startCol = 1;
             var settings = new ExcelSettings
             {
@@ -492,15 +519,15 @@ internal class ReportExcelService : IReportExcelService
                         List<RowItem> itemsAmount = new List<RowItem>
                         {
                             new RowItem { Value = (amount?.Number) != null? $"{amount?.Number} от {amount?.Date?.ToShortDateString()}" : amount?.Date?.ToShortDateString(), Col = startCol++ },
-                            
+
                             new RowItem {Value = amount?.NameObject, Col = startCol ++},
                             new RowItem { Value = amount?.Client, Col = startCol++ },
                             new RowItem {Value = amount?.GenContractor, Col = startCol ++},
-                            
+
                             new RowItem {Value = amount?.DateBeginWork?.ToShortDateString() != null?
                                         $"{amount?.DateBeginWork?.ToShortDateString()} - {amount?.DateEndWork?.ToShortDateString()}" :
                                         amount?.DateEndWork?.ToShortDateString(), Col = startCol ++},
-                            
+
                             new RowItem {Value = amount?.EnteringTerm?.ToShortDateString(), Col = startCol ++},
                             new RowItem {Value = amount?.Сurrency, Col = startCol ++},
                             new RowItem {Value =amount?.ContractPrice?.ToString("N2"), Col = startCol ++},
@@ -581,7 +608,7 @@ internal class ReportExcelService : IReportExcelService
         {
             int startCol = 1;
             _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: null, ExcelHorizontalAlignment.Left,
-                new RowItem { Value = _converter?.ToScopesTableCategory(itemGroup.Key) ?? "", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_14, BgColor = Constants.COLOR_WHITE });
+                values: new RowItem { Value = _converter?.ToScopesTableCategory(itemGroup.Key) ?? "", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_14, BgColor = Constants.COLOR_WHITE });
 
             foreach (var item in itemGroup.Value)
             {
@@ -607,7 +634,7 @@ internal class ReportExcelService : IReportExcelService
                 }
 
                 rowItems.AddRange(periodsRow2);
-                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: false, align: null, rowItems.ToArray());
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: false, align: null, values: rowItems.ToArray());
                 startCol = 1;
             }
         }

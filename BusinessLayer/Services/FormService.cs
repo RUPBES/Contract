@@ -151,10 +151,11 @@ public class FormService : IFormService
 
     public IEnumerable<DateTime> GetFreeForms(int contractId)
     {
+        //todo: ЗДЕСЬ по СОГЛАСОВАНИЮ СРОКОВ изменяется срок окончания #2!
         var list = _database.Forms.Find(a => a.ContractId == contractId && a.IsOwnForces != true).ToList();
         DateTime start, end;
         var amend = _database.Amendments.Find(a => a.ContractId == contractId).OrderBy(a => a.Date).LastOrDefault();
-
+        var agreement = _database.AdditionalTerms.Find(a => a.ContractId == contractId).LastOrDefault();
         if (amend == null)
         {
             var contract = _database?.Contracts?.GetById(contractId);
@@ -168,7 +169,7 @@ public class FormService : IFormService
         else
         {
             start = (DateTime)amend?.DateBeginWork;
-            end = (DateTime)amend?.DateEndWork;
+            end = (agreement is not null && agreement.DueDate.HasValue)? agreement.DueDate.Value : (DateTime)(amend?.DateEndWork);
         }
 
         List<DateTime> answer = new();

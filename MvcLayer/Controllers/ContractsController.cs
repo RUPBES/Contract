@@ -2,13 +2,16 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
+using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MvcLayer.Models;
 using MvcLayer.Models.JSONSerializer;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -19,6 +22,7 @@ public class ContractsController : Controller
 {
     private readonly IVContractService _vContractService;
     private readonly IVContractEnginService _vContractEnginService;
+    private readonly IAdditionalTermService _additionalTermService;
     private readonly IContractService _contractService;
     private readonly IScopeWorkService _scopeWorkService;
     private readonly IOrganizationService _organization;
@@ -29,16 +33,10 @@ public class ContractsController : Controller
     private readonly IMapper _mapper;
     private readonly IHttpContextUserProvider _httpHelper;
 
-    public ContractsController(IContractService contractService,
-        IMapper mapper,
-        IOrganizationService organization,
-        IEmployeeService employee,
-        ITypeWorkService typeWork,
-        IVContractService vContractService,
-        IVContractEnginService vContractEnginService,
-        IScopeWorkService scopeWorkService,
-        IFormService formService,
-        IAmendmentService amendmentService,
+    public ContractsController(IAdditionalTermService additionalTermService, IContractService contractService,
+        IMapper mapper, IOrganizationService organization, IEmployeeService employee, ITypeWorkService typeWork,
+        IVContractService vContractService, IVContractEnginService vContractEnginService,
+        IScopeWorkService scopeWorkService, IFormService formService, IAmendmentService amendmentService,
         IHttpContextUserProvider httpHelper
    )
     {
@@ -53,6 +51,7 @@ public class ContractsController : Controller
         _formService = formService;
         _amendmentService = amendmentService;
         _httpHelper = httpHelper;
+        _additionalTermService = additionalTermService;
     }
 
 
@@ -305,7 +304,8 @@ public class ContractsController : Controller
         contract.ContractOrganizations.RemoveAll(x => x.OrganizationId == 0);
         contract.EmployeeContracts.RemoveAll(x => x.EmployeeId == 0);
         contract.TypeWorkContracts.RemoveAll(x => x.TypeWorkId == 0);
-
+        contract.Author ??= (_httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes");
+        contract.Owner ??= (_httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes");
         var contractId = _contractService.Create(_mapper.Map<ContractDTO>(contract));
 
         if (contractId is null)
@@ -425,9 +425,10 @@ public class ContractsController : Controller
             viewContract.FundingFS.AddRange(contract?.FundingSource?.Split(", "));
         }
 
-        if (_amendmentService.Find(x => x.ContractId == contract?.Id).Select(x => x.Id).Any())
+        var amendmetPrice = _amendmentService?.Find(x => x.ContractId == contract?.Id)?.MaxBy(x => x.Date)?.ContractPrice;
+        if (amendmetPrice.HasValue)
         {
-            ViewData["IsAmendment"] = true;
+            ViewData["AmendmentPrice"] = amendmetPrice;
         }
 
         ViewData["returnContractId"] = returnContractId;
@@ -455,6 +456,8 @@ public class ContractsController : Controller
                 contract.IsClosed = false;
                 contract.IsExpired = false;
             }
+            contract.Author ??= (_httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes");
+            contract.Owner ??= (_httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes");
 
             _contractService.Update(_mapper.Map<ContractDTO>(contract));
             NotificationHelper.SetNotification(TempData, "Договор обновлен", NotificationType.Info);
@@ -501,6 +504,9 @@ public class ContractsController : Controller
     public async Task<IActionResult> EditSubObj(ContractViewModel contract, int returnContractId = 0)
     {
         contract.PaymentСonditionsAvans = string.Join(", ", contract.PaymentCA);
+        contract.Author ??= (_httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes");
+        contract.Owner ??= (_httpHelper.GetUserOrganizationFirstCode() ?? "ContrOrgBes");
+
         try
         {
             _contractService.Update(_mapper.Map<ContractDTO>(contract));
@@ -797,7 +803,7 @@ public class ContractsController : Controller
         {
             return await Task.FromResult<ActionResult>(RedirectToAction(nameof(Details), new { id = mainId ?? id }));
         }
-       
+
         var type = ScopeType.Both;
         mainId = mainId is null ? id : mainId;
 
@@ -809,8 +815,6 @@ public class ContractsController : Controller
         var viewModel = new ScopeWorkReportModel();
         var scopes = _scopeWorkService.GetScopeWorksInfoTable(id, type);
         var forms = _formService.GetScopeWorksInfoTable(id, type);
-
-
 
         ViewBag.AmendmentInfo = _scopeWorkService.HasNewAmendment(id) == false ?
             Constants.WARNING_CREATE_NEW_AMENDMENT_CHECK_SCOPEWORK : string.Empty;
@@ -825,31 +829,49 @@ public class ContractsController : Controller
             viewModel.Scopes.TryAdd(item.Key, item.Value);
         }
 
-        var contract = _amendmentService
+        (DateTime? start, DateTime? end) periodRange = (null, null);
+       
+        var contractPeriod = _amendmentService
             .Find(x => x.ContractId == id)
-            .Select(s => new { s.DateBeginWork, s.DateEndWork, ContractTerm = s.DateEntryObject })
+            .Select(s => new { s.DateBeginWork, s.DateEndWork })
             .LastOrDefault();
 
-        if (contract is null)
+        if (contractPeriod is not null)
         {
-            contract = _contractService
-             .Find(x => x.Id == id)
-             .Select(x => new { x.DateBeginWork, x.DateEndWork, x.ContractTerm })
-             .FirstOrDefault();
+            periodRange.start = (contractPeriod?.DateBeginWork.HasValue == true) ? contractPeriod.DateBeginWork : null;
+            periodRange.end = (contractPeriod?.DateEndWork.HasValue == true) ? contractPeriod.DateEndWork : null;
+        }
+        else if (contractPeriod is null)
+        {
+            contractPeriod = _contractService
+                .Find(x => x.Id == id)
+                .Select(x => new { x.DateBeginWork, x.DateEndWork })
+                .FirstOrDefault();
+
+            periodRange.start = (contractPeriod?.DateBeginWork.HasValue == true) ? contractPeriod.DateBeginWork : periodRange.start;
+            periodRange.end = (contractPeriod?.DateEndWork.HasValue == true) ? contractPeriod.DateEndWork : periodRange.end;
         }
 
+        //todo: ЗДЕСЬ по СОГЛАСОВАНИЮ СРОКОВ изменяется срок окончания #3!
+        var agreement = _additionalTermService
+            .Find(x => x.ContractId == id)
+            .Select(s => new { s.DueDate })
+            .LastOrDefault();
+
+        if (agreement is not null)
+        {
+            periodRange.end = agreement.DueDate.HasValue ? agreement.DueDate : periodRange.end;
+        }
 
         var dates = new List<DateTime>();
-        var currentDate = contract?.DateBeginWork;
 
-        while (DateComparer.IsLessOrSameYearAndMonth(currentDate, contract.DateEndWork))
+        while (DateComparer.IsLessOrSameYearAndMonth(periodRange.start, periodRange.end))
         {
-            dates.Add((DateTime)currentDate);
-            currentDate = currentDate?.AddMonths(1);
+            dates.Add((DateTime)periodRange.start);
+            periodRange.start = periodRange.start?.AddMonths(1);
         }
 
         ViewBag.Periods = dates;
-
         return View("_ScopeWork", viewModel);
     }
 
@@ -960,42 +982,6 @@ public class ContractsController : Controller
         return View();
     }
 
-    //public async Task<IActionResult> IndexArch(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
-    //{
-    //    var organizationName = _httpHelper.GetUserOrganizationCodes();
-
-    //    if (page < 1 || searchString != null)
-    //    {
-    //        page = 1;
-    //    }
-    //    else
-    //    {
-    //        searchString = currentFilter;
-    //        typeSearch = currentType;
-    //    }
-
-    //    ViewData["IsEngineering"] = false;
-    //    ViewData["CurrentSort"] = sortOrder;
-    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-    //    ViewData["CurrentFilter"] = searchString;
-    //    ViewData["CurrentType"] = typeSearch;
-    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-    //    {
-    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName, useArchiveData: true)));
-    //    }
-    //    else
-    //    {
-    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(100, page ?? 1, organizationName, useArchiveData: true)));
-    //    }
-    //}
-
-
     [Route("/archive/Contracts/Engineerings")]
     public IActionResult EngineeringsArch()
     {
@@ -1003,41 +989,6 @@ public class ContractsController : Controller
         ViewBag.UseArchiveData = true;
         return View("IndexArch");
     }
-
-    //public async Task<IActionResult> EngineeringsArch(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
-    //{
-    //    var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-
-    //    if (searchString != null)
-    //    {
-    //        page = 1;
-    //    }
-    //    else
-    //    {
-    //        searchString = currentFilter;
-    //        typeSearch = currentType;
-    //    }
-
-    //    ViewData["IsEngineering"] = true;
-    //    ViewData["CurrentSort"] = sortOrder;
-    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-    //    ViewData["CurrentFilter"] = searchString;
-    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-    //    {
-    //        return await Task.FromResult<IActionResult>(View("IndexArch", _vContractEnginService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName, useArchiveData: true)));
-    //    }
-    //    else
-    //    {
-    //        return await Task.FromResult<IActionResult>(View("IndexArch", _vContractEnginService.GetPage(100, page ?? 1, organizationName, useArchiveData: true)));
-    //    }
-    //}
-
 
     [Route("/archive/Contracts/Details")]
     public async Task<IActionResult> DetailsArch(int? id)
@@ -1148,15 +1099,10 @@ public class ContractsController : Controller
             _vContractEnginService.Filter(pageSize, page, selectedField, sortDirection, organizationName, searchText, queryDateRange, useArchiveData: isArchive)
             : _vContractService.Filter(pageSize, page, selectedField, sortDirection, organizationName, searchText, queryDateRange, useArchiveData: isArchive);
 
-        return await Task.FromResult<IActionResult>(Json(contracts, new JsonSerializerOptions
+        return Json(contracts, new JsonSerializerOptions
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            Converters =
-            {
-                new DecimalConverter(),
-                new DateFormatConverter(),
-            }
-        }));
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        });
     }
 
     public async Task<IActionResult> GetHTMLModalFiltering()
@@ -1210,6 +1156,58 @@ public class ContractsController : Controller
 
         return paymentText;
     }
+
+    //private (string? whereClause, DynamicParameters parameters) GenerateDateRangeWhereClause(
+    //string? startDateBeginWork, string? endDateBeginWork,
+    //string? stratDateEndWork, string? endDateEndWork,
+    //string? startEnteringTerm, string? endEnteringTerm)
+    //{
+    //    var parts = new List<string>();
+    //    var p = new DynamicParameters();
+
+    //    // DateBeginWork
+    //    if (!string.IsNullOrEmpty(startDateBeginWork))
+    //    {
+    //        parts.Add("COALESCE(a.DateBeginWork, c.DateBeginWork) >= @startBW");
+    //        p.Add("startBW", DateTime.ParseExact(startDateBeginWork, "yyyy-MM", null));
+    //    }
+    //    if (!string.IsNullOrEmpty(endDateBeginWork))
+    //    {
+    //        // Конец месяца — берём первый день следующего месяца
+    //        var end = DateTime.ParseExact(endDateBeginWork, "yyyy-MM", null).AddMonths(1);
+    //        parts.Add("COALESCE(a.DateBeginWork, c.DateBeginWork) < @endBW");
+    //        p.Add("endBW", end);
+    //    }
+
+    //    // DateEndWork
+    //    if (!string.IsNullOrEmpty(stratDateEndWork))
+    //    {
+    //        parts.Add("COALESCE(a.DateEndWork, c.DateEndWork) >= @startEW");
+    //        p.Add("startEW", DateTime.ParseExact(stratDateEndWork, "yyyy-MM", null));
+    //    }
+    //    if (!string.IsNullOrEmpty(endDateEndWork))
+    //    {
+    //        var end = DateTime.ParseExact(endDateEndWork, "yyyy-MM", null).AddMonths(1);
+    //        parts.Add("COALESCE(a.DateEndWork, c.DateEndWork) < @endEW");
+    //        p.Add("endEW", end);
+    //    }
+
+    //    // EnteringTerm
+    //    if (!string.IsNullOrEmpty(startEnteringTerm))
+    //    {
+    //        parts.Add("COALESCE(a.DateEntryObject, c.EnteringTerm) >= @startET");
+    //        p.Add("startET", DateTime.ParseExact(startEnteringTerm, "yyyy-MM", null));
+    //    }
+    //    if (!string.IsNullOrEmpty(endEnteringTerm))
+    //    {
+    //        var end = DateTime.ParseExact(endEnteringTerm, "yyyy-MM", null).AddMonths(1);
+    //        parts.Add("COALESCE(a.DateEntryObject, c.EnteringTerm) < @endET");
+    //        p.Add("endET", end);
+    //    }
+
+    //    var clause = parts.Count > 0 ? string.Join(" AND ", parts) : null;
+    //    return (clause, p);
+    //}
 
     private string? GenerateDateRangeWhereClause(string? startDateBeginWork, string? endDateBeginWork, string? stratDateEndWork, string? endDateEndWork, string? startEnteringTerm, string? endEnteringTerm)
     {
@@ -1274,6 +1272,8 @@ public class ContractsController : Controller
 
         return whereClause;
     }
+
+
     private ContractDTO AddOrganization(ContractDTO contract, Func<ContractOrganizationDTO, bool> hasRole, Action<ContractOrganizationDTO> setRole)
     {
         if (!contract.ContractOrganizations.Any(hasRole))

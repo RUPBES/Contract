@@ -1,4 +1,22 @@
-﻿class DataTableController {
+﻿// Утилиты форматирования
+const Fmt = {
+    // Дата: "2026-02-19T00:00:00" → "19.02.2026"
+    date(val) {
+        if (!val) return '';
+        const d = new Date(val);
+        return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+    },
+
+    // Число: 550000.5 → "550 000,50"
+    decimal(val) {
+        if (val == null) return '0.00';
+        return Number(val).toLocaleString('ru-RU', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+};
+class DataTableController {
     constructor(options) {
         this.container = document.querySelector(options.container);
         this.apiUrl = options.apiUrl;
@@ -59,15 +77,27 @@
         this.init();
     }
 
-    // Инициализация
+    //// Инициализация
+    //init() {
+
+    //    // ============ Восстановление состояния и настройка истории ============
+    //    this.setupHistoryHandling();
+    //    this.restoreState();
+    //    // ===============================================================================
+
+    //    this.loadData();
+    //    this.setupEvents();
+    //}
+
     init() {
-
-        // ============ Восстановление состояния и настройка истории ============
         this.setupHistoryHandling();
-        this.restoreState();
-        // ===============================================================================
 
-        this.loadData();
+        const restored = this.restoreState();
+
+        if (!restored) {
+            this.loadData();
+        }
+
         this.setupEvents();
     }
 
@@ -187,11 +217,11 @@
     async loadData() {
         try {
 
-            // ============ ДОБАВЛЕНО: Сохраняем состояние перед загрузкой ============
-            if (!this.isRestoring) {
-                this.saveState();
-            }
-            // ========================================================================
+            //// ============ ДОБАВЛЕНО: Сохраняем состояние перед загрузкой ============
+            //if (!this.isRestoring) {
+            //    this.saveState();
+            //}
+            //// ========================================================================
 
             // Формируем URL с параметрами
             const params = new URLSearchParams({
@@ -214,7 +244,12 @@
             const response = await fetch(url);
             const data = await response.json();
 
-            this.data = data.Objects;
+
+            //this.data = data.Objects;
+
+            // Нормализуем весь массив один раз — O(n) до рендера
+            this.data = this.normalizeContracts(data.Objects);
+
             // Обновляем состояние пагинации через менеджер
             this.pagination.updateState(data.PageViewModel.TotalPages, data.PageViewModel.Count);
 
@@ -224,17 +259,40 @@
 
             this.renderTable();
 
-            // ============ ДОБАВЛЕНО: Сохраняем состояние после загрузки ============
-            setTimeout(() => {
-                if (!this.isRestoring) {
-                    this.saveState();
-                }
-            }, 100);
-            // =======================================================================
+            // Сохраняем только один раз и только если не восстанавливаемся
+            if (!this.isRestoring) {
+                this.saveState();
+            }
+
+            //// ============ ДОБАВЛЕНО: Сохраняем состояние после загрузки ============
+            //setTimeout(() => {
+            //    if (!this.isRestoring) {
+            //        this.saveState();
+            //    }
+            //}, 100);
+            //// =======================================================================
 
         } catch (error) {
             console.error('Ошибка загрузки:', error);
         }
+    }
+
+    normalizeContracts(items) {
+        return items.map(item => ({
+            ...item,
+            // Даты
+            Date: Fmt.date(item.Date),
+            DateBeginWork: Fmt.date(item.DateBeginWork),
+            DateEndWork: Fmt.date(item.DateEndWork),
+            EnteringTerm: Fmt.date(item.EnteringTerm),
+            // Числа
+            ContractPrice: Fmt.decimal(item.ContractPrice),
+            PreYearSum: Fmt.decimal(item.PreYearSum),
+            RemainingSum: Fmt.decimal(item.RemainingSum),
+            ThisYearSum: Fmt.decimal(item.ThisYearSum),
+            // Сравнение дат для overdue — сохраняем сырое значение
+            _isOverdue: item.DateEndWork && new Date(item.DateEndWork) < new Date()
+        }));
     }
 
     async openFilterModalWindow() {
@@ -301,6 +359,7 @@
 
         // Инициализация контекстных меню таблицы
         this.setupActionMenus();
+        this.setupAlertHandlers();
     }
 
     // Установка состояния кнопок сортировки
@@ -376,7 +435,7 @@
         // Рендер пагинации через менеджер
         this.pagination.renderPagination();
 
-        this.handleAlert();
+        //this.handleAlert();
     }
 
     // Рендер тела таблицы
@@ -386,13 +445,30 @@
             tbody.innerHTML = '<tr><td colspan="100%">Нет данных</td></tr>';
             return;
         }
-        if (this.isArchive) {
-            tbody.innerHTML = setContractArchiveTableRow(this.data, this.permissions, this.isEngineering);
-        } else {
-            tbody.innerHTML = setContractTableRow(this.data, this.permissions, this.isEngineering);
-        }
-        // Переинициализация меню после перерисовки строк
-        this.setupActionMenus();
+        //if (this.isArchive) {
+        //    tbody.innerHTML = setContractArchiveTableRow(this.data, this.permissions, this.isEngineering);
+        //} else {
+        //    tbody.innerHTML = setContractTableRow(this.data, this.permissions, this.isEngineering);
+        //}
+
+        //====================================================================================
+
+        const html = this.isArchive
+            ? setContractArchiveTableRow(this.data, this.permissions, this.isEngineering)
+            : setContractTableRow(this.data, this.permissions, this.isEngineering);
+
+        // Парсим через template — быстрее прямого innerHTML на tbody
+        const template = document.createElement('template');
+        template.innerHTML = html;
+
+        // Один DOM-удар вместо инкрементальной вставки
+        tbody.replaceChildren(template.content);
+
+
+        //=====================================================================================
+
+        //// Переинициализация меню после перерисовки строк
+        //this.setupActionMenus();
     }
 
     setupActionMenus() {
@@ -484,54 +560,88 @@
             });
         };
 
-        if (!this.container.dataset.menuInitialized) {
-            this.container.dataset.menuInitialized = 'true';
+        //if (!this.container.dataset.menuInitialized) {
+        //    this.container.dataset.menuInitialized = 'true';
 
-            // Открытие / закрытие меню
-            this.container.addEventListener('click', (e) => {
-                const btn = e.target.closest('.action-btn');
-                if (!btn) return;
+        //    // Открытие / закрытие меню
+        //    this.container.addEventListener('click', (e) => {
+        //        const btn = e.target.closest('.action-btn');
+        //        if (!btn) return;
 
-                e.stopPropagation();
+        //        e.stopPropagation();
 
-                const menu = btn.nextElementSibling?.classList.contains('action-menu')
-                    ? btn.nextElementSibling
-                    : null;
-                if (!menu) return;
+        //        const menu = btn.nextElementSibling?.classList.contains('action-menu')
+        //            ? btn.nextElementSibling
+        //            : null;
+        //        if (!menu) return;
 
-                const isOpen = menu.classList.contains('open');
-                closeAll();
+        //        const isOpen = menu.classList.contains('open');
+        //        closeAll();
 
-                if (!isOpen) {
-                    menu.classList.add('open');
-                    btn.classList.add('active');
-                    positionMenu(btn, menu);
-                }
-            });
+        //        if (!isOpen) {
+        //            menu.classList.add('open');
+        //            btn.classList.add('active');
+        //            positionMenu(btn, menu);
+        //        }
+        //    });
 
-            // Закрытие по клику вне меню
-            document.addEventListener('click', closeAll);
+        //    // Закрытие по клику вне меню
+        //    document.addEventListener('click', closeAll);
 
-            // Закрытие по Escape
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closeAll();
-            });
+        //    // Закрытие по Escape
+        //    document.addEventListener('keydown', (e) => {
+        //        if (e.key === 'Escape') closeAll();
+        //    });
 
-            // Закрытие при прокрутке (любой элемент, capture чтобы поймать всё)
-            window.addEventListener('scroll', closeAll, { capture: true, passive: true });
+        //    // Закрытие при прокрутке (любой элемент, capture чтобы поймать всё)
+        //    window.addEventListener('scroll', closeAll, { capture: true, passive: true });
 
-            // Перепозиционирование при ресайзе
-            window.addEventListener('resize', () => {
-                const openMenu = document.querySelector('.action-menu.open');
-                if (!openMenu) return;
-                const btn = openMenu.previousElementSibling;
-                if (btn?.classList.contains('action-btn')) positionMenu(btn, openMenu);
-            });
-        }
+        //    // Перепозиционирование при ресайзе
+        //    window.addEventListener('resize', () => {
+        //        const openMenu = document.querySelector('.action-menu.open');
+        //        if (!openMenu) return;
+        //        const btn = openMenu.previousElementSibling;
+        //        if (btn?.classList.contains('action-btn')) positionMenu(btn, openMenu);
+        //    });
+        //}
 
         // Позиционирование подменю при наведении
         // Заменить оба блока mouseout на этот код:
+
+        //-----
+        if (this.container.dataset.menuInitialized) return; // выходим целиком
+        this.container.dataset.menuInitialized = 'true';
+
+        //-----
+
         const submenuTimers = new WeakMap();
+
+
+        //----
+        // Открытие / закрытие меню
+        this.container.addEventListener('click', (e) => {
+            const btn = e.target.closest('.action-btn');
+            if (!btn) return;
+
+            e.stopPropagation();
+
+            const menu = btn.nextElementSibling?.classList.contains('action-menu')
+                ? btn.nextElementSibling
+                : null;
+            if (!menu) return;
+
+            const isOpen = menu.classList.contains('open');
+            closeAll();
+
+            if (!isOpen) {
+                menu.classList.add('open');
+                btn.classList.add('active');
+                positionMenu(btn, menu);
+            }
+        });
+
+        
+        ///-----
 
         this.container.addEventListener('mouseout', (e) => {
             const wrap = e.target.closest('.menu-item-wrap');
@@ -616,6 +726,25 @@
             submenu.style.left = left + 'px';
             submenu.style.zIndex = '10000';
             submenu.style.visibility = 'visible';
+        });
+
+        // Закрытие по клику вне меню
+        document.addEventListener('click', closeAll);
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAll();
+        });
+
+        // Закрытие при прокрутке (любой элемент, capture чтобы поймать всё)
+        window.addEventListener('scroll', closeAll, { capture: true, passive: true });
+
+        // Перепозиционирование при ресайзе
+        window.addEventListener('resize', () => {
+            const openMenu = document.querySelector('.action-menu.open');
+            if (!openMenu) return;
+            const btn = openMenu.previousElementSibling;
+            if (btn?.classList.contains('action-btn')) positionMenu(btn, openMenu);
         });
     }
 
@@ -964,29 +1093,56 @@
         });
     }
 
-    handleAlert() {
+    // Вызвать один раз в setupEvents(), убрать из renderTable()
+    setupAlertHandlers() {
         let currentUrl = '';
 
-        document.querySelectorAll('.modal-link').forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
+        // Один обработчик на весь документ вместо N обработчиков на каждую ссылку
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('.modal-link');
+            if (!link) return;
+            e.preventDefault();
 
-                currentUrl = this.href;
-                document.getElementById('alert-modal_title').textContent = this.getAttribute('data-title') || 'Предупреждение';
-                document.getElementById('alert-modal_message').textContent = this.getAttribute('data-message') || 'Вы уверены?';
-
-                document.getElementById('alert-modal').style.display = 'block';
-            });
+            currentUrl = link.href;
+            document.getElementById('alert-modal_title').textContent =
+                link.getAttribute('data-title') || 'Предупреждение';
+            document.getElementById('alert-modal_message').textContent =
+                link.getAttribute('data-message') || 'Вы уверены?';
+            document.getElementById('alert-modal').style.display = 'block';
         });
 
-        document.getElementById('alert-modal_confirm').addEventListener('click', function () {
+        document.getElementById('alert-modal_confirm').addEventListener('click', () => {
             window.location.href = currentUrl;
         });
 
-        document.getElementById('alert-modal_cancel').addEventListener('click', function () {
+        document.getElementById('alert-modal_cancel').addEventListener('click', () => {
             document.getElementById('alert-modal').style.display = 'none';
         });
     }
+
+    //handleAlert() {
+    //    let currentUrl = '';
+
+    //    document.querySelectorAll('.modal-link').forEach(link => {
+    //        link.addEventListener('click', function (e) {
+    //            e.preventDefault();
+
+    //            currentUrl = this.href;
+    //            document.getElementById('alert-modal_title').textContent = this.getAttribute('data-title') || 'Предупреждение';
+    //            document.getElementById('alert-modal_message').textContent = this.getAttribute('data-message') || 'Вы уверены?';
+
+    //            document.getElementById('alert-modal').style.display = 'block';
+    //        });
+    //    });
+
+    //    document.getElementById('alert-modal_confirm').addEventListener('click', function () {
+    //        window.location.href = currentUrl;
+    //    });
+
+    //    document.getElementById('alert-modal_cancel').addEventListener('click', function () {
+    //        document.getElementById('alert-modal').style.display = 'none';
+    //    });
+    //}
 }
 
 class DataPayableCashTableController {
@@ -1036,12 +1192,14 @@ class DataPayableCashTableController {
 
     // Инициализация
     init() {
-        // ============ Восстановление состояния и настройка истории ============
         this.setupHistoryHandling();
-        this.restoreState();
-        // ===============================================================================
 
-        this.loadData();
+        const restored = this.restoreState();
+
+        if (!restored) {
+            this.loadData();
+        }
+
         this.setupEvents();
     }
 
@@ -1159,13 +1317,6 @@ class DataPayableCashTableController {
     // Загрузка данных
     async loadData() {
         try {
-
-            // ============ ДОБАВЛЕНО: Сохраняем состояние перед загрузкой ============
-            if (!this.isRestoring) {
-                this.saveState();
-            }
-            // ========================================================================
-
             // Формируем URL с параметрами
             const params = new URLSearchParams({
                 selectedField: this.selectedField,
@@ -1195,13 +1346,10 @@ class DataPayableCashTableController {
 
             this.renderTable();
 
-            // ============ ДОБАВЛЕНО: Сохраняем состояние после загрузки ============
-            setTimeout(() => {
-                if (!this.isRestoring) {
-                    this.saveState();
-                }
-            }, 100);
-            // =======================================================================
+            // Сохраняем только один раз и только если не восстанавливаемся
+            if (!this.isRestoring) {
+                this.saveState();
+            }
 
         } catch (error) {
             console.error('Ошибка загрузки:', error);
@@ -1269,6 +1417,8 @@ class DataPayableCashTableController {
 
         // Автосохранение скролла при прокрутке
         this.scroll.enableAutoSave(100);
+
+        //this.setupActionMenus();
     }
 
     // Установка состояния кнопок сортировки
@@ -1757,12 +1907,12 @@ class DataWithoutDatesTableController {
 
     // Инициализация
     init() {
-        // ============ Восстановление состояния и настройка истории ============
         this.setupHistoryHandling();
-        this.restoreState();
-        // ===============================================================================
+        const restored = this.restoreState(); // получаем флаг
 
-        this.loadData();
+        if (!restored) {               // loadData только если не восстановились
+            this.loadData();
+        }
         this.setupEvents();
     }
 
@@ -1862,13 +2012,6 @@ class DataWithoutDatesTableController {
     // Загрузка данных
     async loadData() {
         try {
-
-            // ============ Сохраняем состояние перед загрузкой ============
-            if (!this.isRestoring) {
-                this.saveState();
-            }
-            // ========================================================================
-
             // Формируем URL с параметрами
             const params = new URLSearchParams({
                 selectedField: this.selectedField,
@@ -1892,13 +2035,10 @@ class DataWithoutDatesTableController {
 
             this.renderTable();
 
-            // ============ ДОБАВЛЕНО: Сохраняем состояние после загрузки ============
-            setTimeout(() => {
-                if (!this.isRestoring) {
-                    this.saveState();
-                }
-            }, 100);
-            // =======================================================================
+            // Сохраняем только один раз и только если не восстанавливаемся
+            if (!this.isRestoring) {
+                this.saveState();
+            }
 
         } catch (error) {
             console.error('Ошибка загрузки:', error);

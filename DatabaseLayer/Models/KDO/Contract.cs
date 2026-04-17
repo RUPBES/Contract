@@ -45,6 +45,9 @@ namespace DatabaseLayer.Models.KDO
 
         public virtual Contract AgreementContract { get; set; }
         public virtual Contract SubContract { get; set; }
+
+        public virtual ICollection<AdditionalTerm> AdditionalTerms { get; set; } = new List<AdditionalTerm>();
+
         public virtual List<Act> Acts { get; set; } = new List<Act>();
         public virtual List<Estimate> Estimates { get; set; } = new List<Estimate>();
         public virtual List<Amendment> Amendments { get; set; } = new List<Amendment>();

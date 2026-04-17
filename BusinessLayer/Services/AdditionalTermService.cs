@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
@@ -9,14 +9,14 @@ using System.Reflection;
 
 namespace BusinessLayer.Services
 {
-    public class AmendmentService : IAmendmentService
+    internal class AdditionalTermService : IAdditionalTermService
     {
         private IMapper _mapper;
         private readonly IContractUoW _database;
         private readonly IContractArchiveUoW _databaseArch;
         private readonly IContractsLogger _logger;
 
-        public AmendmentService(IContractUoW database, IMapper mapper, IContractsLogger logger, IContractArchiveUoW databaseArch)
+        public AdditionalTermService(IContractUoW database, IMapper mapper, IContractsLogger logger, IContractArchiveUoW databaseArch)
         {
             _database = database;
             _mapper = mapper;
@@ -24,21 +24,20 @@ namespace BusinessLayer.Services
             _databaseArch = databaseArch;
         }
 
-        public int? Create(AmendmentDTO item)
+        public int? Create(AdditionalTermDTO item)
         {
             if (item is not null)
             {
-                if (_database.Amendments.GetById(item.Id) is null)
+                if (_database.AdditionalTerms.GetById(item.Id) is null)
                 {
-                    var amend = _mapper.Map<Amendment>(item);
-
-                    _database.Amendments.Create(amend);
+                    var amend = _mapper.Map<AdditionalTerm>(item);
+                    _database.AdditionalTerms.Create(amend);
                     _database.Save();
 
                     _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"create amendment, ID={amend.Id}",
-                            nameSpace: typeof(AmendmentService).Name,
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
 
                     return amend.Id;
@@ -48,9 +47,8 @@ namespace BusinessLayer.Services
             _logger.WriteLog(
                            logLevel: LogLevel.Warning,
                            message: $"not create amendment, object is null",
-                           nameSpace: typeof(AmendmentService).Name,
+                           nameSpace: typeof(AdditionalTermService).Name,
                            methodName: MethodBase.GetCurrentMethod().Name);
-
             return null;
         }
 
@@ -58,19 +56,19 @@ namespace BusinessLayer.Services
         {
             if (id > 0)
             {
-                var act = _database.Amendments.GetById(id);
+                var act = _database.AdditionalTerms.GetById(id);
 
                 if (act is not null)
                 {
                     try
                     {
-                        _database.Amendments.Delete(id);
+                        _database.AdditionalTerms.Delete(id);
                         _database.Save();
 
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"delete amendment, ID={id}",
-                            nameSpace: typeof(AmendmentService).Name,
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
                     }
                     catch (Exception e)
@@ -78,7 +76,7 @@ namespace BusinessLayer.Services
                         _logger.WriteLog(
                             logLevel: LogLevel.Error,
                             message: e.Message,
-                            nameSpace: typeof(AmendmentService).Name,
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
                     }
                 }
@@ -88,23 +86,23 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(
                             logLevel: LogLevel.Warning,
                             message: $"not delete amendment, ID is not more than zero",
-                            nameSpace: typeof(AmendmentService).Name,
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
-        public IEnumerable<AmendmentDTO> GetAll()
+        public IEnumerable<AdditionalTermDTO> GetAll()
         {
-            return _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.GetAll());
+            return _mapper.Map<IEnumerable<AdditionalTermDTO>>(_database.AdditionalTerms.GetAll());
         }
 
-        public AmendmentDTO GetById(int id, int? secondId = null)
+        public AdditionalTermDTO GetById(int id, int? secondId = null)
         {
-            var act = _database.Amendments.GetById(id);
+            var act = _database.AdditionalTerms.GetById(id);
 
             if (act is not null)
             {
-                return _mapper.Map<AmendmentDTO>(act);
+                return _mapper.Map<AdditionalTermDTO>(act);
             }
             else
             {
@@ -112,17 +110,17 @@ namespace BusinessLayer.Services
             }
         }
 
-        public void Update(AmendmentDTO item)
+        public void Update(AdditionalTermDTO item)
         {
             if (item is not null)
             {
-                _database.Amendments.Update(_mapper.Map<Amendment>(item));
+                _database.AdditionalTerms.Update(_mapper.Map<AdditionalTerm>(item));
                 _database.Save();
 
                 _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"update amendment, ID={item.Id}",
-                            nameSpace: typeof(AmendmentService).Name,
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
             else
@@ -130,35 +128,36 @@ namespace BusinessLayer.Services
                 _logger.WriteLog(
                             logLevel: LogLevel.Warning,
                             message: $"not update amendment, object is null",
-                            nameSpace: typeof(AmendmentService).Name,
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
         }
 
-        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> predicate, bool? useArchiveData)
-        {           
-            return (useArchiveData == true) ?
-                _mapper.Map<IEnumerable<AmendmentDTO>>(_databaseArch.Amendments.Find(predicate)):
-                _mapper.Map<IEnumerable<AmendmentDTO>>(_database.Amendments.Find(predicate));
+        public IEnumerable<AdditionalTermDTO> Find(Func<AdditionalTerm, bool> predicate, bool? useArchiveData)
+        {
+            //var sdd = _database.AdditionalTerms.GetAll();
+            return // (useArchiveData == true) ?
+               // _mapper.Map<IEnumerable<AdditionalTermDTO>>(_databaseArch.AdditionalTerms.Find(predicate)) :
+                _mapper.Map<IEnumerable<AdditionalTermDTO>>(_database.AdditionalTerms.Find(predicate));
         }
 
-        public IEnumerable<AmendmentDTO> Find(Func<Amendment, bool> where, Func<Amendment, Amendment> select, bool useArchiveData)
+        public IEnumerable<AdditionalTermDTO> Find(Func<AdditionalTerm, bool> where, Func<AdditionalTerm, AdditionalTerm> select, bool useArchiveData)
         {
-            var amendments = useArchiveData == true ?
-                               _databaseArch.Amendments.Find(where, select)
-                               : _database.Amendments.Find(where, select);
-            return _mapper.Map<IEnumerable<AmendmentDTO>>(amendments);
+            var amendments = //useArchiveData == true ?
+                             //  _databaseArch.AdditionalTerms.Find(where, select) :
+                _database.AdditionalTerms.Find(where, select);
+            return _mapper.Map<IEnumerable<AdditionalTermDTO>>(amendments);
         }
 
-        public void AddFile(int amendId, int fileId)
+        public void AddFile(int additionalTermId, int fileId)
         {
-            if (fileId > 0 && amendId > 0)
+            if (fileId > 0 && additionalTermId > 0)
             {
-                if (_database.AmendmentFiles.GetById(amendId, fileId) is null)
+                if (_database.AdditionalTermFiles.GetById(additionalTermId, fileId) is null)
                 {
-                    _database.AmendmentFiles.Create(new AmendmentFile
+                    _database.AdditionalTermFiles.Create(new AdditionalTermFile
                     {
-                        AmendmentId = amendId,
+                        AdditionalTermId = additionalTermId,
                         FileId = fileId
                     });
 
@@ -166,8 +165,8 @@ namespace BusinessLayer.Services
 
                     _logger.WriteLog(
                             logLevel: LogLevel.Information,
-                            message: $"create file of amendment",
-                            nameSpace: typeof(AmendmentService).Name,
+                            message: $"create file of Additional Term",
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
                 }
             }
@@ -175,8 +174,8 @@ namespace BusinessLayer.Services
             {
                 _logger.WriteLog(
                             logLevel: LogLevel.Warning,
-                            message: $"not create file of amendment, object is null",
-                            nameSpace: typeof(AmendmentService).Name,
+                            message: $"not create file of Additional Term, object is null",
+                            nameSpace: typeof(AdditionalTermService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
             }
         }

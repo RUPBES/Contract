@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace MvcLayer.Models.JSONSerializer
@@ -7,14 +8,10 @@ namespace MvcLayer.Models.JSONSerializer
     {
         public override decimal Read(ref Utf8JsonReader reader,
             Type typeToConvert, JsonSerializerOptions options)
-        {
-            return reader.GetDecimal();
-        }
+            => reader.GetDecimal();
 
         public override void Write(Utf8JsonWriter writer,
             decimal value, JsonSerializerOptions options)
-        {
-            writer.WriteStringValue(value.ToString("N2"));
-        }
+            => writer.WriteStringValue(value.ToString("N2", CultureInfo.InvariantCulture));
     }
 }

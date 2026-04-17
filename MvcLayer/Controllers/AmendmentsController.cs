@@ -2,7 +2,10 @@
 using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Models.KDO;
+using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MvcLayer.Models;
@@ -12,15 +15,17 @@ namespace MvcLayer.Controllers
     [Authorize(Policy = "ViewPolicy")]
     public class AmendmentsController : Controller
     {
+        private readonly IAdditionalTermService _additionalTermService;
         private readonly IAmendmentService _amendment;
         private readonly IScopeWorkService _scopeWork;
         private readonly IContractService _contract;
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
 
-        public AmendmentsController(IAmendmentService amendment, IMapper mapper, 
+        public AmendmentsController(IAmendmentService amendment, IMapper mapper, IAdditionalTermService additionalTermService,
             IFileService fileService, IContractService contract, IScopeWorkService scopeWork)
         {
+            _additionalTermService = additionalTermService;
             _amendment = amendment;
             _mapper = mapper;
             _fileService = fileService;
@@ -67,6 +72,13 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "CreatePolicy")]
         public ActionResult Create(int contractId, string typeName, int returnContractId = 0, bool isScope = false, bool isPrepament = false)
         {
+            if (typeName is not "agreement" && _additionalTermService.Find(x=>x.ContractId == contractId).Any())
+            {
+                NotificationHelper.SetNotification(TempData, "Не возможно добавить ДС! Причина: продлен срок исполнения обязательств по договору", NotificationType.Info);
+                return RedirectToAction("Details","Contracts", new { id = contractId });
+
+            }
+            //todo: проверка на соглашение и проверка если не солашение то есть у договора соглашение, если да то ДС нельзя добавлять
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;
             ViewData["isScope"] = isScope.ToString();
@@ -90,7 +102,7 @@ namespace MvcLayer.Controllers
                 model.DateEndWork = prevAmend.DateEndWork;
                 model.DateEntryObject = prevAmend.DateEntryObject;
                 if (prevAmend.ContractPrice.HasValue)
-                model.ContractPrice = prevAmend.ContractPrice.Value;
+                    model.ContractPrice = prevAmend.ContractPrice.Value;
             }
             model.Type = typeName;
             return View(model);
@@ -100,7 +112,7 @@ namespace MvcLayer.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "CreatePolicy")]
         public ActionResult Create(AmendmentViewModel amendment, int returnContractId = 0, bool isScope = false, bool isPrepament = false)
-         {
+        {
             try
             {
                 if (isScope)
@@ -112,31 +124,54 @@ namespace MvcLayer.Controllers
                     amendment.Type = "prepayment";
                 }
 
-                int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
-                int fileId = (int)_fileService.Create(amendment.FilesEntity, Folder.Amendment, amendId, amendment.ContractId?.ToString());
-                NotificationHelper.SetNotification(TempData, "Создано доп.соглашение", NotificationType.Info);
-                _amendment.AddFile(amendId, fileId);
-                
-                if (isScope || amendment.Type == "scope")
+                if (amendment is { Type: "agreement" })
                 {
-                    var scopes = _scopeWork.Find(x => x.ContractId == amendment.ContractId && x.IsOwnForces != true)?.LastOrDefault();
-
-                    var scopeWork = new PeriodChooseViewModel
+                    int additiomalTermId = (int)_additionalTermService.Create(new AdditionalTermDTO
                     {
+                        Date = amendment.Date,
+                        DueDate = amendment.DueDate,
+                        Number = amendment.Number,
+                        Type = amendment.Type,
+                        Reason = amendment.Reason,
                         ContractId = amendment.ContractId,
-                        AmendmentId = amendId,
-                        PeriodStart = amendment?.DateBeginWork?? default,
-                        PeriodEnd = amendment?.DateEndWork?? default,
-                        ChangeScopeWorkId = scopes?.Id
-                    };
-                    TempData["returnContractId"] = returnContractId;
-                    TempData["contractId"] = amendment.ContractId;
-                    return RedirectToAction("Create/Period", "ScopeWorks", scopeWork);                    
+                        IsClaimLitigation = amendment.IsClaimLitigation,
+                    });
+                   
+                    int fileId = (int)_fileService.Create(amendment.FilesEntity, Folder.AdditionalTerms, additiomalTermId, $"{amendment.ContractId}\\{additiomalTermId}");
+                    NotificationHelper.SetNotification(TempData, "Добавлено согласование срока исполнения обязательств по договору", NotificationType.Info);
+                    _additionalTermService.AddFile(additiomalTermId, fileId);
+                    return RedirectToAction("GetByContractId", "AdditionalTerm", new { id = amendment.ContractId, returnContractId = returnContractId });
+
                 }
 
-                if (isPrepament || amendment.Type == "prepayment")
+                if (amendment is not { Type: "agreement" })
                 {
-                    return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                    int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amendment));
+                    int fileId = (int)_fileService.Create(amendment.FilesEntity, Folder.Amendment, amendId, $"{amendment.ContractId}\\{amendId}");
+                    NotificationHelper.SetNotification(TempData, "Создано доп.соглашение", NotificationType.Info);
+                    _amendment.AddFile(amendId, fileId);
+
+                    if (isScope || amendment.Type == "scope")
+                    {
+                        var scopes = _scopeWork.Find(x => x.ContractId == amendment.ContractId && x.IsOwnForces != true)?.LastOrDefault();
+
+                        var scopeWork = new PeriodChooseViewModel
+                        {
+                            ContractId = amendment.ContractId,
+                            AmendmentId = amendId,
+                            PeriodStart = amendment?.DateBeginWork ?? default,
+                            PeriodEnd = amendment?.DateEndWork ?? default,
+                            ChangeScopeWorkId = scopes?.Id
+                        };
+                        TempData["returnContractId"] = returnContractId;
+                        TempData["contractId"] = amendment.ContractId;
+                        return RedirectToAction("Create/Period", "ScopeWorks", scopeWork);
+                    }
+
+                    if (isPrepament || amendment.Type == "prepayment")
+                    {
+                        return RedirectToAction("ChoosePeriod", "Prepayments", new { contractId = amendment.ContractId, returnContractId = returnContractId });
+                    }
                 }
                 return RedirectToAction(nameof(GetByContractId), new { id = amendment.ContractId, returnContractId = returnContractId });
             }

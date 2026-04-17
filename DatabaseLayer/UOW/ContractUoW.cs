@@ -6,6 +6,7 @@ using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
 using DatabaseLayer.Repositories.PRO;
 using DatabaseLayer.Repositories.ViewRepo;
+using DatabaseLayer.RepositoriesEF;
 
 namespace DatabaseLayer.UOW
 {
@@ -21,6 +22,8 @@ namespace DatabaseLayer.UOW
         private ActRepository actRepository;
         private ActFileRepository actFileRepository;
         private AmendmentFileRepository amendmentFileRepository;
+        private AdditionalTermRepository additionalTermRepository;
+        private AdditionalTermFileRepository additionalTermFileRepository;
         private AmendmentRepository amendmentRepository;
         private ContractOrganizationRepository contractOrganizationRepository;
         private ContractRepository contractRepository;
@@ -105,6 +108,30 @@ namespace DatabaseLayer.UOW
         #endregion
 
         #region tables
+
+        public IRepository<AdditionalTerm> AdditionalTerms
+        {
+            get
+            {
+                if (additionalTermRepository is null)
+                {
+                    additionalTermRepository = new AdditionalTermRepository(_context);
+                }
+                return additionalTermRepository;
+            }
+        }
+
+        public IRepository<AdditionalTermFile> AdditionalTermFiles
+        {
+            get
+            {
+                if (additionalTermFileRepository is null)
+                {
+                    additionalTermFileRepository = new AdditionalTermFileRepository(_context);
+                }
+                return additionalTermFileRepository;
+            }
+        }
 
         public IRepository<SlctnProcedureFile> SlctnProcedureFiles
         {

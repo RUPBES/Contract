@@ -1,7 +1,8 @@
 ﻿@model MvcLayer.Models.AmendmentViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 @{
-    ViewData["Title"] = "Добавление доп. соглашения к договору";
+    var isAgreement = Model?.Type?.Contains("agreement") ?? false;
+    ViewData["Title"] = isAgreement is not true ? "Добавление доп.соглашения к договору" : "Добавление согласование к договору";
     var contid = ViewData["contractId"];
     int backId = 0;
     if ((int)ViewData["returnContractId"] == 0)
@@ -45,39 +46,63 @@
                         <input asp-for="Date" class="form-control" value="@Model.Date?.ToString("yyyy-MM-dd")" type="text" id="Date" required />
                         <span asp-validation-for="Date" class="text-danger"></span>
                     </div>
-                    <div class="form-group col-6">
-                        <label asp-for="ContractPrice" class="control-label" for="contr"></label>
-                        <div class="input-group">
-                            <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                            <input name="ContractPrice" type="text" class="form-control cost" value="@Model.ContractPrice" id="contr" />
+                    @if (!isAgreement)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="ContractPrice" class="control-label" for="contr"></label>
+                            <div class="input-group">
+                                <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
+                                <input name="ContractPrice" type="text" class="form-control cost" value="@Model.ContractPrice" id="contr" />
+                            </div>
                         </div>
-                    </div>
+                    }
+
 
                     <div class="form-group col-6">
                         <label asp-for="Reason" class="control-label"></label>
                         <textarea asp-for="Reason" class="form-control"></textarea>
                         <span asp-validation-for="Reason" class="text-danger"></span>
                     </div>
-                    <div class="form-group col-6">
-                        <label asp-for="ContractChanges" class="control-label"></label>
-                        <textarea asp-for="ContractChanges" class="form-control"></textarea>
-                        <span asp-validation-for="ContractChanges" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateBeginWork" class="control-label"></label>
-                        <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DateBeginWork" required />
-                        <span asp-validation-for="DateBeginWork" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateEndWork" class="control-label"></label>
-                        <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DateEndWork" required />
-                        <span asp-validation-for="DateEndWork" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateEntryObject" class="control-label"></label>
-                        <input asp-for="DateEntryObject" value="@Model.DateEntryObject?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DateEntryObject" required />
-                        <span asp-validation-for="DateEntryObject" class="text-danger"></span>
-                    </div>
+                    @if (!isAgreement)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="ContractChanges" class="control-label"></label>
+                            <textarea asp-for="ContractChanges" class="form-control"></textarea>
+                            <span asp-validation-for="ContractChanges" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group col-6">
+                            <label asp-for="DateBeginWork" class="control-label"></label>
+                            <input asp-for="DateBeginWork" value="@Model.DateBeginWork?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DateBeginWork" required />
+                            <span asp-validation-for="DateBeginWork" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="DateEndWork" class="control-label"></label>
+                            <input asp-for="DateEndWork" value="@Model.DateEndWork?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DateEndWork" required />
+                            <span asp-validation-for="DateEndWork" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label asp-for="DateEntryObject" class="control-label"></label>
+                            <input asp-for="DateEntryObject" value="@Model.DateEntryObject?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DateEntryObject" required />
+                            <span asp-validation-for="DateEntryObject" class="text-danger"></span>
+                        </div>
+                    }
+
+                    @if (isAgreement)
+                    {
+                        <div class="form-group col-6">
+                            <label asp-for="DueDate" class="control-label"></label>
+                            <input asp-for="DueDate" value="@Model.DueDate?.ToString("yyyy-MM-dd")" class="form-control" type="text" id="DueDate" required />
+                            <span asp-validation-for="DueDate" class="text-danger"></span>
+                        </div>
+                        <div class="form-group col-6">
+                            <label class="control-label">Претензионно-исковая работа?</label>
+                            <br><br><label><input class="m-2" type="radio" name="IsClaimLitigation" value="true" @((Model.IsClaimLitigation == true) ? "checked" : "") /> Да</label>
+                            <label><input type="radio" name="IsClaimLitigation" value="false" @((Model.IsClaimLitigation == false) ? "checked" : "") /> Нет</label>
+                        </div>
+
+
+                    }
                     <div class="form-group col-6">
                         <label asp-for="FilesEntity" class="control-label"></label>
                         <input name="FilesEntity" type="file" class="form-control" />
@@ -105,6 +130,19 @@
                 digits_float(this);
             });
         });
+        $("#DueDate").datepicker({
+            format: "d MM yyyy",
+            language: "ru",
+            calendarWeeks: true,
+            autoclose: true,
+            keyboardNavigation: false,
+            assumeNearbyYear: true,
+            toggleActive: true
+        });
+        // .on('changeDate', function () {
+        //     changeDueDateBegin()
+        // });
+
         $("#Date").datepicker({
             format: "d MM yyyy",
             language: "ru",
@@ -151,18 +189,22 @@
         let dateBeg = document.querySelector("#DateBeginWork");
         let dateEnd = document.querySelector("#DateEndWork");
         let dateEnter = document.querySelector("#DateEntryObject");
+         // let dueDate = document.querySelector("#DueDate");
 
         let dateVal = date.value;
         let dateBegVal = dateBeg.value;
         let dateEndVal = dateEnd.value;
         let dateEnterVal = dateEnter.value;
+        // let dueDateVal = dueDate.value;
+
 
         $("#Date").datepicker('setDate', new Date(dateVal));
         $("#DateBeginWork").datepicker('setDate', new Date(dateBegVal));
         $("#DateEndWork").datepicker('setDate', new Date(dateEndVal));
         $("#DateEntryObject").datepicker('setDate', new Date(dateEnterVal));
+         // $("#DueDate").datepicker('setDate', new Date(dueDateVal));
 
-        function changeDateBegin() {            
+        function changeDateBegin() {
             let dateB = $("#DateBeginWork").datepicker('getDate');
             let dateE = $("#DateEndWork").datepicker('getDate');
             let dateEnt = $("#DateEntryObject").datepicker('getDate');
@@ -173,7 +215,7 @@
 
                 if (dateE != null && dateB >= dateE) { $("#DateEndWork").datepicker('update', datePlusOne); }
                 if (dateEnt != null && dateB >= dateEnt) { $("#DateEntryObject").datepicker('update', datePlusTwo); }
-            }            
+            }
         }
         function changeDateEnd() {
             let dateB = $("#DateBeginWork").datepicker('getDate');
@@ -204,7 +246,7 @@
         function addDays(date, countDays) {
             let newDateOfyear = date.getFullYear() + ""; // год
             let day = date.getDate() + countDays; // текущий день
-            let month = date.getMonth() + 1; //текущий месяц            
+            let month = date.getMonth() + 1; //текущий месяц
             let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
             if (day > maxDateToday) {
                 month = month + 1;

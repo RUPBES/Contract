@@ -47,9 +47,9 @@
                     }
                 </div>
                 <div>
-                    @if (ViewData["IsAmendment"] != null)
+                    @if (ViewData["AmendmentPrice"] != null)
                     {
-                        <div class="alert alert-warning">Изменение сроков работы в доп. соглашении</div>
+                        <div class="alert alert-warning">Договорная цена указана согласно последнего доп.соглашения</div>
                     }
                 </div>
                 <hr class="modal-line" />
@@ -79,9 +79,18 @@
                             </div>
                             @* Цены !*@
                             <div class="col-3">
-                                <label asp-for="ContractPrice" class="control-label"></label>
-                                <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
-                                <span asp-validation-for="ContractPrice" class="text-danger"></span>
+                                @if (ViewData["AmendmentPrice"] != null)
+                                {
+                                    <label asp-for="ContractPrice" class="control-label"></label>
+                                    <input type="text" value="@ViewData["AmendmentPrice"]" class="form-control cost" disabled/>
+                                    <input type="text" name="ContractPrice" value="@Model.ContractPrice" hidden />
+                                }
+                                @if (ViewData["AmendmentPrice"] == null)
+                                {
+                                    <label asp-for="ContractPrice" class="control-label"></label>
+                                    <input id="contractPrice" type="text" name="ContractPrice" value="@Model.ContractPrice" class="form-control cost" />
+                                    <span asp-validation-for="ContractPrice" class="text-danger"></span>
+                                }
                             </div>
                             @if (Model.IsEngineering == true)
                             {
@@ -111,10 +120,10 @@
                                 </select>
                             </div>
                         </div>
-                       
+
                         @* Сроки !*@
                         <div class="row">
-                            
+
                             <div class="col-4">
                                 <label class="control-label" asp-for="DateBeginWork"></label>
                                 @if (ViewData["IsAmendment"] == null)
@@ -159,7 +168,7 @@
                                     @* <label class="form-label" id="labelContractTerm" style="display:none"></label> *@
                                 </div>
                             }
-                            
+
                         </div>
 
                         @* <div class="row">
@@ -176,7 +185,7 @@
                         @* Организации !*@
 
                         @if (Model.IsSubContract == true || Model.IsAgreementContract == true
-                        || Model.IsEngineering == true)
+                                                || Model.IsEngineering == true)
                         {
                             var orgId = Model.ContractOrganizations?.FirstOrDefault()?.OrganizationId ?? 0;
                             <div class="col-6">
@@ -388,7 +397,7 @@
                                     <option value="@item.Id">@item.Name</option>
                                 }
                             </select>
-                        </div>                        
+                        </div>
                         <div class="row">
                             <fieldset class="border rounded-1 p-3 col">
                                 <legend class="float-none w-auto px-3">Источник финансирования</legend>
@@ -453,7 +462,7 @@
                             <legend class="float-none w-auto px-3">Расчет за выполненные работы</legend>
                             @foreach (var item in Enum.GetValues<Payment>())
                             {
-                                var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";                                
+                                var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";
                                 var number = Contract.GetPaymentDueDate(Model?.PaymentСonditionsRaschet, name);
 
                                 ViewBag.Days = number;
@@ -507,8 +516,8 @@
         });
 
 
-        
-       
+
+
 
         // при выборе расчета, за выбранной радио кнопкой вставляем input для заполнения кол-ва дней/числа
         $(".checkChoise").click(function (e) {

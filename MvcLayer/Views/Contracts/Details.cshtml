@@ -6,6 +6,7 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IVContractService Contracts
 @inject BusinessLayer.Interfaces.ContractInterfaces.IScopeWorkService Scopes
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
+@inject BusinessLayer.Interfaces.ContractServices.IAdditionalTermService AdditionalTerm
 @inject IHttpContextUserProvider HttpHelper
 @inject IConverterService Convertor
 
@@ -191,6 +192,7 @@
                                         <div class="dropdown-divider"></div>
                                         @* <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@Model?.Id">Оплату договора</a> *@
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Amendments" asp-route-id="@Model?.Id">Дополнительные соглашения</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@Model?.Id">Продление сроков исполнения обязательств по договору</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@Model?.Id">Акт приостановки/возобновления</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-id="@Model?.Id">Акт ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@Model?.Id">Переписка с заказчиком</a>
@@ -367,6 +369,12 @@
                             <br>
                             <span>@Model?.EnteringTerm?.ToShortDateString()</span>
                             <br>
+                        }
+
+                        @if (AdditionalTerm.Find(x=>x.ContractId == Model.Id).Any())
+                        {
+                            <br>
+                            <span class="text-danger"> Продлен срок исполнения обязательств до @AdditionalTerm.Find(x=>x.ContractId == Model.Id).LastOrDefault().DueDate?.ToShortDateString()</span>
                         }
                     </span>
                 </td>
@@ -627,6 +635,8 @@
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Payments" asp-route-contractId="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Оплату договора</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Amendments" asp-route-id="@contractBranch.Id" asp-route-returnContractId="@Model.Id">Дополнительные соглашения</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@contractBranch?.Id">Продление сроков исполнения обязательств по договору</a>
+
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Акт приостановки/возобновления</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-Id="@contractBranch.Id" asp-route-returnContractId="@Model.Id">Акт ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractBranch?.Id" asp-route-returnContractId="@Model.Id">Переписка с заказчиком</a>
@@ -753,6 +763,11 @@
                                 <span>@contractBranch?.EnteringTerm?.ToShortDateString()</span>
                                 <br>
                             }
+                            @if (AdditionalTerm.Find(x => x.ContractId == contractBranch.Id).Any())
+                            {
+                                <br>
+                                <span class="text-danger"> Продлен срок исполнения обязательств до @AdditionalTerm.Find(x => x.ContractId == contractBranch.Id).LastOrDefault().DueDate?.ToShortDateString()</span>
+                            }
                         </span>
                     </td>
                     @* Условия оплаты - *@
@@ -841,6 +856,8 @@
                                         <a class="dropdown-item" asp-action="GetPrepaymentsTakes" asp-controller="Prepayments" asp-route-contractId="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Полученные авансы</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Amendments" asp-route-id="@contractSub.Id" asp-route-returnContractId="@Model.Id">Дополнительные соглашения</a>
+                                        <a class="dropdown-item" asp-action="GetByContractId" asp-controller="AdditionalTerm" asp-route-id="@contractSub?.Id">Продление сроков исполнения обязательств по договору</a>
+
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Acts" asp-route-id="@contractSub.Id" asp-route-returnContractId="@Model.Id">Акт приостановки/возобновления</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="CommissionActs" asp-route-Id="@contractSub.Id" asp-route-returnContractId="@Model.Id">Акт ввода</a>
                                         <a class="dropdown-item" asp-action="GetByContractId" asp-controller="Correspondences" asp-route-id="@contractSub?.Id" asp-route-returnContractId="@Model.Id">Переписка с заказчиком</a>
@@ -989,6 +1006,11 @@
                                 <br>
                                 <span>@contractSub?.EnteringTerm?.ToShortDateString()</span>
                                 <br>
+                            }
+                            @if (AdditionalTerm.Find(x => x.ContractId == contractSub.Id).Any())
+                            {
+                                <br>
+                                <span class="text-danger"> Продлен срок исполнения обязательств до @AdditionalTerm.Find(x => x.ContractId == contractSub.Id).LastOrDefault().DueDate?.ToShortDateString()</span>
                             }
                         </span>
                     </td>

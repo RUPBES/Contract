@@ -278,18 +278,20 @@ $(document).ready(function () {
     //удаление оповещения
     closeNotificationModal(8000);
 
-    //******  копирование в буфер, добавление обработчиков клика!!
-    document.querySelectorAll('.copy-link-btn').forEach(button => {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            const link = this.getAttribute('data-link') || window.location.href;
-            copyLinkToClipboard(link,
-                () => setNotification('Ссылка скопирована!', 'Success', 3000),
-                (err) => setNotification(err, 'Error', 4000)
-            );
-        });
-    });
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.copy-link-btn');
+        if (!btn) return;
 
+        e.preventDefault();
+        e.stopPropagation(); // чтобы не закрывало action-menu
+
+        const link = btn.getAttribute('data-link') || window.location.href;
+        copyLinkToClipboard(
+            link,
+            () => setNotification('Ссылка скопирована!', 'Success', 3000),
+            (err) => setNotification(err, 'Error', 4000)
+        );
+    });
 });
 
 //чтобы не было возвожности ввести дату с клавиатуры!

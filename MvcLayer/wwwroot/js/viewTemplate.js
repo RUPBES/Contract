@@ -1,141 +1,60 @@
 ﻿function setContractTableRow(contractItems, permissions, isEngineering) {
-    return contractItems.map(contractItem => `
-    <tr class="${contractItem.DateEndWork && new Date(contractItem.DateEndWork) < new Date() ? `overdue` : ``} ">                           
+    const now = new Date();
+    const isBes = permissions.company === 'ContrOrgBes';
+    const hasEstimate = !isEngineering && permissions.groupeName.includes('GRP_Estimate');
+    const hasContract = permissions.groupeName.includes('GRP_Contract');
+    const hasReport = permissions.isReader && permissions.groupeName.includes('GRP_Report');
+    const canEdit = permissions?.isEditor;
+    const canDelete = permissions.isDeleter;
+    const canArchive = canEdit && permissions?.isAdmin;
+    const canTransfer = isBes && canEdit;
+
+    return contractItems.map(item => {
+        const isOverdue = item.DateEndWork && new Date(item.DateEndWork) < now;
+        const isAuthorAllowed = item.Author === permissions.company || isBes;
+
+        return `<tr class="${isOverdue ? 'overdue' : ''}">
             <td><span class="table_span-numberanddate">
-                    <a href="/Contracts/Details/${contractItem.Id}" title="Просмотр детальной информации" class="save-page-state">
-                        ${contractItem.Number ?? ``} от ${contractItem.Date ?? ``}
-                    </a>
-                </span></td>
-            <td><span class="table_span-nameobject">${contractItem.NameObject ?? ``}</span></td>
-            <td><span class="table_span-customer">${contractItem.Client ?? ``}</span></td>
-            <td><div><span class="table_span-contractor">${contractItem.GenContractor ?? ``}</span></div>                                   
-                    ${contractItem.ResponsibleForWork ?
-            `<div><span class="table_span-contractor"><hr /><span>Ответственный за производство работ:</span><br />${contractItem.ResponsibleForWork}</span></div>` : ``}                                                                        
-                </td>                            
-            <td><span class="table_span-deadlines">
-                    ${contractItem.DateBeginWork || contractItem.DateEndWork ? `<b>выполнения работ:</b><br><span>${contractItem.DateBeginWork ?? ``} - ${contractItem?.DateEndWork ?? ``}</span>` : ``} 
-                    ${contractItem.EnteringTerm ? `<br><b>ввода:</b><br><span>${contractItem?.EnteringTerm ?? ``}</span>` : ``}                                    
-                </span>
+                <a href="/Contracts/Details/${item.Id}" class="save-page-state">
+                    ${item.Number ?? ''} от ${item.Date ?? ''}
+                </a>
+            </span></td>
+            <td><span class="table_span-nameobject">${item.NameObject ?? ''}</span></td>
+            <td><span class="table_span-customer">${item.Client ?? ''}</span></td>
+            <td>
+                <div><span class="table_span-contractor">${item.GenContractor ?? ''}</span></div>
+                ${item.ResponsibleForWork
+                ? `<div><span class="table_span-contractor"><hr/><span>Ответственный за производство работ:</span><br/>${item.ResponsibleForWork}</span></div>`
+                : ''}
             </td>
+            <td><span class="table_span-deadlines">
+                ${item.DateBeginWork || item.DateEndWork
+                ? `<b>выполнения работ:</b><br><span>${item.DateBeginWork ?? ''} - ${item.DateEndWork ?? ''}</span>`
+                : ''}
+                ${item.EnteringTerm ? `<br><b>ввода:</b><br><span>${item.EnteringTerm}</span>` : ''}
+            </span></td>
             <td><span class="table_span-conditions">
-                    <a href="/Prepayments/GetByContractId?contractId=${contractItem.Id}" > ${contractItem.PaymentСonditionsAvans ?? ``}</a><br /><br />
-                    <a href="/Payments/GetByContractId?contractId=${contractItem.Id}">${contractItem.PaymentСonditionsRaschet ?? ``}</a>
-                    </span>
-            </td>           
-            ${!isEngineering ? `<td><span class="table_span-work">${contractItem.WorkType ?? ``}</span></td>` : ``}
-                                        
-            <td class="text-end"><span class="table_span-contractprice">${contractItem.ContractPrice ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
-            <td class="text-end"><span class="table_span-realization">${contractItem.PreYearSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>                           
-            <td class="text-end"><span class="table_span-remains">${contractItem.RemainingSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
-            <td><span class="table_span-volume">${contractItem.ThisYearSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
-            <td><span class="table_span-action-main">            
+                <a href="/Prepayments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsAvans ?? ''}</a><br/><br/>
+                <a href="/Payments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsRaschet ?? ''}</a>
+            </span></td>
+            ${!isEngineering ? `<td><span class="table_span-work">${item.WorkType ?? ''}</span></td>` : ''}
+            <td class="text-end"><span class="table_span-contractprice">${item.ContractPrice} ${item.Сurrency ?? ''}</span></td>
+            <td class="text-end"><span class="table_span-realization">${item.PreYearSum} ${item.Сurrency ?? ''}</span></td>
+            <td class="text-end"><span class="table_span-remains">${item.RemainingSum} ${item.Сurrency ?? ''}</span></td>
+            <td><span class="table_span-volume">${item.ThisYearSum} ${item.Сurrency ?? ''}</span></td>
+            <td><span class="table_span-action-main">
                 <button class="action-btn"><svg class="ic ic-18"><use href="#ic-more-vert"/></svg></button>
-                   <div class="action-menu">
-                    <a class="menu-item save-page-state" href="/Contracts/Details/${contractItem.Id}" title="Просмотр детальной информации">
+                <div class="action-menu">
+                    <a class="menu-item save-page-state" href="/Contracts/Details/${item.Id}">
                         <span class="menu-icon"><svg class="ic ic-15"><use href="#ic-open"></use></svg></span>
                         <span class="menu-label">Открыть</span>
                     </a>
+                    ${isAuthorAllowed ? buildAuthorMenu(item, hasEstimate, hasContract, hasReport, canEdit, canDelete, canArchive, canTransfer, isOverdue) : ''}
+                </div>
+            </span></td>
+        </tr>`
 
-                    ${(contractItem.Author === permissions.company) || (permissions.company === `ContrOrgBes`) ? `
-                        ${!isEngineering && permissions.groupeName.includes(`GRP_Estimate`) ?
-                        `<a href="/Estimate/Index?contractId=${contractItem.Id}" class="menu-item" title="Просмотр смет договора">
-                            <span class="menu-icon"><svg ><use href="#ic-calculate"></use></svg></span>
-                            <span class="menu-label">Сметы</span>
-                         </a> 
-                        `: ``}   
-
-                        ${permissions.groupeName.includes(`GRP_Contract`) ?
-                            `
-                            ${(permissions.isReader && permissions.groupeName.includes(`GRP_Report`)) ?
-                             `<div class="menu-item-wrap">
-                                <a class="menu-item">
-                                    <span class="menu-icon"><svg ><use href="#ic-export"></use></svg> </span>
-                                    <span class="menu-label">Экспорт</span>
-                                    <span class="menu-arrow">›</span>
-                                </a>
-                                <div class="action-submenu">
-                                    <a href="/Report/Print/Contracts/Details?contractId=${contractItem.Id}" class="submenu-item" title="Экспортировать в Excel, детальную информацию по договору">
-                                        <span class="menu-icon"> <svg ><use href="#ic-excel-file"></use></svg></span>
-                                        <span class="menu-label">Детальная информация</span>
-                                    </a>
-                                    <a href="/Report/Print/Scopes?contractId=${contractItem.Id}&numberContr=${contractItem?.Number}" class="submenu-item" title="Экспортировать в Excel, объем работ по договору">
-                                        <span class="menu-icon"> <svg><use href="#ic-excel-file"></use></svg></span>
-                                        <span class="menu-label">Объем работ</span>
-                                    </a>
-                                </div>
-                            </div>
-                            ` : ``}  
-
-                             ${!contractItem.IsExpired && !contractItem.IsClosed && permissions?.isEditor ?
-                             `<div class="menu-item-wrap">
-                                <a class="menu-item">
-                                    <span class="menu-icon"><svg ><use href="#ic-swap-horiz"></use></svg> </span>
-                                    <span class="menu-label">Изменить статус</span>
-                                    <span class="menu-arrow">›</span>
-                                </a>
-                                <div class="action-submenu">
-                                    ${contractItem.IsExpired || contractItem.IsClosed ?
-                                           ` <span class="menu-label">
-                                                ${contractItem.IsExpired ? `<div class="icon expired" title="Договор просрочен"><div></div></div>` : ``} 
-                                                ${contractItem.IsClosed ? `<div class="icon closed" title="Договор закрыт, ожидается акт ввода"><div></div></div>` : ``} 
-                                            </span>
-                                            <div class="menu-divider"></div>
-                                    `: ``}
-                                    
-                                    <a href="/Contracts/ChangeStatus?contrId=${contractItem.Id}&status=expired" class="submenu-item" title="Изменить статус договора на - "договор просрочен"">
-                                       
-                                        <span class="menu-label">Просрочен</span>
-                                    </a>
-                                    <a href="/Contracts/ChangeStatus?contrId=${contractItem.Id}&status=closed" class="submenu-item" title="Изменить статус договора на - "договор закрыт, ожидается акта ввода"">
-                                        
-                                        <span class="menu-label">Закрыт, ожидается акта ввода</span>
-                                    </a>
-                                </div>
-                            </div>
-                            ` : ``}
-
-                            ${contractItem.WorkflowRef ?
-                            `<a href="#" data-link="${contractItem.WorkflowRef ?? ``}" class="menu-item copy-link-btn" title="Скопировать ссылку на договор в 1C">
-                                <span class="menu-icon"> <svg ><use href="#ic-duplicate"></use></svg></span>
-                                <span class="menu-label">Ссылка в 1C</span>
-                            </a>
-                            ` : ``}
-
-                            ${permissions.company === `ContrOrgBes` && permissions.isEditor ?
-                            `<a href="/Contracts/ChangeOwner?contrId=${contractItem.Id}" class="menu-item" title="Передать договор филиалу">
-                                <span class="menu-icon"> <svg ><use href="#ic-share"></use></svg></span>
-                                <span class="menu-label">Передать договор</span>
-                            </a>
-                            ` : ``}
-
-                            ${(!contractItem.IsArchive && permissions?.isEditor && permissions?.isAdmin) ?
-                                `<a href="/Contracts/ChangeStatus?contrId=${contractItem.Id}&status=archive&isEngineering=false" class="menu-item modal-link" title="Переместить договор в архив" data-message="Договор будет перемещен в архив. Продолжить?">
-                                    <span class="menu-icon"><svg ><use href="#ic-archive"></use></svg></span>
-                                    <span class="menu-label">В архив</span>
-                                </a>
-                                ` : ``} 
-
-                            ${permissions.isEditor ?
-                                `<a href="/Contracts/Edit/${contractItem.Id}" class="menu-item" title="Редактировать договор">
-                                        <span class="menu-icon"><svg ><use href="#ic-edit"></use></svg></span>
-                                        <span class="menu-label">Редактировать</span>
-                                </a> 
-                                ` : ``}
-                            ${permissions.isDeleter ? 
-                            `<div class="menu-divider"></div>
-                                <a href="/Contracts/Delete/${contractItem.Id}" class="menu-item danger" title="Удалить договор">
-                                    <span class="menu-icon"> <svg ><use href="#ic-delete"></use></svg></span>
-                                    <span class="menu-label">Удалить</span>
-                                </a>
-                            ` : ``} 
-                            </div>
-
-                        `: ``} 
-                    `: ``}
-                </span>
-            </td>
-    </tr>`
-    ).join('');
+    }).join('');
 }
 
 
@@ -286,4 +205,108 @@ function parseCurrency(value) {
 
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
+}
+
+
+
+
+function buildAuthorMenu(item, hasEstimate, hasContract, hasReport, canEdit, canDelete, canArchive, canTransfer, isOverdue) {
+    const parts = [];
+
+    if (hasEstimate) {
+        parts.push(`
+            <a href="/Estimate/Index?contractId=${item.Id}" class="menu-item">
+                <span class="menu-icon"><svg><use href="#ic-calculate"></use></svg></span>
+                <span class="menu-label">Сметы</span>
+            </a>`);
+    }
+
+    if (hasContract) {
+        if (hasReport) {
+            parts.push(`
+                <div class="menu-item-wrap">
+                    <a class="menu-item">
+                        <span class="menu-icon"><svg><use href="#ic-export"></use></svg></span>
+                        <span class="menu-label">Экспорт</span>
+                        <span class="menu-arrow">›</span>
+                    </a>
+                    <div class="action-submenu">
+                        <a href="/Report/Print/Contracts/Details?contractId=${item.Id}" class="submenu-item">
+                            <span class="menu-icon"><svg><use href="#ic-excel-file"></use></svg></span>
+                            <span class="menu-label">Детальная информация</span>
+                        </a>
+                        <a href="/Report/Print/Scopes?contractId=${item.Id}&numberContr=${item.Number ?? ''}" class="submenu-item">
+                            <span class="menu-icon"><svg><use href="#ic-excel-file"></use></svg></span>
+                            <span class="menu-label">Объем работ</span>
+                        </a>
+                    </div>
+                </div>`);
+        }
+
+        if (!item.IsExpired && !item.IsClosed && canEdit && isOverdue) {
+            parts.push(`
+        <div class="menu-item-wrap">
+            <a class="menu-item">
+                <span class="menu-icon"><svg><use href="#ic-swap-horiz"></use></svg></span>
+                <span class="menu-label">Изменить статус</span>
+                <span class="menu-arrow">›</span>
+            </a>
+            <div class="action-submenu">
+                <a href="/Contracts/ChangeStatus?contrId=${item.Id}&status=expired" class="submenu-item modal-link"
+                   data-message="Статус договора будет изменен на 'ПРОСРОЧЕН'. Продолжить?">
+                    <span class="menu-label">Просрочен</span>
+                </a>
+                <a href="/Contracts/ChangeStatus?contrId=${item.Id}&status=closed" class="submenu-item modal-link"
+                   data-message="Статус договора будет изменен на 'ОЖИДАЕТСЯ АКТ ВВОДА'. Продолжить?">
+                    <span class="menu-label">Закрыт, ожидается акт ввода</span>
+                </a>
+            </div>
+        </div>`);
+        }
+
+        if (item.WorkflowRef) {
+            parts.push(`
+                <a href="#" data-link="${item.WorkflowRef}" class="menu-item copy-link-btn">
+                    <span class="menu-icon"><svg><use href="#ic-duplicate"></use></svg></span>
+                    <span class="menu-label">Ссылка в 1C</span>
+                </a>`);
+        }
+
+        if (canTransfer) {
+            parts.push(`
+                <a href="/Contracts/ChangeOwner?contrId=${item.Id}" class="menu-item">
+                    <span class="menu-icon"><svg><use href="#ic-share"></use></svg></span>
+                    <span class="menu-label">Передать договор</span>
+                </a>`);
+        }
+
+        if (!item.IsArchive && canArchive) {
+            parts.push(`
+                <a href="/Contracts/ChangeStatus?contrId=${item.Id}&status=archive&isEngineering=false" 
+                   class="menu-item modal-link" 
+                   data-message="Договор будет перемещен в архив. Продолжить?">
+                    <span class="menu-icon"><svg><use href="#ic-archive"></use></svg></span>
+                    <span class="menu-label">В архив</span>
+                </a>`);
+        }
+
+        if (canEdit) {
+            parts.push(`
+                <a href="/Contracts/Edit/${item.Id}" class="menu-item">
+                    <span class="menu-icon"><svg><use href="#ic-edit"></use></svg></span>
+                    <span class="menu-label">Редактировать</span>
+                </a>`);
+        }
+
+        if (canDelete) {
+            parts.push(`
+                <div class="menu-divider"></div>
+                <a href="/Contracts/Delete/${item.Id}" class="menu-item danger">
+                    <span class="menu-icon"><svg><use href="#ic-delete"></use></svg></span>
+                    <span class="menu-label">Удалить</span>
+                </a>`);
+        }
+    }
+
+    return parts.join('');
 }

@@ -3,6 +3,7 @@ using BusinessLayer.Enums;
 using BusinessLayer.Helpers;
 using BusinessLayer.Interfaces.COMServices;
 using BusinessLayer.Interfaces.ContractInterfaces;
+using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Models.KDO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ namespace MvcLayer.Controllers;
 public class FormsController : Controller
 {
     private readonly IContractService _contractService;
+    private readonly IAdditionalTermService _additionalTermService;
     private readonly IFormService _formService;
     private readonly IFileService _fileService;
     private readonly IScopeWorkService _scopeWork;
@@ -22,7 +24,7 @@ public class FormsController : Controller
     private readonly IPrepaymentService _prep;
     private readonly IParseService _pars;
 
-    public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork,
+    public FormsController(IFormService formService, IMapper mapper, IFileService fileService, IScopeWorkService scopeWork, IAdditionalTermService additionalTermService,
                IContractService contractService, IPrepaymentFactService prepFact, IPrepaymentService prep, IParseService pars)
     {
         _formService = formService;
@@ -33,6 +35,7 @@ public class FormsController : Controller
         _prepFact = prepFact;
         _prep = prep;
         _pars = pars;
+        _additionalTermService = additionalTermService;
     }
 
     //public ActionResult Index()
@@ -136,8 +139,12 @@ public class FormsController : Controller
     {
         if (contractId > 0)
         {
+           
             // по объему работ, берем начало и окончание периода
             var period = _scopeWork.GetScopeWorkPeriodRange(contractId);
+            //todo: ЗДЕСЬ по СОГЛАСОВАНИЮ СРОКОВ изменяется срок окончания #1!
+            var periodAgreement = _additionalTermService.Find(x => x.ContractId == contractId).LastOrDefault();
+                       
 
             if (period is null)
             {
@@ -149,7 +156,7 @@ public class FormsController : Controller
             {
                 ContractId = contractId,
                 PeriodStart = period.Value.Item1,
-                PeriodEnd = period.Value.Item2,
+                PeriodEnd = (periodAgreement?.DueDate != null ) ?  periodAgreement.DueDate.Value : period.Value.Item2,
             };
             ViewData["contractId"] = contractId;
             ViewData["returnContractId"] = returnContractId;

@@ -8,6 +8,7 @@
         period,
         price,
         price_period,
+        agreement,
         other
     }
 }

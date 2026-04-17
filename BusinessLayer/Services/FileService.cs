@@ -297,6 +297,22 @@ namespace BusinessLayer.Services
 
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
 
+                case Folder.AdditionalTerms:
+
+                    var filesAdd = 
+                        //(useArchiveData == true) ?
+                        //_databaseArch.Add.Find(x => x.AmendmentId == entityId) :
+                        _database.AdditionalTermFiles.Find(x => x.AdditionalTermId == entityId);
+
+                    foreach (var file in filesAdd)
+                    {
+                        result.AddRange((useArchiveData == true) ?
+                            _databaseArch.Files.Find(x => x.Id == file.FileId) :
+                            _database.Files.Find(x => x.Id == file.FileId));
+                    }
+
+                    return _mapper.Map<IEnumerable<FileDTO>>(result);
+
                 case Folder.CommissionActs:
 
                     var filesComm = (useArchiveData == true) ?
@@ -447,6 +463,16 @@ namespace BusinessLayer.Services
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;
 
+                    case Folder.AdditionalTerms:
+                        _database.AdditionalTermFiles.Create(new AdditionalTermFile { FileId = fileId, AdditionalTermId = entityId });
+                        _database.Save();
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to additional term",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+                        break;
                     case Folder.CommissionActs:
                         _database.CommissionActFiles.Create(new CommissionActFile { FileId = fileId, СommissionActId = entityId });
                         _database.Save();
