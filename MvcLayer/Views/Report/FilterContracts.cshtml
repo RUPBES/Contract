@@ -1,0 +1,700 @@
+﻿@using BusinessLayer.Enums
+@using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
+@inject IHttpContextUserProvider HttpHelper
+@inject IConverterService Convertor
+@model Dictionary<string, string>
+@{
+    var permissions = HttpHelper.GetUserPermissions();
+    var userOrgCode = HttpHelper.GetUserOrganizationFirstCode();
+    ViewData["Title"] = "Экспорт договоров в Excell";
+}
+<style>
+    .form-select-point {
+        display: flex;
+        flex-direction: column;
+        /* width: 100%; */
+    }
+
+    .block-select-point {
+        width: 98%;
+    }
+
+    #progressContainer {
+        margin-top: 10px;
+    }
+
+    #progressBar {
+        width: 100%;
+        height: 20px;
+        border-radius: 10px;
+        background-color: #f3f3f3;
+    }
+
+        #progressBar::-webkit-progress-bar {
+            background-color: #f3f3f3;
+            border-radius: 10px;
+        }
+
+        #progressBar::-webkit-progress-value {
+            background-color: #007bff;
+            border-radius: 10px;
+        }
+
+        #progressBar::-moz-progress-bar {
+            background-color: #007bff;
+            border-radius: 10px;
+        }
+
+    #progressText {
+        display: block;
+        text-align: center;
+        margin-top: 5px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    /* Скрываем нативный radio полностью */
+    .md3-sort-radio {
+        display: none;
+    }
+
+    /* Лейбл выглядит как ваша кнопка */
+    .md3-sort-type-btn {
+        cursor: pointer;
+        /* ваши существующие стили кнопки остаются */
+    }
+
+    /* Активное состояние через CSS — без JS вообще */
+    .md3-sort-radio:checked + .md3-sort-type-btn {
+        /* ваши существующие стили класса .active */
+    }
+</style>
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="max-width:865px;">
+                <div class="top-modal-block">
+                    <div class="top-modal-left">
+                        <div class="pl-left">
+                            <img src="/Images/Icon/logotype.png">
+                        </div>
+                    </div>
+                    <label class="my-modal-title">@ViewData["Title"]</label>
+                    <a asp-controller="Home" asp-action="Index" class="close-btn"></a>
+                </div>
+                <hr class="modal-line" />
+                <form method="post" id="printContractsForm">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Основной контейнер с двумя колонками -->
+                    <div class="form-columns-container">
+
+                        <!-- ЛЕВАЯ КОЛОНКА: Фильтрация и Сортировка -->
+                        <div class="form-column exprt">
+                            <h3 class="md3-sub-header-exprt">Параметры фильтрации</h3>
+
+                            <!-- Выбрать организацию -->
+                            <div class="md3-form-group">
+                                <label class="md3-form-label">Выбрать организацию, чьи договоры экспартируем</label>
+                                <div class="md3-select-wrapper">
+                                    <!-- Заменяем form-control на md3-select, сохраняем js-chosen -->
+                                    <select name="organization" class="md3-select">
+                                        @if (userOrgCode == Constants.ORG_BES || userOrgCode == Constants.ORG_MAJOR)
+                                        {
+                                            <option value="all" selected>Все</option>
+                                            @foreach (var item in Enum.GetValues<Organization>())
+                                            {
+                                                var name = Convertor.GetNameOrganizationByCode(item.ToString());
+                                                <option value="@item">@name</option>
+                                            }
+                                        }
+                                        @if (userOrgCode != Constants.ORG_BES && userOrgCode != Constants.ORG_MAJOR)
+                                        {
+                                            var name = Convertor.GetNameOrganizationByCode(userOrgCode.ToString());
+                                            <option value="@userOrgCode" selected>@name</option>
+                                        }
+                                    </select>
+                                    <span class="md3-select-arrow">▼</span>
+                                </div>
+                            </div>
+
+                            <!-- Выбор поля для фильтрации -->
+                            <div class="md3-form-group">
+                                <label class="md3-form-label">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-small md3-label-icon">
+                                        <path d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7a2.5 2.5 0 010-5 2.5 2.5 0 010 5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z" />
+                                    </svg>
+                                    Поле для фильтрации
+                                </label>
+                                <div class="md3-select-wrapper">
+                                    <select class="md3-select" id="filterField" name="selectedField">
+                                        <option value="" selected>Выберите поле</option>
+                                        @*    @foreach (var item in Model)
+                                        {
+                                            <option value="@item.Key">@item.Value</option>
+                                        } *@
+
+                                        <option value="number">Номер договора</option>
+                                        <option value="nameObject">Наименование объекта</option>
+                                        <option value="client">Заказчик</option>
+                                        <option value="gencontractor">Генподрядчик</option>
+                                    </select>
+                                    <span class="md3-select-arrow">▼</span>
+                                </div>
+                            </div>
+                            <!-- Текстовое поле для ключевого слова -->
+                            <div class="md3-form-group">
+                                <label class="md3-form-label">
+                                    <svg class="md3-icon md3-icon-small md3-label-icon" viewBox="0 0 24 24" width="16" height="16">
+                                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                                    </svg>
+                                    Ключевое слово
+                                </label>
+                                <div class="md3-input-with-button">
+                                    <input type="text" class="md3-text-input" id="searchKeyword"
+                                           placeholder="Введите текст для поиска..." name="searchText">
+                                </div>
+                                @*<div class="md3-input-hint">
+                                Используйте * для поиска по маске
+                            </div>*@
+                            </div>
+                            <div class="md3-form-group">
+                                <label class="md3-form-label">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                                        <path d="M7 8L12 3L17 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M7 16L12 21L17 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Сортировка
+                                </label>
+                               
+                                <div class="md3-sort-type-toggle">
+                                    <input type="radio" id="sortAscExp" name="sortDirection" value="asc" class="md3-sort-radio">
+                                    <label for="sortAscExp" class="md3-sort-type-btn">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                            <path d="M4 12L12 4L20 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M12 20L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        По возрастанию
+                                    </label>
+                                    <input type="radio" id="sortDescExp" name="sortDirection" value="desc" class="md3-sort-radio " checked>
+                                    <label for="sortDescExp" class="md3-sort-type-btn active">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                            <path d="M4 12L12 20L20 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M12 4L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        По убыванию
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ПРАВАЯ КОЛОНКА: Организация и поля экспорта -->
+                        <div class="form-column">
+                            <h3 class="md3-sub-header-exprt">Выбор полей для экспорта</h3>
+
+                            <!-- Переключатели (Switches) - обновленная MD3 структура -->
+                            <div class="md3-form-group">
+                                <!-- Переключатель: Архивные договоры -->
+                                <div class="form-check form-switch mb-2">
+                                    <label class="md3-switch-label" for="checkNativeSwitch">Экспорт из архива</label>
+                                    <input class="form-check-input" type="checkbox" value="true" name="useArchiveData" id="checkNativeSwitch">
+                                </div>
+
+                                <!-- Переключатель: Выбрать все (включен) -->
+                                <div class="form-check form-switch mb-2">
+                                    <label class="md3-switch-label" for="getAllId">Выбрать все</label>
+                                    <input class="form-check-input" type="checkbox" id="getAllId" checked>
+                                </div>
+                            </div>
+
+                            <!-- Список полей заказчиков с прокруткой -->
+                            <div class="md3-form-group">
+                                <!-- Обновленный контейнер с серым фоном и высотой 240px -->
+                                <div class="md3-export-fields-scroll">
+                                    @foreach (var item in Model)
+                                    {
+                                        <!-- Очищенная структура элемента списка -->
+                                        <div class="input-group block-select-point">
+                                            <div class="input-group-text">
+                                                <input class="form-check-input" type="checkbox" value="@item.Key" name="props" checked>
+                                            </div>
+                                            <!-- Заменяем form-control на disabled input без рамок -->
+                                            <input type="text" class="form-control" value="@item.Value" disabled readonly>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Разделитель перед датами -->
+                    <div class="md3-divider"></div>
+                    <h3 class="md3-sub-header-exprt">Периоды дат</h3>
+                    <!-- Секция периода -->
+                    <div class="md3-period-section-row">
+
+                        <div class="md3-period-section">
+                            <div class="md3-section-header">
+                                <h3 class="md3-section-title exprt">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-small md3-label-icon">
+                                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                    </svg>
+                                    Начало работ
+                                </h3>
+                            </div>
+                            <!-- Контейнер для выбора периода НАЧАЛА РАБОТ с-по -->
+                            <div class="md3-period-container" id="rangeStartDateContainer">
+                                <div class="md3-period-range">
+                                    <!-- Начало периода -->
+                                    <div class="md3-range-input">
+                                        @* <span class="md3-range-label">С:</span> *@
+                                        <div class="md3-month-year-widget">
+                                            <input type="text" class="md3-month-year-input exprt" id="rangeFromInput"
+                                                   placeholder="Начало периода" readonly name="startSW">
+
+                                            <div class="md3-month-year-picker" id="rangeFromPicker">
+                                                <div class="md3-picker-header">
+                                                    <button class="md3-nav-btn md3-prev-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div class="md3-current-year" id="rangeFromYear">
+                                                        2026
+                                                    </div>
+
+                                                    <button class="md3-nav-btn md3-next-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div class="md3-months-grid" id="rangeFromMonths">
+                                                    <!-- Месяцы будут добавлены через JS -->
+                                                </div>
+                                                <div class="md3-picker-footer">
+                                                    <button class="md3-btn md3-today-btn" type="button" id="rangeFromTodayBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                                        </svg>
+                                                        Текущий
+                                                    </button>
+                                                    <button class="md3-btn md3-clear-btn" type="button" id="rangeFromClearBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                        Очистить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Конец периода -->
+                                    <div class="md3-range-input">
+                                        @* <span class="md3-range-label">По:</span> *@
+                                        <div class="md3-month-year-widget">
+                                            <input type="text" class="md3-month-year-input exprt" id="rangeToInput" placeholder="Конец периода" readonly name="endSW">
+
+                                            <div class="md3-month-year-picker" id="rangeToPicker">
+                                                <div class="md3-picker-header">
+                                                    <button class="md3-nav-btn md3-prev-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                                                        </svg>
+                                                    </button>
+                                                    <div class="md3-current-year" id="rangeToYear">    2026     </div>
+                                                    <button class="md3-nav-btn md3-next-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div class="md3-months-grid" id="rangeToMonths">
+                                                    <!-- Месяцы будут добавлены через JS -->
+                                                </div>
+                                                <div class="md3-picker-footer">
+                                                    <button class="md3-btn md3-today-btn" type="button" id="rangeToTodayBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                                        </svg>
+                                                        Текущий
+                                                    </button>
+                                                    <button class="md3-btn md3-clear-btn" type="button" id="rangeToClearBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                        Очистить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md3-period-section">
+                            <div class="md3-section-header">
+                                <h3 class="md3-section-title exprt">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-small md3-label-icon">
+                                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                    </svg>
+                                    Окончание работ
+                                </h3>
+                            </div>
+                            <!-- Контейнер для выбора периода ОКОНЧАНИЯ РАБОТ с-по -->
+                            <div class="md3-period-container" id="rangeEndDateContainer">
+                                <div class="md3-period-range">
+                                    <!-- Начало периода -->
+                                    <div class="md3-range-input">
+                                        @* <span class="md3-range-label">С:</span> *@
+                                        <div class="md3-month-year-widget">
+                                            <input type="text" class="md3-month-year-input exprt" id="rangeEWFromInput"
+                                                   placeholder="Начало периода" readonly name="startEW">
+
+                                            <div class="md3-month-year-picker" id="rangeEWFromPicker">
+                                                <div class="md3-picker-header">
+                                                    <button class="md3-nav-btn md3-prev-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div class="md3-current-year" id="rangeEWFromYear">
+                                                        2026
+                                                    </div>
+
+                                                    <button class="md3-nav-btn md3-next-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <div class="md3-months-grid" id="rangeEWFromMonths">
+                                                    <!-- Месяцы будут добавлены через JS -->
+                                                </div>
+
+                                                <div class="md3-picker-footer">
+                                                    <button class="md3-btn md3-today-btn" type="button" id="rangeFromTodayBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                                        </svg>
+                                                        Текущий
+                                                    </button>
+                                                    <button class="md3-btn md3-clear-btn" type="button" id="rangeFromClearBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                        Очистить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Конец периода -->
+                                    <div class="md3-range-input">
+                                        @*  <span class="md3-range-label">По:</span> *@
+                                        <div class="md3-month-year-widget">
+                                            <input type="text" class="md3-month-year-input exprt" id="rangeEWToInput"
+                                                   placeholder="Конец периода" readonly name="endEW">
+
+                                            <div class="md3-month-year-picker" id="rangeEWToPicker">
+                                                <div class="md3-picker-header">
+                                                    <button class="md3-nav-btn md3-prev-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div class="md3-current-year" id="rangeEWToYear">
+                                                        2026
+                                                    </div>
+
+                                                    <button class="md3-nav-btn md3-next-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <div class="md3-months-grid" id="rangeEWToMonths">
+                                                    <!-- Месяцы будут добавлены через JS -->
+                                                </div>
+
+                                                <div class="md3-picker-footer">
+                                                    <button class="md3-btn md3-today-btn" type="button" id="rangeToTodayBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                                        </svg>
+                                                        Текущий
+                                                    </button>
+                                                    <button class="md3-btn md3-clear-btn" type="button" id="rangeToClearBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                        Очистить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md3-period-section">
+                            <div class="md3-section-header">
+                                <h3 class="md3-section-title exprt">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-small md3-label-icon">
+                                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                    </svg>
+                                    Ввода объекта
+                                </h3>
+                            </div>
+                            <!-- Контейнер для выбора периода ВВОДА ОБЪЕКТА с-по -->
+                            <div class="md3-period-container" id="rangeEnteringDateContainer">
+                                <div class="md3-period-range">
+                                    <!-- Начало периода -->
+                                    <div class="md3-range-input">
+                                        @*  <span class="md3-range-label">С:</span> *@
+                                        <div class="md3-month-year-widget">
+                                            <input type="text" class="md3-month-year-input exprt" id="rangeEDFromInput"
+                                                   placeholder="Начало периода" readonly name="startET">
+
+                                            <div class="md3-month-year-picker" id="rangeEDFromPicker">
+                                                <div class="md3-picker-header">
+                                                    <button class="md3-nav-btn md3-prev-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div class="md3-current-year" id="rangeEDFromYear">
+                                                        2026
+                                                    </div>
+
+                                                    <button class="md3-nav-btn md3-next-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <div class="md3-months-grid" id="rangeEDFromMonths">
+                                                    <!-- Месяцы будут добавлены через JS -->
+                                                </div>
+
+                                                <div class="md3-picker-footer">
+                                                    <button class="md3-btn md3-today-btn" type="button" id="rangeFromTodayBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                                        </svg>
+                                                        Текущий
+                                                    </button>
+                                                    <button class="md3-btn md3-clear-btn" type="button" id="rangeFromClearBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                        Очистить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Конец периода -->
+                                    <div class="md3-range-input">
+                                        @*  <span class="md3-range-label">По:</span> *@
+                                        <div class="md3-month-year-widget">
+                                            <input type="text" class="md3-month-year-input exprt" id="rangeEDToInput"
+                                                   placeholder="Конец периода" readonly name="endET">
+
+                                            <div class="md3-month-year-picker" id="rangeEDToPicker">
+                                                <div class="md3-picker-header">
+                                                    <button class="md3-nav-btn md3-prev-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                                                        </svg>
+                                                    </button>
+
+                                                    <div class="md3-current-year" id="rangeEDToYear">
+                                                        2026
+                                                    </div>
+
+                                                    <button class="md3-nav-btn md3-next-year" type="button">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <div class="md3-months-grid" id="rangeEDToMonths">
+                                                    <!-- Месяцы будут добавлены через JS -->
+                                                </div>
+
+                                                <div class="md3-picker-footer">
+                                                    <button class="md3-btn md3-today-btn" type="button" id="rangeToTodayBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                                                        </svg>
+                                                        Текущий
+                                                    </button>
+                                                    <button class="md3-btn md3-clear-btn" type="button" id="rangeToClearBtn">
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-xsmall">
+                                                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                                                        </svg>
+                                                        Очистить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Разделитель перед датами -->
+                    <div class="md3-divider"></div>
+
+
+                    @*     <!-- Прогресс бар (скрыт) -->
+                    <div id="progressContainer" style="display: none; margin-top: 8px;">
+                        <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+                        <span id="progressText" style="font-size: 12px;">0%</span>
+                    </div> *@
+                    <!-- Кнопки действий -->
+                    <div class="md3-action-buttons-sm">
+                        <a asp-controller="Home" asp-action="Index" class="md3-btn md3-secondary-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1" />
+                            </svg>
+                            Отмена
+                        </a>
+                       @*  <button class="md3-btn md3-secondary-btn" type="button" id="closeButton">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1" />
+                            </svg>
+                            Отмена
+                        </button> *@
+                       @*  <button class="md3-btn md3-secondary-btn" type="button" id="resetButton">
+                            <svg viewBox="0 0 24 24" width="16" height="16" class="md3-icon md3-icon-small">
+                                <svg viewBox="0 0 24 24"><path d="M17.65 6.35A8 8 0 1 0 19 16h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" /></svg>
+                            </svg>
+                            Сбросить
+                        </button> *@
+
+                        <button class="md3-btn md3-primary-btn" type="button" id="applyButton">
+                            <svg viewBox="0 0 24 24" width="20" height="20" class="md3-icon md3-icon-small">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+                            </svg>
+                            Экспорт данных
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+         document.addEventListener('DOMContentLoaded', () => {
+            const period = new PeriodManager();
+        });
+
+        document.querySelectorAll('.md3-sort-type-toggle .md3-sort-radio').forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Убираем active у всех label внутри этого toggle
+                radio.closest('.md3-sort-type-toggle')
+                     .querySelectorAll('.md3-sort-type-btn')
+                     .forEach(btn => btn.classList.remove('active'));
+
+                // Добавляем active только label текущего radio
+                radio.nextElementSibling.classList.add('active');
+            });
+        });
+
+        document.getElementById('getAllId').addEventListener('change', function () {
+            // Получаем состояние чекбокса "Выбрать все"
+            var isChecked = this.checked;
+
+            // Получаем все чекбоксы со свойством name="props"
+            var checkboxes = document.querySelectorAll('input[name="props"]');
+
+            // Устанавливаем состояние для всех чекбоксов
+            checkboxes.forEach(function (checkbox) {
+                checkbox.checked = isChecked;
+            });
+        });
+
+        document.getElementById('printContractsForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Блокируем любой нативный сабмит
+        });
+
+        document.getElementById('applyButton').addEventListener('click', async function (event) {
+            event.preventDefault(); // Предотвращаем стандартную отправку формы
+            var formData = new FormData(document.getElementById('printContractsForm')); // Собираем данные формы
+
+            // // Показываем прогресс-бар
+            // document.getElementById('progressContainer').style.display = 'block';
+            // document.getElementById('progressBar').value = 25;
+            // document.getElementById('progressText').innerText = '25%';
+
+            try {
+                const response = await fetch('/Report/ExportFilterContracts', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при загрузке файла');
+                }
+
+                const reader = response.body.getReader();
+                const contentLength = +response.headers.get('Content-Length');
+                let receivedLength = 0;
+                let chunks = [];
+
+                while (true) {
+                    const { done, value } = await reader.read();
+
+                    if (done) {
+                        break;
+                    }
+
+                    chunks.push(value);
+                    receivedLength += value.length;
+
+                    // // Обновляем прогресс-бар
+                    // const percentComplete = (receivedLength / contentLength) * 100;
+                    // document.getElementById('progressBar').value = percentComplete;
+                    // document.getElementById('progressText').innerText = Math.round(percentComplete) + '%';
+                }
+
+                // Собираем файл из chunks
+                const blob = new Blob(chunks, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                // Создаем ссылку для скачивания файла
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'Договоры.xlsx'; // Имя файла
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // // Скрываем прогресс-бар после завершения
+                // document.getElementById('progressContainer').style.display = 'none';
+            } catch (error) {
+                console.error('Ошибка:', error);
+                // document.getElementById('progressContainer').style.display = 'none';
+            }
+        });
+    </script>
+}

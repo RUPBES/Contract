@@ -37,7 +37,8 @@ namespace MvcLayer.Controllers
             listProps.Add("RemainingSum", "Остаток");
             listProps.Add("ThisYearSum", "Объем на текущий год");
 
-            return View(listProps);
+            return View("FilterContracts", listProps);
+            //return View(listProps);
         }
 
         [HttpPost]
@@ -46,6 +47,45 @@ namespace MvcLayer.Controllers
             var path = Task.Run(() =>
             {
                 return _reportExcel.ExportContracts(organization, props, useArchiveData);
+            });
+
+            var fileStream = new FileStream(path.Result, FileMode.OpenOrCreate, FileAccess.Read);
+
+            // Устанавливаем заголовок Content-Length
+            var fileLength = new FileInfo(path.Result).Length;
+            Response.Headers.Add("Content-Length", fileLength.ToString());
+
+            return await Task.FromResult<IActionResult>(File(fileStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Договоры.xlsx"));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExportFilterContracts(
+            string organization,
+            bool useArchiveData,
+            List<string> props,
+            string selectedField,
+            string sortDirection,
+            string? searchText,
+            DateOnly? startSW,
+            DateOnly? endSW,
+            DateOnly? startEW,
+            DateOnly? endEW,
+            DateOnly? startET,
+            DateOnly? endET )
+        {
+            string? queryDateRange = GenerateDateRangeWhereClause(
+                startSW?.ToString("yyyy-MM"),
+                endSW?.ToString("yyyy-MM"), 
+                startEW?.ToString("yyyy-MM"), 
+                endEW?.ToString("yyyy-MM"), 
+                startET?.ToString("yyyy-MM"), 
+                endET?.ToString("yyyy-MM")
+                );
+
+            var path = Task.Run(() =>
+            {
+                //(string organization, List<string> columnName, string? type, string? sortDirection, string? searchText, string? whereCondition, bool? useArchiveData)
+                return _reportExcel.ExportContracts(organization, props, selectedField, sortDirection,searchText, queryDateRange, useArchiveData);
             });
 
             var fileStream = new FileStream(path.Result, FileMode.OpenOrCreate, FileAccess.Read);
@@ -85,7 +125,7 @@ namespace MvcLayer.Controllers
             });
             if (path.Result == string.Empty)
             {
-                return await Task.FromResult<IActionResult>(View("Index","Contracts"));
+                return await Task.FromResult<IActionResult>(View("Index", "Contracts"));
             }
             var fileStream = new FileStream(path.Result, FileMode.Open, FileAccess.Read);
 
@@ -119,6 +159,74 @@ namespace MvcLayer.Controllers
             var fileLength = new FileInfo(path.Result).Length;
             Response.Headers.Add("Content-Length", fileLength.ToString());
             return await Task.FromResult<IActionResult>(File(fileStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileName}.xlsx"));
+        }
+
+
+
+
+
+        private string? GenerateDateRangeWhereClause(string? startDateBeginWork, string? endDateBeginWork, string? stratDateEndWork, string? endDateEndWork, string? startEnteringTerm, string? endEnteringTerm)
+        {
+            string? whereClause = null;
+            /////
+            if (!string.IsNullOrEmpty(startDateBeginWork) || !string.IsNullOrEmpty(endDateBeginWork))
+            {
+                if (!string.IsNullOrEmpty(startDateBeginWork) && !string.IsNullOrEmpty(endDateBeginWork))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateBeginWork, c.DateBeginWork), 'yyyy-MM') BETWEEN '{startDateBeginWork}' AND '{endDateBeginWork}')";
+                }
+
+                if (!string.IsNullOrEmpty(startDateBeginWork) && string.IsNullOrEmpty(endDateBeginWork))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateBeginWork, c.DateBeginWork), 'yyyy-MM') >= '{startDateBeginWork}')";
+                }
+                if (string.IsNullOrEmpty(startDateBeginWork) && !string.IsNullOrEmpty(endDateBeginWork))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateBeginWork, c.DateBeginWork), 'yyyy-MM') <= '{endDateBeginWork}')";
+                }
+            }
+
+            /////
+            if (!string.IsNullOrEmpty(stratDateEndWork) || !string.IsNullOrEmpty(endDateEndWork))
+            {
+                whereClause += string.IsNullOrEmpty(whereClause) ? "" : " AND ";
+
+                if (!string.IsNullOrEmpty(stratDateEndWork) && !string.IsNullOrEmpty(endDateEndWork))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateEndWork, c.DateEndWork), 'yyyy-MM') BETWEEN '{stratDateEndWork}' AND '{endDateEndWork}')";
+                }
+
+                if (!string.IsNullOrEmpty(stratDateEndWork) && string.IsNullOrEmpty(endDateEndWork))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateEndWork, c.DateEndWork), 'yyyy-MM') >= '{stratDateEndWork}')";
+                }
+                if (string.IsNullOrEmpty(stratDateEndWork) && !string.IsNullOrEmpty(endDateEndWork))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateEndWork, c.DateEndWork), 'yyyy-MM') <= '{endDateEndWork}')";
+                }
+            }
+
+            /////
+            if (!string.IsNullOrEmpty(startEnteringTerm) || !string.IsNullOrEmpty(endEnteringTerm))
+            {
+                whereClause += string.IsNullOrEmpty(whereClause) ? "" : " AND ";
+
+                if (!string.IsNullOrEmpty(startEnteringTerm) && !string.IsNullOrEmpty(endEnteringTerm))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateEntryObject, c.EnteringTerm), 'yyyy-MM') BETWEEN '{startEnteringTerm}' AND '{endEnteringTerm}')";
+                }
+
+                if (!string.IsNullOrEmpty(startEnteringTerm) && string.IsNullOrEmpty(endEnteringTerm))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateEntryObject, c.EnteringTerm), 'yyyy-MM') >= '{startEnteringTerm}')";
+                }
+                if (string.IsNullOrEmpty(startEnteringTerm) && !string.IsNullOrEmpty(endEnteringTerm))
+                {
+                    whereClause += $" (FORMAT(COALESCE(a.DateEntryObject, c.EnteringTerm), 'yyyy-MM') <= '{endEnteringTerm}')";
+                }
+            }
+
+            return whereClause;
         }
     }
 }

@@ -121,11 +121,11 @@
 
     setupEventListeners() {
         // Переключатели режима
-        document.getElementById('sortDesc').addEventListener('click', () => {
+        document.getElementById('sortDesc')?.addEventListener('click', () => {
             this.setSort('desc');
         });
 
-        document.getElementById('sortAsc').addEventListener('click', () => {
+        document.getElementById('sortAsc')?.addEventListener('click', () => {
             this.setSort('asc');
         });
     }

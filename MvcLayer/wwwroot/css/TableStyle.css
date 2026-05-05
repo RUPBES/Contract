@@ -28,125 +28,278 @@
 }
 
 .table-container {
-    /*margin-bottom: 1%;*/
+    -webkit-hyphens: auto; /* Safari/Chrome */
+    -ms-hyphens: auto; /* IE/Edge */
+    hyphens: auto;
     flex-grow: 1;
 }
 
 .full-width {
     width: 99vw;
-    min-height:90%;
+    min-height: 90%;
     padding-left: 10px;
     padding-right: 10px;
     overflow-y: auto;
-    max-height: 630px;
     box-shadow: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
     max-height: 69vh;
     display: flex;
+    -webkit-hyphens: auto; /* Safari/Chrome */
+    -ms-hyphens: auto; /* IE/Edge */
+    hyphens: auto;
 }
 
-.table-main-short {
-    width: 100%;
-    min-width: 1500px;
+.table-main-short, .table-main-details,
+.table-main-payablecach {
     font-family: 'Times New Roman';
-    font-size: 15px;
+    font-size: 14px;
     table-layout: auto;
     border-color: white;
-    /*background-color: honeydew;*/
+    -webkit-hyphens: auto; /* Safari/Chrome */
+    -ms-hyphens: auto; /* IE/Edge */
+    hyphens: auto;
 }
 
-.table-main tr:nth-child(even) {
-    background-color: #ecf2f9;
-}
+    .table-main tr:nth-child(even),
+    .table-orgnztn tr:nth-child(even),
+    .table-employee tr:nth-child(even){
+        background-color: #ecf2f9;
+    }
 
-/*.table-main tr:nth-child(odd) {
-    background-color: #ecf2f9;
-}
+    .table-main th,
+    .table-main-details th,
+    .table-main-payablecach th,
+    .table-orgnztn th,
+    .table-employee th {
+        position: -webkit-sticky;
+        position: sticky;
+        top: -3px;
+        z-index: 99;
+        background-color: #2d4156;
+        color: white;
+        text-align: center;
+        vertical-align: middle;
+    }
 
-.table-main tr:nth-child(even) {
-    background-color: #abbac3;
-};*/
-    
-/*}*/
+    /*НОМЕР И ДАТА*/
+    .table-main th:nth-child(1),
+    .table-main td:nth-child(1) {
+        width: 125px;
+        min-width: 108px;
+        max-width: 125px;
+    }
 
-.table-main-full {
-    width: 100%;
-    /*min-width: 1500px;
-    max-width: 2500px;*/
-    font-family: 'Times New Roman';
-    font-size: 16px;
-    table-layout: auto;
-    /*border-color: olivedrab;*/
-    /*background-color: honeydew;*/
-}
-
-table-main thead tr {
-    display: block;
-    position: relative;
-}
-
-table-main tbody {
-    display: block;
-    overflow: auto;
-    width: 100%;
-}
-
-.table-main th {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    position: -webkit-sticky;
-    position: sticky;
-    top: -3px;
-    z-index: 99;
-    background-color: #2d4156;
-    color: white;
-    text-align: center;
-    vertical-align: middle;
-}
-
-.table-main td {
-    word-break: break-word;
-}
+    .table-main th:nth-child(2), /*НАИМЕНОВАНИЕ ОБЪЕКТА*/
+    .table-main td:nth-child(2),
+    .table-main th:nth-child(3), /*ЗАКАЗЧИК*/
+    .table-main td:nth-child(3),
+    .table-main th:nth-child(4), /*ГЕНПОДРЯДЧИК*/
+    .table-main td:nth-child(4) {
+        width: 250px;
+        min-width: 100px;
+        max-width: 250px;
+    }
+    /*СРОКИ*/
+    .table-main th:nth-child(5),
+    .table-main td:nth-child(5) {
+        width: 95px;
+        min-width: 60px;
+        max-width: 100px;
+    }
+    /*УСЛОВИЯ ОПЛАТЫ*/
+    .table-main th:nth-child(6),
+    .table-main td:nth-child(6) {
+        width: 230px;
+        min-width: 150px;
+        max-width: 230px;
+    }
+    /*ВИД РАБОТ*/
+    .table-main th:nth-child(7),
+    .table-main td:nth-child(7) {
+        width: 105px;
+        min-width: 80px;
+        max-width: 105px;
+    }
+    /*СУММЫ ПО ДОГ-РУ*/
+    .table-main th:nth-child(8),
+    .table-main td:nth-child(8),
+    .table-main th:nth-child(9),
+    .table-main td:nth-child(9),
+    .table-main th:nth-child(10),
+    .table-main td:nth-child(10),
+    .table-main th:nth-child(11),
+    .table-main td:nth-child(11) {
+        width: 110px;
+        min-width: 80px;
+        max-width: 110px;
+    }
+    /*ДЕЙСТВИЯ*/
+    .table-main th:nth-child(12),
+    .table-main td:nth-child(12) {
+        width: 55px;
+        min-width: 50px;
+        max-width: 55px;
+    }
 
 .table-main td, th {
     padding: 0.125em 0.5em 0.25em 0.5em;
     line-height: 1;
 }
 
-.table_span-numberanddate {
-    width: 80px !important;
-    display: inline-block;
+.table-main-details td, th {
+    padding: 0.125em 0.5em 0.25em 0.5em;
+    line-height: 1;
 }
 
-.table_span-num {
-    width: 20px !important;
-    display: inline-block;
+.table-main-payablecach td, th {
+    padding: 0.125em 0.5em 0.25em 0.5em;
+    line-height: 1;
 }
 
-.table_span-nameobject {
+
+/**Details table */
+
+/*ДЕЙСТВИЯ*/
+.table-main-details th:nth-child(1),
+.table-main-details td:nth-child(1) {
+    width: 75px;
+    min-width: 50px;
+    max-width: 75px;
+}
+
+.table-main-details th:nth-child(2),
+.table-main-details td:nth-child(2) {
+    width: 105px;
+    min-width: 50px;
+    max-width: 105px;
+}
+
+.table-main-details th:nth-child(3),
+.table-main-details td:nth-child(3) {
     width: 150px;
-    display: inline-block;
+    min-width: 120px;
+    max-width: 150px;
 }
 
-.table_span-customer {
-    width: 150px;
-    display: inline-block;
+.table-main-details th:nth-child(4),
+.table-main-details td:nth-child(4) {
+    width: 75px;
+    min-width: 50px;
+    max-width: 75px;
 }
 
-.table_span-subcontractor,
-.table_span-deadlines {
+.table-main-details th:nth-child(6),
+.table-main-details td:nth-child(6) {
     width: 100px;
-    display: inline-block;
+    min-width: 50px;
+    max-width: 100px;
 }
 
-.table_span-subcontractor {
-    width: 110px;
-    display: inline-block;
+.table-main-details th:nth-child(5), /*НАИМЕНОВАНИЕ ОБЪЕКТА*/
+.table-main-details td:nth-child(5),
+.table-main-details th:nth-child(7), /*ЗАКАЗЧИК*/
+.table-main-details td:nth-child(7),
+.table-main-details th:nth-child(8), /*ГЕНПОДРЯДЧИК*/
+.table-main-details td:nth-child(8),
+.table-main-details th:nth-child(9), /*СУБПОДРЯДЧИК*/
+.table-main-details td:nth-child(9) {
+    width: 220px;
+    min-width: 100px;
+    max-width: 220px;
+}
+/*СРОКИ*/
+.table-main-details th:nth-child(10),
+.table-main-details td:nth-child(10) {
+    width: 75px;
+    min-width: 60px;
+    max-width: 75px;
+}
+/*УСЛОВИЯ ОПЛАТЫ*/
+.table-main-details th:nth-child(11),
+.table-main-details td:nth-child(11) {
+    width: 230px;
+    min-width: 150px;
+    max-width: 230px;
+}
+/*ВИД РАБОТ*/
+.table-main-details th:nth-child(12),
+.table-main-details td:nth-child(12) {
+    width: 100px;
+    min-width: 80px;
+    max-width: 100px;
+}
+/*СУММЫ ПО ДОГ-РУ*/
+.table-main-details th:nth-child(13),
+.table-main-details td:nth-child(13) {
+    width: 100px;
+    min-width: 80px;
+    max-width: 100px;
 }
 
-.table_span-contractor {
-    width: 140px;
-    display: inline-block;
+.table-main-details th:nth-child(14),
+.table-main-details td:nth-child(14) {
+    width: 70px;
+    min-width: 60px;
+    max-width: 70px;
 }
+
+
+/*PayableCash*/
+
+
+/*НОМЕР И ДАТА*/
+.table-main-payablecach th:nth-child(1),
+.table-main-payablecach td:nth-child(1) {
+    width: 70px;
+    min-width: 50px;
+    max-width: 70px;
+}
+
+.table-main-payablecach th:nth-child(2), /*НАИМЕНОВАНИЕ ОБЪЕКТА*/
+.table-main-payablecach td:nth-child(2),
+.table-main-payablecach th:nth-child(3), /*ЗАКАЗЧИК*/
+.table-main-payablecach td:nth-child(3),
+.table-main-payablecach th:nth-child(4), /*ГЕНПОДРЯДЧИК*/
+.table-main-payablecach td:nth-child(4) {
+    width: 180px !important;
+    /*min-width: 100px;
+    max-width: 180px;*/
+}
+/*СРОКИ*/
+.table-main-payablecach th:nth-child(5),
+.table-main-payablecach td:nth-child(5) {
+    width: 65px;
+    min-width: 50px;
+    max-width: 65px;
+}
+/*Валюта*/
+.table-main-payablecach th:nth-child(6),
+.table-main-payablecach td:nth-child(6) {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+}
+
+/*СУММЫ ПО ДОГ-РУ*/
+.table-main-payablecach th:nth-child(7),
+.table-main-payablecach td:nth-child(7),
+.table-main-payablecach th:nth-child(8),
+.table-main-payablecach td:nth-child(8),
+.table-main-payablecach th:nth-child(9),
+.table-main-payablecach td:nth-child(9),
+.table-main-payablecach th:nth-child(10),
+.table-main-payablecach td:nth-child(10) {
+    width: 70px;
+    min-width: 60px;
+    max-width: 70px;
+}
+/*ДЕЙСТВИЯ*/
+.table-main-payablecach th:nth-child(11),
+.table-main-payablecach td:nth-child(11) {
+    width: 55px;
+    min-width: 50px;
+    max-width: 55px;
+}
+
 
 table a {
     text-decoration: none;
@@ -157,29 +310,9 @@ table a {
 .table_span-act-renewal,
 .table_span-avans,
 .table_span-material,
-.table_span-conditions,
+/*.table_span-conditions,*/
 .table_span-act-entering {
     width: 100px !important;
-    display: inline-block;
-}
-
-.table_span-signer {
-    width: 135px !important;
-    display: inline-block;
-}
-
-.table_span-conditions {
-    width: 130px !important;
-    display: inline-block;
-}
-
-.table_span-month {
-    width: 100px !important;
-    display: inline-block;
-}
-
-.table_span-fin-source {
-    width: 95px;
     display: inline-block;
 }
 
@@ -188,31 +321,7 @@ table a {
     display: inline-block;
 }
 
-.table_span-action {
-    width: 75px;
-    display: inline-block;
-}
-.table_span-action-main {
-    width: 45px;
-    display: inline-block;
-}
-.table_span-currency {
-    width: 56px;
-    display: inline-block;
-}
-
-.table_span-work {
-    width: 120px;
-    display: inline-block;
-}
-
-.table_span-contractprice {
-    width: 110px;
-    display: inline-block;
-}
-
-.table_span-realization,
-.table_span-volume {
+.table_span-realization {
     width: 85px;
     display: inline-block;
 }
@@ -222,13 +331,8 @@ table a {
     display: inline-block;
 }
 
-.table_span-select-procedure {
-    width: 85px;
-    display: inline-block;
-}
-
 .table-th-background-color {
-    background-color: #2d4156;    
+    background-color: #2d4156;
     color: white;
 }
 
@@ -254,7 +358,7 @@ table a {
         text-align: right;
         height: 30px;
         font-size: 0.9em
-    }       
+    }
 
 .Partialtable-sticky-top {
     position: sticky !important;
@@ -341,18 +445,19 @@ span-50-per {
 .up, .down, .up-down-active {
     align-items: center;
 }
-.up::after {    
-    content: "▲";  
-}
 
-.down::after {
-    content: "▼";
-}
+    .up::after {
+        content: "▲";
+    }
 
-.up-down-active::after {
-    align-items: center;
-    color: red;
-}
+    .down::after {
+        content: "▼";
+    }
+
+    .up-down-active::after {
+        align-items: center;
+        color: red;
+    }
 
 
 .table-hover > tbody > tr:hover {
@@ -365,7 +470,7 @@ span-50-per {
     box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
-.table{
+.table {
     margin-bottom: 1px !important;
 }
 

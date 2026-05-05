@@ -76,9 +76,9 @@ body {
     display: none;
     position: absolute;
     justify-content: center;
-    align-items:center;
+    align-items: center;
     width: 100%;
-    height:100%;
+    height: 100%;
     z-index: 10000000;
     background: rgba(0, 0, 0, 30%); /*linear-gradient(135deg, #2e354e 0%, black 100%); */
 }
@@ -87,7 +87,7 @@ body {
     display: flex;
     flex-direction: column;
     max-width: 400px;
-    max-height:fit-content;
+    max-height: fit-content;
     width: 100%;
     background: var(--md-surface);
     border-radius: 20px;
@@ -328,6 +328,13 @@ body {
     margin-bottom: 0px;
 }
 
+.md3-period-section-row {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 0px;
+    margin-top:15px;
+}
+
 .md3-section-header {
     margin-bottom: 10px;
 }
@@ -341,6 +348,14 @@ body {
     color: var(--md-on-surface);
     margin: 0 0 10px 0;
 }
+
+    .md3-section-title.exprt {
+        gap: 10px;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--md-on-surface-variant);
+        margin: 0 0 10px 0;
+    }
 
 .md3-section-icon {
     color: var(--md-primary);
@@ -374,20 +389,20 @@ body {
 }
 
     .md3-period-type-btn:hover,
-    .md3-sort-type-btn:hover{
+    .md3-sort-type-btn:hover {
         border-color: var(--md-primary);
         background: var(--md-primary-container);
     }
 
     .md3-period-type-btn.active,
-    .md3-sort-type-btn.active{
+    .md3-sort-type-btn.active {
         border-color: var(--md-primary);
         background: var(--md-primary);
         color: var(--md-on-primary);
     }
 
     .md3-period-type-btn.disabled,
-    md3-sort-type-btn.disabled{
+    md3-sort-type-btn.disabled {
         opacity: 0.5;
         cursor: not-allowed;
         pointer-events: none;
@@ -420,6 +435,9 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+    .md3-month-year-input.exprt{
+        padding:0 10px;
+    }
 
     .md3-month-year-input:hover {
         border-color: var(--md-primary);
@@ -508,7 +526,8 @@ body {
     }
 
     .month-btn.current-month {
-        /*color: var(--md-on-primary*//*--md-primary*/);
+        /*color: var(--md-on-primary*/ /*--md-primary*/
+        );
         font-weight: 600;
     }
 
@@ -522,7 +541,7 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-  /*  margin-bottom: 16px;*/
+    /*  margin-bottom: 16px;*/
 }
 
 .md3-range-input {
@@ -596,22 +615,39 @@ body {
     /*margin-bottom: 20px;*/
 }
 
-.md3-primary-btn {
-    flex: 1;
-    height: 30px;
-    background: var(--md-primary);
-    color: var(--md-on-primary);
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
+.md3-action-buttons-sm {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease;
+    gap: 5px;
+    justify-content: end;
+    /*margin-bottom: 20px;*/
 }
+
+div.md3-action-buttons-sm > button,
+div.md3-action-buttons-sm > a {
+    max-width: 200px;
+    /*margin-bottom: 20px;*/
+}
+
+div.md3-action-buttons-sm > a {
+    text-decoration: none;
+    color: inherit;
+}
+    .md3-primary-btn {
+        flex: 1;
+        height: 30px;
+        background: var(--md-primary);
+        color: var(--md-on-primary);
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
 
     .md3-primary-btn:hover {
         background: color-mix(in srgb, var(--md-primary) 90%, black);
@@ -731,15 +767,42 @@ body {
     z-index: 1000;
 }
 
-/*.input-group {
-    display: flex;
-    margin-top: 10px;
-}*/
+.form-columns-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
 
-/*.form-control {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px 0 0 4px;
-    font-size: 14px;
-}*/
+.form-column {
+    display: flex;
+    flex-direction: column;
+}
+
+    .form-column.exprt {
+        gap: 7px;
+    }
+
+.md3-switch-label {
+    font-weight: 600 !important;
+    font-size: 1.15rem;
+}
+
+div.exprt > div.md3-form-group > label.md3-form-label {
+    font-size: 1.25rem;
+}
+
+.md3-export-fields-scroll {
+    display: flex;
+    flex-direction: column;
+    max-height: 205px;
+    overflow-y: scroll;
+}
+
+.md3-periods-row {
+    display: flex;
+}
+
+.md3-sub-header-exprt {
+    font-size: 1.7rem;
+    font-weight: 700;
+}

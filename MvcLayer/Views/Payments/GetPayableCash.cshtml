@@ -1,16 +1,5 @@
-﻿@* @model IEnumerable<MvcLayer.Models.Reports.GetPayableCashPaymentsViewModel> *@
-@* @model IndexViewModel *@
-@* @using BusinessLayer.Helpers;
-@using BusinessLayer.Models
-@using BusinessLayer.Models.KDO
-@using MvcLayer.Models.Data
-@using MvcLayer.Models.Reports;
-@inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract *@
-
-@{
+﻿@{
     ViewData["Title"] = "Денежные средства по договорам, подлежащие к оплате";
-    // int PageNumber = ViewBag.PageNum;
-    // var formModel = ViewData["FilterViewModel"] as FilterViewModel;
 }
 @section Table {
 
@@ -55,25 +44,6 @@
             }
     </style>
 
-    @* <div class="modal-window_filter">
-        <div class="content-window">
-            <div class="modal-window_filter__close-btn">
-                <div class="close-btn"></div>
-            </div>
-
-           
-
-            <div class="laber-window">Выберете настройки поиска</div>
-            <div class="content-window__hr"></div>
-            <div class="form-window">
-            </div>
-        </div>
-    </div> *@
-
-   @*  <input type="text" id="client_filter" value="@formModel?.Client" hidden />
-    <input type="text" id="gencontr_filter" value="@formModel?.GenContractor" hidden /> *@
-
-
     <div class="header-view">
         <h3>@ViewData["Title"]</h3>
         <div class="box-btn">
@@ -81,17 +51,7 @@
             <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
                 <img class="icon" src="~/icons/funnel.svg" />Фильтр
             </button>
-        </div>
-        @* <div class="nav_panel_btns">
-            <div class="link_add_emp"></div>
-            <div class="btn_panel_search">
-                <button type="button" class="btn btn-primary btn-ctr to_filter">Фильтр<img class="icon" src="~/icons/funnel.svg" /></button>
-                <form asp-controller="Payments" asp-action="GetPayableCash" style="search-form" method="get">
-                    <input class="btn-ctr" type="text" name="searchString" placeholder="Поиск по организации" value="@ViewData["CurrentFilter"]" id="er" />
-                    <button type="submit" class="subSearch"><img src="~/icons/search.svg" title="Поиск организации" alt="Поиск организации" class="search_btn" /></button>
-                </form>
-            </div>
-        </div> *@
+        </div>       
     </div>
     @* <hr class="modal-line" /> *@
     <div id="payableCashTable">
@@ -118,7 +78,7 @@
             </div>
         </div>
         <div class="wrapper-table">
-            <table class="table table-bordered table-main table-main-short table-hover" id="cotractTableId">
+            <table class="table table-main-payablecach table-bordered table-hover" id="cotractTableId">
                 <thead class="text-center text-white align-top" style="position:sticky">
                     <tr>
                         <th>
@@ -237,52 +197,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="table_tbody" style="height:70vh;">
-                    @*  @foreach (VPaymentCashDTO item in Model.Objects)
-                {
-                    <tr>
-                        <td>
-                            <a asp-action="DetailsPayableCash" asp-route-contractId="@item.Id">
-                                @item?.Number <br>
-                                от<br>
-                                @item?.Date?.ToShortDateString()
-                            </a>
-                        </td>
-                        <td>
-                            @item?.NameObject
-                        </td>
-                        <td>
-                            @item?.Client
-                        </td>
-                        <td>
-                            @item?.GenContractor
-                        </td>
-                        <td>
-                            @item?.DateBeginWork?.ToShortDateString() - @item?.DateEndWork?.ToShortDateString()
-                        </td>
-                        <td>
-                            @item?.EnteringTerm?.ToShortDateString()
-                        </td>
-                        <td>
-                            @item?.Сurrency
-                        </td>
-                        <td class="text-end">
-                            @((item?.ContractPrice??0).ToString("N2"))
-                        </td>
-                        <td class="text-end">
-                            @(((item?.ContractPrice - item?.FactSum) ?? 0).ToString("N2")))
-                        </td>
-                        <td class="text-end">
-                            @((item?.ThisYearSum??0).ToString("N2"))
-                        </td>
-                        <td class="text-end">
-                            @((item?.FactSum ?? 0).ToString("N2"))
-                        </td>
-                        <td class="text-end">
-                            @((item?.ReserveSum??0).ToString("N2"))
-                        </td>
-                    </tr>
-                } *@
+                <tbody class="table_tbody" style="height:70vh;">                    
                 </tbody>
             </table>
         </div>
@@ -317,9 +232,6 @@
             </ul>
         </div>
     </div>
-
-
-}
 }
 @section Scripts {
     <script>

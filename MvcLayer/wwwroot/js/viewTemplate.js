@@ -14,35 +14,33 @@
         const isAuthorAllowed = item.Author === permissions.company || isBes;
 
         return `<tr class="${isOverdue ? 'overdue' : ''}">
-            <td><span class="table_span-numberanddate">
-                <a href="/Contracts/Details/${item.Id}" class="save-page-state">
-                    ${item.Number ?? ''} от ${item.Date ?? ''}
-                </a>
-            </span></td>
-            <td><span class="table_span-nameobject">${item.NameObject ?? ''}</span></td>
-            <td><span class="table_span-customer">${item.Client ?? ''}</span></td>
             <td>
-                <div><span class="table_span-contractor">${item.GenContractor ?? ''}</span></div>
+                <a href="/Contracts/Details/${item.Id}" class="save-page-state"> ${item.Number ?? ''} <br/> от ${item.Date ?? ''} </a>
+            </td>
+            <td>${item.NameObject ?? ''}</td>
+            <td>${item.Client ?? ''}</td>
+            <td>
+                <div>${item.GenContractor ?? ''}</div>
                 ${item.ResponsibleForWork
-                ? `<div><span class="table_span-contractor"><hr/><span>Ответственный за производство работ:</span><br/>${item.ResponsibleForWork}</span></div>`
+                ? `<div><hr/>Ответственный за производство работ:<br/>${item.ResponsibleForWork}</div>`
                 : ''}
             </td>
-            <td><span class="table_span-deadlines">
+            <td>
                 ${item.DateBeginWork || item.DateEndWork
-                ? `<b>выполнения работ:</b><br><span>${item.DateBeginWork ?? ''} - ${item.DateEndWork ?? ''}</span>`
+                ? `<b>выполнения работ:</b><br>${item.DateBeginWork ?? ''} - ${item.DateEndWork ?? ''}`
                 : ''}
-                ${item.EnteringTerm ? `<br><b>ввода:</b><br><span>${item.EnteringTerm}</span>` : ''}
-            </span></td>
-            <td><span class="table_span-conditions">
+                ${item.EnteringTerm ? `<br><b>ввода:</b><br>${item.EnteringTerm}` : ''}
+            </td>
+            <td>
                 <a href="/Prepayments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsAvans ?? ''}</a><br/><br/>
                 <a href="/Payments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsRaschet ?? ''}</a>
-            </span></td>
-            ${!isEngineering ? `<td><span class="table_span-work">${item.WorkType ?? ''}</span></td>` : ''}
-            <td class="text-end"><span class="table_span-contractprice">${item.ContractPrice} ${item.Сurrency ?? ''}</span></td>
-            <td class="text-end"><span class="table_span-realization">${item.PreYearSum} ${item.Сurrency ?? ''}</span></td>
-            <td class="text-end"><span class="table_span-remains">${item.RemainingSum} ${item.Сurrency ?? ''}</span></td>
-            <td><span class="table_span-volume">${item.ThisYearSum} ${item.Сurrency ?? ''}</span></td>
-            <td><span class="table_span-action-main">
+            </td>
+            ${!isEngineering ? `<td>${item.WorkType ?? ''}</td>` : ''}
+            <td class="text-end">${item.ContractPrice} <br/> ${item.Сurrency ?? ''}</td>
+            <td class="text-end">${item.PreYearSum} <br/> ${item.Сurrency ?? ''}</td>
+            <td class="text-end">${item.RemainingSum} <br/> ${item.Сurrency ?? ''}</td>
+            <td class="text-end">${item.ThisYearSum} <br/> ${item.Сurrency ?? ''}</td>
+            <td>
                 <button class="action-btn"><svg class="ic ic-18"><use href="#ic-more-vert"/></svg></button>
                 <div class="action-menu">
                     <a class="menu-item save-page-state" href="/Contracts/Details/${item.Id}">
@@ -51,7 +49,7 @@
                     </a>
                     ${isAuthorAllowed ? buildAuthorMenu(item, hasEstimate, hasContract, hasReport, canEdit, canDelete, canArchive, canTransfer, isOverdue) : ''}
                 </div>
-            </span></td>
+           </td>
         </tr>`
 
     }).join('');

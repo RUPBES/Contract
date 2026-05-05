@@ -1,0 +1,524 @@
+﻿/* ═══════════════════════════════════════════════
+       ТОКЕНЫ И ПЕРЕМЕННЫЕ
+    ═══════════════════════════════════════════════ */
+:root {
+    --md3-primary: #1a56a4;
+    --md3-primary-light: #e8f0fb;
+    --md3-primary-mid: #b8d0f5;
+    --md3-surface: #ffffff;
+    --md3-surface-2: #f7f8fc;
+    --md3-surface-3: #eef1f8;
+    --md3-outline: #dde2ed;
+    --md3-outline-strong: #b0bace;
+    --md3-on-surface: #1a1d26;
+    --md3-on-surface-med: #4a5068;
+    --md3-on-surface-low: #8891a8;
+    --md3-gen: #0f6e56;
+    --md3-gen-light: #e1f5ee;
+    --md3-sub: #854f0b;
+    --md3-sub-light: #faeeda;
+    --md3-success: #1d9e75;
+    --md3-radius-sm: 6px;
+    --md3-radius-md: 10px;
+    --md3-radius-lg: 16px;
+    --md3-shadow-1: 0 1px 3px rgba(26,86,164,.08), 0 1px 2px rgba(26,86,164,.06);
+    --md3-shadow-2: 0 4px 16px rgba(26,86,164,.10), 0 1px 4px rgba(26,86,164,.07);
+    --md3-transition: .18s cubic-bezier(.4,0,.2,1);
+}
+
+/* ═══════════════════════════════════════════════
+       ОВЕРЛЕЙ И МОДАЛЬНОЕ ОКНО
+    ═══════════════════════════════════════════════ */
+.org-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 20, 40, 0.45);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: overlayIn .22s ease;
+}
+
+@@keyframes overlayIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.org-modal {
+    background: var(--md3-surface);
+    border-radius: var(--md3-radius-lg);
+    /*box-shadow: 0 24px 64px rgba(26,86,164,.18), 0 4px 16px rgba(0,0,0,.10);*/
+    width: 100%;
+    max-width: 960px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: modalIn .24s cubic-bezier(.4,0,.2,1);
+    scrollbar-width: thin;
+    scrollbar-color: var(--md3-outline) transparent;
+}
+
+@@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.org-modal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.org-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.org-modal::-webkit-scrollbar-thumb {
+    background: var(--md3-outline);
+    border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════
+       ШАПКА МОДАЛЬНОГО ОКНА
+    ═══════════════════════════════════════════════ */
+.org-header {
+    display: flex;
+    align-items: flex-start;
+    /*gap: 16px;*/
+    padding: 5px 15px;
+   /* border-bottom: 1.5px solid var(--md3-outline);
+    position: sticky;
+    top: 0;
+    background: var(--md3-surface);
+    z-index: 10;*/
+}
+
+.org-header-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--md3-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--md3-primary);
+    flex-shrink: 0;
+    border: 2px solid var(--md3-primary-mid);
+    letter-spacing: -0.5px;
+}
+
+.org-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.org-header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+    line-height: 1.25;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.org-header-sub {
+    font-size: 13px;
+    color: var(--md3-on-surface-low);
+    margin: 0;
+}
+
+.org-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--md3-outline);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--md3-on-surface-med);
+    transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+    flex-shrink: 0;
+}
+
+    .org-close-btn:hover {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+        border-color: var(--md3-primary-mid);
+    }
+
+/* ═══════════════════════════════════════════════
+       ТЕЛО МОДАЛЬНОГО ОКНА
+    ═══════════════════════════════════════════════ */
+.org-body {
+    padding: 20px 30px 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    -webkit-hyphens: auto; /* Safari/Chrome */
+    -ms-hyphens: auto; /* IE/Edge */
+    hyphens: auto;
+}
+
+/* ═══════════════════════════════════════════════
+       КАРТОЧКА РЕКВИЗИТОВ
+    ═══════════════════════════════════════════════ */
+.org-info-card {
+    background: var(--md3-surface-2);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    padding: 10px 15px;
+}
+
+.org-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0;
+}
+
+.org-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px 8px 0;
+    border-bottom: 1px solid var(--md3-outline);
+}
+
+    .org-info-row:nth-last-child(-n+2) {
+        border-bottom: none;
+    }
+
+.org-info-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--md3-on-surface-low);
+}
+
+.org-info-value {
+    font-size: 14px;
+    color: var(--md3-on-surface);
+    font-weight: 500;
+    word-break: break-word;
+}
+
+    .org-info-value.empty {
+        color: var(--md3-on-surface-low);
+        font-style: italic;
+        font-weight: 400;
+    }
+
+    .org-info-value a {
+        color: var(--md3-primary);
+        text-decoration: none;
+    }
+
+        .org-info-value a:hover {
+            text-decoration: underline;
+        }
+
+/* ═══════════════════════════════════════════════
+       СЕКЦИЯ ДОГОВОРОВ
+    ═══════════════════════════════════════════════ */
+.org-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.org-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.org-section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 4px 8px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .03em;
+}
+
+    .org-section-badge.gen {
+        background: var(--md3-gen-light);
+        color: var(--md3-gen);
+    }
+
+    .org-section-badge.sub {
+        background: var(--md3-sub-light);
+        color: var(--md3-sub);
+    }
+
+    .org-section-badge svg {
+        flex-shrink: 0;
+    }
+
+.org-section-count {
+    font-size: 12px;
+    color: var(--md3-on-surface-low);
+    margin: auto 13px 0 auto;
+}
+
+/* ═══════════════════════════════════════════════
+       ТАБЛИЦА ДОГОВОРОВ
+    ═══════════════════════════════════════════════ */
+.org-table-wrap {
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+    overflow: hidden;
+    box-shadow: var(--md3-shadow-1);
+}
+
+.org-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+}
+    
+
+    .org-table thead tr {
+        background: var(--md3-surface-3);
+        border-bottom: 1.5px solid var(--md3-outline-strong);
+    }
+
+    .org-table thead th {
+        padding: 8px 10px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--md3-on-surface-low);
+        white-space: nowrap;
+    }
+
+    .org-table tbody tr {
+        border-bottom: 1px solid var(--md3-outline);
+        transition: background var(--md3-transition);
+        cursor: default;
+    }
+
+        .org-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .org-table tbody tr:hover {
+            background: var(--md3-primary-light);
+        }
+
+    .org-table td {
+        padding: 7px 10px;
+        color: var(--md3-on-surface);
+        vertical-align: middle;
+    }
+
+        .org-table td:nth-child(1),
+        .org-table td:nth-child(2) {
+            width: 110px;
+            min-width: 100px;
+            max-width: 125px;
+        }
+
+        .org-table td:nth-child(3) {
+            width: 400px;
+            max-width: 450px;
+            min-width: 200px; /* при необходимости */
+            overflow: hidden;
+           /* display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;*/
+            text-overflow: ellipsis;
+            /*word-wrap: break-word;
+            overflow-wrap: anywhere;*/ /* лучший перенос длинных слов */
+            /*hyphens: manual;*/ /* ← меняем на manual */
+            /*line-height: 1.4;
+            padding: 10px 12px 2px;*/
+        }
+        .org-table td:nth-child(4) {
+            width: 110px;
+            min-width: 100px;
+            max-width: 125px;
+        }
+
+    /* Номер договора — акцентный */
+    .contract-number {
+        font-weight: 600;
+        color: var(--md3-primary);
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+/* Дата */
+.contract-date {
+    color: var(--md3-on-surface-med);
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+/* Наименование объекта */
+.contract-object {
+    color: var(--md3-on-surface);
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Организация в ячейке */
+.contract-org {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: break-spaces;
+    color: var(--md3-on-surface-med);
+    font-size: 13px;
+}
+
+/* Пустое состояние */
+.org-table-empty {
+    padding: 28px 20px;
+    text-align: center;
+    background: var(--md3-surface-2);
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-md);
+}
+
+.org-table-empty-icon {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 8px;
+    opacity: .3;
+}
+
+.org-table-empty-text {
+    font-size: 13px;
+    color: var(--md3-on-surface-low);
+}
+
+/* Разделитель между секциями */
+.org-divider {
+    height: 1px;
+    background: var(--md3-outline);
+    margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
+       ФУТЕР
+    ═══════════════════════════════════════════════ */
+.org-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px 20px;
+    border-top: 1px solid var(--md3-outline);
+    flex-wrap: wrap;
+}
+
+.org-footer-spacer {
+    flex: 1;
+}
+
+.md3-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: var(--md3-radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: background var(--md3-transition), box-shadow var(--md3-transition), color var(--md3-transition);
+    letter-spacing: .02em;
+}
+
+.md3-btn-ghost {
+    background: transparent;
+    color: var(--md3-on-surface-med);
+    border: 1.5px solid var(--md3-outline);
+}
+
+    .md3-btn-ghost:hover {
+        background: var(--md3-surface-3);
+        color: var(--md3-on-surface);
+        border-color: var(--md3-outline-strong);
+    }
+
+.md3-btn-primary {
+    background: var(--md3-primary);
+    color: #fff;
+    border: 1.5px solid transparent;
+}
+
+    .md3-btn-primary:hover {
+        background: #1748c8;
+        box-shadow: var(--md3-shadow-2);
+    }
+
+/* ═══════════════════════════════════════════════
+       АДАПТИВ
+    ═══════════════════════════════════════════════ */
+@@media (max-width: 640px) {
+    .org-header {
+        padding: 18px 18px 14px;
+    }
+
+    .org-body {
+        padding: 16px 18px 20px;
+    }
+
+    .org-footer {
+        padding: 12px 18px 16px;
+    }
+
+    .org-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .org-info-row:nth-last-child(-n+2) {
+        border-bottom: 1px solid var(--md3-outline);
+    }
+
+    .org-info-row:last-child {
+        border-bottom: none;
+    }
+
+    .org-table {
+        font-size: 12px;
+    }
+
+        .org-table td, .org-table th {
+            padding: 9px 10px;
+        }
+
+    .contract-object {
+        max-width: 120px;
+    }
+
+    .contract-org {
+        max-width: 100px;
+    }
+}
