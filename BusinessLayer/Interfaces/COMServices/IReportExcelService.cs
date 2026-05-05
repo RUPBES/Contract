@@ -6,6 +6,7 @@ namespace BusinessLayer.Interfaces.COMServices;
 public interface IReportExcelService
 {
     Task<string> ExportContracts(string organization, List<string> columnName, bool? useArchiveData = null);
+    Task<string> ExportContracts(string organization, List<string> columnName, string? type, string? sortDirection, string? searchText, string? whereCondition, bool? useArchiveData = null);
     //string ExportScopeWorkToExcel(string fileName, int contractId, string? sheetName = "Объем работ");
     Task<string> ExportScopeWorkToExcel(string fileName, int contractId, string? sheetName = "Объем работ");
 

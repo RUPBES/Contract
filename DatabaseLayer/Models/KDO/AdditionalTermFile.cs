@@ -6,6 +6,6 @@
         public int FileId { get; set; }
 
         public virtual AdditionalTerm AdditionalTerm { get; set; }
-        public virtual File File { get; set; }
+        public virtual DatabaseLayer.Models.KDO.File File { get; set; }
     }
 }

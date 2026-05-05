@@ -20,7 +20,7 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<VContractEngin> VContractEngins { get; set; }
 
     public virtual DbSet<AdditionalTerm> AdditionalTerms { get; set; }
-    public virtual DbSet<AdditionalTermFile> AdditionalTermFiles { get; set; }
+    public DbSet<AdditionalTermFile> AdditionalTermFiles { get; set; }
 
     #region DbSetPro
 
@@ -141,30 +141,12 @@ public partial class ContractsContext : DbContext
             entity.HasOne(d => d.Contract).WithMany(p => p.AdditionalTerms)
                 .HasForeignKey(d => d.ContractId)
                 .HasConstraintName("FK_AdditionalTerm_Contract");
-
-            //entity.HasMany(d => d.Files).WithMany(p => p.AdditionalTerms)
-            //    .UsingEntity<Dictionary<string, object>>(
-            //        "AdditionalTermFile",
-            //        r => r.HasOne<File>().WithMany()
-            //            .HasForeignKey("FileId")
-            //            .OnDelete(DeleteBehavior.ClientSetNull)
-            //            .HasConstraintName("FK_AdditionalTermFile_File"),
-            //        l => l.HasOne<AdditionalTerm>().WithMany()
-            //            .HasForeignKey("AdditionalTermId")
-            //            .OnDelete(DeleteBehavior.ClientSetNull)
-            //            .HasConstraintName("FK_AdditionalTermFile_AdditionalTerm"),
-            //        j =>
-            //        {
-            //            j.HasKey("AdditionalTermId", "FileId");
-            //            j.ToTable("AdditionalTermFile");
-            //        });
         });
 
         modelBuilder.Entity<AdditionalTermFile>(entity =>
         {
             entity.ToTable("AdditionalTermFile");
-
-            entity.HasKey(e => new { e.AdditionalTermId, e.FileId });         
+            entity.HasKey(e => new { e.AdditionalTermId, e.FileId });
 
 
             entity.HasOne(d => d.AdditionalTerm)

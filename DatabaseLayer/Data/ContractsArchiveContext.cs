@@ -18,6 +18,8 @@ public partial class ContractsArchiveContext : DbContext
 
     public virtual DbSet<VContract> VContracts { get; set; }
     public virtual DbSet<VContractEngin> VContractEngins { get; set; }
+    public virtual DbSet<AdditionalTerm> AdditionalTerms { get; set; }
+    public DbSet<AdditionalTermFile> AdditionalTermFiles { get; set; }
     #region DbSetPro
 
     public virtual DbSet<Estimate> Estimates { get; set; }
@@ -121,6 +123,41 @@ public partial class ContractsArchiveContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+        modelBuilder.Entity<AdditionalTerm>(entity =>
+        {
+            entity.ToTable("AdditionalTerm");
+            entity.HasKey(k => k.Id);
+            entity.Property(e => e.Id).HasDefaultValueSql();
+            entity.Property(e => e.Date).HasColumnType("date");
+            entity.Property(e => e.DueDate).HasColumnType("date");
+            entity.Property(e => e.Number).HasMaxLength(50);
+            entity.Property(e => e.Reason).HasMaxLength(2000);
+            entity.Property(e => e.Type).HasMaxLength(50);
+
+            entity.HasOne(d => d.Contract).WithMany(p => p.AdditionalTerms)
+                .HasForeignKey(d => d.ContractId)
+                .HasConstraintName("FK_AdditionalTerm_Contract");
+        });
+
+        modelBuilder.Entity<AdditionalTermFile>(entity =>
+        {
+            entity.ToTable("AdditionalTermFile");
+            entity.HasKey(e => new { e.AdditionalTermId, e.FileId });
+
+
+            entity.HasOne(d => d.AdditionalTerm)
+                .WithMany(p => p.AdditionalTermFiles)
+                .HasForeignKey(d => d.AdditionalTermId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_AdditionalTermFile_AdditionalTerm");
+
+            entity.HasOne(d => d.File)
+                .WithMany(p => p.AdditionalTermFiles)
+                .HasForeignKey(d => d.FileId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_AdditionalTermFile_File");
+        });
 
         modelBuilder.Entity<Estimate>(entity =>
         {

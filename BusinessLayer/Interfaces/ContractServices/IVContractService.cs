@@ -7,6 +7,7 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
     public interface IVContractService: ILookupEntity<VContractDTO, VContract>
     {
         IEnumerable<VContractDTO> GetSubsByType(int? id, Enums.ContractType? contractType, bool useArchiveData = false);
+        (IEnumerable<VContractDTO> genClientContracts, IEnumerable<VContractDTO> subContracts) GetByOrganizationId(int orgId, bool? useArchiveData = null);
         IndexViewModel Filter(int pageSize, int pageNum, string type, string? sortDirection, string org, string? searchText, string? whereCondition = null, bool? useArchiveData = null);
     }
 }

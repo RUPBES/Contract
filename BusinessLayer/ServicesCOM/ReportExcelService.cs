@@ -9,9 +9,12 @@ using BusinessLayer.Models.Settings;
 using Castle.Components.DictionaryAdapter.Xml;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
+using MailKit.Search;
 using Microsoft.AspNetCore.Hosting;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Reflection;
 
@@ -79,6 +82,19 @@ internal class ReportExcelService : IReportExcelService
         }
     }
 
+    public async Task<string> ExportContracts(string organization, List<string> columnName, string? type, string? sortDirection, string? searchText, string? whereCondition, bool? useArchiveData)
+    {
+        if (!string.IsNullOrEmpty(organization) && organization == "all")
+        {
+            organization = "ContrOrgTec2,ContrOrgTec5,ContrOrgBesm,ContrOrgBetss,ContrOrgGes";
+        }
+
+        var contracts1 = _mapper.Map<IEnumerable<VContract>>(_vContractService.Filter(200000, 1, type, sortDirection, organization, searchText, whereCondition, useArchiveData).Objects);
+        IEnumerable<Dictionary<string, string>> contracts = contracts1.Select(c => GetProperties(c as VContract, columnName)).ToList();
+        return await ExportContractsExcelAsync(contracts);
+    }
+
+
     private async Task<string> ExportContractsExcelAsync(IEnumerable<Dictionary<string, string>> contracts)
     {
         if (!Directory.Exists(_host.WebRootPath + "\\Temp"))
@@ -112,7 +128,27 @@ internal class ReportExcelService : IReportExcelService
                         BgColor = Constants.COLOR_DARK_BLUE
                     });
                 }
-                _excelWriter.WriteLine(sheet, startRow++, path, true, 60, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, values: rowItems.ToArray());
+
+                if (rowItems.Count < 1)
+                {
+                    rowItems.Add(new RowItem
+                    {
+                        Value = "Данные по заданным параметрам фильтрации отсутствуют.",
+                        Col = startCol++,
+                        ColWidth = colWidthExtra,
+                        FontColor = Constants.COLOR_WHITE,
+                        FontSize = Constants.FONT_SIZE_18,
+                        BgColor = Constants.COLOR_DARK_BLUE
+                    });
+                    _excelWriter.WriteLine(sheet, startRow++, path, true, 30, null,  true,ExcelHorizontalAlignment.Center, mergeStartCell:1, mergeCountCell:6, rowItems.ToArray());
+
+                }
+                else
+                {
+                    _excelWriter.WriteLine(sheet, startRow++, path, true, 60, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, values: rowItems.ToArray());
+
+                }
+
 
                 ///ЗАПОЛНЯЕМ ТАБЛИЦУ
                 startCol = 1;
@@ -155,7 +191,7 @@ internal class ReportExcelService : IReportExcelService
 
         await Task.Run(() =>
         {
-            var sheet = _excelWriter.Settup(path,true,1, nameSheets: sheetName);
+            var sheet = _excelWriter.Settup(path, true, 1, nameSheets: sheetName);
 
             var contract = _contextDb.Contracts
              .Find(x => x.Id == contractId)
@@ -164,7 +200,7 @@ internal class ReportExcelService : IReportExcelService
 
             var vContract = _contextDb.vContracts
             .Find(x => x.Id == contractId)
-            .Select(x => new { x.Number, x.Date, x.NameObject, x.Client, x.GenContractor})
+            .Select(x => new { x.Number, x.Date, x.NameObject, x.Client, x.GenContractor })
             .FirstOrDefault();
 
             if (contract == null)
@@ -201,14 +237,14 @@ internal class ReportExcelService : IReportExcelService
 
                 _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, 1, 11,
                     new RowItem { Value = $"Дата договора: {vContract.Date?.ToShortDateString()}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
-                
-                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true,    ExcelHorizontalAlignment.Left,1,11,
+
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, 1, 11,
                     new RowItem { Value = $"Наименование объекта: {vContract.NameObject}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
 
-                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left,1,11,
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, 1, 11,
                     new RowItem { Value = $"Заказчик: {vContract.Client}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
 
-                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left,1,11,
+                _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, 1, 11,
                     new RowItem { Value = $"Генподрядчик: {vContract.GenContractor}", Col = startCol, FontColor = Constants.COLOR_BLACK, FontSize = Constants.FONT_SIZE_12, BgColor = Constants.COLOR_WHITE });
 
                 _excelWriter.WriteLine(sheet, startRow++, path, false, null, width: null, isTextWrap: true, ExcelHorizontalAlignment.Left, values: new RowItem { });
@@ -563,7 +599,7 @@ internal class ReportExcelService : IReportExcelService
 
         foreach (var prop in props)
         {
-            PropertyInfo propertyInfo = contract.GetType().GetProperty(prop);
+            PropertyInfo propertyInfo = contract?.GetType()?.GetProperty(prop);
             if (propertyInfo != null)
             {
 

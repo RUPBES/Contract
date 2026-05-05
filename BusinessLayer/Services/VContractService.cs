@@ -6,6 +6,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models.KDO;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace BusinessLayer.Services
 {
@@ -16,7 +17,7 @@ namespace BusinessLayer.Services
         private readonly DbSettings _archiveOptions;
         private readonly IReadonlyRepoDapper<VContract> _vContractDpr;
         private readonly IReadonlyContractDapperRepo _contractDpr;
-        public VContractService(IContractUoW database, IMapper mapper, IReadonlyRepoDapper<VContract> databaseDp, 
+        public VContractService(IContractUoW database, IMapper mapper, IReadonlyRepoDapper<VContract> databaseDp,
             IReadonlyContractDapperRepo databaseContractDp, IOptions<DbSettings> archiveOptions)
         {
             _database = database;
@@ -57,7 +58,7 @@ namespace BusinessLayer.Services
             int skipEntities = (pageNum - 1) * pageSize;
 
             var items = _vContractDpr.GetEntitySkipTake(skipEntities, pageSize, org, useArchiveData ? _archiveOptions.TargetArchiveDb : null);
-            int count =  _vContractDpr.Count(org.Split(','), useArchiveData ? _archiveOptions.TargetArchiveDb : null);
+            int count = _vContractDpr.Count(org.Split(','), useArchiveData ? _archiveOptions.TargetArchiveDb : null);
             var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(items);
 
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
@@ -80,18 +81,18 @@ namespace BusinessLayer.Services
                 switch (typeRequest)
                 {
                     case "number":
-                        contractsView = _vContractDpr.Find($" and c.Number like('%{request}%') ORDER BY Date DESC", 
-                                                        orgList, 
+                        contractsView = _vContractDpr.Find($" and c.Number like('%{request}%') ORDER BY Date DESC",
+                                                        orgList,
                                                         useArchiveData ? _archiveOptions.TargetArchiveDb : null);
                         break;
                     case "nameObject":
-                        contractsView = _vContractDpr.Find($" and c.NameObject like('%{request}%') ORDER BY Date DESC", 
-                                                    orgList, 
+                        contractsView = _vContractDpr.Find($" and c.NameObject like('%{request}%') ORDER BY Date DESC",
+                                                    orgList,
                                                     useArchiveData ? _archiveOptions.TargetArchiveDb : null);
                         break;
                     case "client":
-                        contractsView = _vContractDpr.Find($" and c.Client like('%{request}%') ORDER BY Date DESC", 
-                                                 orgList, 
+                        contractsView = _vContractDpr.Find($" and c.Client like('%{request}%') ORDER BY Date DESC",
+                                                 orgList,
                                                  useArchiveData ? _archiveOptions.TargetArchiveDb : null);
                         break;
                     case "general":
@@ -150,7 +151,7 @@ namespace BusinessLayer.Services
 
             contractsView = contractsView.Skip(skipEntities).Take(pageSize);
             var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(contractsView);
-            
+
             PageViewModel pageViewModel = new PageViewModel(count, pageNum, pageSize);
             IndexViewModel viewModel = new IndexViewModel
             {
@@ -194,7 +195,7 @@ namespace BusinessLayer.Services
             {
                 return Enumerable.Empty<VContractDTO>();
             }
-                       
+
             var contracts = _contractDpr.GetSubsById(id.Value, sqlPredicate);
             if (contracts.Any())
             {
@@ -206,8 +207,30 @@ namespace BusinessLayer.Services
             }
         }
 
+        /// <summary>
+        /// Возвращает список договоров, принадлежащих генподрядному договору по его ID и 
+        /// типу необходимых договоров
+        /// </summary>
+        /// <param name="id">ID Гендоговора</param>
+        /// <param name="contractType">Тип договора, который необходимо найти (Соглашение, субподряд, подобъект))</param>
+        /// <returns>список вложенных договоров принадлежащих генподрядному</returns>
+        public (IEnumerable<VContractDTO> genClientContracts, IEnumerable<VContractDTO> subContracts) GetByOrganizationId(int orgId, bool? useArchiveData = null)
+        {
+            (IEnumerable<VContractDTO> genClientContracts, IEnumerable<VContractDTO> subContracts) contracts = (Enumerable.Empty<VContractDTO>(), Enumerable.Empty<VContractDTO>());
+
+            if (orgId < 1)
+            {
+                return contracts;
+            }
+
+            var contractsDb = _contractDpr.GetByOrganizationId(orgId, (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
+            contracts.genClientContracts = _mapper.Map<IEnumerable<VContractDTO>>(contractsDb.genClientContracts);
+            contracts.subContracts = _mapper.Map<IEnumerable<VContractDTO>>(contractsDb.subContracts);
+            return contracts;
+        }
+
         public IndexViewModel Filter(int pageSize, int pageNum, string type, string? sortDirection, string org, string? searchText, string? whereCondition, bool? useArchiveData)
-        {            
+        {
             int skipEntities = (pageNum - 1) * pageSize;
             (IEnumerable<VContract>, int) contractsView;
 
@@ -224,10 +247,10 @@ namespace BusinessLayer.Services
                     break;
                 case "number":
                     contractsView = _vContractDpr.Filter(
-                        skipEntities, 
-                        pageSize, 
+                        skipEntities,
+                        pageSize,
                         org,
-                         GetWhereCondition("Number", searchText, whereCondition), 
+                         GetWhereCondition("Number", searchText, whereCondition),
                          $@" ORDER BY Number {sortDirection} ",
                         (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
                     break;
@@ -236,7 +259,7 @@ namespace BusinessLayer.Services
                          skipEntities,
                          pageSize,
                          org,
-                         GetWhereCondition("NameObject", searchText, whereCondition), 
+                         GetWhereCondition("NameObject", searchText, whereCondition),
                           $@" ORDER BY NameObject {sortDirection} ",
                          (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
                     break;
@@ -245,7 +268,7 @@ namespace BusinessLayer.Services
                         skipEntities,
                         pageSize,
                         org,
-                        GetWhereCondition("Client", searchText, whereCondition),  
+                        GetWhereCondition("Client", searchText, whereCondition),
                          $@" ORDER BY Client {sortDirection} ",
                         (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
                     break;
@@ -254,7 +277,7 @@ namespace BusinessLayer.Services
                          skipEntities,
                          pageSize,
                          org,
-                         GetWhereCondition("GenContractor", searchText, whereCondition),  
+                         GetWhereCondition("GenContractor", searchText, whereCondition),
                           $@" ORDER BY GenContractor {sortDirection} ",
                          (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
                     break;
@@ -263,7 +286,7 @@ namespace BusinessLayer.Services
                          skipEntities,
                          pageSize,
                          org,
-                         GetWhereCondition("EnteringTerm", searchText, whereCondition),  
+                         GetWhereCondition("EnteringTerm", searchText, whereCondition),
                          $@" ORDER BY EnteringTerm {sortDirection} ",
                          (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
                     break;
@@ -272,12 +295,12 @@ namespace BusinessLayer.Services
                         skipEntities,
                         pageSize,
                         org,
-                        !string.IsNullOrEmpty(whereCondition)? $" and {whereCondition} " : "",
+                        !string.IsNullOrEmpty(whereCondition) ? $" and {whereCondition} " : "",
                         $@" ORDER BY Id {sortDirection} ",
                         (useArchiveData is true ? _archiveOptions.TargetArchiveDb : null));
                     break;
-            }           
-            
+            }
+
             var objIndexModel = _mapper.Map<IEnumerable<VContractDTO>>(contractsView.Item1);
 
             PageViewModel pageViewModel = new PageViewModel(contractsView.Item2, pageNum, pageSize);
@@ -289,8 +312,8 @@ namespace BusinessLayer.Services
 
             return viewModel;
         }
-    
-        private string GetWhereCondition(string columnName, string? text,  string? whereClause)
+
+        private string GetWhereCondition(string columnName, string? text, string? whereClause)
         {
             if (string.IsNullOrEmpty(whereClause) && !string.IsNullOrEmpty(text))
             {
@@ -309,6 +332,6 @@ namespace BusinessLayer.Services
 
             return string.Empty;
         }
-    
+
     }
 }

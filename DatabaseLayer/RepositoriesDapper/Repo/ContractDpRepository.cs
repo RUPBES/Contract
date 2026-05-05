@@ -75,7 +75,7 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
                 return db.Query<int>($"SELECT distinct COUNT(c.Id) FROM {viewName} c CROSS APPLY STRING_SPLIT(Owner, ',') owners WHERE (Author IN @orgList or owners.value IN @orgList)", new { orgList }).FirstOrDefault();
             }
         }
-        
+
         public IEnumerable<Contract> Find(string predicate, string[] orgList, string? databaseName)
         {
             if (string.IsNullOrEmpty(predicate))
@@ -153,6 +153,32 @@ namespace DatabaseLayer.RepositoriesDapper.Repo
                 }
             }
             return Array.Empty<VContract>();
+        }
+
+        public (IEnumerable<VContract> genClientContracts, IEnumerable<VContract> subContracts) GetByOrganizationId(int orgId, string? databaseName)
+        {
+            if (orgId > 0)
+            {
+                var sql = @$"
+                        select c.id, c.Number, c.[Date], c.NameObject,  (CASE co.IsClient WHEN 1 THEN 'Заказчик' ELSE null END) AS Client from {DbQualifier.Qualify(databaseName, "Contract")} c
+                          join ContractOrganization co on co.ContractId = c.Id
+                          join Organization o on o.Id = co.OrganizationId
+                          where o.Id = @orgId and ((co.IsGenContractor = 1 or co.IsResponsibleForWork = 1)  or (co.IsClient = 1 and c.IsAgreementContract = 0 and c.IsSubContract = 0));
+
+                       select c.id, c.Number, c.[Date], c.NameObject, (CASE c.IsSubContract WHEN 1 THEN 'Субподрядчик' ELSE 'Соглашение с филиалом' END) AS Client from {DbQualifier.Qualify(databaseName, "Contract")} c
+                          join ContractOrganization co on co.ContractId = c.Id
+                          join Organization o on o.Id = co.OrganizationId
+                          where o.Id = @orgId and (c.IsAgreementContract = 1 or c.IsSubContract = 1) ";
+
+                using (IDbConnection db = new SqlConnection(_connectionString))
+                {
+                    var multi = db.QueryMultiple(sql, new { orgId});
+                    var genClients = multi.Read<VContract>().ToList();
+                    var subs = multi.Read<VContract>().ToList();
+                    return (genClients, subs);
+                }
+            }
+            return (Enumerable.Empty<VContract>(), Enumerable.Empty<VContract>());
         }
     }
 }
