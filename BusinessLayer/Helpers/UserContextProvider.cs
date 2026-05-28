@@ -1,5 +1,6 @@
 ﻿using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
+using BusinessLayer.Models.Settings;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.OID;
 using Microsoft.AspNetCore.Http;
@@ -113,23 +114,24 @@ namespace BusinessLayer.Helpers
             string name = string.Join(' ', names[1], names[2]);
             (string enterprise, string position) userAtt = (string.Empty, string.Empty);
 
-            
-            var orgStruct = _openIdDictCntxt.AbpUsers?
-                .Find(x => x.Surname != null  && x.Surname.Equals(surname) && x.Name != null && x.Name.Equals(name))?
-                .FirstOrDefault()?.AbpUserOrganizationUnits;           
 
-            var positions = GetPositsions(orgStruct, out codeEnterprise);
-            userAtt.enterprise = _openIdDictCntxt?.AbpOrganizationUnits?
-                .Find(x => codeEnterprise.Contains(x.Code))?
-                .FirstOrDefault()?
-                .DisplayName ?? string.Empty;
+            //var orgStruct = null;
+            ////_openIdDictCntxt.AbpUsers?
+            ////.Find(x => x.Surname != null  && x.Surname.Equals(surname) && x.Name != null && x.Name.Equals(name))?
+            ////.FirstOrDefault()?.AbpUserOrganizationUnits;           
 
-            if (positions is not null)
-            {
-                var namePositions = _openIdDictCntxt?.AbpOrganizationUnits.Find(x => positions.Contains(x.Code)).Select(x => x.DisplayName);
-                var posEmp = string.Join(", ", namePositions ?? Enumerable.Empty<string>());
-                userAtt.position = posEmp;
-            }
+            //var positions = null; // GetPositsions(orgStruct, out codeEnterprise);
+            //userAtt.enterprise = _openIdDictCntxt?.AbpOrganizationUnits?
+            //    .Find(x => codeEnterprise.Contains(x.Code))?
+            //    .FirstOrDefault()?
+            //    .DisplayName ?? string.Empty;
+
+            //if (positions is not null)
+            //{
+            //    var namePositions = _openIdDictCntxt?.AbpOrganizationUnits.Find(x => positions.Contains(x.Code)).Select(x => x.DisplayName);
+            //    var posEmp = string.Join(", ", namePositions ?? Enumerable.Empty<string>());
+            //    userAtt.position = posEmp;
+            //}
 
             return userAtt;
         }
@@ -142,6 +144,24 @@ namespace BusinessLayer.Helpers
                 .FirstOrDefault();
         }
 
+        public TokenUserInfo GetUserInfo()
+        {
+            TokenUserInfo user = new TokenUserInfo();
+            user.Name = GetUserName();
+            user.NameIdentifier = _httpCntxt.HttpContext?.User?.Claims?
+                .Where(x => x.Type.Contains("nameidentifier") || x.Type == "nameOid")?
+                .Select(x => x.Value)?
+                .FirstOrDefault();
+            user.Email = _httpCntxt.HttpContext?.User?.Claims?
+                .Where(x => x.Type.Contains("emailUser"))?
+                .Select(x => x.Value)?
+                .FirstOrDefault();
+            user.UniqueName = _httpCntxt.HttpContext?.User?.Claims?
+                .Where(x => x.Type.Contains("uniqueName"))?
+                .Select(x => x.Value)?
+                .FirstOrDefault();
+            return user;
+        }
 
 
         #region Доп.методы

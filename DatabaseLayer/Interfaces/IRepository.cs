@@ -1,4 +1,7 @@
-﻿namespace DatabaseLayer.Interfaces
+﻿using DatabaseLayer.Models.KDO;
+using System.Linq.Expressions;
+
+namespace DatabaseLayer.Interfaces
 {
     public interface IRepository<T> where T : class
     {
@@ -11,6 +14,19 @@
             return new List<T>();
         }
         void Update(T entity);
-        void Delete(int id, int? secondId = null);        
+        void Delete(int id, int? secondId = null);
+
+        ///***
+        ///
+        Task<IEnumerable<T>> GetAllAsync()
+        {
+            return null;
+        }
+
+
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>>? predicate)
+        {
+            return null;
+        }
     }
 }

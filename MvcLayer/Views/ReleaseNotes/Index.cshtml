@@ -1,0 +1,125 @@
+﻿@using BusinessLayer.Models.Settings.Note
+@model IEnumerable<ReleaseNoteListItemDto>
+@{
+    ViewData["Title"] = "Уведомления об обновлениях";
+    // Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width: 100%;max-width: 960px;">
+                <div>
+                    <div class="org-header">
+                                    <div class="org-header-info">
+                            <h2 class="org-header-title" id="orgModalTitle">@ViewData["Title"]</h2>
+                            
+                        </div>
+                        <a asp-controller="Home" asp-action="Index" class="close-btn"></a>
+                    </div>
+                    <section class="rn-page">
+                        <div class="rn-page-header">
+                            <h1 class="rn-page-title">
+                                <span class="rn-page-title-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                    </svg>
+                                </span>
+                                Обновления системы
+                                @{
+                                    var unreadCount = Model.Count(x => !x.IsRead);
+                                }
+                                @if (unreadCount > 0)
+                                {
+                                    <span class="rn-unread-count">@unreadCount</span>
+                                }
+                            </h1>
+
+                            @if (unreadCount > 0)
+                            {
+                                <button class="rn-mark-all-btn" id="markAllReadBtn" onclick="markAllRead()">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    Отметить все прочитанными
+                                </button>
+                            }
+                        </div>
+
+                        @if (!Model.Any())
+                        {
+                            <div class="rn-empty">
+                                <svg class="rn-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                                <p class="rn-empty-text">Нет доступных уведомлений</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="rn-list">
+                                @foreach (var note in Model)
+                                {
+                                    <a href="/release-notes/@note.Id" class="rn-card @(!note.IsRead ? "unread" : "")">
+                                        <span class="rn-card-dot @(note.IsRead ? "read" : "")"></span>
+                                        <div class="rn-card-body">
+                                            <p class="rn-card-title">@note.Title</p>
+                                            <div class="rn-card-meta">
+                                                <span class="rn-card-version">v.@note.Version</span>
+                                                <span>@note.PublishedAt.ToString("dd.MM.yyyy")</span>
+                                                @if (note.ImagesCount > 0)
+                                                {
+                                                    <span class="rn-card-images-badge">
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                            <circle cx="8.5" cy="8.5" r="1.5" />
+                                                            <polyline points="21 15 16 10 5 21" />
+                                                        </svg>
+                                                        @note.ImagesCount
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <svg class="rn-card-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="9 18 15 12 9 6" />
+                                        </svg>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        async function markAllRead() {
+            const btn = document.getElementById('markAllReadBtn');
+            if (btn) btn.disabled = true;
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                || '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1];
+
+            try {
+                const res = await fetch('/release-notes/mark-all-read', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token ?? ''
+                    }
+                });
+                if (res.ok) location.reload();
+            } catch (e) {
+                if (btn) btn.disabled = false;
+            }
+        }
+    </script>
+}

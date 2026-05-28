@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
 using DatabaseLayer;
+using DatabaseLayer.Models.EXTRA;
 using DatabaseLayer.Models.PRO;
 
 namespace DatabaseLayer.Models.KDO
@@ -39,6 +40,7 @@ namespace DatabaseLayer.Models.KDO
         public virtual ICollection<SlctnProcedureFile> SlctnProcedureFiles { get; set; }
         public virtual ICollection<PrepaymentTake> PrepaymentTakesFiles { get; set; }
 
-
+        public virtual ICollection<ReleaseNoteFile> ReleaseNoteFiles { get; set; }
+        = new HashSet<ReleaseNoteFile>();
     }
 }

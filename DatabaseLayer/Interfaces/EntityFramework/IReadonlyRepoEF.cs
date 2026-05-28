@@ -1,4 +1,6 @@
-﻿namespace DatabaseLayer.Interfaces.EntityFramework
+﻿using System.Linq.Expressions;
+
+namespace DatabaseLayer.Interfaces.EntityFramework
 {
     public interface IReadonlyRepoEF<T> where T : class
     {
@@ -8,6 +10,6 @@
         IEnumerable<T> Find(Func<T, bool> where, Func<T, T> select)
         {
             return new List<T>();
-        }        
+        }
     }
 }

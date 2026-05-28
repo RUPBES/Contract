@@ -1,6 +1,8 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Models.KDO;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace DatabaseLayer.Repositories
 {
@@ -77,5 +79,16 @@ namespace DatabaseLayer.Repositories
                 }
             }
         }
+
+        public async Task<IEnumerable<Log>> GetAllAsync()
+        {
+            return await _context.Logs.ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> FindAsync(Expression<Func<Log, bool>>? predicate)
+        {
+            return await _context.Logs.Where(predicate).ToListAsync();
+        }
+
     }
 }

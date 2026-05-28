@@ -1,0 +1,313 @@
+﻿/* ════════════════════════════════════════════════════════
+   modal-forms.css  —  стили для модальных partial views
+   Подключить в _Layout.cshtml:
+   <link rel="stylesheet" href="~/css/modal-forms.css" asp-append-version="true" />
+════════════════════════════════════════════════════════ */
+
+/* ── Контейнер модального окна ─────────────────────────── */
+.mf-modal {
+    background: var(--md3-surface);
+    border-radius: var(--md3-radius-lg);
+    box-shadow: 0 8px 40px rgba(26,86,164,.14), 0 2px 8px rgba(0,0,0,.08);
+    width: 400px;
+    max-width: 96vw;
+    overflow: hidden;
+    animation: mfModalIn .22s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes mfModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Шапка ──────────────────────────────────────────────── */
+.mf-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--md3-surface-2);
+    border-bottom: 1px solid var(--md3-outline);
+}
+
+.mf-header-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--md3-radius-sm);
+    background: var(--md3-primary-light);
+    border: 1.5px solid var(--md3-primary-mid);
+    color: var(--md3-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.mf-header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--md3-on-surface);
+    flex: 1;
+    margin: 0;
+}
+
+.mf-close-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--md3-outline);
+    background: transparent;
+    color: var(--md3-on-surface-med);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+    padding: 0;
+}
+
+    .mf-close-btn:hover {
+        background: #fcebeb;
+        color: #a32d2d;
+        border-color: #f09595;
+    }
+
+/* ── Тело модалки ───────────────────────────────────────── */
+.mf-body {
+    padding: 16px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Блок уведомлений (дубликаты) ───────────────────────── */
+.mf-alert-wrap {
+    margin-bottom: 12px;
+    min-height: 0;
+}
+
+.mf-alert-warn {
+    padding: 8px 12px;
+    background: #faeeda;
+    border: 1px solid #f5c4b3;
+    border-radius: var(--md3-radius-sm);
+    font-size: 12px;
+    color: #854f0b;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.mf-alert-ok {
+    padding: 8px 12px;
+    background: #e6f9f1;
+    border: 1px solid #9fe1cb;
+    border-radius: var(--md3-radius-sm);
+    font-size: 12px;
+    color: #0f6e56;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.mf-dup-item {
+    font-size: 12px;
+    color: var(--md3-on-surface-med);
+    padding: 3px 4px;
+    border-bottom: 1px solid var(--md3-outline);
+}
+
+    .mf-dup-item:last-child {
+        border-bottom: none;
+    }
+
+/* ── Поле ───────────────────────────────────────────────── */
+.mf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 10px;
+}
+
+    .mf-field:last-of-type {
+        margin-bottom: 0;
+    }
+
+.mf-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--md3-on-surface-low);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.mf-req {
+    color: #ba1a1a;
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* Input wrap */
+.mf-iw {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--md3-outline);
+    border-radius: var(--md3-radius-sm);
+    background: var(--md3-surface);
+    overflow: hidden;
+    height: 34px;
+    transition: border-color var(--md3-transition), box-shadow var(--md3-transition);
+}
+
+    .mf-iw:focus-within {
+        border-color: var(--md3-primary);
+        box-shadow: 0 0 0 2px rgba(26,86,164,.09);
+    }
+
+.mf-iw-ic {
+    width: 30px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--md3-surface-3);
+    border-right: 1px solid var(--md3-outline);
+    color: var(--md3-on-surface-low);
+    flex-shrink: 0;
+    transition: background var(--md3-transition), color var(--md3-transition);
+}
+
+.mf-iw:focus-within .mf-iw-ic {
+    background: var(--md3-primary-light);
+    color: var(--md3-primary);
+    border-right-color: var(--md3-primary-mid);
+}
+
+.mf-in {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0 9px;
+    font-size: 12.5px;
+    color: var(--md3-on-surface);
+    min-width: 0;
+    height: 100%;
+}
+
+    .mf-in::placeholder {
+        color: var(--md3-on-surface-low);
+        font-size: 12px;
+    }
+
+    .mf-in.input-validation-error {
+        background: #fff0f0;
+    }
+
+.mf-iw:has(.input-validation-error) {
+    border-color: #ba1a1a;
+}
+
+.mf-sel {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0 9px;
+    font-size: 12.5px;
+    color: var(--md3-on-surface);
+    min-width: 0;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* validation */
+.mf-val {
+    font-size: 10.5px;
+    color: #ba1a1a;
+    min-height: 13px;
+}
+
+    .mf-val:empty {
+        display: none;
+    }
+
+/* ── Подвал с кнопками ──────────────────────────────────── */
+.mf-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--md3-outline);
+    background: var(--md3-surface-2);
+}
+
+.mf-footer-spacer {
+    flex: 1;
+}
+
+/* ── Кнопки ─────────────────────────────────────────────── */
+.mf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: var(--md3-radius-sm);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background var(--md3-transition), box-shadow var(--md3-transition), color var(--md3-transition);
+    white-space: nowrap;
+}
+
+    .mf-btn:active {
+        transform: scale(.97);
+    }
+
+/* Primary (добавить) */
+.mf-btn-primary {
+    background: var(--md3-primary);
+    color: #fff;
+    border-color: var(--md3-primary);
+}
+
+    .mf-btn-primary:hover {
+        background: #1446b0;
+        box-shadow: var(--md3-shadow-1);
+    }
+
+/* Ghost (отмена) */
+.mf-btn-ghost {
+    background: transparent;
+    color: var(--md3-on-surface-med);
+    border-color: var(--md3-outline);
+}
+
+    .mf-btn-ghost:hover {
+        background: var(--md3-surface-3);
+        color: var(--md3-on-surface);
+        border-color: var(--md3-outline-strong);
+    }
+
+/* Teal (проверить) */
+.mf-btn-teal {
+    background: #e6faf8;
+    color: #0d9488;
+    border-color: #99e6e0;
+}
+
+    .mf-btn-teal:hover {
+        background: #0d9488;
+        color: #fff;
+        border-color: #0f766e;
+    }

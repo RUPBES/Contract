@@ -173,7 +173,7 @@ namespace MvcLayer.Controllers
             try
             {
                 organization.PaymentAccount = organization.PaymentAccount?.Replace("-", "");
-                organization.Addresses.RemoveAll(x => x.FullAddress == null && x.PostIndex == null);
+                //organization.Addresses.RemoveAll(x => x.FullAddress == null && x.PostIndex == null);
                 var org = _mapper.Map<OrganizationDTO>(organization);
                 _organizationService.Update(org);
 

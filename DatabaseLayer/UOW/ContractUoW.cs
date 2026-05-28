@@ -1,12 +1,14 @@
 ﻿using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.EntityFramework;
+using DatabaseLayer.Models.EXTRA;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using DatabaseLayer.Repositories;
 using DatabaseLayer.Repositories.PRO;
 using DatabaseLayer.Repositories.ViewRepo;
 using DatabaseLayer.RepositoriesEF;
+using DatabaseLayer.RepositoriesEF.Notes;
 
 namespace DatabaseLayer.UOW
 {
@@ -73,11 +75,39 @@ namespace DatabaseLayer.UOW
 
         private KindOfWorkRepository kindOfWorkRepository;
         private AbbreviationKindOfWorkRepository abbreviationKindOfWorkRepository;
+        private ReleaseNoteRepository releaseNoteRepository;
+        private ReleaseNoteFileRepository releaseFileNoteRepository;
 
         #endregion
         public ContractUoW()
         {
             _context = new ContractsContext();
+        }
+
+
+
+        public IRepository<ReleaseNoteFile> ReleaseNoteFiles
+        {
+            get
+            {
+                if (releaseFileNoteRepository is null)
+                {
+                    releaseFileNoteRepository = new ReleaseNoteFileRepository(_context);
+                }
+                return releaseFileNoteRepository;
+            }
+        }
+
+        public IReleaseNoteRepository ReleaseNotes
+        {
+            get
+            {
+                if (releaseNoteRepository is null)
+                {
+                    releaseNoteRepository = new ReleaseNoteRepository(_context);
+                }
+                return releaseNoteRepository;
+            }
         }
 
         #region views

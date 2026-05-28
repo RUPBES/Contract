@@ -36,28 +36,6 @@ namespace MvcLayer.Controllers
            return await Task.FromResult<IActionResult>(View());
         }
 
-        //public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string sortOrder)
-        //{
-        //    var organizations = _httpHelper.GetUserOrganizationCodes();
-        //    ViewBag.CurrentSort = sortOrder;
-
-        //    if (searchString != null)
-        //    {
-        //        page = 1;
-        //    }
-        //    else
-        //    {
-        //        searchString = currentFilter;
-        //    }
-
-        //    ViewData["CurrentFilter"] = searchString;
-        //    ViewBag.Page = page;
-
-        //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-        //        return await Task.FromResult<IActionResult>(View(_employeesService.GetPageFilter(100, page ?? 1, searchString, sortOrder, organizations)));
-        //    else return await Task.FromResult<IActionResult>(View(_employeesService.GetPage(100, page ?? 1, organizations)));
-        //}
-
         public async Task<IActionResult> Details(int? id, int? page, string? filter)
         {
             if (id == null)

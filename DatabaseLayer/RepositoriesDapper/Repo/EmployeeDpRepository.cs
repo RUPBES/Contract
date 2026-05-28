@@ -45,8 +45,8 @@ public class EmployeeDpRepository : IReadonlyEmployeeDapperRepo
         string table = DbQualifier.Qualify(databaseName, "Employee");       
         var sql = @$"
             SELECT COUNT(distinct e.Id) FROM {table} e 
-                WHERE (e.Author IN @orgList)                 
-                {query} ;
+                WHERE (e.Author IN @orgList OR e.Author is NULL)                 
+                {query} AND e.IsActive = 1;
 
             WITH 
             PhoneList AS (
@@ -57,8 +57,8 @@ public class EmployeeDpRepository : IReadonlyEmployeeDapperRepo
             SELECT distinct e.Id,e.FullName,e.FIO,e.Email, e.Position, e.Author, ISNULL(pl.PhoneNumbers, '') AS PhoneNumbers
             FROM {table} e                            
             LEFT JOIN PhoneList pl ON e.Id = pl.EmployeeId                        
-            WHERE (e.Author IN @orgList)                 
-            {query} 
+            WHERE (e.Author IN @orgList OR e.Author is NULL)                 
+            {query} AND e.IsActive = 1
             {orderBy}
             OFFSET @skip ROWS
             FETCH NEXT @take ROWS ONLY;";

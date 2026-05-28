@@ -1,4 +1,4 @@
-@using BusinessLayer.Enums;
+﻿@using BusinessLayer.Enums;
 @using BusinessLayer.Interfaces.Shared
 @model MvcLayer.Models.ContractViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
@@ -18,7 +18,7 @@
     else if (Model.IsEngineering)
     {
         title = "Договор на инжиниринговые услуги";
-        workTypeLabel = "Вид услуг";        
+        workTypeLabel = "Вид услуг";
     }
     else if (Model.IsSubContract)
     {
@@ -201,7 +201,7 @@
                                                     <option value="null" selected>Выберите сотрудника</option>
                                                 }
 
-                                                @foreach (var item in Employee.GetAll())
+                                                @foreach (var item in Employee.Find(x => x.IsActive == true))
                                                 {
                                                     <option value="@item.Id">@item.FullName</option>
                                                 }
@@ -220,7 +220,7 @@
                                                 {
                                                     <option value="null" selected>Выберите сотрудника</option>
                                                 }
-                                                @foreach (var item in Employee.GetAll())
+                                                @foreach (var item in Employee.Find(x => x.IsActive == true))
                                                 {
                                                     <option value="@item.Id">@item.FullName</option>
                                                 }
@@ -325,7 +325,7 @@
                                 numberCheckbox++;
                             }
                         </fieldset>
-                                              
+
 
                         <fieldset class="border rounded-3 p-3">
                             <legend class="float-none w-auto px-3">Процедура выбора</legend>
@@ -372,7 +372,7 @@
                                         </div>
                                     </div>
                                     <input style="font-weight: bold;" type="text" class="form-control" value="Имеются подобъекты?" disabled>
-                                </div>                               
+                                </div>
                             </div>
                         }
                     </div>
@@ -591,4 +591,4 @@
             });
         });
     </script>
-} 
+}

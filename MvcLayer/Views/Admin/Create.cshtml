@@ -1,0 +1,210 @@
+﻿@model BusinessLayer.Models.Settings.Note.CreateReleaseNoteDto
+@{
+    ViewData["Title"] = "Создать уведомление";
+    ViewData["PageTitle"] = "Новое уведомление";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Уведомления", "/admin/release-notes"),
+        ("Создать", "/admin/release-notes/create")
+    };
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="rn-form-page" style="max-width:100%; padding:0;">
+
+    <form method="post" action="/admin/release-notes/create" enctype="multipart/form-data" id="createForm">
+        @Html.AntiForgeryToken()
+
+        <div class="rn-form-card">
+            <div class="rn-form-header">
+                <span class="rn-form-header-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                </span>
+                <h1 class="rn-form-header-title">Новое уведомление об обновлении</h1>
+            </div>
+
+            <div class="rn-form-body">
+
+                <!-- Основная информация -->
+                <div class="rn-fieldset">
+                    <div class="rn-fieldset-legend">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        Основная информация
+                    </div>
+                    <div class="rn-fieldset-body">
+                        <div class="rn-fields-row">
+                            <div class="md3-field">
+                                <label class="md3-label" asp-for="Title">
+                                    Заголовок <span class="required-star">*</span>
+                                </label>
+                                <div class="md3-input-wrap">
+                                    <span class="md3-input-icon">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                    </span>
+                                    <input asp-for="Title" class="md3-input" placeholder="Например: Обновление модуля договоров" maxlength="200" />
+                                </div>
+                                <span asp-validation-for="Title" class="md3-validation-msg"></span>
+                            </div>
+                            <div class="md3-field">
+                                <label class="md3-label" asp-for="Version">
+                                    Версия <span class="required-star">*</span>
+                                </label>
+                                <div class="md3-input-wrap">
+                                    <span class="md3-input-icon">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg>
+                                    </span>
+                                    <input asp-for="Version" class="md3-input" placeholder="2.5.0" maxlength="20" />
+                                </div>
+                                <span asp-validation-for="Version" class="md3-validation-msg"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Содержимое -->
+                <div class="rn-fieldset">
+                    <div class="rn-fieldset-legend">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        Текст уведомления
+                    </div>
+                    <div class="rn-fieldset-body">
+                        <div class="md3-field">
+                            <label class="md3-label" asp-for="Content">
+                                Описание изменений <span class="required-star">*</span>
+                            </label>
+                            <textarea asp-for="Content" class="md3-textarea" placeholder="Опишите что изменилось в этой версии. Поддерживается HTML."></textarea>
+                            <span asp-validation-for="Content" class="md3-validation-msg"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Скриншоты -->
+                <div class="rn-fieldset">
+                    <div class="rn-fieldset-legend">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                        Скриншоты (необязательно)
+                    </div>
+                    <div class="rn-fieldset-body">
+                        <div class="rn-upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                            <div class="rn-upload-zone-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="16 16 12 12 8 16" />
+                                    <line x1="12" y1="12" x2="12" y2="21" />
+                                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+                                </svg>
+                            </div>
+                            <p class="rn-upload-zone-text">
+                                <span class="rn-upload-zone-link">Выберите файлы</span> или перетащите сюда
+                            </p>
+                            <p class="rn-upload-zone-hint">JPG, PNG, GIF, WEBP — до 5 МБ каждый</p>
+                        </div>
+
+                        <input type="file" id="fileInput" name="Images" multiple accept="image/jpeg,image/png,image/gif,image/webp"
+                               style="display:none" onchange="handleFiles(this.files)" />
+
+                        <div class="rn-image-previews" id="imagePreviews"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="rn-form-footer">
+                <a href="/admin/release-notes" class="md3-btn md3-btn-ghost">Отмена</a>
+                <button type="submit" class="md3-btn md3-btn-primary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Создать черновик
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedFiles = [];
+        let annotationsMap = {};
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput  = document.getElementById('fileInput');
+        const previews   = document.getElementById('imagePreviews');
+
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) return;
+                const id = Date.now() + Math.random();
+                selectedFiles.push({ id, file });
+                renderPreview(id, file);
+            });
+            syncFileInput();
+        }
+
+        function renderPreview(id, file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const card = document.createElement('div');
+                card.className = 'rn-preview-card';
+                card.dataset.id = id;
+                card.innerHTML = `
+                    <img src="${e.target.result}" alt="" />
+                    <button type="button" class="rn-preview-remove" onclick="removePreview('${id}')">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="rn-preview-annotation">
+                        <input type="text" placeholder="Аннотация к скриншоту..."
+                               oninput="annotationsMap['${id}'] = this.value"
+                               name="Annotations" />
+                    </div>`;
+                previews.appendChild(card);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removePreview(id) {
+            selectedFiles = selectedFiles.filter(f => f.id != id);
+            delete annotationsMap[id];
+            const card = previews.querySelector(`[data-id="${id}"]`);
+            if (card) card.remove();
+            syncFileInput();
+        }
+
+        function syncFileInput() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f.file));
+            fileInput.files = dt.files;
+        }
+    </script>
+}

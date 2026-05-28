@@ -13,5 +13,6 @@ public enum Folder
     Other,
     Estimate,
     SelectionProcedures,
-    AdditionalTerms
+    AdditionalTerms,
+    ReleaseNote
 }

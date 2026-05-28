@@ -1,4 +1,5 @@
 ﻿using BusinessLayer.Models.KDO;
+using BusinessLayer.Models.Settings;
 
 namespace BusinessLayer.Interfaces.Shared
 {
@@ -10,5 +11,6 @@ namespace BusinessLayer.Interfaces.Shared
         string GetUserOrganizationFirstCode();
         string GetUserOrganizationCodes();
         string? GetUserIdentifierOid();
+        TokenUserInfo GetUserInfo();
     }
 }

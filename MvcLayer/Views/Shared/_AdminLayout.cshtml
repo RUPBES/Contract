@@ -1,0 +1,402 @@
+@using BusinessLayer.Helpers
+@using BusinessLayer.Interfaces.Shared
+@inject IHttpContextUserProvider HttpHelper
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] != null ? $"{ViewData["Title"]} — Администратор" : "Панель администратора")</title>
+    <link rel="stylesheet" href="~/css/admin-room.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/element-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/md3-modal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/release-notes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+    <!-- ══ TOP APP BAR ══════════════════════════════════════════════ -->
+    <header class="adm-topbar">
+        <button class="adm-topbar-toggle" id="sidebarToggle" aria-label="Свернуть/развернуть меню">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+        </button>
+
+        <a asp-controller="Home" asp-action="Index" class="adm-topbar-brand">
+            <span class="adm-topbar-brand-icon">АП</span>
+            <span class="adm-topbar-brand-label">
+                <span class="adm-topbar-brand-title">ПАЛАТА №6</span>
+                <span class="adm-topbar-brand-sub">Администратор</span>
+            </span>
+        </a>
+
+        <span class="adm-topbar-divider"></span>
+
+        @if (ViewData["PageTitle"] != null)
+        {
+            <span class="adm-topbar-page-title">@ViewData["PageTitle"]</span>
+        }
+
+        <span class="adm-topbar-spacer"></span>
+
+        <div class="adm-topbar-actions">
+
+            <!-- Уведомления -->
+            <a href="/admin/release-notes" class="adm-topbar-btn" title="Уведомления">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                <span class="adm-topbar-notif-badge" id="adm-notif-badge" style="display:none;">0</span>
+            </a>
+
+           @*  <!-- Отчёты -->
+            <a href="/Admin/CreateReport?daysCount=7" class="adm-topbar-btn" title="Сформировать отчёт">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+            </a> *@
+
+            <!-- Назад в систему -->
+            <a href="/" class="adm-topbar-back">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
+                К системе
+            </a>
+
+            <!-- Пользователь -->
+            @{
+                var givenName = User?.Identities?.FirstOrDefault()?.Claims
+                ?.FirstOrDefault(x => x.Type == "given_name")?.Value ?? "Admin";
+                var email = User?.Identities?.FirstOrDefault()?.Claims
+                ?.FirstOrDefault(x => x.Type == "email")?.Value ?? "";
+                var initials = givenName.Length > 0 ? givenName[0].ToString().ToUpper() : "A";
+            }
+            <div class="adm-topbar-user">
+                <div class="adm-avatar" title="@givenName">@initials</div>
+                <span class="adm-topbar-username">@givenName</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ══ SIDEBAR OVERLAY (mobile) ══════════════════════════════════ -->
+    <div class="adm-sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ══ SHELL ════════════════════════════════════════════════════ -->
+    <div class="adm-shell">
+
+        <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+        <nav class="adm-sidebar" id="adminSidebar" aria-label="Навигация администратора" style="height: 100% !important">
+
+            <!-- РАЗДЕЛ: ДАШБОРД -->
+            <span class="adm-nav-group">Дашборд</span>
+
+            <a href="/admin/dashboard" data-tooltip="Дашборд"
+               class="adm-nav-item @(Context.Request.Path.Value == "admin/dashboard" ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                <span class="adm-nav-label">Дашборд</span>
+            </a>
+
+            <div class="adm-nav-divider"></div>
+
+            <!-- РАЗДЕЛ: СОТРУДНИКИ -->
+            <span class="adm-nav-group">Пользователи</span>
+
+            <a href="/admin/activity" data-tooltip="Активность"
+               class="adm-nav-item @(Context.Request.Path.StartsWithSegments("/admin/activity") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <span class="adm-nav-label">Активность</span>
+            </a>
+
+            <a href="/admin/users" data-tooltip="Пользователи"
+               class="adm-nav-item @(Context.Request.Path.StartsWithSegments("/users") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span class="adm-nav-label">Сотрудники</span>
+            </a>
+
+            <div class="adm-nav-divider"></div>
+
+            <!-- РАЗДЕЛ: ОТЧЁТЫ -->
+            <span class="adm-nav-group">Отчёты</span>
+
+            <a href="/Admin/CreateReport?daysCount=7" data-tooltip="Сформировать отчёт"
+               class="adm-nav-item @(Context.Request.Path.StartsWithSegments("/Admin/CreateReport") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                <span class="adm-nav-label">Сформировать отчёт</span>
+            </a>
+
+            <a href="/Admin/SendReport?daysCount=7" data-tooltip="Отправить отчёт"
+               class="adm-nav-item @(Context.Request.Path.StartsWithSegments("/Admin/SendReport") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+                <span class="adm-nav-label">Отправить отчёт</span>
+            </a>
+
+            <div class="adm-nav-divider"></div>
+
+            <!-- РАЗДЕЛ: УВЕДОМЛЕНИЯ -->
+            <span class="adm-nav-group">Уведомления</span>
+
+            <a href="/admin/release-notes" data-tooltip="Все уведомления"
+               class="adm-nav-item @(Context.Request.Path.StartsWithSegments("/admin/release-notes") && !Context.Request.Path.ToString().EndsWith("/create") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                <span class="adm-nav-label">Уведомления</span>
+                <span class="adm-nav-pill" id="sidebar-notif-count" style="display:none;">0</span>
+            </a>
+
+            <a href="/admin/release-notes/create" data-tooltip="Создать уведомление"
+               class="adm-nav-item @(Context.Request.Path.ToString().EndsWith("/create") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span class="adm-nav-label">Создать</span>
+            </a>
+
+            <div class="adm-nav-divider"></div>
+
+            <!-- РАЗДЕЛ: СИСТЕМА -->
+            <span class="adm-nav-group">Система</span>
+
+            <a href="/admin/logs" data-tooltip="Логи"
+               class="adm-nav-item @(Context.Request.Path.StartsWithSegments("/admin/logs") ? "active" : "")">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <span class="adm-nav-label">Логи системы</span>
+            </a>
+
+            <div class="adm-nav-item" style="opacity:.5; cursor:default;" data-tooltip="Настройки">
+                <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+                </svg>
+                <span class="adm-nav-label">Настройки</span>
+                <span class="adm-nav-soon">скоро</span>
+            </div>
+
+            <!-- Sidebar footer -->
+            <div class="adm-sidebar-footer">
+                <a href="/release-notes" target="_blank" data-tooltip="Вид пользователя"
+                   class="adm-nav-item">
+                    <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span class="adm-nav-label">Вид пользователя</span>
+                </a>
+
+                <a href="/" data-tooltip="К системе" class="adm-nav-item">
+                    <svg class="adm-nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    <span class="adm-nav-label">К системе</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- ══ MAIN ══════════════════════════════════════════════════ -->
+        <main class="adm-main" id="adminMain">
+
+            @if (ViewData["Breadcrumb"] != null)
+            {
+                var crumbs = ViewData["Breadcrumb"] as List<(string Label, string Url)>;
+                if (crumbs != null && crumbs.Any())
+                {
+                    <div class="adm-breadcrumb">
+                        <a href="/admin/dashboard">Администратор</a>
+                        @foreach (var (label, url) in crumbs.SkipLast(1))
+                        {
+                            <svg class="adm-breadcrumb-sep" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                            <a href="@url">@label</a>
+                        }
+                        <svg class="adm-breadcrumb-sep" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                        <span class="adm-breadcrumb-cur">@crumbs.Last().Label</span>
+                    </div>
+                }
+            }
+
+            <div class="adm-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- ══ TOAST NOTIFICATIONS ══════════════════════════════════════ -->
+    <div class="adm-toasts">
+        @if (TempData["Success"] != null)
+        {
+            <div class="adm-toast success">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                </svg>
+                @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="adm-toast error">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                @TempData["Error"]
+            </div>
+        }
+        @if (TempData["NotificationMessage"] != null)
+        {
+            <div class="adm-toast info">@TempData["NotificationMessage"]</div>
+        }
+    </div>
+
+
+
+    <!-- Alert modal — требуется customJs.js -->
+    <div id="alert-modal" class="md-overlay" style="display:none; align-content:center;">
+        <div class="md-modal" style="max-width:500px;">
+            <div class="md-card">
+                <div class="md-card-header">
+                    <h1 class="md-title" id="alert-modal_title">Предупреждение</h1>
+                    <div class="md-subtitle" id="alert-modal_message">Вы уверены?</div>
+                </div>
+                <div class="md-actions">
+                    <button class="md-button md-button--filled" id="alert-modal_confirm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Да
+                    </button>
+                    <button class="md-button" id="alert-modal_cancel">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                        Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SCRIPTS ══════════════════════════════════════════════════ -->
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @* <script src="~/js/site.js" asp-append-version="true"></script> *@
+    @* <script src="~/js/customJs.js" asp-append-version="true"></script> *@
+
+    <script>
+        const sidebar  = document.getElementById('adminSidebar');
+        const mainEl   = document.getElementById('adminMain');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const overlay  = document.getElementById('sidebarOverlay');
+
+        const STORAGE_KEY = 'adm_sidebar_collapsed';
+        let collapsed = localStorage.getItem(STORAGE_KEY) === '1';
+
+        function applySidebar() {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                sidebar.classList.remove('collapsed');
+                mainEl.classList.remove('sidebar-collapsed');
+            } else {
+                sidebar.classList.toggle('collapsed', collapsed);
+                mainEl.classList.toggle('sidebar-collapsed', collapsed);
+            }
+        }
+
+        toggleBtn.addEventListener('click', () => {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active', sidebar.classList.contains('mobile-open'));
+            } else {
+                collapsed = !collapsed;
+                localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+                applySidebar();
+            }
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+        });
+
+        window.addEventListener('resize', applySidebar);
+        applySidebar();
+
+        // Auto-hide toasts
+        document.querySelectorAll('.adm-toast').forEach(el => {
+            setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; }, 3700);
+            setTimeout(() => el.remove(), 4000);
+        });
+
+        // Badge уведомлений
+        async function loadAdmNotifBadge() {
+            try {
+                const r = await fetch('/release-notes/unread-count', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (!r.ok) return;
+                const { count } = await r.json();
+                const topBadge = document.getElementById('adm-notif-badge');
+                const sideCount = document.getElementById('sidebar-notif-count');
+                if (count > 0) {
+                    if (topBadge) { topBadge.textContent = count > 99 ? '99+' : count; topBadge.style.display = 'flex'; }
+                    if (sideCount) { sideCount.textContent = count > 99 ? '99+' : count; sideCount.style.display = 'inline-flex'; }
+                }
+            } catch {}
+        }
+        document.addEventListener('DOMContentLoaded', loadAdmNotifBadge);
+        setInterval(loadAdmNotifBadge, 120000);
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+
+</body>
+</html>

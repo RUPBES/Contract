@@ -11,30 +11,33 @@ namespace MvcLayer.Models
         /// <summary>
         /// Полное название
         /// </summary>
-        [DisplayName("Полное название")]
-        [Required(ErrorMessage = "Обязательное поле")]
+        [Required(ErrorMessage = "Обязательно для заполнения")]
+        [StringLength(500, MinimumLength = 2, ErrorMessage = "Название должно содержать от 2 до 500 символов")]
+        [Display(Name = "Полное название")]
         public string? Name { get; set; }
 
         /// <summary>
         /// Аббревиатура
         /// </summary>
-        [DisplayName("Аббревиатура")]
-        [Required(ErrorMessage = "Обязательное поле")]
+        [Required(ErrorMessage = "Обязательно для заполнения")]
+        [StringLength(500, MinimumLength = 2, ErrorMessage = "Название должно содержать от 2 до 500 символов")]
+        [Display(Name = "Аббревиатура")]
         public string? Abbr { get; set; }
 
         /// <summary>
         /// УНП предприятия
         /// </summary>
-        [DisplayName("УНП организации")]
-        [RegularExpression("^[ 0-9]+$", ErrorMessage = "Только цифры")]
-        [StringLength(15, MinimumLength = 9, ErrorMessage = "Длина строки должна быть от 9 до 15 символов")]
-        //[Required(ErrorMessage = "Необходимо заполнить УНП")]
+        //[Required(ErrorMessage = "Обязательно для заполнения")]
+        [RegularExpression(@"^\d{9}$", ErrorMessage = "УНП должен состоять из 9 цифр")]
+        [StringLength(9, MinimumLength = 9, ErrorMessage = "УНП должен содержать ровно 9 символов")]
+        [Display(Name = "УНП Организации")]
         public string? Unp { get; set; }
 
         /// <summary>
         /// электронная почта
         /// </summary>
         [DisplayName("Электронная почта")]
+        [EmailAddress(ErrorMessage = "Введите корректный адрес электронной почты")]
         public string? Email { get; set; }
 
         /// <summary>

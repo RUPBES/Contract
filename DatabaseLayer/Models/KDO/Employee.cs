@@ -15,6 +15,9 @@ namespace DatabaseLayer.Models.KDO
         public string Email { get; set; }
         public string Author { get; set; }
 
+
+        public bool IsActive { get; set; }
+
         public virtual List<DepartmentEmployee> DepartmentEmployees { get; set; } = new List<DepartmentEmployee>();
         public virtual List<EmployeeContract> EmployeeContracts { get; set; } = new List<EmployeeContract>();
         public virtual List<Phone> Phones { get; set; } = new List<Phone>();

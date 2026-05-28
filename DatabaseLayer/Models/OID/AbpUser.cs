@@ -41,5 +41,6 @@ namespace DatabaseLayer.Models.OID
         public DateTime? DeletionTime { get; set; }
 
         public virtual ICollection<AbpUserOrganizationUnit> AbpUserOrganizationUnits { get; set; }
+        public virtual ICollection<AppOidcUserScope> AppOidcUserScopes { get; set; }
     }
 }

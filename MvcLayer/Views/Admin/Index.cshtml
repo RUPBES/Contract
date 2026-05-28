@@ -1,0 +1,195 @@
+﻿@model IEnumerable<DatabaseLayer.Models.EXTRA.ReleaseNote>
+@{
+    ViewData["Title"] = "Управление уведомлениями";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="rn-page">
+    <div class="rn-page-header">
+        <h1 class="rn-page-title">
+            <span class="rn-page-title-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+            </span>
+            Управление уведомлениями
+        </h1>
+        <a href="/admin/release-notes/create" class="rn-create-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Создать
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="rn-success-msg">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="rn-error-msg">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            @TempData["Error"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="rn-table-wrap">
+            <div class="rn-empty">
+                <p class="rn-empty-text">Уведомлений пока нет. Создайте первое.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="rn-table-wrap">
+            <table class="rn-table">
+                <thead>
+                    <tr>
+                        <th>Версия</th>
+                        <th>Заголовок</th>
+                        <th>Статус</th>
+                        <th>Создано</th>
+                        <th>Опубликовано</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var note in Model)
+                    {
+                        <tr>
+                            <td><span class="rn-version-pill">v@(note.Version)</span></td>
+                            <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600;">@note.Title</td>
+                            <td>
+                                @switch (note.Status)
+                                {
+                                    case DatabaseLayer.Models.EXTRA.ReleaseNoteStatus.Draft:
+                                        <span class="rn-status-badge draft">Черновик</span>
+                                        break;
+                                    case DatabaseLayer.Models.EXTRA.ReleaseNoteStatus.Published:
+                                        <span class="rn-status-badge published">Опубликовано</span>
+                                        break;
+                                    case DatabaseLayer.Models.EXTRA.ReleaseNoteStatus.Archived:
+                                        <span class="rn-status-badge archived">Архив</span>
+                                        break;
+                                }
+                            </td>
+                            <td style="color: var(--md3-on-surface-med); white-space: nowrap;">@note.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            <td style="color: var(--md3-on-surface-med); white-space: nowrap;">
+                                @(note.PublishedAt.HasValue? note.PublishedAt.Value.ToString("dd.MM.yyyy") : "—")
+                            </td>
+                            <td>
+                                <div class="rn-actions">
+                                    <a href="/admin/release-notes/@note.Id/edit" class="rn-action-btn">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        Редактировать
+                                    </a>
+
+                                    @if (note.Status == DatabaseLayer.Models.EXTRA.ReleaseNoteStatus.Draft)
+                                    {
+                                        <form method="post" action="/admin/release-notes/@note.Id/publish" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="rn-action-btn publish">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg>
+                                                Опубликовать
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (note.Status == DatabaseLayer.Models.EXTRA.ReleaseNoteStatus.Published)
+                                    {
+                                        <form method="post" action="/admin/release-notes/@note.Id/archive" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="rn-action-btn archive">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polyline points="21 8 21 21 3 21 3 8" />
+                                                    <rect x="1" y="3" width="22" height="5" />
+                                                    <line x1="10" y1="12" x2="14" y2="12" />
+                                                </svg>
+                                                В архив
+                                            </button>
+                                        </form>
+                                    }
+
+                                    <button type="button" class="rn-action-btn danger"
+                                            onclick="confirmDelete(@note.Id, '@Html.Raw(note.Title.Replace("'", "\\'"))')">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6l-1 14H6L5 6" />
+                                            <path d="M10 11v6" />
+                                            <path d="M14 11v6" />
+                                            <path d="M9 6V4h6v2" />
+                                        </svg>
+                                        Удалить
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Модалка подтверждения удаления -->
+<div class="rn-confirm-overlay" id="deleteOverlay">
+    <div class="rn-confirm-modal">
+        <p class="rn-confirm-title">Удалить уведомление?</p>
+        <p class="rn-confirm-text" id="deleteConfirmText">Это действие нельзя отменить. Все файлы и данные о прочтении будут удалены.</p>
+        <div class="rn-confirm-actions">
+            <button type="button" class="rn-action-btn" onclick="closeDelete()">Отмена</button>
+            <form method="post" id="deleteForm" style="display:inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="rn-action-btn danger">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14H6L5 6" />
+                    </svg>
+                    Удалить
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, title) {
+            document.getElementById('deleteConfirmText').textContent =
+                `Уведомление "${title}" будет удалено безвозвратно.`;
+            document.getElementById('deleteForm').action = `/admin/release-notes/${id}/delete`;
+            document.getElementById('deleteOverlay').classList.add('active');
+        }
+
+        function closeDelete() {
+            document.getElementById('deleteOverlay').classList.remove('active');
+        }
+
+        document.getElementById('deleteOverlay').addEventListener('click', function (e) {
+            if (e.target === this) closeDelete();
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDelete();
+        });
+    </script>
+}

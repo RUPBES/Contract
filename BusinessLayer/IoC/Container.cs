@@ -11,12 +11,14 @@ using BusinessLayer.Services.Administrator;
 using BusinessLayer.Services.Archive;
 using BusinessLayer.Services.PRO;
 using BusinessLayer.ServicesCOM;
+using DatabaseLayer.Data;
 using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.Dapper;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.RepositoriesDapper.Repo;
 using DatabaseLayer.UOW;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BusinessLayer.IoC
@@ -35,6 +37,9 @@ namespace BusinessLayer.IoC
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddAutoMapper(typeof(MapperBL));
 
+            //services.AddDbContext<NoteDbContext>();
+            services.AddScoped<IAbpUserService, AbpUserService>();
+            services.AddScoped<IReleaseNoteService, ReleaseNoteService>();
             services.AddScoped<IAdminService, ActiveUsersService>();
             services.AddScoped<IArchiveService, ArchiveService>();
 
@@ -86,7 +91,7 @@ namespace BusinessLayer.IoC
 
             services.AddScoped<IKindOfWorkService, KindOfWorkService>();
             services.AddScoped<IAbbreviationKindOfWorkService, AbbreviationKindOfWorkService>();
-            services.AddTransient<IParseService, ParseService>(); 
+            services.AddTransient<IParseService, ParseService>();
             services.AddTransient<IReportExcelService, ReportExcelService>();
 
         }

@@ -1,0 +1,1068 @@
+﻿@model DatabaseLayer.Models.OID.AbpUser
+@using System.Globalization
+@{
+    ViewData["Title"] = "Редактирование сотрудника";
+    ViewData["PageTitle"] = $"Сотрудник: {Model.Surname} {Model.Name}".Trim();
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Дашборд",       "/admin"),
+        ("Пользователи",  "/admin/users"),
+        ("Редактирование","#")
+    };
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var fullName = $"{Model.Surname} {Model.Name}".Trim();
+    var initials = string.Join("", fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                           .Select(w => w[0])).ToUpper();
+    initials = initials.Length > 2 ? initials[..2] : initials;
+    var isLocked = Model.LockoutEnd.HasValue && Model.LockoutEnd > DateTimeOffset.UtcNow;
+    var orgs = Model.AbpUserOrganizationUnits?.ToList() ?? new();
+    var scopes = Model.AppOidcUserScopes?.ToList() ?? new();
+}
+
+<style>
+    /* ── Шапка профиля ─────────────────────────────────────── */
+    .eu-profile-bar {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 24px;
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .eu-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--md3-primary-light);
+        border: 2px solid var(--md3-primary-mid);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+    }
+
+        .eu-avatar.deleted {
+            background: #fcebeb;
+            border-color: #f09595;
+            color: #a32d2d;
+        }
+
+        .eu-avatar.inactive {
+            background: var(--md3-surface-3);
+            border-color: var(--md3-outline-strong);
+            color: var(--md3-on-surface-low);
+        }
+
+    .eu-profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .eu-profile-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .eu-profile-sub {
+        font-size: 12px;
+        color: var(--md3-on-surface-low);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .eu-status-badges {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .eu-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .eu-badge.active {
+            background: #e6f9f1;
+            border: 1px solid #9fe1cb;
+            color: #0f6e56;
+        }
+
+        .eu-badge.inactive {
+            background: var(--md3-surface-3);
+            border: 1px solid var(--md3-outline-strong);
+            color: var(--md3-on-surface-med);
+        }
+
+        .eu-badge.locked {
+            background: #faeeda;
+            border: 1px solid #f5c4b3;
+            color: #854f0b;
+        }
+
+        .eu-badge.deleted {
+            background: #fcebeb;
+            border: 1px solid #f09595;
+            color: #a32d2d;
+        }
+
+        .eu-badge.external {
+            background: var(--md3-primary-light);
+            border: 1px solid var(--md3-primary-mid);
+            color: var(--md3-primary);
+        }
+
+        .eu-badge.2fa {
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+            color: #0369a1;
+        }
+
+    /* ── Форма ─────────────────────────────────────────────── */
+    .eu-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+        .eu-form-grid.cols-1 {
+            grid-template-columns: 1fr;
+        }
+
+        .eu-form-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+    .eu-field-full {
+        grid-column: 1 / -1;
+    }
+
+    /* ── Секция ────────────────────────────────────────────── */
+    .eu-section {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .eu-section-hdr {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        background: var(--md3-surface-2);
+        border-bottom: 1px solid var(--md3-outline);
+    }
+
+    .eu-section-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-primary-light);
+        border: 1.5px solid var(--md3-primary-mid);
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .eu-section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+    }
+
+    .eu-section-sub {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        margin-left: auto;
+    }
+
+    .eu-section-body {
+        padding: 18px 20px;
+        background: var(--md3-surface-2);
+    }
+
+    /* ── Поле ──────────────────────────────────────────────── */
+    .eu-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .eu-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: var(--md3-on-surface-low);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .eu-required {
+        color: #ba1a1a;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .eu-input-wrap {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        overflow: hidden;
+        transition: border-color var(--md3-transition), box-shadow var(--md3-transition);
+    }
+
+        .eu-input-wrap:focus-within {
+            border-color: var(--md3-primary);
+            box-shadow: 0 0 0 2px rgba(26,86,164,.10);
+        }
+
+        .eu-input-wrap.readonly {
+            background: var(--md3-surface-3);
+            border-color: var(--md3-outline);
+        }
+
+    .eu-input-icon {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--md3-surface-3);
+        border-right: 1px solid var(--md3-outline);
+        color: var(--md3-on-surface-low);
+        flex-shrink: 0;
+        transition: background var(--md3-transition), color var(--md3-transition);
+    }
+
+    .eu-input-wrap:focus-within .eu-input-icon {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+        border-right-color: var(--md3-primary-mid);
+    }
+
+    .eu-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        padding: 7px 10px;
+        font-size: 13px;
+        color: var(--md3-on-surface);
+        min-width: 0;
+    }
+
+        .eu-input::placeholder {
+            color: var(--md3-on-surface-low);
+            font-size: 12px;
+        }
+
+        .eu-input:read-only {
+            color: var(--md3-on-surface-med);
+            cursor: default;
+        }
+
+        .eu-input.input-validation-error {
+            background: #fff0f0;
+        }
+
+    .eu-input-wrap:has(.input-validation-error) {
+        border-color: #ba1a1a;
+    }
+
+    .eu-validation {
+        font-size: 11px;
+        color: #ba1a1a;
+        min-height: 13px;
+    }
+
+        .eu-validation:empty {
+            display: none;
+        }
+
+    .eu-hint {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+    }
+
+    /* ── Toggle-переключатель ──────────────────────────────── */
+    .eu-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--md3-outline);
+    }
+
+        .eu-toggle-row:last-child {
+            border-bottom: none;
+        }
+
+    .eu-toggle-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .eu-toggle-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+    }
+
+    .eu-toggle-desc {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+    }
+
+    .eu-toggle {
+        position: relative;
+        width: 40px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+
+        .eu-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+
+    .eu-toggle-track {
+        position: absolute;
+        inset: 0;
+        border-radius: 11px;
+        background: var(--md3-outline-strong);
+        cursor: pointer;
+        transition: background .2s;
+    }
+
+    .eu-toggle input:checked + .eu-toggle-track {
+        background: var(--md3-primary);
+    }
+
+    .eu-toggle-track::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        top: 3px;
+        left: 3px;
+        transition: transform .2s;
+        box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+
+    .eu-toggle input:checked + .eu-toggle-track::after {
+        transform: translateX(18px);
+    }
+
+    /* ── Инфо-список (readonly) ────────────────────────────── */
+    .eu-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+        gap: 0;
+    }
+
+    .eu-info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--md3-outline);
+    }
+
+        .eu-info-row:last-child {
+            border-bottom: none;
+        }
+
+    .eu-info-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--md3-on-surface-low);
+    }
+
+    .eu-info-value {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+    }
+
+        .eu-info-value.empty {
+            color: var(--md3-on-surface-low);
+            font-style: italic;
+            font-weight: 400;
+        }
+
+    /* ── Таблица организаций ───────────────────────────────── */
+    .eu-sub-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+        .eu-sub-table thead tr {
+            background: var(--md3-surface-3);
+            border-bottom: 1.5px solid var(--md3-outline-strong);
+        }
+
+        .eu-sub-table thead th {
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--md3-on-surface-low);
+            white-space: nowrap;
+        }
+
+        .eu-sub-table tbody tr {
+            border-bottom: 1px solid var(--md3-outline);
+            transition: background var(--md3-transition);
+        }
+
+            .eu-sub-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .eu-sub-table tbody tr:hover {
+                background: var(--md3-primary-light);
+            }
+
+        .eu-sub-table td {
+            padding: 8px 12px;
+            color: var(--md3-on-surface);
+            vertical-align: middle;
+        }
+
+    .eu-empty-state {
+        padding: 24px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--md3-on-surface-low);
+        background: var(--md3-surface-2);
+    }
+
+    /* ── Подвал формы ──────────────────────────────────────── */
+    .eu-form-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 20px;
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        flex-wrap: wrap;
+        position: sticky;
+        bottom: 0;
+        z-index: 50;
+        box-shadow: 0 -2px 12px rgba(26,86,164,.06);
+    }
+
+    .eu-footer-meta {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+    }
+
+    /* ── Адаптив ───────────────────────────────────────────── */
+    @@media (max-width: 768px) {
+        .eu-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+            .eu-form-grid.cols-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+
+        .eu-profile-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .eu-form-grid.cols-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<form method="post" action="/admin/users/@Model.Id/edit">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <input type="hidden" name="ConcurrencyStamp" value="@Model.ConcurrencyStamp" />
+    <input type="hidden" name="SecurityStamp" value="@Model.SecurityStamp" />
+    <input type="hidden" name="NormalizedUserName" value="@Model.NormalizedUserName" />
+    <input type="hidden" name="NormalizedEmail" value="@Model.NormalizedEmail" />
+
+    <!-- ══ ШАПКА ПРОФИЛЯ ══════════════════════════════════════ -->
+    <div class="eu-profile-bar">
+        <div class="eu-avatar @(Model.IsDeleted ? "deleted" : !Model.IsActive ? "inactive" : "")">
+            @initials
+        </div>
+
+        <div class="eu-profile-info">
+            <h1 class="eu-profile-name">@(string.IsNullOrWhiteSpace(fullName) ? Model.UserName : fullName)</h1>
+            <div class="eu-profile-sub">
+                <span>@Model.Email</span>
+                <span>·</span>
+                <span>ID: @Model.Id.ToString()[..8]…</span>
+                @if (Model.CreationTime != default)
+                {
+                    <span>· Создан: @Model.CreationTime.ToString("dd.MM.yyyy")</span>
+                }
+            </div>
+        </div>
+
+        <div class="eu-status-badges">
+            @if (Model.IsDeleted)
+            {
+                <span class="eu-badge deleted">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14H6L5 6" />
+                    </svg>
+                    Удалён
+                </span>
+            }
+            else if (Model.IsActive)
+            {
+                <span class="eu-badge active">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Активен
+                </span>
+            }
+            else
+            {
+                <span class="eu-badge inactive">Неактивен</span>
+            }
+
+            @if (isLocked)
+            {
+                <span class="eu-badge locked">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Заблокирован
+                </span>
+            }
+
+            @if (Model.IsExternal)
+            {
+                <span class="eu-badge external">Внешний</span>
+            }
+
+            @if (Model.TwoFactorEnabled)
+            {
+                <span class="eu-badge" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;">2FA</span>
+            }
+
+            @if (Model.ShouldChangePasswordOnNextLogin)
+            {
+                <span class="eu-badge locked">Смена пароля</span>
+            }
+        </div>
+    </div>
+
+    <!-- ══ ОСНОВНЫЕ ДАННЫЕ ════════════════════════════════════ -->
+    <div class="eu-section">
+        <div class="eu-section-hdr">
+            <span class="eu-section-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </span>
+            <span class="eu-section-title">Личные данные</span>
+        </div>
+        <div class="eu-section-body">
+            <div class="eu-form-grid cols-3">
+                <!-- Фамилия -->
+                <div class="eu-field">
+                    <label class="eu-label" for="Surname">Фамилия</label>
+                    <div class="eu-input-wrap">
+                        <span class="eu-input-icon">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </span>
+                        <input id="Surname" name="Surname" class="eu-input" value="@Model.Surname" placeholder="Иванов" maxlength="64" />
+                    </div>
+                    <span asp-validation-for="Surname" class="eu-validation"></span>
+                </div>
+                <!-- Имя -->
+                <div class="eu-field">
+                    <label class="eu-label" for="Name">Имя</label>
+                    <div class="eu-input-wrap">
+                        <span class="eu-input-icon">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </span>
+                        <input id="Name" name="Name" class="eu-input" value="@Model.Name" placeholder="Иван" maxlength="64" />
+                    </div>
+                    <span asp-validation-for="Name" class="eu-validation"></span>
+                </div>
+                <!-- UserName -->
+                <div class="eu-field">
+                    <label class="eu-label" for="UserName">
+                        Логин <span class="eu-required">*</span>
+                    </label>
+                    <div class="eu-input-wrap">
+                        <span class="eu-input-icon">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+                            </svg>
+                        </span>
+                        <input id="UserName" name="UserName" class="eu-input" value="@Model.UserName"
+                               placeholder="ivanov" maxlength="256" required />
+                    </div>
+                    <span asp-validation-for="UserName" class="eu-validation"></span>
+                </div>
+                <!-- Email -->
+                <div class="eu-field">
+                    <label class="eu-label" for="Email">
+                        Email <span class="eu-required">*</span>
+                    </label>
+                    <div class="eu-input-wrap">
+                        <span class="eu-input-icon">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                            </svg>
+                        </span>
+                        <input id="Email" name="Email" type="email" class="eu-input"
+                               value="@Model.Email" placeholder="ivanov@bes.by" maxlength="256" required />
+                    </div>
+                    <span asp-validation-for="Email" class="eu-validation"></span>
+                </div>
+                <!-- Телефон -->
+                <div class="eu-field">
+                    <label class="eu-label" for="PhoneNumber">Телефон</label>
+                    <div class="eu-input-wrap">
+                        <span class="eu-input-icon">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.6 4.37 2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                            </svg>
+                        </span>
+                        <input id="PhoneNumber" name="PhoneNumber" type="tel" class="eu-input"
+                               value="@Model.PhoneNumber" placeholder="+375291234567" maxlength="32" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ НАСТРОЙКИ БЕЗОПАСНОСТИ ════════════════════════════ -->
+    <div class="eu-section">
+        <div class="eu-section-hdr">
+            <span class="eu-section-icon" style="background:#e0f2fe;border-color:#7dd3fc;color:#0369a1;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+            </span>
+            <span class="eu-section-title">Безопасность и доступ</span>
+        </div>
+        <div class="eu-section-body" style="padding: 0 20px;">
+            <!-- IsActive -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Активная учётная запись</span>
+                    <span class="eu-toggle-desc">Пользователь может входить в систему</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="IsActive" value="false" />
+                    <input type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+            <!-- LockoutEnabled -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Разрешить блокировку</span>
+                    <span class="eu-toggle-desc">Автоблокировка после неудачных попыток входа</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="LockoutEnabled" value="false" />
+                    <input type="checkbox" name="LockoutEnabled" value="true" @(Model.LockoutEnabled ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+            <!-- TwoFactorEnabled -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Двухфакторная аутентификация</span>
+                    <span class="eu-toggle-desc">Требовать второй фактор при входе</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="TwoFactorEnabled" value="false" />
+                    <input type="checkbox" name="TwoFactorEnabled" value="true" @(Model.TwoFactorEnabled ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+            <!-- EmailConfirmed -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Email подтверждён</span>
+                    <span class="eu-toggle-desc">Адрес электронной почты верифицирован</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="EmailConfirmed" value="false" />
+                    <input type="checkbox" name="EmailConfirmed" value="true" @(Model.EmailConfirmed ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+            <!-- PhoneNumberConfirmed -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Телефон подтверждён</span>
+                    <span class="eu-toggle-desc">Номер телефона верифицирован</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="PhoneNumberConfirmed" value="false" />
+                    <input type="checkbox" name="PhoneNumberConfirmed" value="true" @(Model.PhoneNumberConfirmed ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+            <!-- ShouldChangePasswordOnNextLogin -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Сменить пароль при следующем входе</span>
+                    <span class="eu-toggle-desc">Принудительная смена пароля при следующей авторизации</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="ShouldChangePasswordOnNextLogin" value="false" />
+                    <input type="checkbox" name="ShouldChangePasswordOnNextLogin" value="true"
+                           @(Model.ShouldChangePasswordOnNextLogin ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+            <!-- IsExternal -->
+            <div class="eu-toggle-row">
+                <div class="eu-toggle-info">
+                    <span class="eu-toggle-label">Внешний пользователь</span>
+                    <span class="eu-toggle-desc">Аутентификация через внешнего провайдера (SSO/OIDC)</span>
+                </div>
+                <label class="eu-toggle">
+                    <input type="hidden" name="IsExternal" value="false" />
+                    <input type="checkbox" name="IsExternal" value="true" @(Model.IsExternal ? "checked" : "") />
+                    <span class="eu-toggle-track"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ БЛОКИРОВКА ════════════════════════════════════════ -->
+    @if (Model.LockoutEnabled || isLocked || Model.AccessFailedCount > 0)
+    {
+        <div class="eu-section">
+            <div class="eu-section-hdr">
+                <span class="eu-section-icon" style="background:#faeeda;border-color:#f5c4b3;color:#854f0b;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                </span>
+                <span class="eu-section-title">Блокировка</span>
+                @if (isLocked)
+                {
+                    <span class="eu-badge locked" style="margin-left:8px;">Активна до @Model.LockoutEnd!.Value.ToString("dd.MM.yyyy HH:mm")</span>
+                }
+            </div>
+            <div class="eu-section-body">
+                <div class="eu-form-grid cols-3">
+                    <!-- LockoutEnd -->
+                    <div class="eu-field">
+                        <label class="eu-label" for="LockoutEnd">Заблокирован до</label>
+                        <div class="eu-input-wrap @(!Model.LockoutEnabled ? "readonly" : "")">
+                            <span class="eu-input-icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                    <line x1="16" y1="2" x2="16" y2="6" />
+                                    <line x1="8" y1="2" x2="8" y2="6" />
+                                </svg>
+                            </span>
+                            <input id="LockoutEnd" name="LockoutEnd" type="datetime-local" class="eu-input"
+                                   value="@(Model.LockoutEnd?.ToString("yyyy-MM-ddTHH:mm") ?? "")"
+                                   @(!Model.LockoutEnabled ? "readonly" : "") />
+                        </div>
+                        <span class="eu-hint">Оставьте пустым для разблокировки</span>
+                    </div>
+                    <!-- AccessFailedCount -->
+                    <div class="eu-field">
+                        <label class="eu-label" for="AccessFailedCount">Неудачных попыток входа</label>
+                        <div class="eu-input-wrap">
+                            <span class="eu-input-icon">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                            </span>
+                            <input id="AccessFailedCount" name="AccessFailedCount" type="number"
+                                   class="eu-input" value="@Model.AccessFailedCount" min="0" max="999" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- ══ ОРГАНИЗАЦИИ ════════════════════════════════════════ -->
+    <div class="eu-section">
+        <div class="eu-section-hdr">
+            <span class="eu-section-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" />
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                </svg>
+            </span>
+            <span class="eu-section-title">Организационные единицы</span>
+            <span class="eu-section-sub">@orgs.Count записей</span>
+        </div>
+        <div style="overflow-x:auto;">
+            @if (orgs.Any())
+            {
+                <table class="eu-sub-table">
+                    <thead>
+                        <tr>
+                            <th>ID организационной единицы</th>
+                            <th>Создана</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ou in orgs)
+                        {
+                            <tr>
+                                <td style="font-family:'Courier New',monospace;font-size:12px;color:var(--md3-primary);">
+                                    @ou.OrganizationUnitId
+                                </td>
+                                <td style="font-size:12px;color:var(--md3-on-surface-med);">
+                                    @ou.CreationTime.ToString("dd.MM.yyyy HH:mm")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="eu-empty-state">Пользователь не привязан ни к одной организационной единице</div>
+            }
+        </div>
+    </div>
+
+    <!-- ══ OIDC SCOPES ════════════════════════════════════════ -->
+    @if (scopes.Any())
+    {
+        <div class="eu-section">
+            <div class="eu-section-hdr">
+                <span class="eu-section-icon" style="background:#e0f2fe;border-color:#7dd3fc;color:#0369a1;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                    </svg>
+                </span>
+                <span class="eu-section-title">OIDC Scopes</span>
+                <span class="eu-section-sub">@scopes.Count областей</span>
+            </div>
+            <div style="padding:12px 16px;background:var(--md3-surface-2);display:flex;flex-wrap:wrap;gap:6px;">
+                @foreach (var scope in scopes)
+                {
+                    <span class="eu-badge" style="background:var(--md3-primary-light);border:1px solid var(--md3-primary-mid);color:var(--md3-primary);">
+                        @*@scope.ScopeId*@
+                    </span>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- ══ СИСТЕМНАЯ ИНФОРМАЦИЯ (readonly) ════════════════════ -->
+    <div class="eu-section">
+        <div class="eu-section-hdr">
+            <span class="eu-section-icon" style="background:var(--md3-surface-3);border-color:var(--md3-outline-strong);color:var(--md3-on-surface-low);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+            </span>
+            <span class="eu-section-title">Системная информация</span>
+            <span class="eu-section-sub">Только чтение</span>
+        </div>
+        <div class="eu-section-body" style="padding:0 20px;">
+            <div class="eu-info-grid">
+                <div class="eu-info-row">
+                    <span class="eu-info-label">ID</span>
+                    <span class="eu-info-value" style="font-family:'Courier New',monospace;font-size:12px;">@Model.Id</span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Tenant ID</span>
+                    <span class="eu-info-value @(Model.TenantId == null ? "empty" : "")" style="font-family:'Courier New',monospace;font-size:12px;">
+                        @(Model.TenantId?.ToString() ?? "—")
+                    </span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Создан</span>
+                    <span class="eu-info-value">@Model.CreationTime.ToString("dd.MM.yyyy HH:mm")</span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Создатель</span>
+                    <span class="eu-info-value @(Model.CreatorId == null ? "empty" : "")" style="font-size:12px;">
+                        @(Model.CreatorId?.ToString() ?? "—")
+                    </span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Изменён</span>
+                    <span class="eu-info-value @(Model.LastModificationTime == null ? "empty" : "")">
+                        @(Model.LastModificationTime?.ToString("dd.MM.yyyy HH:mm") ?? "—")
+                    </span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Кем изменён</span>
+                    <span class="eu-info-value @(Model.LastModifierId == null ? "empty" : "")" style="font-size:12px;">
+                        @(Model.LastModifierId?.ToString() ?? "—")
+                    </span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Версия</span>
+                    <span class="eu-info-value">@Model.EntityVersion</span>
+                </div>
+                <div class="eu-info-row">
+                    <span class="eu-info-label">Пароль изменён</span>
+                    <span class="eu-info-value @(Model.LastPasswordChangeTime == null ? "empty" : "")">
+                        @(Model.LastPasswordChangeTime?.ToString("dd.MM.yyyy HH:mm") ?? "—")
+                    </span>
+                </div>
+                @if (Model.IsDeleted)
+                {
+                    <div class="eu-info-row">
+                        <span class="eu-info-label">Удалён</span>
+                        <span class="eu-info-value" style="color:#a32d2d;">
+                            @(Model.DeletionTime?.ToString("dd.MM.yyyy HH:mm") ?? "—")
+                        </span>
+                    </div>
+                    <div class="eu-info-row">
+                        <span class="eu-info-label">Кем удалён</span>
+                        <span class="eu-info-value" style="font-size:12px;color:#a32d2d;">
+                            @(Model.DeleterId?.ToString() ?? "—")
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ ПОДВАЛ ФОРМЫ ════════════════════════════════════════ -->
+    <div class="eu-form-footer">
+        <div class="eu-footer-meta">
+            <span>ID: @Model.Id.ToString()[..8]…</span>
+            @if (Model.LastModificationTime.HasValue)
+            {
+                <span>Изменено: @Model.LastModificationTime.Value.ToString("dd.MM.yyyy HH:mm")</span>
+            }
+        </div>
+        <span style="flex:1;"></span>
+        <a href="/admin/users" class="md3-btn md3-btn-ghost">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Отмена
+        </a>
+        @if (!Model.IsDeleted)
+        {
+            <button type="button" class="md3-btn"
+                    style="background:#fcebeb;color:#a32d2d;border:1.5px solid #f09595;"
+                    onclick="confirmDelete()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-1 14H6L5 6" />
+                    <path d="M10 11v6" />
+                    <path d="M14 11v6" />
+                    <path d="M9 6V4h6v2" />
+                </svg>
+                Удалить
+            </button>
+        }
+        <button type="submit" class="md3-btn md3-btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Сохранить изменения
+        </button>
+    </div>
+</form>
+
+<!-- Модалка подтверждения удаления -->
+<div class="rn-confirm-overlay" id="deleteOverlay">
+    <div class="rn-confirm-modal">
+        <p class="rn-confirm-title">Удалить пользователя?</p>
+        <p class="rn-confirm-text">
+            Учётная запись <strong>@(string.IsNullOrWhiteSpace(fullName) ? Model.UserName : fullName)</strong>
+            будет помечена как удалённая. Это действие можно отменить.
+        </p>
+        <div class="rn-confirm-actions">
+            <button type="button" class="rn-action-btn" onclick="document.getElementById('deleteOverlay').classList.remove('active')">
+                Отмена
+            </button>
+            <form method="post" action="/admin/users/@Model.Id/delete" style="display:inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="rn-action-btn danger">Удалить</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            document.getElementById('deleteOverlay').classList.add('active');
+        }
+        document.getElementById('deleteOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') document.getElementById('deleteOverlay')?.classList.remove('active');
+        });
+    </script>
+}

@@ -167,6 +167,11 @@ class DataTableController {
             this.endET = state.filters.endET || '';
         }
 
+        if (state.selectedField || state.searchText || state.filters.startSW || state.filters.endSW
+            || state.filters.startEW || state.filters.endEW || state.filters.startET || state.filters.endET) {
+
+            this.showResetButton();
+        }
         // Загружаем данные с восстановленными параметрами
         this.loadData();
 
@@ -1268,6 +1273,11 @@ class DataPayableCashTableController {
             this.endET = state.filters.endET || '';
         }
 
+        if (state.selectedField || state.searchText || state.filters.startSW || state.filters.endSW
+            || state.filters.startEW || state.filters.endEW || state.filters.startET || state.filters.endET) {
+
+            this.showResetButton();
+        }
         // Загружаем данные с восстановленными параметрами
         this.loadData();
 
@@ -1962,6 +1972,10 @@ class DataWithoutDatesTableController {
         this.selectedField = state.selectedField || '';
         this.sortDirection = state.sortDirection || 'asc';
         this.searchText = state.searchText || '';
+
+        if (state.selectedField || state.searchText) {
+            this.showResetButton();
+        }
 
         // Загружаем данные с восстановленными параметрами
         this.loadData();

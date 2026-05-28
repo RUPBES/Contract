@@ -9,273 +9,275 @@
     var contractsList = Contracts.GetByOrganizationId(Model.Id);
     ViewData["Title"] = "Детальная информация";
 }
-<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal" style="width: 100%;max-width: 960px;">
-                <div class="top-modal-block flex-column">
-                    <div @* class="org-overlay" *@>
-                        <div class="org-header">
-                            @* <div class="org-header-avatar" aria-hidden="true">
+                <div @* class="org-overlay" *@>
+                    <div class="org-header">
+                        @* <div class="org-header-avatar" aria-hidden="true">
                                              @(string.IsNullOrWhiteSpace(orgAbbr) ? orgName?.Substring(0, 1).ToUpper() : orgAbbr.Substring(0, Math.Min(2, orgAbbr.Length)).ToUpper())  </div>*@  
                                     <div class="org-header-info">
-                                <h2 class="org-header-title" id="orgModalTitle">@ViewData["Title"]</h2>
-                                <p class="org-header-sub">Организация: @Model.Name </p>
-                            </div>
-                            <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
+                            <h2 class="org-header-title" id="orgModalTitle">@ViewData["Title"]</h2>
+                            <p class="org-header-sub">Организация: @Model.Name </p>
                         </div>
-                        <div class="org-modal" role="dialog" aria-modal="true" aria-labelledby="orgModalTitle">
-                            <div class="org-body">
+                        <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
+                    </div>
+                    <div class="org-modal" role="dialog" aria-modal="true" aria-labelledby="orgModalTitle">
+                        <div class="org-body">
 
-                                <div class="org-info-card">
-                                    <div class="org-info-grid">
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Полное наименование</span>
-                                            <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.Name) ? "—" : Model.Name)</span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Аббревиатура</span>
-                                            <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.Abbr) ? "—" : Model.Abbr)</span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">УНП</span>
-                                            <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.Unp) ? "—" : Model.Unp)</span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Расчётный счёт</span>
-                                            <span class="org-info-value @(string.IsNullOrWhiteSpace(Model.PaymentAccount) ? "empty" : "")">
-                                                @(string.IsNullOrWhiteSpace(Model.PaymentAccount) ? "не указан" : Model.PaymentAccount)
-                                            </span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Телефон</span>
-                                            <span class="org-info-value @(Model.Phones.All(x => x.Number == null || x.Number == string.Empty) ? "empty" : "")">
-                                                @(Model.Phones.All(x => x.Number == null || x.Number == string.Empty) ? "не указан" : "")
-                                                @foreach (var item in Model.Phones)
-                                                {
-                                                    @if (!string.IsNullOrWhiteSpace(item.Number))
-                                                    {
-                                                        <a href="tel:@item.Number">@item.Number</a>
-                                                    }
-                                                }
-                                            </span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Email</span>
-                                            <span class="org-info-value @(string.IsNullOrWhiteSpace(Model.Email) ? "empty" : "")">
-                                                @if (!string.IsNullOrWhiteSpace(Model.Email))
-                                                {
-                                                    <a href="mailto:@Model.Email">@Model.Email</a>
-                                                }
-                                                else
-                                                {
-                                                    <span>не указан</span>
-                                                }
-                                            </span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Сайт</span>
-                                            <span class="org-info-value @(Model.Addresses.All(x => x.SiteAddress == null || x.SiteAddress == string.Empty) ? "empty" : "")">
-                                                @(Model.Addresses.All(x => x.SiteAddress == null || x.SiteAddress == string.Empty) ? "не указан" : "")
-                                                @foreach (var site in Model.Addresses)
-                                                {
-                                                    @if (!string.IsNullOrWhiteSpace(site.SiteAddress))
-                                                    {
-                                                        <a href="@site.SiteAddress" target="_blank" rel="noopener">@site.SiteAddress</a>
-                                                    }
-                                                }
-                                            </span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Почтовый индекс</span>
-                                            <span class="org-info-value @(Model.Addresses.All(x => x.PostIndex == null || x.PostIndex == string.Empty) ? "empty" : "")">
-                                                @(Model.Addresses.All(x => x.PostIndex == null || x.PostIndex == string.Empty) ? "не указан" : "")
-                                                @foreach (var addrr in Model.Addresses)
-                                                {
-                                                    @addrr?.PostIndex
-                                                }
-                                            </span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Юридический адрес</span>
-                                            <span class="org-info-value @(Model.Addresses.All(x => x.FullAddress == null || x.FullAddress == string.Empty) ? "empty" : "")">
-                                                @(Model.Addresses.All(x => x.FullAddress == null || x.FullAddress == string.Empty) ? "не указан" : "")
-                                                @foreach (var addrr in Model.Addresses)
-                                                {
-                                                    @addrr?.FullAddress
-                                                }
-                                            </span>
-                                        </div>
-
-                                        <div class="org-info-row">
-                                            <span class="org-info-label">Фактический адрес</span>
-                                            <span class="org-info-value @(Model.Addresses.All(x => x.FullAddressFact == null || x.FullAddressFact == string.Empty) ? "empty" : "")">
-                                                @(Model.Addresses.All(x => x.FullAddressFact == null || x.FullAddressFact == string.Empty) ? "не указан" : "")
-                                                @foreach (var addrr in Model.Addresses)
-                                                {
-                                                    @addrr?.FullAddressFact
-                                                }
-                                            </span>
-                                        </div>
-
+                            <div class="org-info-card">
+                                <div class="org-info-grid">
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Полное наименование</span>
+                                        <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.Name) ? "—" : Model.Name)</span>
                                     </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Аббревиатура</span>
+                                        <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.Abbr) ? "—" : Model.Abbr)</span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">УНП</span>
+                                        <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.Unp) ? "—" : Model.Unp)</span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Расчётный счёт</span>
+                                        <span class="org-info-value @(string.IsNullOrWhiteSpace(Model.PaymentAccount) ? "empty" : "")">
+                                            @(string.IsNullOrWhiteSpace(Model.PaymentAccount) ? "не указан" : Model.PaymentAccount)
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Телефон</span>
+                                        <span class="org-info-value @(Model.Phones.All(x => x.Number == null || x.Number == string.Empty) ? "empty" : "")">
+                                            @(Model.Phones.All(x => x.Number == null || x.Number == string.Empty) ? "не указан" : "")
+                                            @foreach (var item in Model.Phones)
+                                            {
+                                                @if (!string.IsNullOrWhiteSpace(item.Number))
+                                                {
+                                                    <a href="tel:@item.Number">@item.Number</a>
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Email</span>
+                                        <span class="org-info-value @(string.IsNullOrWhiteSpace(Model.Email) ? "empty" : "")">
+                                            @if (!string.IsNullOrWhiteSpace(Model.Email))
+                                            {
+                                                <a href="mailto:@Model.Email">@Model.Email</a>
+                                            }
+                                            else
+                                            {
+                                                <span>не указан</span>
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Сайт</span>
+                                        <span class="org-info-value @(Model.Addresses.All(x => x.SiteAddress == null || x.SiteAddress == string.Empty) ? "empty" : "")">
+                                            @(Model.Addresses.All(x => x.SiteAddress == null || x.SiteAddress == string.Empty) ? "не указан" : "")
+                                            @foreach (var site in Model.Addresses)
+                                            {
+                                                @if (!string.IsNullOrWhiteSpace(site.SiteAddress))
+                                                {                                                  
+                                                    <a href="@(site.SiteAddress?.StartsWith("http") == true ? site.SiteAddress : "https://" + site.SiteAddress)"
+                                                       target="_blank" rel="noopener">
+                                                        @site.SiteAddress
+                                                    </a>
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Почтовый индекс</span>
+                                        <span class="org-info-value @(Model.Addresses.All(x => x.PostIndex == null || x.PostIndex == string.Empty) ? "empty" : "")">
+                                            @(Model.Addresses.All(x => x.PostIndex == null || x.PostIndex == string.Empty) ? "не указан" : "")
+                                            @foreach (var addrr in Model.Addresses)
+                                            {
+                                                @addrr?.PostIndex
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Юридический адрес</span>
+                                        <span class="org-info-value @(Model.Addresses.All(x => x.FullAddress == null || x.FullAddress == string.Empty) ? "empty" : "")">
+                                            @(Model.Addresses.All(x => x.FullAddress == null || x.FullAddress == string.Empty) ? "не указан" : "")
+                                            @foreach (var addrr in Model.Addresses)
+                                            {
+                                                @addrr?.FullAddress
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Фактический адрес</span>
+                                        <span class="org-info-value @(Model.Addresses.All(x => x.FullAddressFact == null || x.FullAddressFact == string.Empty) ? "empty" : "")">
+                                            @(Model.Addresses.All(x => x.FullAddressFact == null || x.FullAddressFact == string.Empty) ? "не указан" : "")
+                                            @foreach (var addrr in Model.Addresses)
+                                            {
+                                                @addrr?.FullAddressFact
+                                            }
+                                        </span>
+                                    </div>
+
                                 </div>
-
-                                <div class="org-divider"></div>
-
-                                <div style="display:flex;flex-direction:column; gap:12px;max-height:320px; overflow-y:scroll !important; scrollbar-width: thin; scrollbar-color: #569edf #f0f0f0; scrollbar-gutter: stable both-edges;">
-                                    @*{{-- ── Договоры: Генподрядчик ── --}}*@
-
-                                    <div class="org-section">
-                                        <div class="org-section-header">
-                                            <span class="org-section-badge gen">
-                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                                </svg>
-                                                Заказчик/Генподрядчик
-                                            </span>
-                                            <span class="org-section-count">@contractsList.genClientContracts.Count() договоров</span>
-                                        </div>
-
-                                        @if (contractsList.genClientContracts.Count() == 0)
-                                        {
-                                            <div class="org-table-empty">
-                                                <svg class="org-table-empty-icon" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                                </svg>
-                                                <p class="org-table-empty-text">Договоры в роли генподрядчика отсутствуют</p>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <div class="org-table-wrap">
-                                                <table class="org-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>№ договора</th>
-                                                            <th>Дата</th>
-                                                            <th>Наименование объекта</th>
-                                                            <th>Роль</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach (var c in contractsList.genClientContracts)
-                                                        {
-                                                            <tr>
-                                                                <td>
-                                                                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@c.Id" target="_blank" rel="noopener noreferrer">
-                                                                        <span class="contract-number">@c.Number</span>
-                                                                    </a>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="contract-date">@c.Date?.ToString("dd.MM.yyyy")</span>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="contract-object" title="@c.NameObject">@c.NameObject</span>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="contract-org">@(c.Client == "Заказчик" ? "Заказчик" : "Генподрядчик")</span>
-                                                                </td>
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        }
-                                    </div>
-
-                                    @*  {{-- ── Договоры: Субподрядчик ── --}} *@
-                                   
-                                    <div class="org-section">
-                                        <div class="org-section-header">
-                                            <span class="org-section-badge sub">
-                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
-                                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
-                                                    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
-                                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                                </svg>
-                                                Субподрядчик
-                                            </span>
-                                            <span class="org-section-count">@contractsList.subContracts.Count() договоров</span>
-                                        </div>
-
-                                        @if (contractsList.subContracts.Count() == 0)
-                                        {
-                                            <div class="org-table-empty">
-                                                <svg class="org-table-empty-icon" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                          stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                                                </svg>
-                                                <p class="org-table-empty-text">Договоры в роли субподрядчика отсутствуют</p>
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <div class="org-table-wrap">
-                                                <table class="org-table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>№ договора</th>
-                                                            <th>Дата</th>
-                                                            <th>Наименование объекта</th>
-                                                            <th>Роль</th>    
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach (var c in contractsList.subContracts)
-                                                        {
-                                                            <tr>
-                                                                <td>
-                                                                    <a asp-controller="Contracts" asp-action="Details" asp-route-id="@c.Id" target="_blank" rel="noopener noreferrer">
-                                                                        <span class="contract-number">@c.Number</span>
-                                                                    </a>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="contract-date">@c.Date?.ToString("dd.MM.yyyy")</span>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="contract-object" title="@c.NameObject">@c.NameObject</span>
-                                                                </td>
-                                                                <td>
-                                                                    <span class="contract-org" title="@c.Client">@(c.Client == "Субподрядчик" ? "Субподрядчик" : "Соглашение с филиалом")</span>
-                                                                </td>                                                                
-                                                            </tr>
-                                                        }
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-
                             </div>
 
-                            @* {{-- ══ ФУТЕР ══ --}} *@
-                            <div class="org-footer">
-                                <a asp-action="Index" asp-route-page="@ViewBag.Page" asp-route-currentFilter="@ViewBag.Filter"
-                                   class="md3-btn md3-btn-ghost restore-page-state">
-                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-                                        <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    Вернуться назад
-                                </a>
+                            <div class="org-divider"></div>
 
-                                <div class="org-footer-spacer"></div>
+                            <div style="display:flex;flex-direction:column; gap:12px;max-height:320px; overflow-y:scroll !important; scrollbar-width: thin; scrollbar-color: #569edf #f0f0f0; scrollbar-gutter: stable both-edges;">
+                                @*{{-- ── Договоры: Генподрядчик ── --}}*@
 
-                              @*   @if (permissions?.IsCreator is true)
+                                <div class="org-section">
+                                    <div class="org-section-header">
+                                        <span class="org-section-badge gen">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            Заказчик/Генподрядчик
+                                        </span>
+                                        <span class="org-section-count">@contractsList.genClientContracts.Count() договоров</span>
+                                    </div>
+
+                                    @if (contractsList.genClientContracts.Count() == 0)
+                                    {
+                                        <div class="org-table-empty">
+                                            <svg class="org-table-empty-icon" viewBox="0 0 24 24" fill="none">
+                                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                            </svg>
+                                            <p class="org-table-empty-text">Договоры в роли генподрядчика отсутствуют</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="org-table-wrap">
+                                            <table class="org-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>№ договора</th>
+                                                        <th>Дата</th>
+                                                        <th>Наименование объекта</th>
+                                                        <th>Роль</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var c in contractsList.genClientContracts)
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                <a asp-controller="Contracts" asp-action="Details" asp-route-id="@c.Id" target="_blank" rel="noopener noreferrer">
+                                                                    <span class="contract-number">@c.Number</span>
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <span class="contract-date">@c.Date?.ToString("dd.MM.yyyy")</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="contract-object" title="@c.NameObject">@c.NameObject</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="contract-org">@(c.Client == "Заказчик" ? "Заказчик" : "Генподрядчик")</span>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                </div>
+
+                                @*  {{-- ── Договоры: Субподрядчик ── --}} *@
+
+                                <div class="org-section">
+                                    <div class="org-section-header">
+                                        <span class="org-section-badge sub">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
+                                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
+                                                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
+                                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            </svg>
+                                            Субподрядчик
+                                        </span>
+                                        <span class="org-section-count">@contractsList.subContracts.Count() договоров</span>
+                                    </div>
+
+                                    @if (contractsList.subContracts.Count() == 0)
+                                    {
+                                        <div class="org-table-empty">
+                                            <svg class="org-table-empty-icon" viewBox="0 0 24 24" fill="none">
+                                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                            </svg>
+                                            <p class="org-table-empty-text">Договоры в роли субподрядчика отсутствуют</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="org-table-wrap">
+                                            <table class="org-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>№ договора</th>
+                                                        <th>Дата</th>
+                                                        <th>Наименование объекта</th>
+                                                        <th>Роль</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var c in contractsList.subContracts)
+                                                    {
+                                                        <tr>
+                                                            <td>
+                                                                <a asp-controller="Contracts" asp-action="Details" asp-route-id="@c.Id" target="_blank" rel="noopener noreferrer">
+                                                                    <span class="contract-number">@c.Number</span>
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <span class="contract-date">@c.Date?.ToString("dd.MM.yyyy")</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="contract-object" title="@c.NameObject">@c.NameObject</span>
+                                                            </td>
+                                                            <td>
+                                                                <span class="contract-org" title="@c.Client">@(c.Client == "Субподрядчик" ? "Субподрядчик" : "Соглашение с филиалом")</span>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                        </div>
+
+                        @* {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer">
+                            <a asp-action="Index" asp-route-page="@ViewBag.Page" asp-route-currentFilter="@ViewBag.Filter"
+                               class="md3-btn md3-btn-ghost restore-page-state">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Вернуться назад
+                            </a>
+
+                            <div class="org-footer-spacer"></div>
+
+                            @*   @if (permissions?.IsCreator is true)
                                 {
                                     <a asp-controller="Departments" asp-action="Create" asp-route-idOrg="@Model.Id"
                                        class="md3-btn md3-btn-ghost">
@@ -286,24 +288,23 @@
                                     </a>
                                 } *@
 
-                                @if (permissions?.IsEditor is true)
-                                {
-                                    <a asp-controller="Organizations" asp-action="Edit" asp-route-id="@Model.Id"
-                                       class="md3-btn md3-primary-btn">
-                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
-                                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
-                                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                        </svg>
-                                        Редактировать
-                                    </a>
-                                }
-                            </div>
-
+                            @if (permissions?.IsEditor is true)
+                            {
+                                <a asp-controller="Organizations" asp-action="Edit" asp-route-id="@Model.Id"
+                                   class="md3-btn md3-primary-btn">
+                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                    Редактировать
+                                </a>
+                            }
                         </div>
+
                     </div>
-                </div>
+                    </div>
             </div>
         </div>
     </div>

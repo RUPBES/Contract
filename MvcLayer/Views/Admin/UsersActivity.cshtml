@@ -1,0 +1,904 @@
+﻿@model IEnumerable<BusinessLayer.Models.Settings.UserDashboardDTO>
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@{
+    ViewData["Title"] = "Пользователи";
+    ViewData["PageTitle"] = "Дашборд пользователей";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Дашборд", "/admin"),
+        ("Пользователи", "/admin/users")
+    };
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    var users = Model.ToList();
+    var now = DateTime.UtcNow;
+    var today = now.Date;
+
+    /* ── Статистика ─────────────────────────────────── */
+    var total = users.Count;
+    var active7 = users.Count(u => u.LastActivity.HasValue && u.LastActivity.Value >= today.AddDays(-7));
+    var active30 = users.Count(u => u.LastActivity.HasValue && u.LastActivity.Value >= today.AddDays(-30));
+    var deleted = users.Count(u => u.IsDeleted);
+    var noActivity = users.Count(u => !u.LastActivity.HasValue);
+
+    /* Топ активных / наименее активных */
+    var ranked = users
+        .Where(u => !u.IsDeleted && u.LastActivity.HasValue)
+        .OrderByDescending(u => u.LastActivity)
+        .ToList();
+    var topActive = ranked.Take(10).ToList();
+    var leastActive = ranked.TakeLast(10).OrderBy(u => u.LastActivity).ToList();
+
+    /* ── Группировка по организациям ────────────────── */
+    var byOrg = users
+        .GroupBy(u => new { u.OrgId, Name = u.OrgDisplayName ?? "Не указана" })
+        .Select(g => new
+        {
+            OrgName = g.Key.Name,
+            Total = g.Count(),
+            Active7 = g.Count(u => u.LastActivity.HasValue && u.LastActivity.Value >= today.AddDays(-7)),
+            Deleted = g.Count(u => u.IsDeleted),
+            Users = g.OrderByDescending(u => u.LastActivity).ToList()
+        })
+        .OrderByDescending(g => g.Total)
+        .ToList();
+
+    /* ── Данные для JS ───────────────────────────────── */
+    var usersJson = JsonSerializer.Serialize(users.Select(u => new
+    {
+        u.Id,
+        FullName = u.FullName ?? $"{u.Surname} {u.Name}".Trim(),
+        u.Email,
+        u.UserUniqName,
+        u.PhoneNumber,
+        u.OrgDisplayName,
+        u.DepartDisplayName,
+        u.JobDisplayName,
+        u.IsDeleted,
+        LastActivity = u.LastActivity?.ToString("dd.MM.yyyy HH:mm") ?? null,
+        CreationTime = u.CreationTime.ToString("dd.MM.yyyy"),
+    }), jsonOpts);
+
+    var orgChartJson = JsonSerializer.Serialize(byOrg.Select(g => new
+    {
+        label = g.OrgName,
+        total = g.Total,
+        active = g.Active7,
+    }), jsonOpts);
+
+    /* Палитра для орг. */
+    var orgPalette = new[] {
+        "#1a56a4","#1d9e75","#854f0b","#7c3aed","#0891b2",
+        "#be185d","#047857","#b45309","#4338ca","#0f766e"
+    };
+}
+
+<style>
+    /* ── Метрики ───────────────────────────────────── */
+    .ud-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .ud-metric {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        padding: 16px 18px;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow var(--md3-transition);
+    }
+
+        .ud-metric:hover {
+            box-shadow: var(--md3-shadow-2);
+        }
+
+        .ud-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--md3-radius-lg) var(--md3-radius-lg) 0 0;
+        }
+
+        .ud-metric.primary::before {
+            background: var(--md3-primary);
+        }
+
+        .ud-metric.success::before {
+            background: #1d9e75;
+        }
+
+        .ud-metric.info::before {
+            background: #0891b2;
+        }
+
+        .ud-metric.warning::before {
+            background: #854f0b;
+        }
+
+        .ud-metric.danger::before {
+            background: #a32d2d;
+        }
+
+    .ud-metric-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--md3-radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+
+    .ud-metric.primary .ud-metric-icon {
+        background: var(--md3-primary-light);
+        color: var(--md3-primary);
+        border: 1px solid var(--md3-primary-mid);
+    }
+
+    .ud-metric.success .ud-metric-icon {
+        background: #e6f9f1;
+        color: #1d9e75;
+        border: 1px solid #9fe1cb;
+    }
+
+    .ud-metric.info .ud-metric-icon {
+        background: #e0f2fe;
+        color: #0891b2;
+        border: 1px solid #7dd3fc;
+    }
+
+    .ud-metric.warning .ud-metric-icon {
+        background: #faeeda;
+        color: #854f0b;
+        border: 1px solid #f5c4b3;
+    }
+
+    .ud-metric.danger .ud-metric-icon {
+        background: #fcebeb;
+        color: #a32d2d;
+        border: 1px solid #f09595;
+    }
+
+    .ud-metric-value {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        line-height: 1;
+    }
+
+    .ud-metric-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--md3-on-surface-low);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-top: 4px;
+    }
+
+    .ud-metric-sub {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        margin-top: 2px;
+    }
+
+    /* ── Двухколоночная сетка ──────────────────────── */
+    .ud-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .ud-grid-3 {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    /* ── Виджет ────────────────────────────────────── */
+    .ud-widget {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ud-widget-hdr {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--md3-outline);
+        background: var(--md3-surface-2);
+        flex-wrap: wrap;
+    }
+
+    .ud-widget-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-primary-light);
+        border: 1.5px solid var(--md3-primary-mid);
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .ud-widget-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        flex: 1;
+    }
+
+    .ud-widget-body {
+        padding: 16px 18px;
+        flex: 1;
+    }
+
+    /* ── Рейтинг активности ────────────────────────── */
+    .ud-rank-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ud-rank-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ud-rank-pos {
+        width: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--md3-on-surface-low);
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .ud-rank-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+        border: 1.5px solid;
+    }
+
+    .ud-rank-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ud-rank-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--md3-on-surface);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ud-rank-sub {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ud-rank-date {
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+        .ud-rank-date.hot {
+            color: #1d9e75;
+        }
+
+        .ud-rank-date.warm {
+            color: var(--md3-primary);
+        }
+
+        .ud-rank-date.cold {
+            color: #854f0b;
+        }
+
+        .ud-rank-date.ice {
+            color: #a32d2d;
+        }
+
+    /* ── Организации (карточки) ────────────────────── */
+    .ud-org-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 0;
+    }
+
+    .ud-org-card {
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-md);
+        overflow: hidden;
+        cursor: pointer;
+        transition: box-shadow var(--md3-transition), border-color var(--md3-transition);
+    }
+
+        .ud-org-card:hover {
+            box-shadow: var(--md3-shadow-1);
+            border-color: var(--md3-primary-mid);
+        }
+
+    .ud-org-card-hdr {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--md3-surface-2);
+    }
+
+    .ud-org-color-bar {
+        width: 4px;
+        height: 36px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .ud-org-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ud-org-stats {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .ud-org-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 8px;
+        border-left: 1px solid var(--md3-outline);
+    }
+
+        .ud-org-stat:first-child {
+            border-left: none;
+        }
+
+    .ud-org-stat-val {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+    }
+
+    .ud-org-stat-lbl {
+        font-size: 10px;
+        color: var(--md3-on-surface-low);
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+    .ud-org-bar-wrap {
+        padding: 6px 14px 6px 30px;
+        background: var(--md3-surface);
+        border-top: 1px solid var(--md3-outline);
+    }
+
+    .ud-org-progress {
+        height: 5px;
+        border-radius: 3px;
+        background: var(--md3-surface-3);
+        overflow: hidden;
+        margin-top: 2px;
+    }
+
+    .ud-org-progress-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+
+    .ud-org-toggle-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid var(--md3-outline);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--md3-on-surface-low);
+        transition: transform var(--md3-transition);
+        flex-shrink: 0;
+    }
+
+    .ud-org-card.expanded .ud-org-toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    .ud-org-users {
+        display: none;
+        border-top: 1px solid var(--md3-outline);
+    }
+
+    .ud-org-card.expanded .ud-org-users {
+        display: block;
+    }
+
+    .ud-org-user-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--md3-outline);
+        font-size: 12px;
+        transition: background var(--md3-transition);
+    }
+
+        .ud-org-user-row:last-child {
+            border-bottom: none;
+        }
+
+        .ud-org-user-row:hover {
+            background: var(--md3-primary-light);
+        }
+
+    .ud-org-user-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        flex-shrink: 0;
+        border: 1px solid;
+    }
+
+    /* ── Адаптив ───────────────────────────────────── */
+    @@media (max-width: 900px) {
+        .ud-grid-2, .ud-grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .ud-metrics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<!-- ══ МЕТРИКИ ══════════════════════════════════════════════════ -->
+<div class="ud-metrics">
+    <div class="ud-metric primary">
+        <div class="ud-metric-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        </div>
+        <div class="ud-metric-value">@total</div>
+        <div class="ud-metric-label">Всего пользователей</div>
+        <div class="ud-metric-sub">@byOrg.Count орг.</div>
+    </div>
+
+    <div class="ud-metric success">
+        <div class="ud-metric-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+        </div>
+        <div class="ud-metric-value">@active7</div>
+        <div class="ud-metric-label">Активны (7 дней)</div>
+        <div class="ud-metric-sub">@(total > 0 ? $"{active7 * 100 / total}%" : "—") от общего</div>
+    </div>
+
+    <div class="ud-metric info">
+        <div class="ud-metric-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+        </div>
+        <div class="ud-metric-value">@active30</div>
+        <div class="ud-metric-label">Активны (30 дней)</div>
+        <div class="ud-metric-sub">@(total > 0 ? $"{active30 * 100 / total}%" : "—") от общего</div>
+    </div>
+
+    <div class="ud-metric warning">
+        <div class="ud-metric-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+        </div>
+        <div class="ud-metric-value">@noActivity</div>
+        <div class="ud-metric-label">Без активности</div>
+        <div class="ud-metric-sub">Никогда не входили</div>
+    </div>
+
+    <div class="ud-metric danger">
+        <div class="ud-metric-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+            </svg>
+        </div>
+        <div class="ud-metric-value">@deleted</div>
+        <div class="ud-metric-label">Удалённые</div>
+        <div class="ud-metric-sub">Деактивированы</div>
+    </div>
+</div>
+
+<!-- ══ ТОП АКТИВНЫХ + НАИМЕНЕЕ АКТИВНЫХ ════════════════════════ -->
+<div class="ud-grid-2" style="margin-bottom:16px;">
+
+    <!-- Топ активных -->
+    <div class="ud-widget">
+        <div class="ud-widget-hdr">
+            <span class="ud-widget-icon" style="background:#e6f9f1;border-color:#9fe1cb;color:#1d9e75;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                </svg>
+            </span>
+            <span class="ud-widget-title">Наиболее активные</span>
+            <span style="font-size:11px;color:var(--md3-on-surface-low);">за всё время</span>
+        </div>
+        <div class="ud-widget-body">
+            <div class="ud-rank-list">
+                @{
+                    int rankPos = 1;
+                }
+                @foreach (var u in topActive)
+                {
+                    var initials = string.Join("", (u.FullName ?? $"{u.Surname} {u.Name}").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w[0])).ToUpper();
+                    initials = initials.Length > 2 ? initials[..2] : initials;
+                    var colorIdx = (rankPos - 1) % orgPalette.Length;
+                    var color = orgPalette[colorIdx];
+                    var diff = u.LastActivity.HasValue ? (now - u.LastActivity.Value).TotalDays : 999;
+                    var dateCls = diff < 1 ? "hot" : diff < 7 ? "warm" : diff < 30 ? "cold" : "ice";
+                    <div class="ud-rank-item">
+                        <span class="ud-rank-pos">@rankPos</span>
+                        <div class="ud-rank-avatar" style="background:@(color)22;color:@color;border-color:@(color)66;">
+                            @initials
+                        </div>
+                        <div class="ud-rank-info">
+                            <div class="ud-rank-name">@(u.FullName ?? $"{u.Surname} {u.Name}".Trim())</div>
+                            <div class="ud-rank-sub">@u.OrgDisplayName — @u.JobDisplayName</div>
+                        </div>
+                        <span class="ud-rank-date @dateCls">
+                            @(u.LastActivity.HasValue? u.LastActivity.Value.ToString("dd.MM.yy") : "—")
+                        </span>
+                    </div>
+                    rankPos++;
+                }
+                @if (!topActive.Any())
+                {
+                    <p style="font-size:13px;color:var(--md3-on-surface-low);text-align:center;padding:20px 0;">Нет данных</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Наименее активные -->
+    <div class="ud-widget">
+        <div class="ud-widget-hdr">
+            <span class="ud-widget-icon" style="background:#fcebeb;border-color:#f09595;color:#a32d2d;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                    <polyline points="17 18 23 18 23 12" />
+                </svg>
+            </span>
+            <span class="ud-widget-title">Наименее активные</span>
+            <span style="font-size:11px;color:var(--md3-on-surface-low);">давно не входили</span>
+        </div>
+        <div class="ud-widget-body">
+            <div class="ud-rank-list">
+                @{
+                    int lPos = 1;
+                }
+                @foreach (var u in leastActive)
+                {
+                    var initials = string.Join("", (u.FullName ?? $"{u.Surname} {u.Name}").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w[0])).ToUpper();
+                    initials = initials.Length > 2 ? initials[..2] : initials;
+                    var color = "#a32d2d";
+                    var diff = u.LastActivity.HasValue ? (now - u.LastActivity.Value).TotalDays : 999;
+                    <div class="ud-rank-item">
+                        <span class="ud-rank-pos">@lPos</span>
+                        <div class="ud-rank-avatar" style="background:#fcebeb;color:#a32d2d;border-color:#f09595;">
+                            @initials
+                        </div>
+                        <div class="ud-rank-info">
+                            <div class="ud-rank-name">@(u.FullName ?? $"{u.Surname} {u.Name}".Trim())</div>
+                            <div class="ud-rank-sub">@u.OrgDisplayName — @u.JobDisplayName</div>
+                        </div>
+                        <span class="ud-rank-date ice">
+                            @(u.LastActivity.HasValue ? $"{(int)diff} дн. назад" : "никогда")
+                        </span>
+                    </div>
+                    lPos++;
+                }
+                @if (!leastActive.Any())
+                {
+                    <p style="font-size:13px;color:var(--md3-on-surface-low);text-align:center;padding:20px 0;">Нет данных</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ОРГАНИЗАЦИИ + ГРАФИК ════════════════════════════════════ -->
+<div class="ud-grid-3" style="margin-bottom:16px;">
+
+    <!-- Организации — аккордеон -->
+    <div class="ud-widget">
+        <div class="ud-widget-hdr">
+            <span class="ud-widget-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" />
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                </svg>
+            </span>
+            <span class="ud-widget-title">По организациям</span>
+            <span style="font-size:11px;color:var(--md3-on-surface-low);margin-left:auto;">@byOrg.Count организаций</span>
+        </div>
+        <div class="ud-widget-body" style="padding:12px;">
+            <div class="ud-org-cards">
+                @{
+                    int orgIdx = 0;
+                }
+                @foreach (var org in byOrg)
+                {
+                    var color = orgPalette[orgIdx % orgPalette.Length];
+                    var pct = total > 0 ? org.Total * 100 / total : 0;
+                    var actPct = org.Total > 0 ? org.Active7 * 100 / org.Total : 0;
+                    var cardId = $"org-card-{orgIdx}";
+                    <div class="ud-org-card" id="@cardId">
+                        <div class="ud-org-card-hdr" onclick="toggleOrg('@cardId')">
+                            <span class="ud-org-color-bar" style="background:@color;"></span>
+                            <span class="ud-org-name" title="@org.OrgName">@org.OrgName</span>
+                            <div class="ud-org-stats">
+                                <div class="ud-org-stat">
+                                    <span class="ud-org-stat-val">@org.Total</span>
+                                    <span class="ud-org-stat-lbl">всего</span>
+                                </div>
+                                <div class="ud-org-stat">
+                                    <span class="ud-org-stat-val" style="color:#1d9e75;">@org.Active7</span>
+                                    <span class="ud-org-stat-lbl">активных</span>
+                                </div>
+                                @if (org.Deleted > 0)
+                                {
+                                    <div class="ud-org-stat">
+                                        <span class="ud-org-stat-val" style="color:#a32d2d;">@org.Deleted</span>
+                                        <span class="ud-org-stat-lbl">удал.</span>
+                                    </div>
+                                }
+                            </div>
+                            <span class="ud-org-toggle-icon">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
+                            </span>
+                        </div>
+                        <!-- Прогресс-бары -->
+                        <div class="ud-org-bar-wrap">
+                            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--md3-on-surface-low);margin-bottom:2px;">
+                                <span>Доля от общего</span><span>@pct%</span>
+                            </div>
+                            <div class="ud-org-progress">
+                                <div class="ud-org-progress-fill" style="width:@pct%;background:@color;"></div>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--md3-on-surface-low);margin-top:4px;margin-bottom:2px;">
+                                <span>Активность (7 дн.)</span><span>@actPct%</span>
+                            </div>
+                            <div class="ud-org-progress">
+                                <div class="ud-org-progress-fill" style="width:@actPct%;background:#1d9e75;"></div>
+                            </div>
+                        </div>
+                        <!-- Раскрывающийся список -->
+                        <div class="ud-org-users">
+                            @foreach (var u in org.Users/* .Take(10) */)
+                            {
+                                var uInit = string.Join("", (u.FullName ?? $"{u.Surname} {u.Name}").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w[0])).ToUpper();
+                                uInit = uInit.Length > 2 ? uInit[..2] : uInit;
+                                var uDiff = u.LastActivity.HasValue ? (now - u.LastActivity.Value).TotalDays : 999;
+                                var dotColor = uDiff < 1 ? "#1d9e75" : uDiff < 7 ? "#1a56a4" : uDiff < 30 ? "#854f0b" : "#a32d2d";
+                                <div class="ud-org-user-row @(u.IsDeleted ? "deleted" : "")">
+                                    <div class="ud-org-user-avatar" style="background:@(color)22;color:@color;border-color:@(color)66;font-size:9px;">
+                                        @uInit
+                                    </div>
+                                    <div style="flex:1;min-width:0;">
+                                        <div style="font-size:12px;font-weight:600;color:var(--md3-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                            @(u.FullName ?? $"{u.Surname} {u.Name}".Trim())
+                                            @if (u.IsDeleted)
+                                            {
+                                                <span class="ud-deleted-badge" style="margin-left:4px;">удалён</span>
+                                            }
+                                        </div>
+                                        <div style="font-size:10px;color:var(--md3-on-surface-low);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                                            @u.DepartDisplayName — @u.JobDisplayName
+                                        </div>
+                                    </div>
+                                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:@dotColor;flex-shrink:0;" title="@(u.LastActivity?.ToString("dd.MM.yy") ?? "нет данных")"></span>
+                                </div>
+                            }
+                            @*@if (org.Users.Count > 10)
+                            {
+                                <div style="padding:8px 14px;font-size:11px;color:var(--md3-on-surface-low);text-align:center;background:var(--md3-surface-2);">
+                                    ещё @(org.Users.Count - 10) сотрудников...
+                                </div>
+                            }*@
+                        </div>
+                    </div>
+                    orgIdx++;
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- График распределения по орг. -->
+    <div class="ud-widget">
+        <div class="ud-widget-hdr">
+            <span class="ud-widget-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+            </span>
+            <span class="ud-widget-title">Распределение</span>
+            <button class="dash-export-btn" onclick="exportOrgChart()" style="margin-left:auto;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>PNG
+            </button>
+        </div>
+        <div class="ud-widget-body">
+            <div style="position:relative;width:100%;height:200px;">
+                <canvas id="orgBarChart" aria-label="Распределение пользователей по организациям"></canvas>
+            </div>
+            <div style="position:relative;width:100%;height:160px;margin-top:16px;">
+                <canvas id="orgDonutChart" aria-label="Доля организаций"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script>
+        /* ── Данные ─────────────────────────────────────────────────── */
+        const UD_USERS = @Html.Raw(usersJson);
+        const ORG_DATA = @Html.Raw(orgChartJson);
+        const ORG_PALETTE = @Html.Raw(JsonSerializer.Serialize(orgPalette));
+
+        /* ── График по организациям (Bar) ───────────────────────────── */
+        new Chart(document.getElementById('orgBarChart'), {
+            type: 'bar',
+            data: {
+                labels: ORG_DATA.map(o => o.label.length > 18 ? o.label.slice(0,16)+'…' : o.label),
+                datasets: [
+                    {
+                        label: 'Всего',
+                        data: ORG_DATA.map(o => o.total),
+                        backgroundColor: ORG_PALETTE.map(c => c + 'cc'),
+                        borderColor: ORG_PALETTE,
+                        borderWidth: 1.5,
+                        borderRadius: 4,
+                    },
+                    {
+                        label: 'Активных (7д.)',
+                        data: ORG_DATA.map(o => o.active),
+                        backgroundColor: '#1d9e7566',
+                        borderColor: '#1d9e75',
+                        borderWidth: 1.5,
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8 } },
+                    tooltip: { backgroundColor: '#fff', borderColor: '#dde2ed', borderWidth: 1,
+                                titleColor: '#1a1d26', bodyColor: '#1a1d26' }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#8891a8' } },
+                    y: { grid: { color: '#dde2ed' }, ticks: { font: { size: 10 }, color: '#8891a8' }, beginAtZero: true }
+                }
+            }
+        });
+
+        /* ── Donut по организациям ──────────────────────────────────── */
+        let orgDonut = new Chart(document.getElementById('orgDonutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ORG_DATA.map(o => o.label),
+                datasets: [{
+                    data: ORG_DATA.map(o => o.total),
+                    backgroundColor: ORG_PALETTE,
+                    borderColor: '#fff', borderWidth: 2, hoverOffset: 4,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '60%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 6,
+                        boxWidth: 10, generateLabels: (chart) => {
+                            const ds = chart.data.datasets[0];
+                            return chart.data.labels.map((lbl, i) => ({
+                                text: lbl.length > 20 ? lbl.slice(0,18)+'…' : lbl,
+                                fillStyle: ds.backgroundColor[i],
+                                strokeStyle: ds.backgroundColor[i],
+                                hidden: false, index: i,
+                            }));
+                        }
+                    }},
+                    tooltip: { backgroundColor: '#fff', borderColor: '#dde2ed', borderWidth: 1,
+                                titleColor: '#1a1d26', bodyColor: '#1a1d26' }
+                }
+            }
+        });
+
+        function exportOrgChart() {
+            const link = document.createElement('a');
+            link.download = 'org-distribution.png';
+            link.href = document.getElementById('orgBarChart').toDataURL('image/png');
+            link.click();
+        }
+
+        /* ── Аккордеон организаций ──────────────────────────────────── */
+        function toggleOrg(cardId) {
+            const card = document.getElementById(cardId);
+            card.classList.toggle('expanded');
+        }
+
+        /* ── Инициализация ──────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => udRenderTable());
+    </script>
+}
+

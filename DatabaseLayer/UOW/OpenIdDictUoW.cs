@@ -3,6 +3,7 @@ using DatabaseLayer.Interfaces;
 using DatabaseLayer.Interfaces.EntityFramework;
 using DatabaseLayer.Models.OID;
 using DatabaseLayer.Repositories.OID;
+using DatabaseLayer.RepositoriesEF.OID;
 
 namespace DatabaseLayer.UOW
 {
@@ -13,6 +14,7 @@ namespace DatabaseLayer.UOW
         private AbpOrganizationUnitRepository abpOrganizationUnit;
         private AbpUserRepository abpUser;
         private AbpUserOrganizationUnitRepository userOrganizationUnitRepository;
+        private AppOidcUserScopeRepository appOidcUserScopeRepository;
 
         public OpenIdDictUoW()
         {
@@ -30,7 +32,7 @@ namespace DatabaseLayer.UOW
                 return abpOrganizationUnit;
             }
         }
-        public IReadonlyRepoEF<AbpUser> AbpUsers
+        public IReadonlyAsyncRepoEF<AbpUser> AbpUsers
         {
             get
             {
@@ -50,6 +52,18 @@ namespace DatabaseLayer.UOW
                     userOrganizationUnitRepository = new AbpUserOrganizationUnitRepository(_context);
                 }
                 return userOrganizationUnitRepository;
+            }
+        }
+
+        public IReadonlyAsyncRepoEF<AppOidcUserScope> AppOidcUserScopes
+        {
+            get
+            {
+                if (appOidcUserScopeRepository is null)
+                {
+                    appOidcUserScopeRepository = new AppOidcUserScopeRepository(_context);
+                }
+                return appOidcUserScopeRepository;
             }
         }
 

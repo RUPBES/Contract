@@ -26,6 +26,18 @@ namespace BusinessLayer.Models.KDO
         /// </summary>
         public DateTime? DateUploud { get; set; }
 
+
+        /*
+         for anotations
+         */
+
+        public string? Annotation { get; set; }
+        public int SortOrder { get; set; }
+
+        /*
+         
+         */
+
         public List<ActDTO> Acts { get; set; } = new List<ActDTO>();
 
         public List<AmendmentDTO> Amendments { get; set; } = new List<AmendmentDTO>();

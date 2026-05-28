@@ -1,4 +1,5 @@
-﻿using DatabaseLayer.Models.KDO;
+﻿using DatabaseLayer.Models.EXTRA;
+using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,7 @@ public partial class ContractsContext : DbContext
     public ContractsContext(DbContextOptions<ContractsContext> options) : base(options)
     {
     }
+
 
 
     public virtual DbSet<VContract> VContracts { get; set; }
@@ -100,6 +102,11 @@ public partial class ContractsContext : DbContext
     public virtual DbSet<PrepaymentAmendment> PrepaymentAmendments { get; set; }
     #endregion
 
+
+    public DbSet<ReleaseNote> ReleaseNotes { get; set; }
+    public DbSet<ReleaseNoteFile> ReleaseNoteFiles { get; set; }
+    public DbSet<UserReleaseNote> UserReleaseNotes { get; set; }
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Conventions.Add(_ => new BlankTriggerAddingConvention());
@@ -127,6 +134,54 @@ public partial class ContractsContext : DbContext
     {
         modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
 
+
+        /****
+                  
+         */
+
+        // DbContext — добавить в OnModelCreating
+        modelBuilder.Entity<ReleaseNoteFile>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Annotation).HasMaxLength(1000);
+
+            e.HasOne(x => x.ReleaseNote)
+                .WithMany(rn => rn.ReleaseNoteFiles)
+                .HasForeignKey(x => x.ReleaseNoteId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.File)
+                .WithMany(f => f.ReleaseNoteFiles)
+                .HasForeignKey(x => x.FileId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserReleaseNote>(e =>
+        {
+            e.HasKey(x => new { x.UserId, x.ReleaseNoteId });
+            e.HasIndex(x => new { x.UserId, x.IsRead })
+                .HasDatabaseName("IX_UserReleaseNote_UserId_IsRead");
+
+            e.HasOne(x => x.ReleaseNote)
+                .WithMany(rn => rn.UserReleaseNotes)
+                .HasForeignKey(x => x.ReleaseNoteId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ReleaseNote>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Title).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Version).IsRequired().HasMaxLength(20);
+            e.Property(x => x.CreatedByUserId).IsRequired().HasMaxLength(200);
+            e.HasIndex(x => new { x.Status, x.PublishedAt })
+                .HasDatabaseName("IX_ReleaseNote_Status_PublishedAt");
+        });
+
+
+        /*
+         
+         */
         modelBuilder.Entity<AdditionalTerm>(entity =>
         {
             entity.ToTable("AdditionalTerm");

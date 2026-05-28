@@ -6,8 +6,9 @@ namespace MvcLayer.Models
     {
 
         public int Id { get; set; }
-        //[Required(ErrorMessage = "Заполните 11 цифр телефона")]
-        [RegularExpression("8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}", ErrorMessage = "Заполните по шаблону номер телефона")]
+        [RegularExpression(@"^\+?375\d{9}$",
+    ErrorMessage = "Телефон должен быть в формате +375XXXXXXXXX (12 цифр)")]
+        [Display(Name = "Телефон")]
         public string? Number { get; set; }
 
         public int? OrganizationId { get; set; }

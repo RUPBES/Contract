@@ -26,5 +26,6 @@ namespace DatabaseLayer.Models.EXTRA
         public string? Author { get; set; }
 
         public string? PhoneNumbers { get; set; }
+        public bool IsActive{ get; set; }
     }
 }

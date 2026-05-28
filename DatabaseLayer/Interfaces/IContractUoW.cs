@@ -1,4 +1,5 @@
 ﻿using DatabaseLayer.Interfaces.EntityFramework;
+using DatabaseLayer.Models.EXTRA;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 
@@ -62,6 +63,8 @@ namespace DatabaseLayer.Interfaces
         IViewRepository<VContract> vContracts { get; }
         IViewRepository<VContractEngin> vContractEngins { get; }
         IRepository<Log> Logs { get; }
+        IReleaseNoteRepository ReleaseNotes { get; }
+        IRepository<ReleaseNoteFile> ReleaseNoteFiles { get; }
 
         void Save();
     }

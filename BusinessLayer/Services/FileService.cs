@@ -4,6 +4,7 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
 using DatabaseLayer.Interfaces;
+using DatabaseLayer.Models.EXTRA;
 using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.AspNetCore.Hosting;
@@ -108,6 +109,88 @@ namespace BusinessLayer.Services
             return id;
         }
 
+        public int? CreateAsync(List<IFormFile> files, Folder folder, int entityId, string nestedFolder = null)
+        {
+            int id = default;
+            if (files != null)
+            {
+                foreach (var file in files)
+                {
+                    string fileName = file.FileName;
+                    string folderNested = nestedFolder is null ? $@"{folder}" : $@"{folder}\{nestedFolder}";
+                    string folderPath = @$"\StaticFiles\{folderNested}\";
+                    string fullPath = _env.WebRootPath + folderPath + fileName;
+
+                    int i = 1;
+                    int positionDot = file.FileName.LastIndexOf('.');
+
+                    //if (!Directory.Exists(_env.WebRootPath + "\\StaticFiles\\" + folderNested))
+                    //{
+                    //    DirectoryInfo directory = new DirectoryInfo($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
+                    //    directory.Create();
+                    //}
+
+                    if (!Directory.Exists($@"{_env.WebRootPath}\StaticFiles\{folderNested}"))
+                    {
+                        Directory.CreateDirectory($@"{_env.WebRootPath}\StaticFiles\{folderNested}");
+                    }
+
+                    while (System.IO.File.Exists(fullPath))
+                    {
+                        fileName = file.FileName.Insert(positionDot, "[" + i + "]");
+                        fullPath = @$"{_env.WebRootPath}\StaticFiles\{folderNested}\{fileName}";
+                        i++;
+                    }
+
+                    folderPath += fileName;
+
+                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        file.CopyTo(fileStream);
+                    }
+
+                    File fileNew = new File
+                    {
+                        FileName = fileName,
+                        FilePath = folderPath,
+                        FileType = file.ContentType,
+                        DateUploud = DateTime.Now,
+                    };
+
+                    _database.Files.Create(fileNew);
+                    _database.Save();
+
+                    _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"create file ID={fileNew.Id}",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+
+                    id = fileNew.Id;
+
+                    if (folder != Folder.Other && entityId != 0)
+                    {
+                        AttachFileToEntity(fileNew.Id, entityId, folder);
+                    }
+                }
+            }
+            else
+            {
+                _logger.WriteLog(
+                            logLevel: LogLevel.Warning,
+                            message: $"not create file, object or IFormFileCollection or name of folder is null",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+            }
+
+            return id;
+        }
+
+        
+
+
+
+
         public void Delete(int id)
         {
             if (id > 0)
@@ -122,7 +205,7 @@ namespace BusinessLayer.Services
 
                         if (System.IO.File.Exists(file.FilePath))
                         {
-                            System.IO.File.Delete(file.FilePath);
+                            System.IO.File.Delete(file.FilePath); /// удаляем с диска
 
                             _logger.WriteLog(
                                logLevel: LogLevel.Information,
@@ -131,7 +214,7 @@ namespace BusinessLayer.Services
                                methodName: MethodBase.GetCurrentMethod().Name);
                         }
 
-                        _database.Files.Delete(file.Id);
+                        _database.Files.Delete(file.Id); /// удаляем из БД
                         _database.Save();
 
                         _logger.WriteLog(
@@ -430,6 +513,25 @@ namespace BusinessLayer.Services
                            _database.Files.Find(x => x.Id == file.FileId));
                     }
                     return _mapper.Map<IEnumerable<FileDTO>>(result);
+
+                case Folder.ReleaseNote:
+
+                    var releaseNote = _database.ReleaseNoteFiles.Find(x => x.ReleaseNoteId == entityId);
+                    List<FileDTO> resultRe = new List<FileDTO>();
+
+                    foreach (var file in releaseNote)
+                    {
+                        resultRe.AddRange(_database.Files.Find(x => x.Id == file.FileId).Select(x=> new FileDTO
+                        {
+                            Id = file.File.Id,
+                            FileName = file.File.FileName,
+                            FileType = file.File.FileType,
+                            FilePath = file.File.FilePath,
+                            Annotation = file.Annotation,
+                            SortOrder = file.SortOrder,
+                        }));
+                    }
+                    return resultRe;
             }
 
             return _mapper.Map<IEnumerable<FileDTO>>(result);
@@ -546,6 +648,17 @@ namespace BusinessLayer.Services
                         _logger.WriteLog(
                             logLevel: LogLevel.Information,
                             message: $"attach file to selection of procedure",
+                            nameSpace: typeof(FileService).Name,
+                            methodName: MethodBase.GetCurrentMethod().Name);
+                        break;
+
+                    case Folder.ReleaseNote:
+                        _database.ReleaseNoteFiles.Create(new ReleaseNoteFile { FileId = fileId, ReleaseNoteId = entityId });
+                        _database.Save();
+
+                        _logger.WriteLog(
+                            logLevel: LogLevel.Information,
+                            message: $"attach file to release note",
                             nameSpace: typeof(FileService).Name,
                             methodName: MethodBase.GetCurrentMethod().Name);
                         break;

@@ -19,5 +19,11 @@ namespace BusinessLayer.Interfaces.ContractInterfaces
 
         IEnumerable<FileDTO> GetByBuildingCode(int contractId, string buildingCode, string keyFolder, bool? useArchiveData = null);
         void DeleteFromFolderByContractId(int contractId, IEnumerable<File> files);
+
+
+        //int SaveNoteFiles(
+        //    int noteId,
+        //    List<IFormFile> uploads,
+        //    List<string?> annotations);
     }
 }

@@ -61,14 +61,17 @@
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.LastName" class="control-label">Фамилия</label>
                         <input asp-for="EmployeeContracts[2].Employee.LastName" class="form-control" required />
+                        <span asp-validation-for="EmployeeContracts[2].Employee.LastName" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.FirstName" class="control-label">Имя</label>
                         <input asp-for="EmployeeContracts[2].Employee.FirstName" class="form-control" required />
+                        <span asp-validation-for="EmployeeContracts[2].Employee.FirstName" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.FatherName" class="control-label">Отчество</label>
-                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="form-control" required />
+                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="form-control" />
+                        <span asp-validation-for="EmployeeContracts[2].Employee.FatherName" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Организация</label>
@@ -80,22 +83,25 @@
                             }
                         </select>
                     </div>
-                    <div class="form-group">
+                   @*  <div class="form-group">
                         <label class="form-label">Отдел</label>
                         <select asp-for="EmployeeContracts[2].Employee.DepartmentEmployees[0].DepartmentId" id="departmentNameSelect" class="form-control js-chosen">
                         </select>
-                    </div>
+                    </div> *@
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.Position" class="control-label">Должность</label>
                         <input asp-for="EmployeeContracts[2].Employee.Position" class="form-control" required />
+                        <span asp-validation-for="EmployeeContracts[2].Employee.Position" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.Email">Электронная почта</label>
                         <input asp-for="EmployeeContracts[2].Employee.Email" type="email" class="form-control" />
+                        <span asp-validation-for="EmployeeContracts[2].Employee.Email" class="text-danger"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="EmployeeContracts[2].Employee.Phones[0].Number">Телефон</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Phones[0].Number" type="text" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" />
+                        <input asp-for="EmployeeContracts[2].Employee.Phones[0].Number" type="text" class="form-control"/>
+                        <span asp-validation-for="EmployeeContracts[2].Employee.Phones[0].Number" class="text-danger"></span>
                     </div>
                     <button class="btn btn-primary mt-3" type="submit" id="submitForm2">Добавить</button>
                 </form>
@@ -135,4 +141,7 @@
         });
     });
 
-</script> 
+</script>
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

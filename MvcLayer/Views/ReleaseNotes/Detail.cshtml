@@ -1,0 +1,145 @@
+﻿@using BusinessLayer.Enums
+@using BusinessLayer.Models.Settings.Note
+@using DatabaseLayer.Models.EXTRA
+@model ReleaseNoteDetail
+@inject BusinessLayer.Interfaces.ContractInterfaces.IFileService Files
+@{
+    ViewData["Title"] = Model.Title;
+    // Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="dm-overlay">
+    <div class="dm-table">
+        <div class="dm-cell">
+            <div class="dm-modal" style="width: 100%;max-width: 960px;">
+                <div>
+                    <div class="org-header">
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="orgModalTitle">@ViewData["Title"]</h2>
+
+                        </div>
+                        <a asp-controller="Home" asp-action="Index" class="close-btn"></a>
+                    </div>
+
+
+                    <div class="rn-detail-page">
+                        <a href="/release-notes" class="rn-back-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                            Все обновления
+                        </a>
+
+                        <div class="rn-detail-card">
+                            <div class="rn-detail-header">
+                                <div class="rn-detail-meta">
+                                    <span class="rn-detail-version">v@(Model.Version)</span>
+                                    <span class="rn-detail-date">@Model.PublishedAt.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ru-RU"))</span>
+                                    @if (Model.IsRead)
+                                    {
+                                        <span class="rn-read-badge">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                            Прочитано
+                                        </span>
+                                    }
+                                </div>
+                                <h1 class="rn-detail-title">@Model.Title</h1>
+                            </div>
+
+                            <div class="rn-detail-body">
+                                <div class="rn-content">
+                                    @Html.Raw(Model.Content)
+                                </div>
+
+                                @if (Model.Images.Any())
+                                {
+                                    <div class="rn-images-section">
+                                        <div class="rn-images-label">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                                <polyline points="21 15 16 10 5 21" />
+                                            </svg>
+                                            Скриншоты (@Model.Images.Count)
+                                        </div>
+                                        <div class="rn-images-grid">
+                                            @foreach (var file in Files.GetAttachedFiles(Model.Id, Folder.ReleaseNote))
+                                            {
+                                                <div class="rn-image-card" onclick="openLightbox('@(file.FilePath?.Replace("\\", "/").Replace("'", "\\'") ?? "")', '')">
+                                                    <img src="@file.FilePath" alt="@file.Annotation" loading="lazy" />
+                                                    @if (!string.IsNullOrEmpty(file.Annotation))
+                                                    {
+                                                        <div class="rn-image-annotation">@file.Annotation</div>
+                                                    }
+                                                </div>
+
+                                              
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="rn-detail-footer">
+                                <span class="rn-author">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    @Model.CreatedByUserId
+                                </span>
+                                <a href="/release-notes" class="rn-footer-btn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="15 18 9 12 15 6" />
+                                    </svg>
+                                    Назад к списку
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Лайтбокс -->
+                    <div class="rn-lightbox" id="lightbox" onclick="closeLightbox(event)">
+                        <button class="rn-lightbox-close" onclick="closeLightbox()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                        <img id="lightboxImg" src="" alt="" />
+                        <p class="rn-lightbox-annotation" id="lightboxAnnotation"></p>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openLightbox(src, annotation) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxAnnotation').textContent = annotation;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox(e) {
+            if (e && e.target !== document.getElementById('lightbox') && !e.currentTarget.classList.contains('rn-lightbox-close')) return;
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.getElementById('lightbox').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+}

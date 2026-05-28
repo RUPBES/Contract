@@ -11,7 +11,9 @@ namespace MvcLayer.Models
         /// <summary>
         /// юр. адрес организации
         /// </summary>
-        [DisplayName("Юр.адрес")]
+        [Required(ErrorMessage = "Обязательно для заполнения")]
+        [StringLength(500, MinimumLength = 7, ErrorMessage = "Название должно содержать от 7 до 500 символов")]
+        [Display(Name = "Юр.Адрес")]
         public string? FullAddress { get; set; }
         /// <summary>
         /// фактический адрес
@@ -24,7 +26,8 @@ namespace MvcLayer.Models
         /// сайт
         /// </summary>
         /// 
-        [DisplayName("Сайт организации")]
+        [Url(ErrorMessage = "Введите корректный адрес сайта (например: https://example.by)")]
+        [Display(Name = "Сайт")]
         public string? SiteAddress { get; set; }
 
         public string? Author { get; set; }

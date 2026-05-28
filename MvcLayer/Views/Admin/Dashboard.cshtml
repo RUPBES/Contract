@@ -1,0 +1,938 @@
+﻿@model BusinessLayer.Models.Settings.ActivityDashboardViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Дашборд активности";
+    ViewData["PageTitle"] = "Дашборд активности сотрудников";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Дашборд", "/admin")
+    };
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    /* Сериализуем данные для JS */
+    // Явно указываем camelCase для JS
+    var jsonOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    var timelineJson = JsonSerializer.Serialize(Model.Timeline, jsonOptions);
+    var usersJson = JsonSerializer.Serialize(Model.Users
+        .Select(u => new
+        {
+            u.FullName,
+            u.Email,
+            u.Creates,
+            u.Reads,
+            u.Updates,
+            u.Deletes,
+            u.Total,
+            LastActivity = u.LastActivity?.ToString("dd.MM.yyyy HH:mm") ?? "—"
+        }), jsonOptions);
+}
+
+<style>
+    /* ── Метрики-карточки ─────────────────────────── */
+    .dash-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .dash-metric-card {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: box-shadow var(--md3-transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .dash-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--md3-radius-lg) var(--md3-radius-lg) 0 0;
+        }
+
+        .dash-metric-card.primary::before {
+            background: var(--md3-primary);
+        }
+
+        .dash-metric-card.success::before {
+            background: #1d9e75;
+        }
+
+        .dash-metric-card.info::before {
+            background: #1a56a4;
+        }
+
+        .dash-metric-card.warning::before {
+            background: #854f0b;
+        }
+
+        .dash-metric-card:hover {
+            box-shadow: var(--md3-shadow-2);
+        }
+
+    .dash-metric-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--md3-on-surface-low);
+    }
+
+    .dash-metric-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        line-height: 1;
+    }
+
+    .dash-metric-sub {
+        font-size: 12px;
+        color: var(--md3-on-surface-low);
+    }
+
+    /* ── Сетка виджетов ───────────────────────────── */
+    .dash-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .dash-grid-full {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    /* ── Виджет-карточка ──────────────────────────── */
+    .dash-widget {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+    }
+
+    .dash-widget-header {
+        display: flex;
+        align-items: center;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--md3-outline);
+        background: var(--md3-surface-2);
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .dash-widget-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dash-widget-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-primary-light);
+        border: 1.5px solid var(--md3-primary-mid);
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .dash-widget-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .dash-widget-body {
+        padding: 20px;
+    }
+
+    /* ── Фильтр-чипы (период) ────────────────────── */
+    .dash-period-chips {
+        display: flex;
+        gap: 4px;
+    }
+
+    .dash-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid var(--md3-outline);
+        background: transparent;
+        color: var(--md3-on-surface-med);
+        transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+    }
+
+        .dash-chip:hover {
+            background: var(--md3-surface-3);
+            color: var(--md3-on-surface);
+        }
+
+        .dash-chip.active {
+            background: var(--md3-primary);
+            color: #fff;
+            border-color: var(--md3-primary);
+        }
+
+    /* ── Кнопка экспорта ─────────────────────────── */
+    .dash-export-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: var(--md3-radius-sm);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1.5px solid var(--md3-outline);
+        background: transparent;
+        color: var(--md3-on-surface-med);
+        text-decoration: none;
+        transition: background var(--md3-transition), color var(--md3-transition);
+        white-space: nowrap;
+    }
+
+        .dash-export-btn:hover {
+            background: var(--md3-primary-light);
+            color: var(--md3-primary);
+            border-color: var(--md3-primary-mid);
+            text-decoration: none;
+        }
+
+    /* ── Легенда круговой диаграммы ──────────────── */
+    .donut-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .donut-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .donut-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .donut-legend-label {
+        font-size: 13px;
+        color: var(--md3-on-surface-med);
+        flex: 1;
+    }
+
+    .donut-legend-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+    }
+
+    .donut-legend-pct {
+        font-size: 11px;
+        color: var(--md3-on-surface-low);
+        min-width: 36px;
+        text-align: right;
+    }
+
+    /* ── Таблица активности ──────────────────────── */
+    .dash-table-wrap {
+        overflow-x: auto;
+        border-radius: 0 0 var(--md3-radius-lg) var(--md3-radius-lg);
+    }
+
+    .dash-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+        .dash-table thead tr {
+            background: var(--md3-surface-3);
+            border-bottom: 1.5px solid var(--md3-outline-strong);
+        }
+
+        .dash-table thead th {
+            padding: 9px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--md3-on-surface-low);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .dash-table thead th:hover {
+                color: var(--md3-primary);
+            }
+
+        .dash-table tbody tr {
+            border-bottom: 1px solid var(--md3-outline);
+            transition: background var(--md3-transition);
+        }
+
+            .dash-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .dash-table tbody tr:hover {
+                background: var(--md3-primary-light);
+            }
+
+        .dash-table td {
+            padding: 10px 14px;
+            vertical-align: middle;
+            color: var(--md3-on-surface);
+        }
+
+    /* прогресс-бар активности */
+    .dash-activity-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dash-bar-track {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--md3-surface-3);
+        overflow: hidden;
+        min-width: 60px;
+    }
+
+    .dash-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: var(--md3-primary);
+        transition: width .4s cubic-bezier(.4,0,.2,1);
+    }
+
+    .dash-bar-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        min-width: 36px;
+        text-align: right;
+    }
+
+    /* бейдж типа операции */
+    .op-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .op-badge.create {
+            background: #e1f5ee;
+            color: #0f6e56;
+        }
+
+        .op-badge.read {
+            background: var(--md3-primary-light);
+            color: var(--md3-primary);
+        }
+
+        .op-badge.update {
+            background: #faeeda;
+            color: #854f0b;
+        }
+
+        .op-badge.delete {
+            background: #fcebeb;
+            color: #a32d2d;
+        }
+
+    /* последняя активность */
+    .last-active {
+        font-size: 12px;
+        color: var(--md3-on-surface-low);
+        white-space: nowrap;
+    }
+
+        .last-active.today {
+            color: #1d9e75;
+            font-weight: 600;
+        }
+
+    /* сортировка */
+    .sort-icon {
+        display: inline-block;
+        margin-left: 4px;
+        opacity: .4;
+    }
+
+        .sort-icon.asc::after {
+            content: ' ↑';
+        }
+
+        .sort-icon.desc::after {
+            content: ' ↓';
+        }
+
+    /* ── Доп. карточки виджетов ──────────────────── */
+    .dash-mini-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--md3-outline);
+        border-top: 1px solid var(--md3-outline);
+    }
+
+    .dash-mini-stat {
+        background: var(--md3-surface-2);
+        padding: 12px 16px;
+        text-align: center;
+    }
+
+    .dash-mini-stat-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--md3-on-surface-low);
+        font-weight: 700;
+    }
+
+    .dash-mini-stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        margin-top: 2px;
+    }
+
+    /* ── Адаптив ──────────────────────────────────── */
+    @@media (max-width: 900px) {
+        .dash-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .dash-metrics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .dash-mini-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .dash-widget-header {
+            gap: 6px;
+        }
+    }
+</style>
+
+<!-- ══ МЕТРИКИ ══════════════════════════════════════════════════ -->
+<div class="dash-metrics">
+    @foreach (var m in Model.Metrics)
+    {
+        <div class="dash-metric-card @m.Color">
+            <span class="dash-metric-label">@m.Title</span>
+            <span class="dash-metric-value">@m.Value</span>
+            <span class="dash-metric-sub">@m.Subtitle</span>
+        </div>
+    }
+</div>
+
+<!-- ══ ЛИНЕЙНЫЙ ГРАФИК + КРУГОВАЯ ДИАГРАММА ════════════════════ -->
+<div class="dash-grid">
+
+    <!-- Линейный график динамики -->
+    <div class="dash-widget">
+        <div class="dash-widget-header">
+            <span class="dash-widget-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+            </span>
+            <span class="dash-widget-title">Динамика активности</span>
+            <div class="dash-widget-actions">
+                <!-- Фильтр-чипы -->
+                <div class="dash-period-chips" id="periodChips">
+                    <button class="dash-chip @(Model.Period == "day" ? "active" : "")" data-period="day">День</button>
+                    <button class="dash-chip @(Model.Period == "month" ? "active" : "")" data-period="month">Месяц</button>
+                    <button class="dash-chip @(Model.Period == "year" ? "active" : "")" data-period="year">Год</button>
+                </div>
+                <!-- Экспорт -->
+                <button class="dash-export-btn" onclick="exportLineChart()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    PNG
+                </button>
+            </div>
+        </div>
+        <div class="dash-widget-body" style="padding-top:16px;">
+            <div style="position:relative; width:100%; height:260px;">
+                <canvas id="lineChart"
+                        role="img"
+                        aria-label="Линейный график динамики операций за выбранный период">
+                    Данные об активности сотрудников за период.
+                </canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Круговая (donut) диаграмма типов операций -->
+    <div class="dash-widget">
+        <div class="dash-widget-header">
+            <span class="dash-widget-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                    <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                </svg>
+            </span>
+            <span class="dash-widget-title">Типы операций</span>
+            <div class="dash-widget-actions">
+                <button class="dash-export-btn" onclick="exportDonutChart()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    PNG
+                </button>
+            </div>
+        </div>
+        <div class="dash-widget-body">
+            <div style="position:relative; width:100%; height:180px;">
+                <canvas id="donutChart"
+                        role="img"
+                        aria-label="Круговая диаграмма типов CRUD-операций">
+                    Create: @Model.TotalCreates, Read: @Model.TotalReads,
+                    Update: @Model.TotalUpdates, Delete: @Model.TotalDeletes.
+                </canvas>
+            </div>
+            <!-- Легенда -->
+            <div class="donut-legend" id="donutLegend"></div>
+        </div>
+        <!-- Мини-статистика -->
+        <div class="dash-mini-stats">
+            <div class="dash-mini-stat">
+                <div class="dash-mini-stat-label">CREATE</div>
+                <div class="dash-mini-stat-value" style="color:#1d9e75;">@Model.TotalCreates</div>
+            </div>
+            <div class="dash-mini-stat">
+                <div class="dash-mini-stat-label">READ</div>
+                <div class="dash-mini-stat-value" style="color:var(--md3-primary);">@Model.TotalReads</div>
+            </div>
+            <div class="dash-mini-stat">
+                <div class="dash-mini-stat-label">UPDATE</div>
+                <div class="dash-mini-stat-value" style="color:#854f0b;">@Model.TotalUpdates</div>
+            </div>
+            <div class="dash-mini-stat">
+                <div class="dash-mini-stat-label">DELETE</div>
+                <div class="dash-mini-stat-value" style="color:#a32d2d;">@Model.TotalDeletes</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ТАБЛИЦА АКТИВНОСТИ ═══════════════════════════════════════ -->
+<div class="dash-widget">
+    <div class="dash-widget-header">
+        <span class="dash-widget-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+        </span>
+        <span class="dash-widget-title">Активность сотрудников</span>
+        <div class="dash-widget-actions">
+            <!-- Поиск -->
+            <div style="display:flex; align-items:center; border:1.5px solid var(--md3-outline); border-radius:var(--md3-radius-sm); background:var(--md3-surface); overflow:hidden; height:32px;">
+                <span style="padding:0 8px; color:var(--md3-on-surface-low);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                </span>
+                <input id="tableSearch" type="text" placeholder="Поиск по ФИО..."
+                       style="border:none; outline:none; background:transparent; font-size:12px; padding:0 8px 0 0; width:150px; color:var(--md3-on-surface);"
+                       oninput="filterTable(this.value)" />
+            </div>
+            <!-- Экспорт Excel -->
+            <button class="dash-export-btn" onclick="exportTableExcel()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Excel
+            </button>
+            <!-- Экспорт PDF -->
+            <button class="dash-export-btn" onclick="exportTablePdf()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="dash-table-wrap">
+        <table class="dash-table" id="activityTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable('fullName')">#  ФИО <span class="sort-icon" id="sort-fullName"></span></th>
+                    <th onclick="sortTable('creates')">CREATE <span class="sort-icon" id="sort-creates"></span></th>
+                    <th onclick="sortTable('reads')">READ <span class="sort-icon" id="sort-reads"></span></th>
+                    <th onclick="sortTable('updates')">UPDATE <span class="sort-icon" id="sort-updates"></span></th>
+                    <th onclick="sortTable('deletes')">DELETE <span class="sort-icon" id="sort-deletes"></span></th>
+                    <th onclick="sortTable('total')">Всего <span class="sort-icon" id="sort-total"></span></th>
+                    <th>Последняя активность</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ══ SCRIPTS ══════════════════════════════════════════════════ -->
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        /* ── Данные из сервера ──────────────────────────────────────────── */
+        const TIMELINE = @Html.Raw(timelineJson);
+        const USERS    = @Html.Raw(usersJson);
+        const GRAND    = @Model.GrandTotal;
+
+        /* ── Цвета MD3 ─────────────────────────────────────────────────── */
+        const COLORS = {
+            primary:  '#1a56a4',
+            pLight:   '#e8f0fb',
+            success:  '#1d9e75',
+            warning:  '#854f0b',
+            danger:   '#a32d2d',
+            outline:  '#dde2ed',
+            surface3: '#eef1f8',
+            textLow:  '#8891a8',
+        };
+
+        const CRUD_COLORS  = ['#1d9e75','#1a56a4','#854f0b','#a32d2d'];
+        const CRUD_LABELS  = ['CREATE','READ','UPDATE','DELETE'];
+        const CRUD_KEYS    = ['creates','reads','updates','deletes'];
+
+        /* ── Линейный график ────────────────────────────────────────────── */
+        let lineChart;
+        let currentPeriod = '@Model.Period';
+
+        function buildLineChart(period) {
+            const pts    = TIMELINE[period] || [];
+            const labels = pts.map(p => p.label);
+            const data   = pts.map(p => p.value);
+
+            if (lineChart) {
+                lineChart.data.labels = labels;
+                lineChart.data.datasets[0].data = data;
+                lineChart.update('active');
+                return;
+            }
+
+            lineChart = new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Операций',
+                        data,
+                        borderColor: COLORS.primary,
+                        backgroundColor: COLORS.pLight + 'cc',
+                        borderWidth: 2,
+                        pointRadius: pts.length > 20 ? 0 : 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: COLORS.primary,
+                        fill: true,
+                        tension: 0.4,
+                        borderDash: [],          /* сплошная линия */
+                        pointStyle: 'circle',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#fff',
+                            borderColor: COLORS.outline,
+                            borderWidth: 1,
+                            titleColor: COLORS.primary,
+                            bodyColor: '#1a1d26',
+                            padding: 10,
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} операций`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: COLORS.outline },
+                            ticks: {
+                                color: COLORS.textLow, font: { size: 11 },
+                                autoSkip: true, maxTicksLimit: 12
+                            }
+                        },
+                        y: {
+                            grid: { color: COLORS.outline },
+                            ticks: { color: COLORS.textLow, font: { size: 11 } },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        /* ── Фильтр-чипы периода ────────────────────────────────────────── */
+        document.getElementById('periodChips').addEventListener('click', e => {
+            const btn = e.target.closest('[data-period]');
+            if (!btn) return;
+            document.querySelectorAll('.dash-chip').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            currentPeriod = btn.dataset.period;
+            buildLineChart(currentPeriod);
+        });
+
+        /* ── Круговая (donut) диаграмма ─────────────────────────────────── */
+        let donutChart;
+
+        function buildDonutChart() {
+            const total  = @Model.GrandTotal;
+            const values = [@Model.TotalCreates, @Model.TotalReads, @Model.TotalUpdates, @Model.TotalDeletes];
+
+            donutChart = new Chart(document.getElementById('donutChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: CRUD_LABELS,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: CRUD_COLORS,
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        hoverOffset: 6,
+                        /* вторичный визуальный признак: разная прозрачность при hover */
+                        hoverBackgroundColor: CRUD_COLORS.map(c => c + 'cc'),
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#fff',
+                            borderColor: COLORS.outline,
+                            borderWidth: 1,
+                            titleColor: '#1a1d26',
+                            bodyColor: '#1a1d26',
+                            callbacks: {
+                                label: ctx => ` ${ctx.label}: ${ctx.parsed} (${Math.round(ctx.parsed/total*100)}%)`
+                            }
+                        }
+                    }
+                }
+            });
+
+            /* Рисуем легенду */
+            const legend = document.getElementById('donutLegend');
+            legend.innerHTML = '';
+            CRUD_LABELS.forEach((lbl, i) => {
+                const pct = total > 0 ? Math.round(values[i] / total * 100) : 0;
+                legend.innerHTML += `
+                    <div class="donut-legend-item">
+                        <span class="donut-legend-dot" style="background:${CRUD_COLORS[i]};"></span>
+                        <span class="donut-legend-label">${lbl}</span>
+                        <span class="donut-legend-value">${values[i]}</span>
+                        <span class="donut-legend-pct">${pct}%</span>
+                    </div>`;
+            });
+        }
+
+        /* ── Таблица ────────────────────────────────────────────────────── */
+        let sortKey = 'total';
+        let sortDir = 'desc';
+        let filterStr = '';
+
+        function renderTable() {
+            const maxTotal = Math.max(...USERS.map(u => u.total), 1);
+            let filtered   = USERS.filter(u =>
+                !filterStr || u.fullName.toLowerCase().includes(filterStr.toLowerCase())
+            );
+
+            filtered.sort((a, b) => {
+                let av = a[sortKey], bv = b[sortKey];
+                if (typeof av === 'string') av = av.toLowerCase();
+                if (typeof bv === 'string') bv = bv.toLowerCase();
+                return sortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+            });
+
+            const today = new Date().toLocaleDateString('ru-RU');
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = filtered.map((u, i) => {
+                const pct    = Math.round(u.total / maxTotal * 100);
+                const isToday= u.lastActivity && u.lastActivity.startsWith(today);
+                return `
+                <tr>
+                    <td style="font-weight:600; color:var(--md3-on-surface);">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:30px;height:30px;border-radius:50%;background:var(--md3-primary-light);
+                                        border:1.5px solid var(--md3-primary-mid);display:flex;align-items:center;
+                                        justify-content:center;font-size:11px;font-weight:700;color:var(--md3-primary);flex-shrink:0;">
+                                ${u.fullName?.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style="font-size:13px;">${u.fullName}</div>
+                                <div style="font-size:11px;color:var(--md3-on-surface-low);">${u.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="op-badge create">${u.creates}</span></td>
+                    <td><span class="op-badge read">${u.reads}</span></td>
+                    <td><span class="op-badge update">${u.updates}</span></td>
+                    <td><span class="op-badge delete">${u.deletes}</span></td>
+                    <td>
+                        <div class="dash-activity-bar">
+                            <div class="dash-bar-track">
+                                <div class="dash-bar-fill" style="width:${pct}%;"></div>
+                            </div>
+                            <span class="dash-bar-value">${u.total}</span>
+                        </div>
+                    </td>
+                    <td><span class="last-active ${isToday ? 'today' : ''}">${u.lastActivity}</span></td>
+                </tr>`;
+            }).join('');
+
+            /* Иконки сортировки */
+            ['fullName','creates','reads','updates','deletes','total'].forEach(k => {
+                const el = document.getElementById(`sort-${k}`);
+                if (!el) return;
+                el.className = 'sort-icon' + (k === sortKey ? (' ' + sortDir) : '');
+            });
+        }
+
+        function sortTable(key) {
+            if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            else { sortKey = key; sortDir = 'desc'; }
+            renderTable();
+        }
+
+        function filterTable(val) {
+            filterStr = val;
+            renderTable();
+        }
+
+        /* ── Экспорт PNG (графики) ──────────────────────────────────────── */
+        function exportLineChart() {
+            const link = document.createElement('a');
+            link.download = `activity-timeline-${currentPeriod}.png`;
+            link.href = document.getElementById('lineChart').toDataURL('image/png');
+            link.click();
+        }
+
+        function exportDonutChart() {
+            const link = document.createElement('a');
+            link.download = 'activity-crud-distribution.png';
+            link.href = document.getElementById('donutChart').toDataURL('image/png');
+            link.click();
+        }
+
+        /* ── Экспорт таблицы в Excel (CSV) ─────────────────────────────── */
+        function exportTableExcel() {
+            const headers = ['ФИО','Email','CREATE','READ','UPDATE','DELETE','ВСЕГО','Последняя активность'];
+            const rows    = USERS.map(u => [
+                u.fullName, u.email, u.creates, u.reads, u.updates, u.deletes, u.total, u.lastActivity
+            ]);
+
+            const bom  = '\uFEFF'; /* UTF-8 BOM для Excel */
+            const csv  = bom + [headers, ...rows]
+                .map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';'))
+                .join('\r\n');
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href  = URL.createObjectURL(blob);
+            link.download = `activity-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        /* ── Экспорт таблицы в PDF ──────────────────────────────────────── */
+        function exportTablePdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', format: 'a4' });
+
+            doc.setFontSize(14);
+            doc.text('Активность сотрудников', 14, 16);
+            doc.setFontSize(9);
+            doc.text(`Дата: ${new Date().toLocaleDateString('ru-RU')}`, 14, 22);
+
+            doc.autoTable({
+                head: [['ФИО','Email','CREATE','READ','UPDATE','DELETE','Всего','Последняя активность']],
+                body: USERS.map(u => [
+                    u.fullName, u.email, u.creates, u.reads, u.updates, u.deletes, u.total, u.lastActivity
+                ]),
+                startY: 28,
+                headStyles: { fillColor: [26, 86, 164], fontSize: 8, fontStyle: 'bold' },
+                bodyStyles: { fontSize: 8 },
+                alternateRowStyles: { fillColor: [247, 248, 252] },
+                margin: { left: 14, right: 14 },
+            });
+
+            doc.save(`activity-${new Date().toISOString().slice(0,10)}.pdf`);
+        }
+
+        /* ── Инициализация ──────────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            buildLineChart(currentPeriod);
+            buildDonutChart();
+            renderTable();
+        });
+    </script>
+}

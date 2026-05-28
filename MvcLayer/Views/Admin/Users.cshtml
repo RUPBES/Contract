@@ -1,0 +1,424 @@
+﻿@model IEnumerable<BusinessLayer.Models.Settings.UserDashboardDTO>
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@{
+    ViewData["Title"] = "Пользователи";
+    ViewData["PageTitle"] = "Дашборд пользователей";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Дашборд", "/admin"),
+        ("Пользователи", "/admin/users")
+    };
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    var users = Model.ToList();
+    var now = DateTime.UtcNow;
+    var today = now.Date;
+
+    /* ── Группировка по организациям ────────────────── */
+    var byOrg = users
+        .GroupBy(u => new { u.OrgId, Name = u.OrgDisplayName ?? "Не указана" })
+        .Select(g => new
+        {
+            OrgName = g.Key.Name,
+            Total = g.Count(),
+            Active7 = g.Count(u => u.LastActivity.HasValue && u.LastActivity.Value >= today.AddDays(-7)),
+            Deleted = g.Count(u => u.IsDeleted),
+            Users = g.OrderByDescending(u => u.LastActivity).ToList()
+        })
+        .OrderByDescending(g => g.Total)
+        .ToList();
+
+    /* ── Данные для JS ───────────────────────────────── */
+    var usersJson = JsonSerializer.Serialize(users.Select(u => new
+    {
+        u.Id,
+        FullName = u.FullName ?? $"{u.Surname} {u.Name}".Trim(),
+        u.Email,
+        u.UserUniqName,
+        u.PhoneNumber,
+        u.OrgDisplayName,
+        u.DepartDisplayName,
+        u.JobDisplayName,
+        u.IsDeleted,
+        LastActivity = u.LastActivity?.ToString("dd.MM.yyyy HH:mm") ?? null,
+        CreationTime = u.CreationTime.ToString("dd.MM.yyyy"),
+    }), jsonOpts);
+
+}
+
+<style>
+
+    /* ── Двухколоночная сетка ──────────────────────── */
+    .ud-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .ud-grid-3 {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+
+
+    /* ── Основная таблица ──────────────────────────── */
+    .ud-table-wrap {
+        overflow-x: auto;
+    }
+
+    .ud-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+        .ud-table thead tr {
+            background: var(--md3-surface-3);
+            border-bottom: 1.5px solid var(--md3-outline-strong);
+        }
+
+        .ud-table thead th {
+            padding: 9px 12px;
+            text-align: left;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--md3-on-surface-low);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .ud-table thead th:hover {
+                color: var(--md3-primary);
+            }
+
+        .ud-table tbody tr {
+            border-bottom: 1px solid var(--md3-outline);
+            transition: background var(--md3-transition);
+        }
+
+            .ud-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .ud-table tbody tr:hover {
+                background: var(--md3-primary-light);
+            }
+
+            .ud-table tbody tr.deleted {
+                opacity: .55;
+            }
+
+        .ud-table td {
+            padding: 9px 12px;
+            vertical-align: middle;
+        }
+
+    .ud-activity-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+
+    .ud-deleted-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 20px;
+        background: #fcebeb;
+        border: 1px solid #f09595;
+        color: #a32d2d;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    /* ── Тулбар таблицы ────────────────────────────── */
+    .ud-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-bottom: 1px solid var(--md3-outline);
+        background: var(--md3-surface);
+        flex-wrap: wrap;
+    }
+
+    .ud-search-wrap {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        overflow: hidden;
+        height: 32px;
+        transition: border-color var(--md3-transition);
+    }
+
+        .ud-search-wrap:focus-within {
+            border-color: var(--md3-primary);
+        }
+
+        .ud-search-wrap input {
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0 10px;
+            font-size: 12px;
+            color: var(--md3-on-surface);
+            width: 180px;
+        }
+
+            .ud-search-wrap input::placeholder {
+                color: var(--md3-on-surface-low);
+            }
+
+    .ud-filter-select {
+        height: 32px;
+        padding: 0 10px;
+        border: 1.5px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        font-size: 12px;
+        color: var(--md3-on-surface);
+        outline: none;
+        cursor: pointer;
+        transition: border-color var(--md3-transition);
+    }
+
+        .ud-filter-select:focus {
+            border-color: var(--md3-primary);
+        }
+
+    .ud-toolbar-spacer {
+        flex: 1;
+    }
+
+    /* ── Адаптив ───────────────────────────────────── */
+    @@media (max-width: 900px) {
+        .ud-grid-2, .ud-grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+</style>
+<!-- ══ ОСНОВНАЯ ТАБЛИЦА ════════════════════════════════════════ -->
+<div class="ud-widget" style="margin-bottom:0;">
+    <div class="ud-widget-hdr">
+        <span class="ud-widget-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+            </svg>
+        </span>
+        <span class="ud-widget-title">Все пользователи</span>
+    </div>
+
+    <!-- Тулбар -->
+    <div class="ud-toolbar">
+        <div class="ud-search-wrap">
+            <span style="padding:0 8px;color:var(--md3-on-surface-low);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+            </span>
+            <input id="udSearch" type="text" placeholder="Поиск по ФИО, email..." oninput="udFilterTable()" />
+        </div>
+
+        <select class="ud-filter-select" id="udOrgFilter" onchange="udFilterTable()">
+            <option value="">Все организации</option>
+            @foreach (var org in byOrg)
+            {
+                <option value="@org.OrgName">@org.OrgName</option>
+            }
+        </select>
+
+        <select class="ud-filter-select" id="udActivityFilter" onchange="udFilterTable()">
+            <option value="">Любая активность</option>
+            <option value="today">Сегодня</option>
+            <option value="week">За 7 дней</option>
+            <option value="month">За 30 дней</option>
+            <option value="none">Нет активности</option>
+        </select>
+
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--md3-on-surface-med);cursor:pointer;">
+            <input type="checkbox" id="udShowDeleted" onchange="udFilterTable()" style="cursor:pointer;" />
+            Показать удалённых
+        </label>
+
+        <span class="ud-toolbar-spacer"></span>
+
+        <span id="udCountLabel" style="font-size:11px;color:var(--md3-on-surface-low);white-space:nowrap;"></span>
+
+        <button class="dash-export-btn" onclick="udExportCsv()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>
+            CSV
+        </button>
+    </div>
+
+    <div class="ud-table-wrap">
+        <table class="ud-table">
+            <thead>
+                <tr>
+                    <th onclick="udSort('fullName')">ФИО <span class="sort-icon" id="uds-fullName"></span></th>
+                    <th onclick="udSort('orgDisplayName')">Организация <span class="sort-icon" id="uds-orgDisplayName"></span></th>
+                    <th onclick="udSort('departDisplayName')">Отдел <span class="sort-icon" id="uds-departDisplayName"></span></th>
+                    <th onclick="udSort('jobDisplayName')">Должность <span class="sort-icon" id="uds-jobDisplayName"></span></th>
+                    <th>Email</th>
+                    <th onclick="udSort('lastActivity')">Последняя активность <span class="sort-icon" id="uds-lastActivity"></span></th>
+                    <th onclick="udSort('creationTime')">Создан <span class="sort-icon" id="uds-creationTime"></span></th>
+                </tr>
+            </thead>
+            <tbody id="udTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script>
+        /* ── Данные ─────────────────────────────────────────────────── */
+        const UD_USERS = @Html.Raw(usersJson);
+
+
+        /* ── Таблица пользователей ──────────────────────────────────── */
+        let udSortKey = 'lastActivity';
+        let udSortDir = 'desc';
+        const udSortKeys = ['fullName','orgDisplayName','departDisplayName','jobDisplayName','lastActivity','creationTime'];
+
+        function udSort(key) {
+            if (udSortKey === key) udSortDir = udSortDir === 'asc' ? 'desc' : 'asc';
+            else { udSortKey = key; udSortDir = key === 'lastActivity' ? 'desc' : 'asc'; }
+            udRenderTable();
+        }
+
+        function udFilterTable() { udRenderTable(); }
+
+        function udRenderTable() {
+            const search      = document.getElementById('udSearch').value.toLowerCase();
+            const orgFilter   = document.getElementById('udOrgFilter').value;
+            const actFilter   = document.getElementById('udActivityFilter').value;
+            const showDeleted = document.getElementById('udShowDeleted').checked;
+            const now         = new Date();
+            const today       = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            let rows = UD_USERS.filter(u => {
+                if (!showDeleted && u.isDeleted) return false;
+                if (orgFilter && u.orgDisplayName !== orgFilter) return false;
+                if (search && !(
+                    (u.fullName||'').toLowerCase().includes(search) ||
+                    (u.email||'').toLowerCase().includes(search) ||
+                    (u.userName||'').toLowerCase().includes(search)
+                )) return false;
+                if (actFilter) {
+                    const la = u.lastActivity ? new Date(u.lastActivity.split('.').reverse().join('-')) : null;
+                    if (actFilter === 'none'  && la) return false;
+                    if (actFilter === 'today' && (!la || la < today)) return false;
+                    if (actFilter === 'week'  && (!la || la < new Date(today - 7*864e5))) return false;
+                    if (actFilter === 'month' && (!la || la < new Date(today - 30*864e5))) return false;
+                }
+                return true;
+            });
+
+            /* Сортировка */
+            rows.sort((a, b) => {
+                let av = a[udSortKey] ?? '', bv = b[udSortKey] ?? '';
+                if (typeof av === 'string') av = av.toLowerCase();
+                if (typeof bv === 'string') bv = bv.toLowerCase();
+                return udSortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+            });
+
+            document.getElementById('udCountLabel').textContent = `Показано: ${rows.length} из ${UD_USERS.length}`;
+
+            /* Иконки сортировки */
+            udSortKeys.forEach(k => {
+                const el = document.getElementById(`uds-${k}`);
+                if (el) el.className = 'sort-icon' + (k === udSortKey ? ' ' + udSortDir : '');
+            });
+
+            /* Активность → цвет точки */
+            function dotColor(la) {
+                if (!la) return '#8891a8';
+                const d = (now - new Date(la.split('.').reverse().join('-'))) / 864e5;
+                return d < 1 ? '#1d9e75' : d < 7 ? '#1a56a4' : d < 30 ? '#854f0b' : '#a32d2d';
+            }
+
+            const tbody = document.getElementById('udTableBody');
+            tbody.innerHTML = rows.map(u => {
+                const initials = (u.fullName || '?').split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0,2);
+                const dot = dotColor(u.lastActivity);
+                const deletedCls = u.isDeleted ? 'deleted' : '';
+                return `
+                <tr class="${deletedCls}">
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:28px;height:28px;border-radius:50%;background:var(--md3-primary-light);
+                                        border:1.5px solid var(--md3-primary-mid);display:flex;align-items:center;
+                                        justify-content:center;font-size:10px;font-weight:700;color:var(--md3-primary);flex-shrink:0;">
+                                ${initials}
+                            </div>
+                            <div>
+                                <div style="font-size:12.5px;font-weight:600;color:var(--md3-on-surface);">
+                                    ${u.fullName || '—'}
+                                    ${u.isDeleted ? '<span class="ud-deleted-badge" style="margin-left:4px;">удалён</span>' : ''}
+                                </div>
+                                <div style="font-size:11px;color:var(--md3-on-surface-low);">${u.userName}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-size:12px;color:var(--md3-on-surface-med);">${u.orgDisplayName || '—'}</td>
+                    <td style="font-size:12px;color:var(--md3-on-surface-med);">${u.departDisplayName || '—'}</td>
+                    <td style="font-size:12px;color:var(--md3-on-surface-med);">${u.jobDisplayName || '—'}</td>
+                    <td style="font-size:12px;color:var(--md3-on-surface-low);">${u.email}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span class="ud-activity-dot" style="background:${dot};"></span>
+                            <span style="font-size:12px;color:var(--md3-on-surface-med);">${u.lastActivity || 'Нет данных'}</span>
+                        </div>
+                    </td>
+                    <td style="font-size:12px;color:var(--md3-on-surface-low);">${u.creationTime}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        /* ── Экспорт CSV ────────────────────────────────────────────── */
+        function udExportCsv() {
+            const hdrs = ['ФИО','UserName','Email','Телефон','Организация','Отдел','Должность','Последняя активность','Создан','Удалён'];
+            const rows = UD_USERS.map(u => [
+                u.fullName, u.userName, u.email, u.phoneNumber,
+                u.orgDisplayName, u.departDisplayName, u.jobDisplayName,
+                u.lastActivity, u.creationTime, u.isDeleted ? 'Да' : 'Нет'
+            ]);
+            const bom = '\uFEFF';
+            const csv = bom + [hdrs, ...rows]
+                .map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(';'))
+                .join('\r\n');
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `users-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        /* ── Инициализация ──────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => udRenderTable());
+
+    </script>
+}

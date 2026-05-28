@@ -1,0 +1,1053 @@
+﻿@model IEnumerable<BusinessLayer.Models.KDO.LogDTO>
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@{
+    ViewData["Title"] = "Логи системы";
+    ViewData["PageTitle"] = "Логи системы";
+    ViewData["Breadcrumb"] = new List<(string, string)>
+    {
+        ("Дашборд", "/admin"),
+        ("Логи",    "/admin/logs")
+    };
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var logs = Model.ToList();
+    var now = DateTime.UtcNow;
+
+    /* ── Статистика ──────────────────────────────────────── */
+    var total = logs.Count;
+    var errors = logs.Count(l => l.LogLevel is "Error" or "Critical");
+    var warnings = logs.Count(l => l.LogLevel == "Warning");
+    var infos = logs.Count(l => l.LogLevel is "Information" or "Info");
+    var debugs = logs.Count(l => l.LogLevel is "Debug" or "Trace");
+
+    /* Уникальные значения для фильтров */
+    var levels = logs.Select(l => l.LogLevel).Where(x => x != null).Distinct().OrderBy(x => x).ToList();
+    var namespaces = logs.Select(l => l.NameSpace).Where(x => x != null).Distinct().OrderBy(x => x).ToList();
+    var users = logs.Select(l => l.UserName).Where(x => x != null).Distinct().OrderBy(x => x).ToList();
+
+    var logsJson = JsonSerializer.Serialize(logs.Select(l => new
+    {
+        l.LogLevel,
+        l.Message,
+        l.NameSpace,
+        l.MethodName,
+        l.UserName,
+        l.UserIdentifierOid,
+        Date = l.Date?.ToString("dd.MM.yyyy HH:mm:ss") ?? null,
+        DateIso = l.Date?.ToString("o") ?? null,
+    }), jsonOpts);
+}
+
+<style>
+    /* ── Метрики ────────────────────────────────────────────── */
+    .log-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .log-metric {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        padding: 14px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow var(--md3-transition);
+        cursor: pointer;
+    }
+
+        .log-metric:hover {
+            box-shadow: var(--md3-shadow-2);
+        }
+
+        .log-metric.active {
+            box-shadow: var(--md3-shadow-2);
+        }
+
+        .log-metric::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--md3-radius-lg) var(--md3-radius-lg) 0 0;
+        }
+
+        .log-metric.all::before {
+            background: var(--md3-primary);
+        }
+
+        .log-metric.error::before {
+            background: #a32d2d;
+        }
+
+        .log-metric.warning::before {
+            background: #854f0b;
+        }
+
+        .log-metric.info::before {
+            background: #0891b2;
+        }
+
+        .log-metric.debug::before {
+            background: var(--md3-on-surface-low);
+        }
+
+    .log-metric-val {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        line-height: 1;
+    }
+
+    .log-metric-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--md3-on-surface-low);
+        margin-top: 4px;
+    }
+
+    /* ── Виджет (контейнер таблицы) ─────────────────────────── */
+    .log-widget {
+        background: var(--md3-surface);
+        border: 1px solid var(--md3-outline);
+        border-radius: var(--md3-radius-lg);
+        overflow: hidden;
+    }
+
+    .log-widget-hdr {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--md3-outline);
+        background: var(--md3-surface-2);
+        flex-wrap: wrap;
+    }
+
+    .log-widget-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-primary-light);
+        border: 1.5px solid var(--md3-primary-mid);
+        color: var(--md3-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .log-widget-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+    }
+
+    /* ── Тулбар ─────────────────────────────────────────────── */
+    .log-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--md3-outline);
+        background: var(--md3-surface);
+        flex-wrap: wrap;
+    }
+
+    .log-search-wrap {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        overflow: hidden;
+        height: 32px;
+        transition: border-color var(--md3-transition);
+        min-width: 220px;
+        flex: 1;
+        max-width: 340px;
+    }
+
+        .log-search-wrap:focus-within {
+            border-color: var(--md3-primary);
+        }
+
+        .log-search-wrap input {
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0 10px;
+            font-size: 12px;
+            color: var(--md3-on-surface);
+            flex: 1;
+        }
+
+            .log-search-wrap input::placeholder {
+                color: var(--md3-on-surface-low);
+            }
+
+    .log-select {
+        height: 32px;
+        padding: 0 10px;
+        border: 1.5px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        font-size: 12px;
+        color: var(--md3-on-surface);
+        outline: none;
+        cursor: pointer;
+        transition: border-color var(--md3-transition);
+    }
+
+        .log-select:focus {
+            border-color: var(--md3-primary);
+        }
+
+    .log-date-input {
+        height: 32px;
+        padding: 0 8px;
+        border: 1.5px solid var(--md3-outline);
+        border-radius: var(--md3-radius-sm);
+        background: var(--md3-surface);
+        font-size: 12px;
+        color: var(--md3-on-surface);
+        outline: none;
+        transition: border-color var(--md3-transition);
+    }
+
+        .log-date-input:focus {
+            border-color: var(--md3-primary);
+        }
+
+    .log-toolbar-spacer {
+        flex: 1;
+        min-width: 8px;
+    }
+
+    /* ── Таблица ─────────────────────────────────────────────── */
+    .log-table-wrap {
+        overflow-x: auto;
+    }
+
+    .log-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+
+        .log-table thead tr {
+            background: var(--md3-surface-3);
+            border-bottom: 1.5px solid var(--md3-outline-strong);
+        }
+
+        .log-table thead th {
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--md3-on-surface-low);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+            .log-table thead th:hover {
+                color: var(--md3-primary);
+            }
+
+        .log-table tbody tr {
+            border-bottom: 1px solid var(--md3-outline);
+            transition: background var(--md3-transition);
+            cursor: pointer;
+        }
+
+            .log-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .log-table tbody tr:hover {
+                background: var(--md3-primary-light);
+            }
+
+            .log-table tbody tr.lvl-error {
+                border-left: 3px solid #a32d2d;
+            }
+
+            .log-table tbody tr.lvl-critical {
+                border-left: 3px solid #6b0000;
+            }
+
+            .log-table tbody tr.lvl-warning {
+                border-left: 3px solid #854f0b;
+            }
+
+            .log-table tbody tr.lvl-info {
+                border-left: 3px solid #0891b2;
+            }
+
+            .log-table tbody tr.lvl-debug {
+                border-left: 3px solid var(--md3-outline-strong);
+            }
+
+            .log-table tbody tr.lvl-trace {
+                border-left: 3px solid var(--md3-outline);
+            }
+
+        .log-table td {
+            padding: 8px 12px;
+            vertical-align: top;
+        }
+
+    /* ── Уровень лога (бейдж) ───────────────────────────────── */
+    .log-level-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .log-level-badge.error {
+            background: #fcebeb;
+            border: 1px solid #f09595;
+            color: #a32d2d;
+        }
+
+        .log-level-badge.critical {
+            background: #6b0000;
+            border: 1px solid #a32d2d;
+            color: #fff;
+        }
+
+        .log-level-badge.warning {
+            background: #faeeda;
+            border: 1px solid #f5c4b3;
+            color: #854f0b;
+        }
+
+        .log-level-badge.information,
+        .log-level-badge.info {
+            background: #e0f2fe;
+            border: 1px solid #7dd3fc;
+            color: #0369a1;
+        }
+
+        .log-level-badge.debug {
+            background: var(--md3-surface-3);
+            border: 1px solid var(--md3-outline-strong);
+            color: var(--md3-on-surface-med);
+        }
+
+        .log-level-badge.trace {
+            background: var(--md3-surface-2);
+            border: 1px solid var(--md3-outline);
+            color: var(--md3-on-surface-low);
+        }
+
+    /* ── Сообщение ──────────────────────────────────────────── */
+    .log-message-cell {
+        max-width: 360px;
+        font-size: 12.5px;
+        color: var(--md3-on-surface);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+        .log-message-cell.expanded {
+            white-space: normal;
+            word-break: break-word;
+        }
+
+    /* ── Namespace / Method ─────────────────────────────────── */
+    .log-ns {
+        font-size: 11px;
+        color: var(--md3-on-surface-med);
+        font-family: 'Courier New', monospace;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .log-method {
+        font-size: 11px;
+        color: var(--md3-primary);
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ── Пользователь ───────────────────────────────────────── */
+    .log-user {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .log-user-avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--md3-primary-light);
+        border: 1px solid var(--md3-primary-mid);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--md3-primary);
+        flex-shrink: 0;
+    }
+
+    .log-user-name {
+        font-size: 12px;
+        color: var(--md3-on-surface-med);
+    }
+
+    /* ── Дата ───────────────────────────────────────────────── */
+    .log-date {
+        font-size: 11.5px;
+        color: var(--md3-on-surface-med);
+        white-space: nowrap;
+    }
+
+    .log-date-time {
+        font-size: 10.5px;
+        color: var(--md3-on-surface-low);
+    }
+
+    /* ── Панель деталей (popup снизу) ───────────────────────── */
+    .log-detail-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--md3-surface);
+        border-top: 2px solid var(--md3-primary-mid);
+        box-shadow: 0 -8px 32px rgba(26,86,164,.12);
+        z-index: 500;
+        max-height: 45vh;
+        overflow-y: auto;
+        transform: translateY(100%);
+        transition: transform .25s cubic-bezier(.4,0,.2,1);
+        scrollbar-width: thin;
+        scrollbar-color: var(--md3-outline) transparent;
+    }
+
+        .log-detail-panel.open {
+            transform: translateY(0);
+        }
+
+    .log-detail-hdr {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        background: var(--md3-surface-2);
+        border-bottom: 1px solid var(--md3-outline);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .log-detail-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--md3-on-surface);
+        flex: 1;
+    }
+
+    .log-detail-close {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1.5px solid var(--md3-outline);
+        background: transparent;
+        color: var(--md3-on-surface-med);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background var(--md3-transition), color var(--md3-transition);
+    }
+
+        .log-detail-close:hover {
+            background: var(--md3-primary-light);
+            color: var(--md3-primary);
+            border-color: var(--md3-primary-mid);
+        }
+
+    .log-detail-body {
+        padding: 16px 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px 20px;
+    }
+
+    .log-detail-field {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+        .log-detail-field.full {
+            grid-column: 1 / -1;
+        }
+
+    .log-detail-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--md3-on-surface-low);
+    }
+
+    .log-detail-value {
+        font-size: 13px;
+        color: var(--md3-on-surface);
+        word-break: break-word;
+        line-height: 1.5;
+    }
+
+        .log-detail-value.mono {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: var(--md3-surface-3);
+            border: 1px solid var(--md3-outline);
+            border-radius: var(--md3-radius-sm);
+            padding: 6px 10px;
+            white-space: pre-wrap;
+        }
+
+    /* ── Пагинация ───────────────────────────────────────────── */
+    .log-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        border-top: 1px solid var(--md3-outline);
+        background: var(--md3-surface-2);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .log-page-info {
+        font-size: 12px;
+        color: var(--md3-on-surface-low);
+    }
+
+    .log-page-btns {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .log-page-btn {
+        min-width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--md3-radius-sm);
+        border: 1.5px solid var(--md3-outline);
+        background: var(--md3-surface);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--md3-on-surface-med);
+        cursor: pointer;
+        padding: 0 8px;
+        transition: background var(--md3-transition), color var(--md3-transition), border-color var(--md3-transition);
+    }
+
+        .log-page-btn:hover {
+            background: var(--md3-primary-light);
+            color: var(--md3-primary);
+            border-color: var(--md3-primary-mid);
+        }
+
+        .log-page-btn.active {
+            background: var(--md3-primary);
+            color: #fff;
+            border-color: var(--md3-primary);
+        }
+
+        .log-page-btn:disabled {
+            opacity: .4;
+            cursor: default;
+        }
+
+    /* ── Адаптив ─────────────────────────────────────────────── */
+    @@media (max-width: 768px) {
+        .log-detail-body {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .log-metrics {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .log-detail-body {
+            grid-template-columns: 1fr;
+        }
+
+        .log-metrics {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<!-- ══ МЕТРИКИ ══════════════════════════════════════════════════ -->
+<div class="log-metrics">
+    <div class="log-metric all" onclick="setLevelFilter('')" id="metric-all">
+        <div class="log-metric-val">@total</div>
+        <div class="log-metric-label">Всего</div>
+    </div>
+    <div class="log-metric error" onclick="setLevelFilter('error')" id="metric-error">
+        <div class="log-metric-val" style="color:#a32d2d;">@errors</div>
+        <div class="log-metric-label">Ошибки</div>
+    </div>
+    <div class="log-metric warning" onclick="setLevelFilter('warning')" id="metric-warning">
+        <div class="log-metric-val" style="color:#854f0b;">@warnings</div>
+        <div class="log-metric-label">Предупреждения</div>
+    </div>
+    <div class="log-metric info" onclick="setLevelFilter('info')" id="metric-info">
+        <div class="log-metric-val" style="color:#0369a1;">@infos</div>
+        <div class="log-metric-label">Информация</div>
+    </div>
+    <div class="log-metric debug" onclick="setLevelFilter('debug')" id="metric-debug">
+        <div class="log-metric-val" style="color:var(--md3-on-surface-low);">@debugs</div>
+        <div class="log-metric-label">Debug</div>
+    </div>
+</div>
+
+<!-- ══ ТАБЛИЦА ══════════════════════════════════════════════════ -->
+<div class="log-widget">
+    <div class="log-widget-hdr">
+        <span class="log-widget-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+        </span>
+        <span class="log-widget-title">Журнал событий</span>
+        <span id="logCountLabel" style="font-size:11px;color:var(--md3-on-surface-low);margin-left:4px;"></span>
+        <span style="flex:1;"></span>
+        <button class="dash-export-btn" onclick="exportLogCsv()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>
+            CSV
+        </button>
+    </div>
+
+    <!-- Тулбар фильтров -->
+    <div class="log-toolbar">
+        <!-- Поиск -->
+        <div class="log-search-wrap">
+            <span style="padding:0 8px;color:var(--md3-on-surface-low);">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+            </span>
+            <input id="logSearch" type="text" placeholder="Поиск по сообщению, методу, пользователю..."
+                   oninput="logRender()" />
+        </div>
+
+        <!-- Уровень -->
+        <select class="log-select" id="logLevelFilter" onchange="logRender()">
+            <option value="">Все уровни</option>
+            @foreach (var lvl in levels)
+            {
+                <option value="@lvl!.ToLower()">@lvl</option>
+            }
+        </select>
+
+        <!-- Namespace -->
+        <select class="log-select" id="logNsFilter" onchange="logRender()">
+            <option value="">Все namespace</option>
+            @foreach (var ns in namespaces)
+            {
+                <option value="@ns">@ns</option>
+            }
+        </select>
+
+        <!-- Пользователь -->
+        <select class="log-select" id="logUserFilter" onchange="logRender()">
+            <option value="">Все пользователи</option>
+            @foreach (var u in users)
+            {
+                <option value="@u">@u</option>
+            }
+        </select>
+
+        <!-- Дата от / до -->
+        <input class="log-date-input" id="logDateFrom" type="date" onchange="logRender()" title="Дата от" />
+        <input class="log-date-input" id="logDateTo" type="date" onchange="logRender()" title="Дата до" />
+
+        <span class="log-toolbar-spacer"></span>
+
+        <!-- Строк на странице -->
+        <select class="log-select" id="logPageSize" onchange="logRender()" style="width:80px;">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+        </select>
+
+        <button class="dash-export-btn" onclick="logResetFilters()" title="Сбросить фильтры">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 .49-3.95" />
+            </svg>
+            Сброс
+        </button>
+    </div>
+
+    <!-- Таблица -->
+    <div class="log-table-wrap">
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th onclick="logSort('logLevel')" style="width:110px;">
+                        Уровень <span class="sort-icon" id="ls-logLevel"></span>
+                    </th>
+                    <th onclick="logSort('date')" style="width:140px;">
+                        Дата <span class="sort-icon" id="ls-date"></span>
+                    </th>
+                    <th onclick="logSort('message')">
+                        Сообщение <span class="sort-icon" id="ls-message"></span>
+                    </th>
+                    <th onclick="logSort('nameSpace')" style="width:160px;">
+                        Namespace <span class="sort-icon" id="ls-nameSpace"></span>
+                    </th>
+                    <th onclick="logSort('methodName')" style="width:130px;">
+                        Метод <span class="sort-icon" id="ls-methodName"></span>
+                    </th>
+                    <th onclick="logSort('userName')" style="width:130px;">
+                        Пользователь <span class="sort-icon" id="ls-userName"></span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="log-pagination">
+        <span class="log-page-info" id="logPageInfo"></span>
+        <div class="log-page-btns" id="logPageBtns"></div>
+    </div>
+</div>
+
+<!-- ══ ПАНЕЛЬ ДЕТАЛЕЙ ═══════════════════════════════════════════ -->
+<div class="log-detail-panel" id="logDetailPanel">
+    <div class="log-detail-hdr">
+        <span id="logDetailBadge"></span>
+        <span class="log-detail-title" id="logDetailTitle">Детали записи</span>
+        <button class="log-detail-close" onclick="closeDetail()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+    </div>
+    <div class="log-detail-body" id="logDetailBody"></div>
+</div>
+
+@section Scripts {
+    <script>
+        /* ── Данные ─────────────────────────────────────────────────── */
+        const ALL_LOGS = @Html.Raw(logsJson);
+        /* ── Состояние ──────────────────────────────────────────────── */
+        let logSortKey  = 'date';
+        let logSortDir  = 'desc';
+        let logPage     = 1;
+        const logSortKeys = ['logLevel','date','message','nameSpace','methodName','userName'];
+
+        /* ── Сопоставление уровней с классами ───────────────────────── */
+        function levelClass(lvl) {
+            if (!lvl) return 'debug';
+            const l = lvl.toLowerCase();
+            if (l === 'error')        return 'error';
+            if (l === 'critical')     return 'critical';
+            if (l === 'warning')      return 'warning';
+            if (l === 'information' || l === 'info') return 'information';
+            if (l === 'debug')        return 'debug';
+            if (l === 'trace')        return 'trace';
+            return 'debug';
+        }
+
+        function levelRowClass(lvl) {
+            if (!lvl) return '';
+            return 'lvl-' + lvl.toLowerCase();
+        }
+
+        function levelIcon(lvl) {
+            const l = (lvl || '').toLowerCase();
+            if (l === 'error' || l === 'critical')
+                return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+            if (l === 'warning')
+                return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+            return `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+        }
+
+        /* ── Главный рендер ─────────────────────────────────────────── */
+        function logRender() {
+            const search  = document.getElementById('logSearch').value.toLowerCase();
+            const lvlF    = document.getElementById('logLevelFilter').value;
+            const nsF     = document.getElementById('logNsFilter').value;
+            const userF   = document.getElementById('logUserFilter').value;
+            const dateFrom= document.getElementById('logDateFrom').value;
+            const dateTo  = document.getElementById('logDateTo').value;
+            const pageSize= parseInt(document.getElementById('logPageSize').value);
+
+            let rows = ALL_LOGS.filter(l => {
+                if (lvlF  && (l.logLevel||'').toLowerCase() !== lvlF)  return false;
+                if (nsF   && l.nameSpace   !== nsF)   return false;
+                if (userF && l.userName    !== userF) return false;
+                if (dateFrom && l.dateIso && l.dateIso < dateFrom) return false;
+                if (dateTo   && l.dateIso && l.dateIso.slice(0,10) > dateTo) return false;
+                if (search) {
+                    const hay = [l.message, l.methodName, l.userName, l.nameSpace, l.userIdentifierOid]
+                        .map(x => (x||'').toLowerCase()).join(' ');
+                    if (!hay.includes(search)) return false;
+                }
+                return true;
+            });
+
+            /* Сортировка */
+            rows.sort((a, b) => {
+                let av = a[logSortKey] ?? '', bv = b[logSortKey] ?? '';
+                if (typeof av === 'string') av = av.toLowerCase();
+                if (typeof bv === 'string') bv = bv.toLowerCase();
+                return logSortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+            });
+
+            /* Пагинация */
+            const total = rows.length;
+            const pages = Math.max(1, Math.ceil(total / pageSize));
+            if (logPage > pages) logPage = pages;
+
+            const start = (logPage - 1) * pageSize;
+            const slice = rows.slice(start, start + pageSize);
+
+            /* Счётчик */
+            document.getElementById('logCountLabel').textContent = `(${total})`;
+            document.getElementById('logPageInfo').textContent =
+                `Показано ${start + 1}–${Math.min(start + pageSize, total)} из ${total}`;
+
+            /* Иконки сортировки */
+            logSortKeys.forEach(k => {
+                const el = document.getElementById(`ls-${k}`);
+                if (el) el.className = 'sort-icon' + (k === logSortKey ? ' ' + logSortDir : '');
+            });
+
+            /* Тело таблицы */
+            const tbody = document.getElementById('logTableBody');
+            tbody.innerHTML = slice.map((l, i) => {
+                const cls  = levelClass(l.logLevel);
+                const row  = levelRowClass(l.logLevel);
+                const init = (l.userName||'?').split(/[@@.\s]/)[0].slice(0,2).toUpperCase();
+                const [datePart, timePart] = (l.date||'').split(' ');
+                const msgShort = (l.message||'').length > 80 ? (l.message||'').slice(0,78)+'…' : (l.message||'—');
+
+                return `
+                <tr class="${row}" onclick="openDetail(${start + i})" data-idx="${start + i}">
+                    <td style="white-space:nowrap;">
+                        <span class="log-level-badge ${cls}">
+                            ${levelIcon(l.logLevel)}
+                            ${l.logLevel || '—'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="log-date">${datePart || '—'}</div>
+                        <div class="log-date-time">${timePart || ''}</div>
+                    </td>
+                    <td>
+                        <div class="log-message-cell" title="${(l.message||'').replace(/"/g,'&quot;')}">
+                            ${msgShort}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="log-ns" title="${l.nameSpace||''}">
+                            ${l.nameSpace || '<span style="color:var(--md3-on-surface-low);font-style:italic;">—</span>'}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="log-method">${l.methodName || '—'}</span>
+                    </td>
+                    <td>
+                        ${l.userName
+                            ? `<div class="log-user">
+                                <div class="log-user-avatar">${init}</div>
+                                <span class="log-user-name">${l.userName}</span>
+                               </div>`
+                            : '<span style="color:var(--md3-on-surface-low);font-size:12px;">—</span>'
+                        }
+                    </td>
+                </tr>`;
+            }).join('');
+
+            if (slice.length === 0) {
+                tbody.innerHTML = `
+                <tr><td colspan="6" style="padding:32px;text-align:center;color:var(--md3-on-surface-low);font-size:13px;">
+                    Нет записей, соответствующих фильтрам
+                </td></tr>`;
+            }
+
+            /* Кнопки пагинации */
+            renderPagination(pages, pageSize, total);
+
+            /* Сохраняем отфильтрованные данные для экспорта */
+            window._filteredLogs = rows;
+        }
+
+        /* ── Пагинация ───────────────────────────────────────────────── */
+        function renderPagination(pages, pageSize, total) {
+            const container = document.getElementById('logPageBtns');
+            if (pages <= 1) { container.innerHTML = ''; return; }
+
+            let html = `<button class="log-page-btn" onclick="goPage(${logPage-1})" ${logPage===1?'disabled':''}>‹</button>`;
+
+            const range = [];
+            for (let p = 1; p <= pages; p++) {
+                if (p === 1 || p === pages || Math.abs(p - logPage) <= 2) range.push(p);
+                else if (range[range.length-1] !== '…') range.push('…');
+            }
+
+            range.forEach(p => {
+                if (p === '…') {
+                    html += `<span style="padding:0 4px;color:var(--md3-on-surface-low);">…</span>`;
+                } else {
+                    html += `<button class="log-page-btn ${p===logPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+                }
+            });
+
+            html += `<button class="log-page-btn" onclick="goPage(${logPage+1})" ${logPage===pages?'disabled':''}>›</button>`;
+            container.innerHTML = html;
+        }
+
+        function goPage(p) { logPage = p; logRender(); window.scrollTo(0,0); }
+
+        /* ── Сортировка ─────────────────────────────────────────────── */
+        function logSort(key) {
+            if (logSortKey === key) logSortDir = logSortDir === 'asc' ? 'desc' : 'asc';
+            else { logSortKey = key; logSortDir = key === 'date' ? 'desc' : 'asc'; }
+            logPage = 1;
+            logRender();
+        }
+
+        /* ── Фильтр по уровню через клик на метрику ─────────────────── */
+        function setLevelFilter(val) {
+            document.getElementById('logLevelFilter').value = val;
+            logPage = 1;
+            logRender();
+        }
+
+        /* ── Сброс фильтров ─────────────────────────────────────────── */
+        function logResetFilters() {
+            ['logSearch','logDateFrom','logDateTo'].forEach(id => { document.getElementById(id).value = ''; });
+            ['logLevelFilter','logNsFilter','logUserFilter'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('logPageSize').value = '50';
+            logPage = 1;
+            logRender();
+        }
+
+        /* ── Панель деталей ─────────────────────────────────────────── */
+        let _detailIdx = null;
+
+        function openDetail(idx) {
+            const l   = window._filteredLogs ? window._filteredLogs[idx] : ALL_LOGS[idx];
+            if (!l) return;
+            _detailIdx = idx;
+
+            const cls = levelClass(l.logLevel);
+
+            document.getElementById('logDetailBadge').innerHTML =
+                `<span class="log-level-badge ${cls}" style="margin-right:4px;">${levelIcon(l.logLevel)} ${l.logLevel||'—'}</span>`;
+
+            document.getElementById('logDetailTitle').textContent =
+                l.methodName ? `${l.nameSpace || ''}.${l.methodName}()` : (l.nameSpace || 'Детали записи');
+
+            document.getElementById('logDetailBody').innerHTML = `
+                <div class="log-detail-field">
+                    <span class="log-detail-label">Дата и время</span>
+                    <span class="log-detail-value">${l.date || '—'}</span>
+                </div>
+                <div class="log-detail-field">
+                    <span class="log-detail-label">Пользователь</span>
+                    <span class="log-detail-value">${l.userName || '—'}</span>
+                </div>
+                <div class="log-detail-field">
+                    <span class="log-detail-label">OID</span>
+                    <span class="log-detail-value" style="font-size:11px;font-family:'Courier New',monospace;">${l.userIdentifierOid || '—'}</span>
+                </div>
+                <div class="log-detail-field">
+                    <span class="log-detail-label">Namespace</span>
+                    <span class="log-detail-value mono">${l.nameSpace || '—'}</span>
+                </div>
+                <div class="log-detail-field">
+                    <span class="log-detail-label">Метод</span>
+                    <span class="log-detail-value mono">${l.methodName || '—'}</span>
+                </div>
+                <div class="log-detail-field full">
+                    <span class="log-detail-label">Сообщение</span>
+                    <span class="log-detail-value mono">${(l.message || '—').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
+                </div>`;
+
+            document.getElementById('logDetailPanel').classList.add('open');
+        }
+
+        function closeDetail() {
+            document.getElementById('logDetailPanel').classList.remove('open');
+            _detailIdx = null;
+        }
+
+        /* Закрытие по Escape */
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDetail();
+        });
+
+        /* ── Экспорт CSV ────────────────────────────────────────────── */
+        function exportLogCsv() {
+            const data = window._filteredLogs || ALL_LOGS;
+            const hdrs = ['Уровень','Дата','Сообщение','Namespace','Метод','Пользователь','OID'];
+            const rows = data.map(l => [
+                l.logLevel, l.date, l.message, l.nameSpace, l.methodName, l.userName, l.userIdentifierOid
+            ]);
+            const bom = '\uFEFF';
+            const csv = bom + [hdrs, ...rows]
+                .map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(';'))
+                .join('\r\n');
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `logs-${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        /* ── Инициализация ──────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            /* Устанавливаем сегодняшнюю дату по умолчанию */
+            const todayStr = new Date().toISOString().slice(0,10);
+            document.getElementById('logDateTo').value = todayStr;
+            logRender();
+        });
+    </script>
+}

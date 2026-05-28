@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using BusinessLayer.Models.KDO;
 using BusinessLayer.Models.PRO;
+using BusinessLayer.Models.Settings;
+using BusinessLayer.Models.Settings.Note;
 using DatabaseLayer.Models.EXTRA;
 using DatabaseLayer.Models.KDO;
+using DatabaseLayer.Models.OID;
 using DatabaseLayer.Models.PRO;
 
 namespace BusinessLayer.Mapper
@@ -40,7 +43,9 @@ namespace BusinessLayer.Mapper
             CreateMap<EstimateDocFileDTO, EstimateDocFile>().ReverseMap();
             CreateMap<FormC3a, FormDTO>().ReverseMap();
             CreateMap<DatabaseLayer.Models.KDO.File, FileDTO>().ReverseMap();
-            CreateMap<Log, LogDTO>().ReverseMap();
+            CreateMap<Log, LogDTO>()
+                .ForMember(l => l.Date, o => o.MapFrom(lo => lo.DateTime))
+                .ReverseMap();
             CreateMap<Log, UserActivity>().ReverseMap();
             CreateMap<Organization, OrganizationDTO>().ReverseMap();
             CreateMap<OrganizationRecord, OrganizationDTO>().ReverseMap();
@@ -69,6 +74,19 @@ namespace BusinessLayer.Mapper
             CreateMap<VContractDTO, ContractDTO>().ReverseMap();
             CreateMap<VContractEngin, VContractDTO>().ReverseMap();
 
+
+            /*Notes*/
+
+            CreateMap<ReleaseNoteListItemDto, ReleaseNoteListItem>().ReverseMap();
+            CreateMap<ReleaseNoteDetail, ReleaseNoteDetailDto>().ReverseMap();
+            //.ForMember(t => t.Id, o => o.MapFrom(s => s.Id))
+            //.ForMember(x => x.InverseDepartment, y => y.Ignore())
+            //.ForMember(t => t.Name, o => o.MapFrom(s => s.Department))
+
+
+            CreateMap<CreateReleaseNote, CreateReleaseNoteDto>().ReverseMap();
+            CreateMap<UpdateReleaseNote, UpdateReleaseNoteDto>().ReverseMap();
+            CreateMap<UserDashboard, UserDashboardDTO>().ReverseMap();
         }
     }
 }

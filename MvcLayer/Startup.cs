@@ -27,13 +27,13 @@ namespace MvcLayer
         public void ConfigureServices(IServiceCollection services)
         {
             string connectionData = Configuration.GetConnectionString("Data");
-            
+
             Container.RegisterContainer(services, connectionData);
-            
+
             ////
             services.AddRazorPages();
             services.AddWindowsService();
-            
+
             ///
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
             IdentityModelEventSource.ShowPII = true;
@@ -48,7 +48,7 @@ namespace MvcLayer
             #region снять лимиты на загрузку файлов через форму <form><input type=file /></form> (+ в файлк applicationconfig => security/request limit установить )
 
             services.Configure<FormOptions>(options =>
-            {              
+            {
                 options.ValueLengthLimit = int.MaxValue;
                 options.MultipartBodyLengthLimit = int.MaxValue;
             });
@@ -59,7 +59,7 @@ namespace MvcLayer
 
             #endregion
 
-            services.AddAutoMapper(typeof(MapperViewModel));           
+            services.AddAutoMapper(typeof(MapperViewModel));
 
             /*OptionsPattern*/
             services.Configure<ExcelActivityReportOptions>(Configuration.GetSection(ExcelActivityReportOptions.ExcelActivityReport));
@@ -158,6 +158,11 @@ namespace MvcLayer
 
                                 identity.AddClaim(new Claim("scope", scope));
                             }
+                            var unique_name = cntxt.SecurityToken?.Claims?.Where(x => x.Type == "unique_name")?.FirstOrDefault()?.Value ?? string.Empty;
+                            identity.AddClaim(new Claim("uniqueName", unique_name));
+
+                            var email = cntxt.SecurityToken?.Claims?.Where(x => x.Type == "email")?.FirstOrDefault()?.Value ?? string.Empty;
+                            identity.AddClaim(new Claim("emailUser", email));
                         }
                     }
                     return Task.CompletedTask;
@@ -177,8 +182,9 @@ namespace MvcLayer
                 op.Cookie.IsEssential = true;
             });
 
-            services.AddAuthorization(options => {
-               
+            services.AddAuthorization(options =>
+            {
+
                 options.AddPolicy("ViewPolicy", policy =>
                    policy.RequireAssertion(context =>
                    {
@@ -210,15 +216,16 @@ namespace MvcLayer
                 options.AddPolicy("AdminPolicy", policy =>
                    policy.RequireAssertion(context =>
                    {
-                       bool r = context.User.HasClaim(c => (c.Type == "scope"&& c.Value == "ContrAdmin"));
+                       bool r = context.User.HasClaim(c => (c.Type == "scope" && c.Value == "ContrAdmin"));
                        return r;
                    }
                 ));
             });
 
-            services.AddMvc(options => {
-                options.Filters.Add<StatusCodeNormalizationFilter>();               
-            });            
+            services.AddMvc(options =>
+            {
+                options.Filters.Add<StatusCodeNormalizationFilter>();
+            });
             services.AddHttpClient();
 
             // Quartz.NET scheduler for daily Admin/CreateReport
@@ -229,7 +236,7 @@ namespace MvcLayer
                 var jobKey = new JobKey("CreateReportJob");
                 var jobKey2 = new JobKey("SendReportJob");
 
-                q.AddJob<Scheduling.CreateReportJob>(opts => opts.WithIdentity(jobKey));               
+                q.AddJob<Scheduling.CreateReportJob>(opts => opts.WithIdentity(jobKey));
                 q.AddJob<Scheduling.SendReportJob>(opts => opts.WithIdentity(jobKey2));
 
                 q.AddTrigger(t => t
@@ -245,13 +252,13 @@ namespace MvcLayer
                     .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(DayOfWeek.Friday, 15, 00)) // every Friday at 15:00
                 );
             });
-            services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);            
+            services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
-            
+
             app.Use((context, next) =>
             {
                 // Scheme must be resetted
