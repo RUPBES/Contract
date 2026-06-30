@@ -5,13 +5,10 @@ using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.ContractServices;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
-using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MvcLayer.Models;
-using MvcLayer.Models.JSONSerializer;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -70,84 +67,6 @@ public class ContractsController : Controller
         ViewBag.UseArchiveData = false;
         return View("Index");
     }
-
-    //public async Task<IActionResult> Index(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
-    //{
-    //    var organizationName = _httpHelper.GetUserOrganizationCodes();
-
-    //    if (page < 1 || searchString != null)
-    //    {
-    //        page = 1;
-    //    }
-    //    else
-    //    {
-    //        searchString = currentFilter;
-    //        typeSearch = currentType;
-    //    }
-
-    //    ViewData["Page"] = page; //для скрипта загрузки отсортированного списка договоров через AJAX 
-    //    ViewData["IsEngineering"] = false;
-    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-    //    ViewData["CurrentSort"] = sortOrder;
-    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-
-    //    ViewData["CurrentFilter"] = searchString;
-    //    ViewData["CurrentType"] = typeSearch;
-
-    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-    //    {
-    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPageFilter(150, page ?? 1, searchString, typeSearch, sortOrder, organizationName)));
-    //    }
-    //    else
-    //    {
-    //        return await Task.FromResult<IActionResult>(View(_vContractService.GetPage(150, page ?? 1, organizationName)));
-    //    }
-
-    //    //return View();
-    //}
-
-    //public async Task<IActionResult> Engineerings(string currentFilter, int? page, string searchString, string typeSearch, string currentType, string sortOrder)
-    //{
-    //    var organizationName = string.Join(',', HttpContext.User.Claims.Where(x => x.Type == "org")).Replace("org: ", "").Trim();
-
-    //    if (searchString != null)
-    //    {
-    //        page = 1;
-    //    }
-    //    else
-    //    {
-    //        searchString = currentFilter;
-    //        typeSearch = currentType;
-    //    }
-
-    //    ViewBag.IsEngineering = false;
-    //    ViewBag.UseArchiveData = false;
-
-    //    //ViewData["IsEngineering"] = true;
-    //    ViewData["CurrentSort"] = sortOrder;
-    //    ViewData["NumberSortParm"] = sortOrder == "number" ? "numberDesc" : "number";
-    //    ViewData["NameObjectSortParm"] = sortOrder == "nameObject" ? "nameObjectDesc" : "nameObject";
-    //    ViewData["ClientSortParm"] = sortOrder == "client" ? "clientDesc" : "client";
-    //    ViewData["GenSortParm"] = sortOrder == "genContractor" ? "genContractorDesc" : "genContractor";
-    //    ViewData["EnterSortParm"] = sortOrder == "dateEnter" ? "dateEnterDesc" : "dateEnter";
-    //    ViewData["CurrentFilter"] = searchString;
-    //    ViewData["IsMajorOrganization"] = organizationName.Contains("Major") ? true : false;
-
-    //    if (!string.IsNullOrEmpty(searchString) || !string.IsNullOrEmpty(sortOrder))
-    //    {
-    //        return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPageFilter(100, page ?? 1, searchString, typeSearch, sortOrder, organizationName)));
-    //    }
-    //    else
-    //    {
-    //        return await Task.FromResult<IActionResult>(View("Index", _vContractEnginService.GetPage(100, page ?? 1, organizationName)));
-    //    }
-    //}
-
 
     public async Task<IActionResult> Details(int? id)
     {
@@ -990,7 +909,7 @@ public class ContractsController : Controller
         return View("IndexArch");
     }
 
-    [Route("/archive/Contracts/Details")]
+    [Route("/archive/Contracts/Details/{id:int}")]
     public async Task<IActionResult> DetailsArch(int? id)
     {
         if (!id.HasValue)

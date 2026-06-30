@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLayer.Enums;
 using BusinessLayer.Interfaces.ContractInterfaces;
 using BusinessLayer.Interfaces.Shared;
 using BusinessLayer.Models.KDO;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MVC_layer.Models;
 using MvcLayer.Models;
+using MvcLayer.Models.JSONSerializer;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Reflection;
@@ -23,9 +25,10 @@ public class HomeController : Controller
     private readonly IEmployeeService _employeeService;
     private readonly IConverterService _converter;
     private readonly IFileService _fileService;
+    private readonly IAmendmentService _amendment;
 
     public HomeController(IContractsLogger logger, IOrganizationService organizationService, IContractService contractService,
-        IEmployeeService employeeService, IMapper mapper, IConverterService converter, IFileService fileService)
+        IEmployeeService employeeService, IMapper mapper, IConverterService converter, IFileService fileService, IAmendmentService amendment)
     {
         _logger = logger;
         _organizationService = organizationService;
@@ -34,6 +37,7 @@ public class HomeController : Controller
         _mapper = mapper;
         _converter = converter;
         _fileService = fileService;
+        _amendment = amendment;
     }
 
     public IActionResult Index()
@@ -60,7 +64,7 @@ public class HomeController : Controller
 
     [HttpGet("init-session")]
     public IActionResult InitializeSession()
-    {        
+    {
         var sessionId = Guid.NewGuid().ToString();
         HttpContext.Session.Clear();
         HttpContext.Session.SetString("SessionId", sessionId);
@@ -89,8 +93,8 @@ public class HomeController : Controller
 
             if (contract == null)
                 return BadRequest();
-           
-            if(contract?.DocName?.Equals("Договор строительного подряда", StringComparison.OrdinalIgnoreCase) is not true)
+
+            if (contract?.DocName?.Equals("Договор строительного подряда", StringComparison.OrdinalIgnoreCase) is not true)
                 return BadRequest();
 
             contract.Author = _converter.GetCodeOrganizationByName(contract?.GenContractor);
@@ -201,6 +205,53 @@ public class HomeController : Controller
                                                methodName: MethodBase.GetCurrentMethod().Name);
 
             return BadRequest("The contract data is missing or has an incorrect format");
+        }
+    }
+
+
+    [HttpPost("upload-amendment")]
+    [SkipStatusCodePages]
+    public IActionResult ImportAmendmentFrom1C([FromForm] AmendmentJsonModel amebdment1C, [FromHeader] string SessionId)
+    {
+        var storedSessionId = HttpContext.Session.GetString("SessionId");
+
+        if (storedSessionId != SessionId || string.IsNullOrEmpty(SessionId))
+            return Unauthorized();
+
+        try
+        {           
+            if (amebdment1C == null)
+                return BadRequest();
+          
+
+            var existContract = _contractService.Find(x => x.Number == amebdment1C.ContractNumber && x.Date?.Date == amebdment1C.ContractDate?.Date)?.FirstOrDefault()?.Id;
+            if (existContract.HasValue && amebdment1C is not { Type: "agreement" })
+            {
+                amebdment1C.ContractId = existContract;
+                int amendId = (int)_amendment.Create(_mapper.Map<AmendmentDTO>(amebdment1C));
+
+                var d = new FormFileCollection();
+                d.AddRange(amebdment1C.Files);
+
+                int fileId = (int)_fileService.Create(d, Folder.Amendment, amendId, $"{existContract}\\{amendId}");               
+                _amendment.AddFile(amendId, fileId);
+
+                _logger.WriteLog(logLevel: LogLevel.Information,
+                                                   message: "ADDED amendment: " + amebdment1C.ToString(),
+                                                   nameSpace: typeof(HomeController).Name,
+                                                   methodName: MethodBase.GetCurrentMethod().Name);
+                return Created();
+            }
+            return BadRequest();
+        }
+        catch (Exception e)
+        {
+            _logger.WriteLog(logLevel: LogLevel.Error,
+                                               message: e.Message,
+                                               nameSpace: typeof(HomeController).Name,
+                                               methodName: MethodBase.GetCurrentMethod().Name);
+
+            return BadRequest("The amendment data is missing or has an incorrect format");
         }
     }
 }

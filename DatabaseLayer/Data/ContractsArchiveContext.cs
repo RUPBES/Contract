@@ -1,4 +1,5 @@
-﻿using DatabaseLayer.Models.KDO;
+﻿using DatabaseLayer.Models.EXTRA;
+using DatabaseLayer.Models.KDO;
 using DatabaseLayer.Models.PRO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -123,6 +124,11 @@ public partial class ContractsArchiveContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasAnnotation("Relational:Collation", "Cyrillic_General_CI_AS");
+
+        
+        modelBuilder.Ignore<ReleaseNoteFile>();
+        modelBuilder.Ignore<UserReleaseNote>();
+        modelBuilder.Ignore<ReleaseNote>();
 
         modelBuilder.Entity<AdditionalTerm>(entity =>
         {

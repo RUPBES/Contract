@@ -5,6 +5,7 @@ using DatabaseLayer.Models.KDO;
 using MvcLayer.Controllers;
 using MvcLayer.Models;
 using MvcLayer.Models.Data;
+using MvcLayer.Models.JSONSerializer;
 
 namespace MvcLayer.Mapper
 {
@@ -41,6 +42,9 @@ namespace MvcLayer.Mapper
             CreateMap<PaymentDTO, PaymentViewModel>().ReverseMap();
             CreateMap<ServiceGCViewModel, ServiceGCDTO>().ReverseMap();
             CreateMap<SelectionProcedureViewModel, SelectionProcedureDTO>().ReverseMap();
+
+            CreateMap<AmendmentJsonModel, AmendmentDTO>()
+               .ReverseMap();
 
             //CreateMap<VEmployeeDepartment, Department>()
             //    .ForMember(t => t.DepartmentId, o => o.MapFrom(s => s.Id))

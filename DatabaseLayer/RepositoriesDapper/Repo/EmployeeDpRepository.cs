@@ -46,7 +46,7 @@ public class EmployeeDpRepository : IReadonlyEmployeeDapperRepo
         var sql = @$"
             SELECT COUNT(distinct e.Id) FROM {table} e 
                 WHERE (e.Author IN @orgList OR e.Author is NULL)                 
-                {query} AND e.IsActive = 1;
+                {query} {(!string.IsNullOrEmpty(databaseName)? "": "AND e.IsActive = 1")} ;
 
             WITH 
             PhoneList AS (
@@ -58,7 +58,7 @@ public class EmployeeDpRepository : IReadonlyEmployeeDapperRepo
             FROM {table} e                            
             LEFT JOIN PhoneList pl ON e.Id = pl.EmployeeId                        
             WHERE (e.Author IN @orgList OR e.Author is NULL)                 
-            {query} AND e.IsActive = 1
+            {query} {(!string.IsNullOrEmpty(databaseName) ? "" : "AND e.IsActive = 1")}
             {orderBy}
             OFFSET @skip ROWS
             FETCH NEXT @take ROWS ONLY;";

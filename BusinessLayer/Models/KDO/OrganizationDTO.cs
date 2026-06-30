@@ -51,7 +51,9 @@ namespace BusinessLayer.Models.KDO
         /// расчетный счет
         /// </summary>
         /// 
-        [RegularExpression(@"^[BY]{2}\d{2}[A-Z0-9]{4}\d{16}$",    ErrorMessage = "Расчётный счёт должен быть в формате IBAN (28 символов)")]
+        //[RegularExpression("[A-Z]{2}[0-9]{2}-[A-Z0-9]{4}-[0-9]{4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}-([A-Z0-9]?){4}", ErrorMessage = "28 - разрядов; 1,2 - буквы;  3,4,9-12  - цифры; 5-8,13-28 латиница и цифры")]
+        [RegularExpression(@"^BY\d{2}[A-Z0-9]{4}\d{4}[A-Z0-9]{16}$",
+    ErrorMessage = "Расчётный счёт должен быть в формате IBAN (28 символов)")]
         [Display(Name = "Расчётный счёт")]
         public string? PaymentAccount { get; set; }
 

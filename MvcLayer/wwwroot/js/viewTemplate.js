@@ -60,7 +60,7 @@ function setContractArchiveTableRow(contractItems, permissions, isEngineering) {
     return contractItems.map(contractItem => `
     <tr>                           
             <td><span class="table_span-numberanddate">
-                    <a href="/archive/Contracts/Details/?id=${contractItem.Id}" title="Просмотр детальной информации">
+                    <a href="/archive/Contracts/Details/${contractItem.Id}" title="Просмотр детальной информации">
                         ${contractItem.Number ?? ``} от ${contractItem.Date ?? ``}
                     </a>
                 </span>
@@ -92,7 +92,7 @@ function setContractArchiveTableRow(contractItems, permissions, isEngineering) {
             <td><span class="table_span-volume">${contractItem.ThisYearSum ?? `0.00`} ${contractItem.Сurrency ?? ``}</span></td>
             
             <td><span class="table_span-action-main">
-                    <div class="icon info" title="Детальная информация"><a href="/archive/Contracts/Details/?id=${contractItem.Id}"></a></div>                        
+                    <div class="icon info" title="Детальная информация"><a href="/archive/Contracts/Details/${contractItem.Id}"></a></div>                        
                ${!isEngineering && permissions.groupeName.includes(`GRP_Estimate`) ? `<div class="icon estimate" title="Сметы"><a href="/archive/Estimates?contractId=${contractItem.Id}"></a></div>` : ``}   
                 
                 </span>
