@@ -1,10 +1,5 @@
-﻿@* @model IndexViewModel
-@using BusinessLayer.Models;
-@using BusinessLayer.Models.KDO*@
-
-@using BusinessLayer.Interfaces.Shared
+﻿@using BusinessLayer.Interfaces.Shared
 @inject IHttpContextUserProvider HttpHelper
-
 
 @{
     var permissions = HttpHelper.GetUserPermissions();
@@ -28,8 +23,8 @@
                     <div class="input-group m-2">
                         <span class="my-modal-title m-auto">@ViewData["Title"]</span>
                         <a asp-controller="Home" asp-action="" class="close-btn"></a>
-                    </div>                   
-                    <div class="header-view no-title">                        
+                    </div>
+                    <div class="header-view no-title">
                         <div class="box-btn">
                             <div class="btn btn-warning reset-btn btn-ctr" style="display:none !important">Сбросить фильтры</div>
                             <button type="button" class="btn btn-primary btn-ctr filtering-contract_btn">
@@ -72,8 +67,6 @@
                                         <th>
                                             <span class="column_400">
                                                 Название
-                                                @*                                                 @Html.ActionLink(" ", "Index", new { sortOrder = ViewBag.NameSortParm, currentFilter = ViewBag.CurrentFilter }, new { id = "arrayName", @class = "up" })
- *@
                                             </span>
                                             <div class="inline-block-icons">
                                                 <div class="sort-btn" data-content-sort="name">
@@ -115,7 +108,7 @@
                                             <span class="column_140">
                                                 Телефон
                                             </span>
-                                        </th>                                       
+                                        </th>
                                         <th>
                                             <span class="column_100">
                                                 Действие
@@ -124,64 +117,7 @@
                                     </tr>
                                 </thead>
                                 <tbody class="table_tbody">
-                                    @*  @foreach (OrganizationDTO item in Model.Objects)
-                                    {
-                                        <tr>
-                                            <td>
-                                                <span class="column_400">
-                                                    @Html.DisplayFor(modelItem => item.Name)
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="column_140">
-                                                    @foreach (var phone in item.Phones)
-                                                    {
-                                                        <div class="d-flex flex-row">
-                                                            <span class="p-1 k-mr-5 text-break">@phone.Number</span>
-                                                        </div>
-                                                    }
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="column_250">
-                                                    @foreach (var address in item.Addresses)
-                                                    {
-                                                        @if (address.FullAddress != null)
-                                                        {
-                                                            <div class="d-flex flex-row">
-                                                                <span class="p-1 k-mr-5 text-break">@address.FullAddress</span>
-                                                            </div>
-                                                        }
-                                                    }
-                                                </span>
-                                            </td>
-                                            <td>
-                                                @if (permissions is not null && permissions.IsReader)
-                                                {
-                                                    <span class="icon info" title="Детальная информация">
-                                                        <a asp-action="Details" asp-route-id="@item.Id" asp-route-page="@ViewBag.Page" asp-route-filter="@ViewBag.CurrentFilter"></a>
-                                                    </span>
-                                                }
-                                                @if (permissions is not null && permissions.IsEditor)
-                                                {
-                                                    <span class="icon edit" title="Редактировать">
-                                                        <a asp-action="Edit" asp-route-id="@item.Id"></a>
-                                                    </span>
-                                                }
-                                                @if (permissions is not null && (permissions.IsDeleter || permissions.IsAdmin))
-                                                {
-                                                    <span class="icon delete" title="Удалить">
-                                                        <a asp-action="Delete"
-                                                           asp-route-id="@item.Id"
-                                                           asp-route-page="@Model.PageViewModel.PageNumber"
-                                                           class="modal-link"
-                                                           data-message="Организация будет удалена. Продолжить?"></a>
-                                                    </span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-   *@                              </tbody>
+                                </tbody>
                             </table>
                         </div>
                         <div class="footer-page">
@@ -214,7 +150,7 @@
                                 </li>
                             </ul>
                         </div>
-                    </div>                   
+                    </div>
                 </div>
             </div>
         </div>

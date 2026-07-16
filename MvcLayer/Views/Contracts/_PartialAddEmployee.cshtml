@@ -7,14 +7,26 @@
 <div data-bs-backdrop="static" id="staticBackdrop" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="false">
     <div>
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Новый сотрудник</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="@Url.Action("AddNewEmployee","Contracts")" method="post" id="theFormEmp" style="padding-right: 20px; padding-left: 20px; width:350px;">
+            <div class="org-modal" role="dialog" aria-modal="true"
+                 aria-labelledby="editOrgTitle">
+                <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                    <div class="org-header-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="org-header-info">
+                    </div>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" style="margin: 10px 0;">
+                    </button>
 
+                </div>
+
+                <form asp-controller="Contracts" asp-action="AddNewEmployee" id="theFormEmp" method="post" novalidate>
+                    <input type="hidden" asp-for="EmployeeContracts[2].Employee.IsActive" value="true" />
                     <input asp-for="IsSubContract" hidden />
                     <input asp-for="SubContractId" type="number" hidden />
                     <input asp-for="IsAgreementContract" hidden />
@@ -37,7 +49,7 @@
                     <input asp-for="ContractOrganizations[0].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[1].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[2].OrganizationId" type="number" hidden />
-                    
+
                     <input asp-for="ContractPrice" hidden />
                     <input asp-for="Сurrency" hidden />
 
@@ -58,52 +70,141 @@
                     <input asp-for="TypeWorkContracts[0].TypeWorkId" hidden />
 
 
-                    <div class="form-group">
-                        <label asp-for="EmployeeContracts[2].Employee.LastName" class="control-label">Фамилия</label>
-                        <input asp-for="EmployeeContracts[2].Employee.LastName" class="form-control" required />
-                        <span asp-validation-for="EmployeeContracts[2].Employee.LastName" class="text-danger"></span>
+                    <div class="org-body" style="padding:12px 16px; gap:10px;">
+
+                        @* {{-- ── Основные сведения ── --}} *@                        
+                        <div class="org-fieldset">
+                            <div class="org-fieldset-body">
+                                <div class="md3-field full-width-org">
+                                    <label asp-for="EmployeeContracts[2].Employee.LastName" class="md3-label">
+                                        <span class="required-star">*</span>
+                                        Фамилия
+                                    </label>
+                                    <div class="md3-input-wrap">
+                                        <div class="md3-input-icon">
+                                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                      stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+                                        <input asp-for="EmployeeContracts[2].Employee.LastName" class="md3-input" placeholder="Фамилия" />
+                                    </div>
+                                    <span asp-validation-for="EmployeeContracts[2].Employee.LastName" class="md3-validation-msg"></span>
+                                </div>
+                                <div class="md3-field">
+                                    <label asp-for="EmployeeContracts[2].Employee.FirstName" class="md3-label">
+                                        <span class="required-star">*</span>
+                                        Имя
+                                    </label>
+                                    <div class="md3-input-wrap">
+                                        <div class="md3-input-icon">
+                                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                      stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+                                        <input asp-for="EmployeeContracts[2].Employee.FirstName" class="md3-input" placeholder="Имя" />
+                                    </div>
+                                    <span asp-validation-for="EmployeeContracts[2].Employee.FirstName" class="md3-validation-msg"></span>
+                                </div>
+                                <div class="md3-field">
+                                    <label asp-for="EmployeeContracts[2].Employee.FatherName" class="md3-label">
+                                        Отчество
+                                    </label>
+                                    <div class="md3-input-wrap">
+                                        <div class="md3-input-icon">
+                                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+                                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="md3-input" placeholder="Отчество (при наличии)" />
+                                    </div>
+                                    <span asp-validation-for="EmployeeContracts[2].Employee.FatherName" class="md3-validation-msg"></span>
+                                </div>
+                                <div class="md3-field">
+                                    <label asp-for="EmployeeContracts[2].Employee.Email" class="md3-label">
+                                        Электронная почта
+                                    </label>
+                                    <div class="md3-input-wrap">
+                                        <div class="md3-input-icon">
+                                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.7" />
+                                                <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+                                        <input asp-for="EmployeeContracts[2].Employee.Email" type="email" class="md3-input" placeholder="office@company.by" />
+                                    </div>
+                                    <span asp-validation-for="EmployeeContracts[2].Employee.Email" class="md3-validation-msg"></span>
+                                </div>
+                                <div class="md3-field">
+                                    <label class="md3-label">Телефон</label>
+                                    <div class="md3-input-wrap">
+                                        <div class="md3-input-icon">
+                                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
+                                                      stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+
+                                        <input asp-for="EmployeeContracts[2].Employee.Phones[0].Number"
+                                               type="text" class="md3-input"
+                                               placeholder="+375335555555" />
+                                    </div>
+                                    <span asp-validation-for="EmployeeContracts[2].Employee.Phones[0].Number" class="md3-validation-msg"></span>
+                                </div>
+                                <div class="md3-field">
+                                    <label class="md3-label">
+                                        Организация
+                                    </label>
+                                    <div class="md3-input-wrap no-icon">
+                                        <select name="EmployeeContracts[2].Employee.DepartmentEmployees[0].OrganizationId" id="organizationNameSelect" class="js-chosen" style="width:100%;">
+                                            <option disabled selected>Выберите организацию</option>
+                                            @foreach (var item in Organization.GetAll())
+                                            {
+                                                <option value="@item.Id">@item.Name</option>
+                                            }
+
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="md3-field">
+                                    <label class="md3-label">
+                                        Отдел
+                                    </label>
+                                    <div class="md3-input-wrap no-icon">
+                                        <select id="departmentNameSelect" name="EmployeeContracts[2].Employee.DepartmentEmployees[0].DepartmentId" class="js-chosen" style="width:100%;">
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="md3-field full-width-org">
+                                    <label asp-for="EmployeeContracts[2].Employee.Position" class="md3-label">
+                                        <span class="required-star">*</span> Должность
+                                    </label>
+                                    <div class="md3-input-wrap no-icon">
+                                        <input asp-for="EmployeeContracts[2].Employee.Position" class="md3-input" placeholder="Должность" />
+                                    </div>
+                                    <span asp-validation-for="EmployeeContracts[2].Employee.Position" class="md3-validation-msg"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="EmployeeContracts[2].Employee.FirstName" class="control-label">Имя</label>
-                        <input asp-for="EmployeeContracts[2].Employee.FirstName" class="form-control" required />
-                        <span asp-validation-for="EmployeeContracts[2].Employee.FirstName" class="text-danger"></span>
+
+                    @*  {{-- ══ ФУТЕР ══ --}} *@
+                    <div class="org-footer" style="padding:10px 16px 14px;">
+
+                        <div class="org-footer-spacer"></div>
+                        <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;" id="submitForm2">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M17 21v-8H7v8M7 3v5h8"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Сохранить
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label asp-for="EmployeeContracts[2].Employee.FatherName" class="control-label">Отчество</label>
-                        <input asp-for="EmployeeContracts[2].Employee.FatherName" class="form-control" />
-                        <span asp-validation-for="EmployeeContracts[2].Employee.FatherName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Организация</label>
-                        <select name="EmployeeContracts[2].Employee.DepartmentEmployees[0].OrganizationId" id="organizationNameSelect" class="form-control js-chosen">
-                            <option disabled selected>Выберите организацию</option>
-                            @foreach (var item in Organization.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>
-                    </div>
-                   @*  <div class="form-group">
-                        <label class="form-label">Отдел</label>
-                        <select asp-for="EmployeeContracts[2].Employee.DepartmentEmployees[0].DepartmentId" id="departmentNameSelect" class="form-control js-chosen">
-                        </select>
-                    </div> *@
-                    <div class="form-group">
-                        <label asp-for="EmployeeContracts[2].Employee.Position" class="control-label">Должность</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Position" class="form-control" required />
-                        <span asp-validation-for="EmployeeContracts[2].Employee.Position" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="EmployeeContracts[2].Employee.Email">Электронная почта</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Email" type="email" class="form-control" />
-                        <span asp-validation-for="EmployeeContracts[2].Employee.Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="EmployeeContracts[2].Employee.Phones[0].Number">Телефон</label>
-                        <input asp-for="EmployeeContracts[2].Employee.Phones[0].Number" type="text" class="form-control"/>
-                        <span asp-validation-for="EmployeeContracts[2].Employee.Phones[0].Number" class="text-danger"></span>
-                    </div>
-                    <button class="btn btn-primary mt-3" type="submit" id="submitForm2">Добавить</button>
+
                 </form>
             </div>
         </div>
@@ -115,14 +216,10 @@
         $('#modDialog').modal('hide');
     });
 
-
-    fillPhoneInput();
-
-
     $("#organizationNameSelect").change(function () {
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("GetJsonDepartments","Departments")',
+            url: '@Url.Action("GetJsonDepartments", "Departments")',
             dataType: 'json',
             data: { id: $("#organizationNameSelect").val() },
             success: function (department) {

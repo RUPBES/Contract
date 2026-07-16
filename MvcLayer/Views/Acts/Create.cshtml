@@ -1,17 +1,6 @@
 ﻿@model MvcLayer.Models.ActViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
-
-<style>
-
-    .btn_add {
-            text-align: right;
-        }
-
-    .form-check-input {
-        margin-left: 1%;
-    }
-</style>
 @{
     ViewData["Title"] = "Добавить акт приостановки/возобновления";
     int backId = 0;
@@ -22,67 +11,223 @@
     var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
 
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:960px;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
-                    @if (backId != null && backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == null || backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
+            <div class="dm-modal" style="max-width:760px; width:100%;">
+                <div class="org-modal" role="dialog" aria-modal="true"
+                     aria-labelledby="editOrgTitle">
+
+                    @*   {{-- ══ ШАПКА ══ --}} *@
+                    <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                        <div class="org-header-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="editOrgTitle"
+                                style="font-size:15px; margin:0 0 1px;">
+                                @ViewData["Title"]  по договору @contract?.Number
+                            </h2>
+                            <p class="org-header-sub" style="font-size:11px;">
+                                Заполните данные акта приостановки/возобновления
+                            </p>
+                        </div>
+                        @if (backId != null && backId > 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                        }
+                        @if (backId == null || backId == 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                        }
+                    </div>
+
+                    @* {{-- ══ ФОРМА ══ --}} *@
+                    <form asp-action="Create" asp-route-returnContractId="@ViewBag.returnContractId" method="post" enctype="multipart/form-data" novalidate>
+                        <input asp-for="ContractId" value="@contract?.Id" hidden>
+                        <div class="org-body" style="padding:12px 16px; gap:10px;">
+                            @* {{-- ── Основные сведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Основные сведения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="Reason" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Reason)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                                                                        <textarea rows="2" asp-for="Reason" class="md3-input" placeholder="Введите причину" required></textarea>
+                                        </div>
+                                        <span asp-validation-for="Reason" class="md3-validation-msg"></span>
+                                    </div>                                    
+                                    <div class="md3-field full-width-org">
+                                        <div class="md3-input-wrap">
+
+                                            <label class="md3-label" style="cursor:pointer;">
+                                                <span class="md3-input">
+                                                    <input type="checkbox" name="IsSuspension" value="false"
+                                                           @(Model?.IsSuspension == true ? "checked" : "") />
+
+                                                </span>
+                                                <span class="wz-opt-lbl" style="font-weight:600;">@Html.DisplayNameFor(m => m.IsSuspension)</span>
+                                            </label>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            @* {{-- ── Основание и содержание изменений ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Сроки
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="DateAct" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.DateAct)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateAct" type="text" class="md3-input" required />
+                                        </div>
+                                        <span asp-validation-for="DateAct" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateSuspendedFrom" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateSuspendedFrom"
+                                                   type="text" 
+                                                   class="md3-input"
+                                                   required />
+                                        </div>
+                                        <span asp-validation-for="DateSuspendedFrom" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateSuspendedUntil" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateSuspendedUntil"
+                                                   type="text" 
+                                                   class="md3-input"
+                                                   required />
+                                        </div>
+                                        <span asp-validation-for="DateSuspendedUntil" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateRenewal" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateRenewal"
+                                                   type="text"
+                                                   class="md3-input" />
+                                        </div>
+                                        <span asp-validation-for="DateRenewal" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* {{-- ── Приложения ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Приложения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body">
+
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="FilesEntity" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.FilesEntity)
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="FilesEntity" type="file" class="md3-input" />
+                                        </div>
+                                        <span asp-validation-for="FilesEntity" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @*  {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer" style="padding:10px 16px 14px;">
+                            <a asp-controller="Contracts" asp-action="@(backId > 0 ? "Details" : "Index")"
+                               asp-route-id=@(backId > 0 ? @backId : null)
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                            <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
-                <hr class="modal-line" />
-                <form asp-action="Create" asp-route-returnContractId="@ViewBag.returnContractId" class="row" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <input asp-for="ContractId" value="@contract?.Id" hidden>
-                    <div class="form-group col-6">
-                        <label asp-for="Reason" class="control-label"></label>
-                        <input asp-for="Reason" class="form-control" />
-                        <span asp-validation-for="Reason" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateAct" class="control-label"></label>
-                        <input asp-for="DateAct" class="form-control" type="text" required id="DateAct" />
-                        <span asp-validation-for="DateAct" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateSuspendedFrom" class="control-label"></label>
-                        <input asp-for="DateSuspendedFrom" class="form-control" type="text" id="DateSuspendedFrom" />
-                        <span asp-validation-for="DateSuspendedFrom" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateSuspendedUntil" class="control-label"></label>
-                        <input asp-for="DateSuspendedUntil" class="form-control" type="text" id="DateSuspendedUntil" />
-                        <span asp-validation-for="DateSuspendedUntil" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label asp-for="DateRenewal" class="control-label"></label>
-                        <input asp-for="DateRenewal" class="form-control" type="text" id="DateRenewal" />
-                        <span asp-validation-for="DateRenewal" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Приостановлено?</label>
-                        <input class="form-check-input" name="IsSuspension" id="checkActId" type="checkbox" />
-                    </div>                    
-                    <div class="form-group col-6">
-                        <label asp-for="FilesEntity" class="control-label"></label>
-                        <input name="FilesEntity" type="file" class="form-control" />                        
-                    </div>
-                    <div class="form-group mt-3 btn_add">
-                        <input type="submit" value="Добавить" class="btn btn-primary col-3" />
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -193,7 +338,7 @@
         function addDays(date, countDays) {
             let newDateOfyear = date.getFullYear() + ""; // год
             let day = date.getDate() + countDays; // текущий день
-            let month = date.getMonth() + 1; //текущий месяц   
+            let month = date.getMonth() + 1; //текущий месяц
             let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
             if (day > maxDateToday) {
                 month = month + 1;
@@ -225,4 +370,3 @@
         }
     </script>
 }
-

@@ -23,6 +23,8 @@ namespace BusinessLayer.Models.KDO
         /// <summary>
         /// фактический адрес
         /// </summary>
+        [StringLength(500, MinimumLength = 7, ErrorMessage = "Название должно содержать от 7 до 500 символов")]
+        [Display(Name = "Адрес")]
         public string? FullAddressFact { get; set; }
 
         /// <summary>

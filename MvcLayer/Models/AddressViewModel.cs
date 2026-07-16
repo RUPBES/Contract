@@ -26,7 +26,7 @@ namespace MvcLayer.Models
         /// сайт
         /// </summary>
         /// 
-        [Url(ErrorMessage = "Введите корректный адрес сайта (например: https://example.by)")]
+        [Url(ErrorMessage = "Введите корректный адрес сайта согласно шаблону - https://#######.## (например: https://example.by)")]
         [Display(Name = "Сайт")]
         public string? SiteAddress { get; set; }
 

@@ -108,7 +108,7 @@ namespace MvcLayer.Controllers
                     return View();
                 }
             }
-            NotificationHelper.SetNotification(TempData, "Ошибка обновления акта", NotificationType.Warning);
+            
             if (act?.ContractId is not null && act.ContractId > 0)
             {
                 return RedirectToAction(nameof(GetByContractId), new { id = act.ContractId, returnContractId = returnContractId });

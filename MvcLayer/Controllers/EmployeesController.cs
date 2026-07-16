@@ -18,22 +18,24 @@ namespace MvcLayer.Controllers
         private readonly IEmployeeService _employeesService;
         private readonly IMapper _mapper;
         private readonly IDepartmentService _departmentService;
+        private readonly IOrganizationService _orgService;
         private readonly IContractsLogger _logger;
         private readonly IHttpContextUserProvider _httpHelper;
 
         public EmployeesController(IEmployeeService employeesService, IMapper mapper,
-            IDepartmentService departmentService, IContractsLogger logger, IHttpContextUserProvider httpHelper)
+            IDepartmentService departmentService, IContractsLogger logger, IHttpContextUserProvider httpHelper, IOrganizationService orgService)
         {
             _departmentService = departmentService;
             _employeesService = employeesService;
             _mapper = mapper;
             _logger = logger;
             _httpHelper = httpHelper;
+            _orgService = orgService;
         }
 
         public async Task<IActionResult> Index()
         {
-           return await Task.FromResult<IActionResult>(View());
+            return await Task.FromResult<IActionResult>(View());
         }
 
         public async Task<IActionResult> Details(int? id, int? page, string? filter)
@@ -66,8 +68,25 @@ namespace MvcLayer.Controllers
         [Authorize(Policy = "CreatePolicy")]
         public async Task<IActionResult> Create(EmployeeViewModel employee)
         {
-            employee.Author = _httpHelper.GetUserOrganizationFirstCode();
+            if (employee.DepartId.HasValue)
+            {
+                var dep = _departmentService.GetById(employee.DepartId.Value);
+                employee.DepartmentEmployees.Add(new DepartmentEmployeeDTO { DepartmentId = dep.Id });
+            }
+            else if (employee.OrgId.HasValue)
+            {
+                var dep2 = _departmentService.Find(x => x.OrganizationId == employee.OrgId.Value && x.Name == string.Empty).FirstOrDefault();
+                if (dep2 is not null)
+                {
+                    employee.DepartmentEmployees.Add(new DepartmentEmployeeDTO { DepartmentId = dep2.Id });
+                }
+                else
+                {
+                    employee.DepartmentEmployees.Add(new DepartmentEmployeeDTO { Department = new DepartmentDTO { Name = string.Empty, OrganizationId = employee.OrgId.Value } });
+                }
+            }
 
+            employee.Author = _httpHelper.GetUserOrganizationFirstCode();
             var fullname = $"{employee.LastName} {employee.FirstName} {employee.FatherName}";
             var existingOrg = _employeesService.Find(o => o.FullName.Trim().Contains(fullname)).FirstOrDefault();
 
@@ -104,9 +123,9 @@ namespace MvcLayer.Controllers
             {
                 fio = fio.Where(x => x != "").ToArray();
             }
-            employee.LastName = fio[0];
-            employee.FirstName = fio[1];
-            employee.FatherName = fio[2];
+            employee.LastName = fio.Length > 0 ? fio[0] : null;
+            employee.FirstName = fio.Length > 1 ? fio[1] : null;
+            employee.FatherName = fio.Length > 2 ? fio[2] : null;
 
             if (employee.DepartmentEmployees.Count == 0)
             {
@@ -140,6 +159,28 @@ namespace MvcLayer.Controllers
                 employee.FatherName = employee?.FatherName?.Trim();
                 employee.FullName = $"{employee?.LastName} {employee?.FirstName} {employee?.FatherName}";
                 employee.Fio = $"{employee?.LastName} {employee?.FirstName?[0]}.{employee?.FatherName?[0]}.";
+
+                if (employee.OrgId.HasValue && !employee.DepartId.HasValue)
+                {
+                   
+                    var dep2 = _departmentService.Find(x => x.OrganizationId == employee.OrgId.Value && x.Name == string.Empty).FirstOrDefault();
+                    if (dep2 is not null)
+                    {
+                        employee.DepartmentEmployees.Add(new DepartmentEmployeeDTO { DepartmentId = dep2.Id, EmployeeId = employee.Id });
+                    }
+                    else
+                    {
+                        var idDep = _departmentService.Create(new DepartmentDTO { Name = string.Empty, OrganizationId = employee.OrgId.Value });
+                        employee.DepartmentEmployees.Add(new DepartmentEmployeeDTO { DepartmentId = (int)idDep, EmployeeId = employee.Id });
+                    }
+
+                }
+               
+                else if (employee.DepartId.HasValue)
+                {
+                    var dep = _departmentService.GetById(employee.DepartId.Value);
+                    employee.DepartmentEmployees.Add(new DepartmentEmployeeDTO { DepartmentId = dep.Id , EmployeeId = employee.Id });
+                }
 
                 _employeesService.Update(_mapper.Map<EmployeeDTO>(employee));
                 NotificationHelper.SetNotification(TempData, "Данные сотрудника обновлены", NotificationType.Info);
@@ -195,7 +236,7 @@ namespace MvcLayer.Controllers
             Dictionary<string, string> selection = new()
             {
                 {"fullName","ФИО сотрудника" },
-                {"email","Электронная почта" },   
+                {"email","Электронная почта" },
                 {"position","Должность" },
             };
             return await Task.FromResult<IActionResult>(PartialView("../Shared/Partial/_FilterDataWithoutDates", selection));

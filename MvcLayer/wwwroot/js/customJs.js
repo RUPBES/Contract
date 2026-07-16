@@ -10,7 +10,7 @@ function checkTwoSelectValues(firstId, secondId, areaId, buttonId, valueStyle) {
     $(firstId).change(function () {
         let firstValue = $(firstId).find(":selected").val();
         let secondValue = $(secondId).find(":selected").val();
-        const fieldset = $(areaId).children(":first");
+        const fieldset = $(areaId);//.children(":first");
 
         if (firstValue === secondValue) {
             let button = $(buttonId);
@@ -39,7 +39,7 @@ function checkThreeSelectValuesWithChosenStyle(firstId, secondId, thirdId, butto
 }
 function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleName) {
     const button = $(buttonId);
-
+    const classSLCT = '.organization-fieldset-slct';
     //for js-chosen
     //const selectObjOne = $(`${selectId}_chosen`);
     //const selectObjTwo = $(`${secondId}_chosen`);
@@ -55,28 +55,45 @@ function changeStatusSelectValue(selectId, secondId, thirdId, buttonId, styleNam
     let valueObjTwo = +($(secondId).find(":selected").val());
     let valueObjThree = +($(thirdId).find(":selected").val());
 
-    if ((valueObjOne === valueObjTwo) && (typeof (valueObjOne) === "number" && typeof (valueObjTwo) === "number")) {
-        selectObjOne.closest("fieldset").addClass(styleName);
+    if ((valueObjOne === valueObjTwo) && (valueObjOne !== 0 && valueObjTwo !== 0)) {
+        selectObjOne.closest(classSLCT).addClass(styleName);
         //selectObjTwo.closest("fieldset").addClass(styleName);
         $(buttonId).attr("type", "button");
     }
-    if ((valueObjOne === valueObjThree) && (typeof (valueObjOne) === "number" && typeof (valueObjThree) === "number")) {
-        selectObjOne.closest("fieldset").addClass(styleName);
+    if ((valueObjOne === valueObjThree) && ((valueObjOne) !== 0 && (valueObjThree) !== 0)) {
+        selectObjOne.closest(classSLCT).addClass(styleName);
         //selectObjThree.closest("fieldset").addClass(styleName);
         $(buttonId).attr("type", "button");
     }
-    if ((valueObjTwo === valueObjThree) && (typeof (valueObjTwo) === "number" && typeof (valueObjThree) === "number")) {
+    if ((valueObjTwo === valueObjThree) && ((valueObjTwo) !== 0 && (valueObjThree) !== 0)) {
 
-        selectObjTwo.closest("fieldset").addClass(styleName);
+        selectObjTwo.closest(classSLCT).addClass(styleName);
         //selectObjThree.closest("fieldset").addClass('same_value_chosen');
         $(buttonId).attr("type", "button");
     }
+
+    //if ((valueObjOne === valueObjTwo) && (typeof (valueObjOne) === "number" && typeof (valueObjTwo) === "number")) {
+    //    selectObjOne.closest(classSLCT).addClass(styleName);
+    //    //selectObjTwo.closest("fieldset").addClass(styleName);
+    //    $(buttonId).attr("type", "button");
+    //}
+    //if ((valueObjOne === valueObjThree) && (typeof (valueObjOne) === "number" && typeof (valueObjThree) === "number")) {
+    //    selectObjOne.closest(classSLCT).addClass(styleName);
+    //    //selectObjThree.closest("fieldset").addClass(styleName);
+    //    $(buttonId).attr("type", "button");
+    //}
+    //if ((valueObjTwo === valueObjThree) && (typeof (valueObjTwo) === "number" && typeof (valueObjThree) === "number")) {
+
+    //    selectObjTwo.closest(classSLCT).addClass(styleName);
+    //    //selectObjThree.closest("fieldset").addClass('same_value_chosen');
+    //    $(buttonId).attr("type", "button");
+    //}
     const firstNotSame = valueObjOne !== valueObjTwo && valueObjOne !== valueObjThree;
     const secondNotSame = valueObjTwo !== valueObjOne && valueObjTwo !== valueObjThree;
-/*    const thirdNotSame = valueObjThree !== valueObjTwo && valueObjThree !== valueObjOne;*/
+    /*    const thirdNotSame = valueObjThree !== valueObjTwo && valueObjThree !== valueObjOne;*/
 
     if (firstNotSame && secondNotSame) {
-        selectObjTwo.closest("fieldset").removeClass(styleName);
+        selectObjTwo.closest(classSLCT).removeClass(styleName);
     }
     //if (thirdNotSame) {
     //    selectObjThree.closest("fieldset").removeClass(styleName);
@@ -211,63 +228,3 @@ function contractAlert() {
 };
 
 contractAlert();
-
-//// ----- Сортировка через AJAX !
-
-//const modal2 = document.querySelector('.table_tbody');
-//const viewDataElement = document.querySelector('#viewDataId');
-
-//document.querySelectorAll('.sort-btn').forEach(link => {
-//    link.addEventListener('click', function (e) {
-//        e.preventDefault();
-
-//        //currentUrl = this.href;
-//        modal2.textContent = '';
-//        let selectedType = this.getAttribute('data-content-sort') || 'Number1'; 
-//        const currentPage = viewDataElement.dataset.currentPage || 1;
-
-//        getSortContractsHTML(selectedType, currentPage, true, modal2);
-//    });
-//});
-
-//function getSortContractsJSON(type, page, isDesc, elemInput) {
-//    $.ajax({
-//        type: 'GET',
-//        url: '/Contracts/Sort',
-//        dataType: 'json',
-//        data: { type: type, page: page, isDesc: isDesc },
-//        success: function (indexModel) {
-
-//            if (indexModel.length == 0)
-//                return;
-//            //console.log(indexModel);
-//            //elemInput.append(indexModel);
-//            elemInput.innerHTML = setContractTableRow(emp, '');
-//            //const sdsfdf = indexModel.objects;
-//            //$.each(sdsfdf, function (r, emp) {
-//            //    elemInput.innerHTML += setContractTableRow(emp, '');
-//            //});
-//        },
-//        error: function (ex) {
-//            elemInput.append('Ошибка загрузки данных');
-            
-//        }
-//    });
-//}
-
-//function getSortContractsHTML(type, page, isDesc, elemInput) {
-//    $.ajax({
-//        type: 'GET',
-//        url: '/Contracts/Sort',
-//        dataType: 'html',
-//        data: { type: type, page: page, isDesc: isDesc },
-//        success: (function (result) {
-//            elemInput.innerHTML = result;
-        
-//        }),
-//        error: function (ex) {
-//            elemInput.append('Ошибка загрузки данных');
-
-//        }
-//    });
-//}

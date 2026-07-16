@@ -11,46 +11,150 @@
     var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
 
+
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:860px;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"] для договора @contract?.Number</label>
-                    @if (backId != null && backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == null || backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-                <form asp-action="Create" class="row" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <input asp-for="ContractId" value="@contract?.Id" hidden>
-                    <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
-                    <div class="col-6">
-                        <label asp-for="Number" for="NumDC"></label>
-                        <div class="input-group">
-                            <div class="input-group-text">№</div>
-                            <input asp-for="Number" class="form-control" id="NumDC">
+            <div class="dm-modal" style="max-width:760px; width:100%;">
+                <div class="org-modal" role="dialog" aria-modal="true"
+                     aria-labelledby="editOrgTitle">
+
+                    @*   {{-- ══ ШАПКА ══ --}} *@
+                    <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                        <div class="org-header-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
                         </div>
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="editOrgTitle"
+                                style="font-size:15px; margin:0 0 1px;">
+                                @ViewData["Title"] для договора @contract?.Number
+                            </h2>
+                            <p class="org-header-sub" style="font-size:11px;">
+                                Заполните данные акта ввода
+                            </p>
+                        </div>
+                        @if (backId != null && backId > 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                        }
+                        @if (backId == null || backId == 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                        }
                     </div>
-                    <div class="form-group col-6">
-                        <label asp-for="Date" class="control-label"></label>
-                        <input asp-for="Date" type="text" class="form-control" id="Date" required />
-                        <span asp-validation-for="Date" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-12">
-                        <label asp-for="FilesEntity" class="control-label"></label>
-                        <input name="FilesEntity" type="file" class="form-control" />
-                    </div>
-                    <div class="form-group mt-3 btn_position">                        
-                        <input type="submit" value="Добавить" class="btn btn-primary col-3" />
-                    </div>
-                </form>
+
+                    @* {{-- ══ ФОРМА ══ --}} *@
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+                        <input asp-for="ContractId" value="@contract?.Id" hidden>
+                        <input name="returnContractId" value="@ViewBag.returnContractId" hidden>
+                        <div class="org-body" style="padding:12px 16px; gap:10px;">
+
+                            @* {{-- ── Основные сведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Основные реквизиты
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="Number" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Number)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Number" class="md3-input" placeholder="Номер акта ввода" required id="NumDC" />
+                                        </div>
+                                        <span asp-validation-for="Number" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field">
+                                        <label asp-for="Date" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Date)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Date" type="text" id="Date" class="md3-input" required />
+                                        </div>
+                                        <span asp-validation-for="Date" class="md3-validation-msg"></span>
+                                    </div>                                   
+                                </div>
+                            </div>
+                            @* {{-- ── Приложения ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Приложения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr;">
+
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="FilesEntity" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.FilesEntity)
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="FilesEntity" type="file" class="md3-input" />
+                                        </div>
+                                        <span asp-validation-for="FilesEntity" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @*  {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer" style="padding:10px 16px 14px;">
+                            <a asp-controller="Contracts" asp-action="@(backId > 0 ? "Details" : "Index")"
+                               asp-route-id=@(backId > 0 ? @backId : null)
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                            <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
             </div>
         </div>
     </div>

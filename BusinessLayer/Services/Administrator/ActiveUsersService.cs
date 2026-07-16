@@ -166,7 +166,7 @@ namespace BusinessLayer.Services.Administrator
         public async Task<IEnumerable<LogDTO>> GetLogs()
         {
             var logs = await _contract.Logs.GetAllAsync();
-            return _mapper.Map<IEnumerable<LogDTO>>(logs.OrderBy(x => x.Id));
+            return _mapper.Map<IEnumerable<LogDTO>>(logs);
         }
 
 

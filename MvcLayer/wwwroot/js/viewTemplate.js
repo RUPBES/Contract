@@ -19,12 +19,15 @@
             </td>
             <td>${item.NameObject ?? ''}</td>
             <td>${item.Client ?? ''}</td>
+
+             ${!isEngineering ? `
+
             <td>
                 <div>${item.GenContractor ?? ''}</div>
                 ${item.ResponsibleForWork
                 ? `<div><hr/>Ответственный за производство работ:<br/>${item.ResponsibleForWork}</div>`
                 : ''}
-            </td>
+            </td>` : ''}
             <td>
                 ${item.DateBeginWork || item.DateEndWork
                 ? `<b>выполнения работ:</b><br>${item.DateBeginWork ?? ''} - ${item.DateEndWork ?? ''}`
@@ -35,7 +38,7 @@
                 <a href="/Prepayments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsAvans ?? ''}</a><br/><br/>
                 <a href="/Payments/GetByContractId?contractId=${item.Id}">${item.PaymentСonditionsRaschet ?? ''}</a>
             </td>
-            ${!isEngineering ? `<td>${item.WorkType ?? ''}</td>` : ''}
+            ${!isEngineering ? `<td>${item.WorkType ?? ''}</td>` : `<td>${item.PaymentСonditionsPrice ?? ''}</td>`}
             <td class="text-end">${item.ContractPrice} <br/> ${item.Сurrency ?? ''}</td>
             <td class="text-end">${item.PreYearSum} <br/> ${item.Сurrency ?? ''}</td>
             <td class="text-end">${item.RemainingSum} <br/> ${item.Сurrency ?? ''}</td>

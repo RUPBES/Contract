@@ -82,7 +82,7 @@ namespace DatabaseLayer.Repositories
 
         public async Task<IEnumerable<Log>> GetAllAsync()
         {
-            return await _context.Logs.ToListAsync();
+            return await _context.Logs.OrderByDescending(x=>x.DateTime).ToListAsync();
         }
 
         public async Task<IEnumerable<Log>> FindAsync(Expression<Func<Log, bool>>? predicate)

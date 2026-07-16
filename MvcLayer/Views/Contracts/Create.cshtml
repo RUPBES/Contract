@@ -5,590 +5,1008 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IEmployeeService Employee
 @inject IConverterService Converter
 @inject BusinessLayer.Interfaces.ContractInterfaces.ITypeWorkService TypeWork
-
 @{
-    string title = "Договор";
-    string organizationLabel = "Заказчик";
-    string workTypeLabel = "Вид работ";
-    if (Model.IsAgreementContract)
-    {
-        title = "Соглашение с филиалом";
-        organizationLabel = "Филиал";
-    }
-    else if (Model.IsEngineering)
-    {
-        title = "Договор на инжиниринговые услуги";
-        workTypeLabel = "Вид услуг";
-    }
-    else if (Model.IsSubContract)
-    {
-        title = "Субподрядный договор";
-        organizationLabel = "Субподрядчик";
-    }
+    string title = "Новый договор";    
+    string orgLabel = "Заказчик";
+    string workLabel = "Вид работ";
+
+    bool isEng = Model.IsEngineering == true;
+    bool isAgr = Model.IsAgreementContract == true;
+    bool isSub = Model.IsSubContract == true;   
+
+    if (isAgr) { title = "Соглашение с филиалом"; orgLabel = "Филиал"; }
+    else if (isEng) { title = "Инжиниринговые услуги"; workLabel = "Вид услуг"; }
+    else if (isSub) { title = "Субподрядный договор"; orgLabel = "Субподрядчик"; }
+    ViewData["Title"] = title;
 }
 
+<link rel="stylesheet" href="~/css/wizzard-view.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+<style>
+    .selectize-dropdown-content{
+        max-height:78px !important;
+    }
+
+    .org-section-badge.create-bdg {        
+        margin: 0 0 7px 0px;
+    }
+
+    .wz-ta[disabled] {
+        background-color: #f5f5f5;
+        color: #888;
+        cursor: not-allowed;
+    }
+</style>
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
             <div class="dm-modal" style="max-width:1100px;">
                 <div class="top-modal-block">
-                    <h2 style="text-align: center;">@title</h2>
-                    @if ((bool)Model.IsAgreementContract && Model.AgreementContractId != null)
-                    {
-                        <a class="close-btn" asp-action="Details" asp-route-id="@Model.AgreementContractId"></a>
-                    }
-                    else if ((bool)Model.IsSubContract && Model.SubContractId != null)
-                    {
-                        <a class="close-btn" asp-action="Details" asp-route-id="@Model.SubContractId"></a>
-                    }
-                    else
-                    {
-                        <a class="close-btn" asp-action="Index"></a>
-                    }
-                    @* <a class="close-btn" onclick="window.history.go(-1)"></a> *@
                 </div>
 
-                <div id="modDialog" class="modal fade" style="background: rgba(0, 0, 0, 0.65);">
-                    <div id="dialogContent" class="modal-dialog modal-dialog-centered" role="document"></div>
-                </div>
-
-                <form class="row align-content-start" asp-action="Create" method="post" id="MainForm" enctype="multipart/form-data">
-                    <input asp-for="IsAgreementContract" value="@Model.IsAgreementContract" hidden />
-                    <input asp-for="IsEngineering" value="@Model.IsEngineering" hidden />
-                    <input asp-for="IsSubContract" value="@Model.IsSubContract" hidden />
-                    <input asp-for="AgreementContractId" hidden />
-                    <input asp-for="SubContractId" hidden />
-                    <input asp-for="Author" hidden />
-                    <input asp-for="Owner" hidden />
-
-                    <div class="col-4">
-                        <div class="row">
-                            <div class="col-12">
-                                <label asp-for="Number" class="control-label" for="NumDC"></label>
-                                <div class="input-group">
-                                    <div class="input-group-text">№</div>
-                                    <input asp-for="Number" class="form-control" required id="NumDC">
-                                    <button class="btn btn-warning" type="button" id="searchButton"><img src="/icons/search.svg" title="Проверить, существует ли договор с таким номером"></button>
-                                </div>
-                            </div>
-                            @if (Model.IsEngineering == true)
-                            {
-                                <div class="col-12 mt-3">
-                                    <label asp-for="Date" class="control-label" for="DateDC"></label>
-                                    <div class="input-group">
-                                        <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                                        <input asp-for="Date" type="text" class="form-control" required id="DateDC">
-                                    </div>
-                                </div>
-                                <div class="form-group mt-3">
-                                    <label for="CDC">Стоимость оказания услуг</label>
-                                    <div class="input-group">
-                                        <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                                        <input asp-for="ContractPrice" type="text" class="form-control cost" id="CDC">
-                                    </div>
-                                </div>
-                                <div class="form-group mt-3">
-                                    <label asp-for="PaymentСonditionsPrice"></label>
-                                    <input asp-for="PaymentСonditionsPrice" maxlength="5" type="text" class="form-control cost">
-                                </div>
-                            }
-
-                            @*Орагнизации *********@
-                            <div class="col-12 mt-3">
-                                <fieldset class="border rounded-3 p-3">
-                                    <legend class="float-none w-auto px-3">
-                                        <a asp-action="AddOrganization" id="addOrganization" class="btn btn-sm btn-success">
-                                            <img src="~/icons/house-add.svg" />
-                                            Добавить новую организацию
-                                        </a>
-                                    </legend>
-
-
-                                    <div class="col-12">
-                                        <label>@organizationLabel</label>
-                                        <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked selected hidden>
-                                        <select name="ContractOrganizations[0].OrganizationId" class="form-control js-chosen" id="selectOrgOne">
-                                            @if (Model?.ContractOrganizations[0].OrganizationId > 0)
-                                            {
-                                                var item = Organization.GetById((int)Model?.ContractOrganizations[0].OrganizationId);
-                                                <option selected value="@item?.Id">@item?.Name</option>
-                                            }
-                                            @if (Model?.ContractOrganizations[0].OrganizationId == 0)
-                                            {
-                                                <option value="null" selected>Выберите организацию</option>
-                                            }
-
-                                            @foreach (var item in Organization.GetAll())
-                                            {
-                                                <option value="@item.Id">@item.Name</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    @if (Model.IsEngineering || (bool)Model.IsSubContract || (bool)Model.IsAgreementContract)
-                                    {
-                                        <input name="ContractOrganizations[1].Organization" hidden />
-                                        <input name="ContractOrganizations[2].Organization" hidden />
-                                        <input name="ContractOrganizations[3].Organization" hidden />
-                                    }
-                                    @if (!Model.IsEngineering && !(bool)Model.IsSubContract && !(bool)Model.IsAgreementContract)
-                                    {
-                                        <div class="col-12">
-                                            <label>Генподрядчик</label>
-                                            <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked selected hidden>
-                                            <select name="ContractOrganizations[1].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgTwo">
-                                                @if (Model?.ContractOrganizations[1].OrganizationId > 0)
-                                                {
-                                                    var item = Organization.GetById((int)Model?.ContractOrganizations[1]?.OrganizationId);
-                                                    <option selected value="@item?.Id">@item?.Name</option>
-                                                }
-                                                @if (Model?.ContractOrganizations[1].OrganizationId == 0)
-                                                {
-                                                    <option value="null" selected>Выберите организацию</option>
-                                                }
-                                                @foreach (var item in Organization.GetAll())
-                                                {
-                                                    <option value="@item.Id">@item.Name</option>
-                                                }
-                                            </select>
-                                        </div>
-                                        <div class="col-12">
-                                            <label>Ответственный за производство работ</label>
-                                            <input name="ContractOrganizations[2].IsResponsibleForWork" type="checkbox" value="true" checked selected hidden>
-                                            <select name="ContractOrganizations[2].OrganizationId" class="form-control js-chosen slt-add-organization" id="selectOrgThree">
-                                                @if (Model?.ContractOrganizations[2].OrganizationId > 0)
-                                                {
-                                                    var item = Organization.GetById((int)Model?.ContractOrganizations[2]?.OrganizationId);
-                                                    <option selected value="@item?.Id">@item?.Name</option>
-                                                }
-                                                @if (Model?.ContractOrganizations[2].OrganizationId == 0)
-                                                {
-                                                    <option value="null" selected>Выберите организацию</option>
-                                                }
-                                                @foreach (var item in Organization.GetAll())
-                                                {
-                                                    <option value="@item.Id">@item.Name</option>
-                                                }
-                                            </select>
-                                        </div>
-                                        <input name="ContractOrganizations[3].Organization" hidden />
-                                    }
-
-
-                                </fieldset>
-                            </div>
-
-                            @if (!Model.IsEngineering)
-                            {
-                                <div class="col-12 mt-3" id="EmployeeFieldSet">
-                                    <fieldset class="border rounded-3 p-3">
-                                        <legend class="float-none w-auto px-3">
-                                            <a asp-action="AddEmployee" id="addEmployee" class="btn btn-sm btn-success">
-                                                <img src="~/icons/person-plus.svg" />
-                                                Добавить нового сотрудника
-                                            </a>
-                                        </legend>
-                                        <div class="col-12">
-                                            <label>Подписант договора</label>
-                                            <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked selected hidden>
-                                            <select name="EmployeeContracts[0].EmployeeId" class="form-control js-chosen" id="selectEmpOne">
-                                                @if (Model?.EmployeeContracts[0].EmployeeId > 0)
-                                                {
-                                                    var item = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
-                                                    <option selected value="@item?.Id">@item?.FullName</option>
-                                                }
-                                                @if (Model?.EmployeeContracts[0].EmployeeId == 0)
-                                                {
-                                                    <option value="null" selected>Выберите сотрудника</option>
-                                                }
-
-                                                @foreach (var item in Employee.Find(x => x.IsActive == true))
-                                                {
-                                                    <option value="@item.Id">@item.FullName</option>
-                                                }
-                                            </select>
-                                        </div>
-                                        <div class="col-12">
-                                            <label>Ответственный за ведение договора</label>
-                                            <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked selected hidden>
-                                            <select name="EmployeeContracts[1].EmployeeId" class="form-control js-chosen" id="selectEmpTwo">
-                                                @if (Model?.EmployeeContracts[1].EmployeeId > 0)
-                                                {
-                                                    var item = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
-                                                    <option selected value="@item?.Id">@item?.FullName</option>
-                                                }
-                                                @if (Model?.EmployeeContracts[1].EmployeeId == 0)
-                                                {
-                                                    <option value="null" selected>Выберите сотрудника</option>
-                                                }
-                                                @foreach (var item in Employee.Find(x => x.IsActive == true))
-                                                {
-                                                    <option value="@item.Id">@item.FullName</option>
-                                                }
-                                            </select>
-                                        </div>
-                                        <input name="EmployeeContracts[2].Employee" hidden />
-                                    </fieldset>
-                                </div>
-                            }
-                            @if (Model.IsEngineering)
-                            {
-                                <input name="EmployeeContracts[0].Employee" hidden />
-                                <input name="EmployeeContracts[1].Employee" hidden />
-                                <input name="EmployeeContracts[2].Employee" hidden />
-                            }
-                            <div class="col-12 mt-3">
-                                <fieldset class="border rounded-3 p-3">
-                                    <legend class="float-none w-auto px-3">
-                                        <a asp-action="AddTypeWork" id="addTypeWork" class="btn btn-sm btn-success">
-                                            <img src="~/icons/house-add.svg" />
-                                            Добавить новый @(Model.IsEngineering ? "вид услуг" : "вид работ")
-                                        </a>
-                                    </legend>
-                                    <div class="col-12">
-                                        <label>@workTypeLabel</label>
-                                        <input name="TypeWorkContracts[0].TypeWork" hidden />
-                                        <select name="TypeWorkContracts[0].TypeWorkId" class="form-control js-chosen slt-add-organization">
-                                            @if (Model?.TypeWorkContracts[0] is not null)
-                                            {
-                                                var item = TypeWork.GetById((int)Model?.TypeWorkContracts[0].TypeWorkId);
-                                                <option selected value="@item?.Id">@item?.Name</option>
-                                            }
-                                            @if (Model?.TypeWorkContracts[0] is null)
-                                            {
-                                                <option selected>Выберите @(Model.IsEngineering ? "вид услуг" : "вид работ")</option>
-                                            }
-
-                                            @foreach (var item in TypeWork.GetAll())
-                                            {
-                                                <option value="@item.Id">@item.Name</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <input name="TypeWorkContracts[1].TypeWork" hidden />
-                                </fieldset>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4">
-                        @if (!Model.IsEngineering)
+                <!-- ══ ЗАГОЛОВОК ══ -->
+                <div class="wz">
+                    <div class="wz-head">
+                        <span class="wz-head-icon">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                        </span>
+                        <h1>@ViewData["Title"]</h1>
+                        @if (isAgr && Model.AgreementContractId != null)
                         {
-                            <div class="col-12">
-                                <label asp-for="Date" class="control-label" for="DateDC"></label>
-                                <div class="input-group">
-                                    <div class="input-group-text"><img src="~/icons/calendar-date.svg" /></div>
-                                    <input asp-for="Date" type="text" class="form-control" required id="DateDC">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label asp-for="ContractPrice" for="CDC"></label>
-                                <div class="input-group">
-                                    <div class="input-group-text"><img src="~/icons/cash-coin.svg" /></div>
-                                    <input name="ContractPrice" value="@Model.ContractPrice" type="text" class="form-control" id="CDC">
-                                </div>
-                            </div>
+                            <a href="@Url.Action("Details", new { id = Model.AgreementContractId })" class="close-btn"></a>
                         }
-
-                        <div class="col-12">
-                            <label asp-for="NameObject" class="control-label"></label>
-                            <textarea asp-for="NameObject" class="form-control" rows="2" required="@(!Model.IsSubContract && !Model.IsAgreementContract && !Model.IsOneOfMultiple)" disabled="@(Model.IsSubContract || Model.IsAgreementContract)"></textarea>
-                        </div>
-
-                        <fieldset class="border rounded-1 p-3">
-                            <legend class="float-none w-auto px-3">Условия авансирования</legend>
-                            @{
-                                int numberCheckbox = 0;
-                            }
-                            @foreach (var item in Enum.GetValues<PrepaymentCondition>())
-                            {
-                                var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
-                                var valueArray = Model?.PaymentCA?.Where(element => element == value)?.FirstOrDefault();
-                                string idCh = "check" + @numberCheckbox;
-
-                                <div>
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" style="display: block;">
-                                                @if (valueArray is not null)
-                                                {
-                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value" checked>
-                                                }
-                                                @if (valueArray is null)
-                                                {
-                                                    <input type="checkbox" name="PaymentCA" id="@idCh" value="@value">
-                                                }
-                                            </div>
-                                        </div>
-                                        <input type="text" class="form-control" value="@value" disabled>
-                                    </div>
-                                </div>
-                                numberCheckbox++;
-                            }
-                        </fieldset>
-
-
-                        <fieldset class="border rounded-3 p-3">
-                            <legend class="float-none w-auto px-3">Процедура выбора</legend>
-                            @foreach (var item in Enum.GetValues<Procedure>())
-                            {
-                                var name = $"{Converter.ToProcedureType((int)item)}";
-                                int numberEnum = (int)item;
-                                var procedure = Model?.SelectionProcedures?[0].TypeProcedure;
-                                <div>
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" style="display: block;">
-
-                                                @if (procedure is not null && procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == true)
-                                                {
-                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
-                                                }
-
-                                                @if ((procedure is null || procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum == 0)
-                                                {
-                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name" checked>
-                                                }
-
-                                                @if ((procedure is null || procedure?.Equals(name, StringComparison.OrdinalIgnoreCase) == false) && numberEnum != 0)
-                                                {
-                                                    <input type="radio" name="SelectionProcedures[0].TypeProcedure" value="@name">
-                                                }
-
-                                            </div>
-                                        </div>
-                                        <input type="text" class="form-control" value="@name" disabled>
-                                    </div>
-                                </div>
-                            }
-                        </fieldset>
-
-                        @if (!Model.IsEngineering && !Model.IsAgreementContract && !Model.IsSubContract)
+                        else if (isSub && Model.SubContractId != null)
                         {
-                            <div class="col-12 mt-2">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text" style="display: block;">
-                                            <input type="checkbox" asp-for="IsMultiple">
-                                        </div>
-                                    </div>
-                                    <input style="font-weight: bold;" type="text" class="form-control" value="Имеются подобъекты?" disabled>
-                                </div>
-                            </div>
+                            <a href="@Url.Action("Details", new { id = Model.SubContractId })" class="close-btn"></a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Index")" class="close-btn"></a>
                         }
                     </div>
 
-                    <div class="col-4">
-                        <div class="form-group">
-                            <label asp-for="Сurrency" for="CurDC"></label>
-                            <div class="input-group">
-                                <div class="input-group-text" style="max-width:10%; padding: 3px;">
-                                    <img style="height: 22px;" src="~/icons/currency-exchange.svg" />
-                                </div>
-                                <select name="Сurrency" class="form-control js-chosen" id="CurDC">
-                                    @if (Model?.Сurrency is null)
-                                    {
-                                        <option value=@null selected>Выбрать валюту</option>
-                                    }
-                                    @if (Model?.Сurrency is not null)
-                                    {
-                                        <option selected value="@Model?.Сurrency">@Model?.Сurrency</option>
-                                    }
-                                    @foreach (var item in Enum.GetValues<Currency>())
-                                    {
-                                        <option value="@item">@item</option>
-                                    }
-                                </select>
-                            </div>
+                    <!-- ══ STEPPER ══ -->
+                    <div class="wz-stepper" id="wzStepper">
+                        <div class="wz-step active" data-step="1">
+                            <div class="wz-step-dot">1</div>
+                            <div class="wz-step-lbl">Основные реквизиты</div>
                         </div>
+                        <div class="wz-step" data-step="2">
+                            <div class="wz-step-dot">2</div>
+                            <div class="wz-step-lbl">Стороны договора</div>
+                        </div>
+                        <div class="wz-step" data-step="3">
+                            <div class="wz-step-dot">3</div>
+                            <div class="wz-step-lbl">Сроки</div>
+                        </div>
+                        <div class="wz-step" data-step="4">
+                            <div class="wz-step-dot">4</div>
+                            <div class="wz-step-lbl">Условия</div>
+                        </div>
+                        <div class="wz-step" data-step="5">
+                            <div class="wz-step-dot">5</div>
+                            <div class="wz-step-lbl">Подтверждение</div>
+                        </div>
+                    </div>
 
-                        <fieldset class="border rounded-3 p-3">
-                            <legend class="float-none w-auto px-3">Сроки</legend>
-                            <label class="control-label" asp-for="DateBeginWork"></label>
-                            <input asp-for="DateBeginWork" type="text" class="form-control" required id="DateBeginWork">
-                            <label class="form-label" id="labelBeginWork" style="display:none"></label>
+                    <!-- ══ МОДАЛКА для AJAX ══ -->
+                    <div id="modDialog" class="modal fade" style="background:rgba(0,0,0,.65);">
+                        <div id="dialogContent" class="modal-dialog modal-dialog-centered" role="document"></div>
+                    </div>
 
-                            <label class="control-label" asp-for="DateEndWork"></label>
-                            <input asp-for="DateEndWork" type="text" class="form-control" required id="DateEndWork">
-                            <label class="form-label" id="labelEndWork" style="display:none"></label>
+                    <!-- ══ ФОРМА ══ -->
+                    <form asp-action="Create" method="post" id="MainForm" enctype="multipart/form-data">
+                        <input asp-for="IsAgreementContract" value="@Model.IsAgreementContract" hidden />
+                        <input asp-for="IsEngineering" value="@Model.IsEngineering" hidden />
+                        <input asp-for="IsSubContract" value="@Model.IsSubContract" hidden />
+                        <input asp-for="AgreementContractId" hidden />
+                        <input asp-for="SubContractId" hidden />
+                        <input asp-for="Author" hidden />
+                        <input asp-for="Owner" hidden />
 
-                            @if (!Model.IsEngineering)
-                            {
-                                <label class="control-label" asp-for="EnteringTerm"></label>
-                                <input asp-for="EnteringTerm" type="text" class="form-control" required id="EnteringTerm">
-                                <label class="form-label" id="labelEnteringTerm" style="display:none"></label>
+                        @if (isEng)
+                        {
+                            <input name="EmployeeContracts[0].Employee" hidden />
+                            <input name="EmployeeContracts[1].Employee" hidden />
+                            <input name="EmployeeContracts[2].Employee" hidden />
+                        }
 
-                                <label class="control-label" asp-for="ContractTerm" hidden></label>
-                                <input asp-for="ContractTerm" type="text" class="form-control" hidden id="ContractTerm">
-                                @* <label class="form-label" id="labelContractTerm" style="display:none"></label> *@
-                            }
-                        </fieldset>
+                        <!-- ═══════════════════════════════════════
+                             КАРТОЧКА — фиксированный контейнер
+                        ═══════════════════════════════════════ -->
+                        <div class="wz-card-outer">
 
-                        <fieldset class="border rounded-1 p-3">
-                            <legend class="float-none w-auto px-3">Источник финансирования</legend>
-                            @foreach (var item in Enum.GetValues<FundingSource>())
-                            {
-                                var value = $"{Converter.ToFundingSourceTerm((int)item)}";
-                                var valueArray = Model?.FundingFS?.Where(element => element == value)?.FirstOrDefault();
+                            <!-- Шапка (меняется только текст) -->
+                            <div class="wz-card-hdr">
+                                <span class="wz-card-hdr-icon" id="hdrIcon">
+                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
+                                </span>
+                                <span class="wz-card-hdr-title" id="hdrTitle">Основная информация</span>
+                                <span class="wz-card-hdr-badge" id="hdrBadge">Шаг 1 из 5</span>
+                            </div>
 
-                                <div>
-                                    <div class="input-group mb-3">
-                                        <div class="input-group-prepend">
-                                            <div class="input-group-text" style="display: block;">
-                                                @if (valueArray is not null)
+                            <!-- Слайдер -->
+                            <div class="wz-slides-wrap">
+                                <div class="wz-slides" id="wzSlides">
+
+                                    <!-- ═══ СЛАЙД 1: Основное ═══ -->
+                                    <div class="wz-slide">
+                                        <div class="wz-fs">
+                                            <!-- Номер -->
+                                            @* <div class="org-section">
+                                                <div class="org-section-header">
+                                                    <span class="org-section-badge create-bdg">
+                                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                                                        </svg>
+                                                        Реквизиты договора
+                                                    </span>
+                                                </div>
+                                            </div> *@
+                                            <div class="wz-fs-body @(isEng == true? "g4" : "g3")">
+
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Номер <span class="required-star">*</span></label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">№</span>
+                                                        <input asp-for="Number" class="wz-in" required id="NumDC"
+                                                               placeholder="Номер договора" oninput="onDataChange()" />
+                                                        <button type="button" class="wz-srch" id="searchButton" title="Проверить">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="11" cy="11" r="8" />
+                                                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <span id="numMsg" style="font-size:10.5px;min-height:5px;"></span>
+                                                </div>
+                                                <!-- Валюта -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Валюта</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <line x1="12" y1="1" x2="12" y2="23" />
+                                                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                            </svg>
+                                                        </span>
+                                                        <select name="Сurrency" class=" js-chosen" id="CurDC" style="width:100%;" @* onchange="onDataChange() *@">
+                                                            @if (Model?.Сurrency is not null)
+                                                            {
+                                                                <option selected value="@Model.Сurrency">@Model.Сurrency</option>
+                                                            }
+                                                            @foreach (var item in Enum.GetValues<Currency>())
+                                                            {
+                                                                <option value="@item">@item</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <!-- Цена -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Договорная цена</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                            </svg>
+                                                        </span>
+                                                        <input name="ContractPrice" value="@Model.ContractPrice" type="text"
+                                                               class="wz-in cost-format" id="CDC" placeholder="0.00" oninput="onDataChange()" />
+                                                    </div>
+                                                </div>
+                                                @if (isEng)
                                                 {
-                                                    <input type="checkbox" name="FundingFS" value="@value" checked>
+                                                    <div class="wz-field">
+                                                        <label class="wz-lbl">Условия оплаты (%)</label>
+                                                        <div class="wz-iw">
+                                                            <span class="wz-iw-ic" style="font-size:11px;font-weight:700;">%</span>
+                                                            <input asp-for="PaymentСonditionsPrice" maxlength="5" type="text"
+                                                                   class="wz-in cost" placeholder="0" oninput="onDataChange()" />
+                                                        </div>
+                                                    </div>
                                                 }
-                                                @if (valueArray is null)
+                                                <!-- Наименование -->
+                                                <div class="wz-field gfull" style="margin-top: 5px;">
+                                                    <label class="wz-lbl">Наименование объекта <span class="required-star">*</span></label>
+                                                    <textarea asp-for="NameObject" class="wz-ta" rows="3"
+                                                              required=@(!isSub && !isAgr)
+                                                              disabled=@(isSub || isAgr)
+                                                              placeholder="Введите наименование объекта..."
+                                                              oninput="onDataChange()"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge create-bdg bdg-xl">
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                                                    </svg>
+                                                    @workLabel
+
+                                                    <a asp-action="AddTypeWork" id="addTypeWork" style="font-size: 11px !important;" class="wz-add-btn-custm" title="Добавить новый вид работ">
+                                                        <svg class="icon-plus-circle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                        </svg>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="wz-fs">
+                                            <div class="wz-fs-body">
+                                                <!-- Fieldset вид работ -->
+                                                <div class="wz-field">
+                                                    <input name="TypeWorkContracts[0].TypeWork" hidden />
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <polyline points="9 11 12 14 22 4" />
+                                                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                                                            </svg>
+                                                        </span>
+                                                        <select name="TypeWorkContracts[0].TypeWorkId" class=" syncChangeSummary js-chosen" style="width:100%;" @*onchange="syncSummary()"*@>
+                                                            @if (Model?.TypeWorkContracts[0] is not null && Model?.TypeWorkContracts[0].TypeWorkId > 0)
+                                                            {
+                                                                var item = TypeWork.GetById((int)Model.TypeWorkContracts[0].TypeWorkId);
+                                                                <option selected value="@item?.Id">@item?.Name</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="">Выберите @(Model.IsEngineering == true ? "вид услуг" : "вид работ")</option>
+                                                            }
+                                                            @foreach (var item in TypeWork.GetAll())
+                                                            {
+                                                                <option value="@item.Id">@item.Name</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <input name="TypeWorkContracts[1].TypeWork" hidden />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ═══ СЛАЙД 2: Организации ═══ -->
+                                    <div class="wz-slide">
+                                        <!-- Fieldset организации -->
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge create-bdg bdg-xl">
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <rect x="2" y="7" width="20" height="14" rx="2" />
+                                                        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                                                    </svg>
+                                                    Организации
+
+                                                    <a asp-action="AddOrganization" id="addOrganization" style="font-size: 11px !important;" class="wz-add-btn-custm" title="Добавить новую организацию">
+                                                        <svg class="icon-plus-circle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <line x1="12" y1="8" x2="12" y2="16" />
+                                                            <line x1="8" y1="12" x2="16" y2="12" />
+                                                        </svg>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="wz-fs">                                           
+                                            <div class="wz-fs-body g2 organization-fieldset-slct">
+                                                <input name="ContractOrganizations[0].IsClient" type="checkbox" value="true" checked hidden />
+                                                <div class="wz-field gfull">
+                                                    <label class="wz-lbl">@orgLabel</label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                            </svg>
+                                                        </span>
+                                                        <select name="ContractOrganizations[0].OrganizationId" class="js-chosen" style="width:100%;" id="selectOrgOne">
+                                                            @if (Model?.ContractOrganizations[0].OrganizationId > 0)
+                                                            {
+                                                                var it = Organization.GetById((int)Model.ContractOrganizations[0].OrganizationId);
+                                                                <option selected value="@it?.Id">@it?.Name</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="">Выберите организацию</option>
+                                                            }
+                                                            @foreach (var it in Organization.GetAll())
+                                                            {
+                                                                <option value="@it.Id">@it.Name</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                @if (!isEng && !isSub && !isAgr)
                                                 {
-                                                    <input type="checkbox" name="FundingFS" value="@value">
+                                                    <input name="ContractOrganizations[1].IsGenContractor" type="checkbox" value="true" checked hidden />
+                                                    <div class="wz-field">
+                                                        <label class="wz-lbl">Генподрядчик</label>
+                                                        <div class="wz-iw">
+                                                            <span class="wz-iw-ic">
+                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                                </svg>
+                                                            </span>
+                                                            <select name="ContractOrganizations[1].OrganizationId" class=" js-chosen" style="width:100%;" id="selectOrgTwo">
+                                                                @if (Model?.ContractOrganizations[1].OrganizationId > 0)
+                                                                {
+                                                                    var it = Organization.GetById((int)Model.ContractOrganizations[1].OrganizationId);
+                                                                    <option selected value="@it?.Id">@it?.Name</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="">Выберите организацию</option>
+                                                                }
+                                                                @foreach (var it in Organization.GetAll())
+                                                                {
+                                                                    <option value="@it.Id">@it.Name</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <input name="ContractOrganizations[2].IsResponsibleForWork" type="checkbox" value="true" checked hidden />
+                                                    <div class="wz-field">
+                                                        <label class="wz-lbl">Ответственный за производство работ</label>
+                                                        <div class="wz-iw">
+                                                            <span class="wz-iw-ic">
+                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                                </svg>
+                                                            </span>
+                                                            <select name="ContractOrganizations[2].OrganizationId" class=" js-chosen" style="width:100%;"
+                                                                    id="selectOrgThree" @*  onchange="onDataChange()" *@>
+                                                                @if (Model?.ContractOrganizations[2].OrganizationId > 0)
+                                                                {
+                                                                    var it = Organization.GetById((int)Model.ContractOrganizations[2].OrganizationId);
+                                                                    <option selected value="@it?.Id">@it?.Name</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="">Выберите организацию</option>
+                                                                }
+                                                                @foreach (var it in Organization.GetAll())
+                                                                {
+                                                                    <option value="@it.Id">@it.Name</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <input name="ContractOrganizations[3].Organization" hidden />
+                                                }
+                                                else
+                                                {
+                                                    <input name="ContractOrganizations[1].Organization" hidden />
+                                                    <input name="ContractOrganizations[2].Organization" hidden />
+                                                    <input name="ContractOrganizations[3].Organization" hidden />
                                                 }
                                             </div>
                                         </div>
-                                        <input type="text" class="form-control" value="@value" disabled>
+                                        @if (!isEng)
+                                        {
+                                            <!-- Сотрудники -->
+                                            <div class="org-section">
+                                                <div class="org-section-header">
+                                                    <span class="org-section-badge create-bdg bdg-xl">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                                            <circle cx="9" cy="7" r="4" />
+                                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                                        </svg>
+                                                        Сотрудники
+
+                                                        <a asp-action="AddEmployee" id="addEmployee" style="font-size: 11px !important;" class="wz-add-btn-custm" title="Добавить новую организацию">
+                                                            <svg class="icon-plus-circle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                                <line x1="8" y1="12" x2="16" y2="12" />
+                                                            </svg>
+                                                        </a>
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div class="wz-fs">                                               
+                                                <div class="wz-fs-body organization-fieldset-slct g2" id="EmployeeFieldSet">
+                                                    <input name="EmployeeContracts[0].IsSignatory" type="checkbox" value="true" checked hidden />
+                                                    <div class="wz-field">
+                                                        <label class="wz-lbl">Подписант </label>
+                                                        <div class="wz-iw">
+                                                            <span class="wz-iw-ic">
+                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                                    <circle cx="12" cy="7" r="4" />
+                                                                </svg>
+                                                            </span>
+                                                            <select name="EmployeeContracts[0].EmployeeId" class="js-chosen" style="width:100%;"
+                                                                    id="selectEmpOne" onchange="onDataChange()">
+                                                                @if (Model?.EmployeeContracts[0].EmployeeId > 0)
+                                                                {
+                                                                    var it = Employee.GetById(Model.EmployeeContracts[0].EmployeeId);
+                                                                    <option selected value="@it?.Id">@it?.FullName</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="">Выберите сотрудника</option>
+                                                                }
+                                                                @foreach (var it in Employee.Find(x => x.IsActive == true))
+                                                                {
+                                                                    <option value="@it.Id">@it.FullName</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <input name="EmployeeContracts[1].IsResponsible" type="checkbox" value="true" checked hidden />
+                                                    <div class="wz-field">
+                                                        <label class="wz-lbl">Ответственный за ведение </label>
+                                                        <div class="wz-iw">
+                                                            <span class="wz-iw-ic">
+                                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                                    <circle cx="12" cy="7" r="4" />
+                                                                </svg>
+                                                            </span>
+                                                            <select name="EmployeeContracts[1].EmployeeId" class="js-chosen" style="width:100%;"
+                                                                    id="selectEmpTwo" onchange="onDataChange()">
+                                                                @if (Model?.EmployeeContracts[1].EmployeeId > 0)
+                                                                {
+                                                                    var it = Employee.GetById(Model.EmployeeContracts[1].EmployeeId);
+                                                                    <option selected value="@it?.Id">@it?.FullName</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="">Выберите сотрудника</option>
+                                                                }
+                                                                @foreach (var it in Employee.Find(x => x.IsActive == true))
+                                                                {
+                                                                    <option value="@it.Id">@it.FullName</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <input name="EmployeeContracts[2].Employee" hidden />
+                                                </div>
+                                            </div>
+                                        }
+
                                     </div>
-                                </div>
-                            }
-                        </fieldset>
-                    </div>
 
-                    <div class="col-8 mt-1 fieldset_container">
-                        <fieldset class="border rounded-1 p-3 fieldset_mr">
-                            <legend class="float-none w-auto px-3">Расчет за выполненные @(Model.IsEngineering ? "услуги" : "работы")</legend>
-                            @foreach (var item in Enum.GetValues<Payment>())
-                            {
-                                var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";
-                                bool hasMatchingPaymentTerm = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false;
+                                    <!-- ═══ СЛАЙД 3: Сроки ═══ -->
+                                    <div class="wz-slide">
+                                        <div class="org-section">
+                                            <div class="org-section-header">
+                                                <span class="org-section-badge create-bdg bdg-xl">
+                                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <polyline points="12 6 12 12 16 14" />
+                                                    </svg>
+                                                    Сроки                                                    
+                                                </span>
+                                            </div>
+                                        </div>
 
-                                <div class="input-group mb-2">
-                                    <div class="input-group-prepend">
-                                        <div class="input-group-text" style="display: block;">
-                                            @if (Model?.PaymentСonditionsRaschet is not null && hasMatchingPaymentTerm)
-                                            {
-                                                <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name" checked>
-                                            }
-                                            @if (Model?.PaymentСonditionsRaschet is null || !hasMatchingPaymentTerm)
-                                            {
-                                                <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet" value="@name">
-                                            }
+                                        <!-- Сроки -->
+                                        <div class="wz-fs">
+                                            @* <div class="wz-fs-leg">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <polyline points="12 6 12 12 16 14" />
+                                                </svg>
+                                                Сроки
+                                            </div> *@
+                                            <div class="wz-fs-body g2">
+                                                <!-- Дата -->
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Дата заключения <span class="required-star">*</span></label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                                                <line x1="16" y1="2" x2="16" y2="6" />
+                                                                <line x1="8" y1="2" x2="8" y2="6" />
+                                                                <line x1="3" y1="10" x2="21" y2="10" />
+                                                            </svg>
+                                                        </span>
+                                                        <input asp-for="Date" type="text" class="wz-in" required id="DateDC" placeholder="дд.мм.гггг" oninput="onDataChange()" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Начало работ </label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">→</span>
+                                                        <input asp-for="DateBeginWork" type="text" class="wz-in" required
+                                                               id="DateBeginWork" placeholder="дд.мм.гггг" oninput="onDataChange()" />
+                                                    </div>
+                                                </div>
+                                                <div class="wz-field">
+                                                    <label class="wz-lbl">Окончание работ </label>
+                                                    <div class="wz-iw">
+                                                        <span class="wz-iw-ic">←</span>
+                                                        <input asp-for="DateEndWork" type="text" class="wz-in" required
+                                                               id="DateEndWork" placeholder="дд.мм.гггг" oninput="onDataChange()" />
+                                                    </div>
+                                                </div>
+                                                @if (!isEng)
+                                                {
+                                                    <div class="wz-field">
+                                                        <label class="wz-lbl">Срок ввода </label>
+                                                        <div class="wz-iw">
+                                                            <span class="wz-iw-ic">⌛</span>
+                                                            <input asp-for="EnteringTerm" type="text" class="wz-in" required
+                                                                   id="EnteringTerm" placeholder="дд.мм.гггг" oninput="onDataChange()" />
+                                                        </div>
+                                                    </div>
+                                                    <input asp-for="ContractTerm" type="text" hidden id="ContractTerm" />
+                                                }
+                                            </div>
+                                        </div>
+                                        @if (!isEng && !isAgr && !isSub)
+                                        {
+                                            <div class="org-section">
+                                                <div class="org-section-header">
+                                                    <span class="org-section-badge create-bdg bdg-xl">
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                                        </svg>
+                                                        Очередь строительства
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="wz-fs">
+                                                <div class="wz-fs-body">
+                                                    <div class="wz-field">
+                                                        <label class="wz-opt" style="cursor:pointer;" onclick="toggleCheckOpt(this)">
+                                                            <span class="wz-opt-ctrl">
+                                                                <input type="checkbox" asp-for="IsMultiple" onchange="onDataChange()" />
+                                                            </span>
+                                                            <span class="wz-opt-lbl" style="font-weight:600;">Имеются подобъекты?</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <!-- ═══ СЛАЙД 4: Условия ═══ -->
+                                    <div class="wz-slide">
+                                        <div class="g2">
+
+                                            <!-- ЛЕВАЯ КОЛОНКА -->
+                                            <div>
+
+                                                <!-- Источник финансирования -->
+                                                <div class="org-section">
+                                                    <div class="org-section-header">
+                                                        <span class="org-section-badge create-bdg bdg-xl">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <line x1="12" y1="1" x2="12" y2="23" />
+                                                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                                            </svg>
+                                                            Источник финансирования
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="wz-fs">                                                   
+                                                    <div class="wz-fs-body">
+                                                        <div class="wz-opts">
+                                                            @foreach (var item in Enum.GetValues<FundingSource>())
+                                                            {
+                                                                var value = $"{Converter.ToFundingSourceTerm((int)item)}";
+                                                                var found = Model?.FundingFS?.FirstOrDefault(e => e == value);
+                                                                <label class="wz-opt @(found != null ? "sel" : "")" onclick="toggleCheckOpt(this)">
+                                                                    <span class="wz-opt-ctrl">
+                                                                        <input type="checkbox" name="FundingFS" value="@value"
+                                                                               @(found != null ? "checked" : "")
+                                                                               onchange="onDataChange()" />
+                                                                    </span>
+                                                                    <span class="wz-opt-lbl">@value</span>
+                                                                </label>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+
+                                                <!-- Расчёт за работы -->
+                                                <div class="org-section">
+                                                    <div class="org-section-header">
+                                                        <span class="org-section-badge create-bdg bdg-xl">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                                                <line x1="8" y1="21" x2="16" y2="21" />
+                                                                <line x1="12" y1="17" x2="12" y2="21" />
+                                                            </svg>
+                                                            Расчёт за @(isEng ? "услуги" : "работы")
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="wz-fs">                                                   
+                                                    <div class="wz-fs-body">
+                                                        <div class="wz-opts" id="paymentOpts">
+                                                            @foreach (var item in Enum.GetValues<Payment>())
+                                                            {
+                                                                var name = $"{Converter.ToPaymentTerm((int)item, Model.IsEngineering)}";
+                                                                bool hasMatch = Model?.PaymentСonditionsRaschet?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false;
+                                                                <label class="wz-opt @(hasMatch ? "sel" : "")" onclick="selectOpt(this)">
+                                                                    <span class="wz-opt-ctrl">
+                                                                        <input class="checkChoise" type="radio" name="PaymentСonditionsRaschet"
+                                                                               value="@name" @(hasMatch ? "checked" : "")
+                                                                               onchange="onDataChange()" />
+                                                                    </span>
+                                                                    <span class="wz-opt-lbl short-text">@name</span>
+                                                                </label>
+                                                            }
+                                                        </div>
+                                                        <div id="payDaysWrap" style="margin-top:6px;display:@(Model?.PaymentConditionsDaysRaschet > 0 ? "block" : "none");">
+                                                            <div class="wz-field" style="margin-bottom:0;">
+                                                                <label class="wz-lbl">Количество дней</label>
+                                                                <div class="wz-iw">
+                                                                    <span class="wz-iw-ic">дн.</span>
+                                                                    <input type="number" name="PaymentConditionsDaysRaschet" class="wz-in"
+                                                                           id="dayInput"
+                                                                           value="@(Model?.PaymentConditionsDaysRaschet > 0 ? Model.PaymentConditionsDaysRaschet.ToString() : "")"
+                                                                           min="1" placeholder="0" oninput="onDataChange()" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- ПРАВАЯ КОЛОНКА -->
+                                            <div>
+
+                                                <!-- Условия авансирования -->
+                                                <div class="org-section">
+                                                    <div class="org-section-header">
+                                                        <span class="org-section-badge create-bdg bdg-xl">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                                                <line x1="2" y1="10" x2="22" y2="10" />
+                                                            </svg>
+                                                            Условия авансирования
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="wz-fs">                                                   
+                                                    <div class="wz-fs-body">
+                                                        <div class="wz-opts">
+                                                            @{
+                                                                int nCb = 0;
+                                                            }
+                                                            @foreach (var item in Enum.GetValues<PrepaymentCondition>())
+                                                            {
+                                                                var value = $"{Converter.ToPrepaymentConditionTerm((int)item)}";
+                                                                var found = Model?.PaymentCA?.FirstOrDefault(e => e == value);
+                                                                <label class="wz-opt @(found != null ? "sel" : "")" onclick="toggleCheckOpt(this)">
+                                                                    <span class="wz-opt-ctrl">
+                                                                        <input type="checkbox" name="PaymentCA" id="check@(nCb)"
+                                                                               value="@value" @(found != null ? "checked" : "")
+                                                                               onchange="onDataChange()" />
+                                                                    </span>
+                                                                    <span class="wz-opt-lbl">@value</span>
+                                                                </label>
+                                                                nCb++;
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Процедура выбора -->
+                                                <div class="org-section">
+                                                    <div class="org-section-header">
+                                                        <span class="org-section-badge create-bdg bdg-xl">
+                                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <circle cx="12" cy="12" r="10" />
+                                                                <line x1="12" y1="8" x2="12" y2="12" />
+                                                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                            </svg>
+                                                            Процедура выбора
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="wz-fs">                                                   
+                                                    <div class="wz-fs-body">
+                                                        <div class="wz-opts">
+                                                            @foreach (var item in Enum.GetValues<Procedure>())
+                                                            {
+                                                                var name = $"{Converter.ToProcedureType((int)item)}";
+                                                                int n = (int)item;
+                                                                var proc = Model?.SelectionProcedures?[0].TypeProcedure;
+                                                                bool ch = (proc != null && proc.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                                                || (proc == null && n == 0);
+                                                                <label class="wz-opt @(ch ? "sel" : "")" onclick="selectOpt(this)">
+                                                                    <span class="wz-opt-ctrl">
+                                                                        <input type="radio" name="SelectionProcedures[0].TypeProcedure"
+                                                                               value="@name" @(ch ? "checked" : "") onchange="onDataChange()" />
+                                                                    </span>
+                                                                    <span class="wz-opt-lbl">@name</span>
+                                                                </label>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
                                         </div>
                                     </div>
-                                    @if (Model?.PaymentConditionsDaysRaschet > 0 && hasMatchingPaymentTerm)
-                                    {
-                                        <div class="col-1" id="inpValueRaschet"><input type="number" name="PaymentConditionsDaysRaschet" class="form-control" value="@Model?.PaymentConditionsDaysRaschet.Value" min="1"></div>
-                                    }
-                                    <div class="col-9">
-                                        <input type="text" class="form-control" value="@name" disabled>
+
+                                    <!-- ═══ СЛАЙД 5: Сводка ═══ -->
+                                    <div class="wz-slide">
+                                        <div class="sum-banner">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10" />
+                                                <polyline points="12 8 12 12 14 14" />
+                                            </svg>
+                                            Проверьте данные перед сохранением. Нажмите «Изменить» для возврата к нужному шагу.
+                                        </div>
+                                        <div class="sum-grid" id="sumGrid"></div>
                                     </div>
-                                </div>
-                            }
-                        </fieldset>
-                        <button type="submit" class="btn btn-primary btn_fieldset" id="subBtn">Сохранить</button>
-                    </div>
-                </form>
+
+                                </div><!-- /wz-slides -->
+                            </div><!-- /wz-slides-wrap -->
+                            <!-- ══ ФУТЕР ══ -->
+                            <div class="wz-footer">
+                                <button type="button" class="wz-btn wz-btn-ghost" id="btnBack" style="display:none;" onclick="wzBack()">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                                    Назад
+                                </button>
+                                <a href="@Url.Action("Index")" class="wz-btn wz-btn-ghost" id="btnCancel">Отмена</a>
+                                <span class="wz-footer-spacer"></span>
+                                <span class="wz-footer-step" id="footerStep">Шаг 1 из 4</span>
+                                <button type="button" class="wz-btn wz-btn-next" id="btnNext" onclick="wzNext()">
+                                    Далее
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                                </button>
+                                <button type="submit" class="wz-btn wz-btn-save" id="btnSave" style="display:none;" id="subBtn">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                    Сохранить договор
+                                </button>
+                            </div>
+                        </div><!-- /wz-card-outer -->
+                    </form>
+                </div><!-- /wz -->
             </div>
         </div>
     </div>
 </div>
 
+
 @section Scripts {
     <script src="~/js/creationContractFunc.js"></script>
-    <script type="text/javascript">
-        $(function ($) {
-            var allCost = $(".cost")
-            for (let el of allCost) {
-                digits_float(el)
-            }
-            $('body').on('input', '.cost', function (e) {
-                digits_float(this);
-            });
-            $('body').on('input', '#CDC', function (e) {
-                digits_float(this);
-            });
-            digits_float('#CDC');
-        });
-
+    <script>
+              
         $(document).ready(function () {
 
             const styleName = "border:solid 1px red !important;background-color: rgba(255, 0, 0, 0.1);";
-            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#EmployeeFieldSet", "#subBtn", styleName);
-            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#EmployeeFieldSet", "#subBtn", styleName);
+            checkTwoSelectValues("#selectEmpOne", "#selectEmpTwo", "#EmployeeFieldSet", "#btnSave", styleName);
+            checkTwoSelectValues("#selectEmpTwo", "#selectEmpOne", "#EmployeeFieldSet", "#btnSave", styleName);
+            checkThreeSelectValuesWithChosenStyle("#selectOrgOne", "#selectOrgTwo", "#selectOrgThree", "#btnSave");
 
-            checkThreeSelectValuesWithChosenStyle("#selectOrgOne", "#selectOrgTwo", "#selectOrgThree", "#subBtn");
+        });
+        /* ══════════════════════════════════
+           СОСТОЯНИЕ WIZARD
+        ══════════════════════════════════ */
+        const TOTAL = 5;
+        let cur = 1;
 
-            $(".checkChoise").click(function (e) {
-                let elemNumber = $("#dayInput");
-                $("#inpValueRaschet").remove();
-                if (elemNumber !== null || elemNumber !== undefined) {
-                    $("#dayInput").parent().remove();
-                }
+        const HDR_DATA = {
+            1: { title: 'Основные реквизиты договора и вид работ',        badge: 'Шаг 1 из 5' },
+            2: { title: 'Участники подписания договора',   badge: 'Шаг 2 из 5' },
+            3: { title: 'Сроки',        badge: 'Шаг 3 из 5' },
+             4: { title: 'Условия финансирования и расчетов',        badge: 'Шаг 4 из 5' },
+            5: { title: 'Подтверждение',               badge: 'Шаг 5 из 5' },
+        };
 
-                $(this).parent().parent().last().after(`<div class='col-1'><input class='form-control' id="dayInput" type='number' name='PaymentConditionsDaysRaschet' min='1'></div>`);
+        function gotoStep(n) {
+            if (n < 1 || n > TOTAL) return;
+
+            const slides   = document.getElementById('wzSlides');
+            const offset   = (n - 1) * 100;
+            slides.style.transform = `translateX(-${offset}%)`;
+            cur = n;
+
+            /* шапка */
+            document.getElementById('hdrTitle').textContent = HDR_DATA[n].title;
+            document.getElementById('hdrBadge').textContent = HDR_DATA[n].badge;
+            document.getElementById('footerStep').textContent = `Шаг ${n} из ${TOTAL}`;
+
+            /* кнопки */
+            document.getElementById('btnBack').style.display  = n > 1  ? '' : 'none';
+            document.getElementById('btnNext').style.display  = n < TOTAL ? '' : 'none';
+            document.getElementById('btnSave').style.display  = n === TOTAL ? '' : 'none';
+            document.getElementById('btnCancel').style.display= n === 1 ? '' : 'none';
+
+            /* stepper */
+            document.querySelectorAll('.wz-step').forEach(el => {
+                const s = +el.dataset.step;
+                el.classList.toggle('active', s === n);
+                el.classList.toggle('done',   s < n);
             });
 
-            $("#searchButton").click(function (e) {
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("ExistContractByNumber", "Contracts")',
-                    dataType: 'json',
-                    data: { contractNumber: $("#NumDC").val() },
-                    success: function (resultChecking) {
-                        if (resultChecking) {
-                            alert(`Договор с таким номером уже создан`)
-                        }
-                        else {
-                            alert(`Договор с таким номером не найден`)
-                        }
-                    },
-                    error: function (ex) {
-                        alert('Ошибка поиска');
-                    }
-                });
-            });
+            /* сводка */
+            if (n === TOTAL) buildSummary();
+        }
 
-            $("#addOrganization").click(function (e) {
-                e.preventDefault();
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("AddOrganization", "Contracts")',
-                    dataType: 'html',
-                    data: $("#MainForm").serialize(),
-                    success: (function (result) {
-                        $('#dialogContent').html(result);
-                        $('#modDialog').modal({ backdrop: false });
-                        $('#modDialog').modal('show');
-                    })
-                });
-            });
+        function wzNext() { gotoStep(cur + 1); }
+        function wzBack() { gotoStep(cur - 1); }
 
-            $("#addEmployee").click(function (e) {
-                e.preventDefault();
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("AddEmployee", "Contracts")',
-                    dataType: 'html',
-                    data: $("#MainForm").serialize(),
-                    success: (function (result) {
-                        $('#dialogContent').html(result);
-                        $('#modDialog').modal({ backdrop: false });
-                        $('#modDialog').modal('show');
-                    })
-                });
+        /* ══════════════════════════════════
+           ОПЦИИ
+        ══════════════════════════════════ */
+        function selectOpt(lbl) {
+            const inp = lbl.querySelector('input[type=radio]');
+            if (!inp) return;
+            document.querySelectorAll(`input[name="${inp.name}"]`).forEach(r => {
+                r.closest('.wz-opt')?.classList.remove('sel');
             });
+            lbl.classList.add('sel');
+        }
 
-            $("#addTypeWork").click(function (e) {
-                e.preventDefault();
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("AddTypeWork", "Contracts")',
-                    dataType: 'html',
-                    data: $("#MainForm").serialize(),
-                    success: (function (result) {
-                        $('#dialogContent').html(result);
-                        $('#modDialog').modal({ backdrop: false });
-                        $('#modDialog').modal('show');
-                    })
-                });
+        function toggleCheckOpt(lbl) {
+            const cb = lbl.querySelector('input[type=checkbox]');
+            if (!cb) return;
+            setTimeout(() => lbl.classList.toggle('sel', cb.checked), 0);
+        }
+
+        /* показать поле дней при выборе расчёта */
+        document.querySelectorAll('.checkChoise').forEach(r => {
+            r.addEventListener('change', () => {
+                document.getElementById('payDaysWrap').style.display = 'block';
             });
         });
+
+        /* ══════════════════════════════════
+           СВОДКА
+        ══════════════════════════════════ */
+        function tv(sel) {
+            const el = document.querySelector(sel);
+            if (!el) return '—';
+            if (el.tagName === 'SELECT') return el.options[el.selectedIndex]?.text || '—';
+            if (el.type === 'checkbox') return el.checked ? 'Да' : 'Нет';
+            return el.value?.trim() || '—';
+        }
+
+        function radioTxt(name) {
+            const r = document.querySelector(`input[name="${name}"]:checked`);
+            return r?.closest('.wz-opt-lbl')?.textContent?.trim()
+                || r?.closest('.wz-opt')?.querySelector('.wz-opt-lbl')?.textContent?.trim()
+                || r?.value || '—';
+        }
+
+        function cbTxt(name) {
+            const arr = [...document.querySelectorAll(`input[name="${name}"]:checked`)]
+                .map(el => el.closest('.wz-opt')?.querySelector('.wz-opt-lbl')?.textContent?.trim() || el.value);
+            return arr.length ? arr.join(', ') : '—';
+        }
+
+        function secHtml(title, stepN, rows) {
+            const r = rows.map(([k, v]) =>
+                `<div class="sum-row">
+                    <span class="sum-k">${k}</span>
+                    <span class="sum-v short-text ${v==='—'?'empty':''}"
+                    title="${v}"
+                    >${v}</span>
+                 </div>`).join('');
+            return `<div class="wz-summary-section sum-sec">
+                <div class="sum-sec-hdr">
+                    ${title}
+                    <a href="#" onclick="gotoStep(${stepN});return false;">Изменить</a>
+                </div>
+                ${r}
+            </div>`;
+        }
+
+        function buildSummary() {
+            let html = '';
+
+            html += secHtml('Основное', 1, [
+                ['Номер <span class="required-star">*</span>', tv('#NumDC')],
+                ['Валюта', tv('#CurDC')],
+                ['Договорная цена', tv('#CDC')],
+                 ['@workLabel', document.querySelector('[name="TypeWorkContracts[0].TypeWorkId"]')?.selectedOptions[0]?.text || '—'],
+                ['Наименование <span class="required-star">*</span>', document.querySelector('[name="NameObject"]')?.value?.trim() || '—'],
+            ]);
+
+            html += secHtml('Стороны', 2, [
+                ['@orgLabel', document.querySelector('[name="ContractOrganizations[0].OrganizationId"]')?.selectedOptions[0]?.text || '—' ],
+                ...((!('@isEng' === 'True')) ? [
+                    ['Генподрядчик', document.querySelector('[name="ContractOrganizations[1].OrganizationId"]')?.selectedOptions[0]?.text || '—'],
+                    ['Отв. произ. работ', document.querySelector('[name="ContractOrganizations[2].OrganizationId"]')?.selectedOptions[0]?.text || '—'],
+                ] : []),
+                ...(!('@isEng' === 'True') ? [
+                    ['Подписант', document.querySelector('[name="EmployeeContracts[0].EmployeeId"]')?.selectedOptions[0]?.text || '—'],
+                    ['Ответственный', document.querySelector('[name="EmployeeContracts[1].EmployeeId"]')?.selectedOptions[0]?.text || '—'],
+                ] : []),
+
+            ]);
+
+            const dayV = document.getElementById('dayInput')?.value || '';
+            const payL = radioTxt('PaymentСonditionsRaschet');
+
+            html += secHtml('Сроки', 3, [
+                ['Дата заключения <span class="required-star">*</span>', tv('#DateDC')],
+                ['Начало работ', tv('#DateBeginWork')],
+                ['Окончание работ', tv('#DateEndWork')],
+                ...(!('@isEng' === 'True') ? [['Срок ввода', tv('#EnteringTerm')]] : []),
+            ]);
+
+              html += secHtml('Условия', 4, [
+                ['Процедура выбора', radioTxt('SelectionProcedures[0].TypeProcedure')],
+                ['Авансирование', cbTxt('PaymentCA')],
+                ['Финансирование', cbTxt('FundingFS')],
+                ['Расчёт за работы', dayV ? `${dayV} дн. — ${payL}` : payL],
+            ]);
+
+            document.getElementById('sumGrid').innerHTML = html;
+        }
+
+        function onDataChange() { /* резервная синхронизация */ }
+
+        /* ══════════════════════════════════
+           AJAX — модальные окна
+        ══════════════════════════════════ */
+        function openModal(url) {
+            $.ajax({
+                type: 'POST', url, dataType: 'html',
+                data: $('#MainForm').serialize(),
+                success: r => {
+                    $('#dialogContent').html(r);
+                    $('#modDialog').modal({ backdrop: false });
+                    $('#modDialog').modal('show');
+                }
+            });
+        }
+
+        document.getElementById('addOrganization')?.addEventListener('click', e => {
+            e.preventDefault(); openModal('@Url.Action("AddOrganization", "Contracts")');
+        });
+        document.getElementById('addEmployee')?.addEventListener('click', e => {
+            e.preventDefault(); openModal('@Url.Action("AddEmployee", "Contracts")');
+        });
+        document.getElementById('addTypeWork')?.addEventListener('click', e => {
+            e.preventDefault(); openModal('@Url.Action("AddTypeWork", "Contracts")');
+        });
+
+        /* Проверка номера */
+        document.getElementById('searchButton')?.addEventListener('click', () => {
+            const msg = document.getElementById('numMsg');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ExistContractByNumber", "Contracts")',
+                dataType: 'json',
+                data: { contractNumber: document.getElementById('NumDC').value },
+                success: exists => {
+                    msg.style.color = exists ? '#a32d2d' : '#0d9488';
+                    msg.textContent  = exists ? '⚠ Такой номер уже существует' : '✓ Номер свободен';
+                },
+                error: () => { msg.textContent = 'Ошибка проверки'; }
+            });
+        });
+
+        /* ══════════════════════════════════
+           ЦЕНЫ
+        ══════════════════════════════════ */
+        // $(function() {
+        //     $('.cost').each(function() { digits_float(this); });
+        //     $('body').on('input', '.cost', function() { digits_float(this); });
+        // });
+
+        /* ══════════════════════════════════
+           ИНИЦИАЛИЗАЦИЯ
+        ══════════════════════════════════ */
+        gotoStep(1);
     </script>
+    <script src="~/js/cost-formatter.js"></script>
 }

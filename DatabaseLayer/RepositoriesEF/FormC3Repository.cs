@@ -16,7 +16,15 @@ namespace DatabaseLayer.Repositories
         {
             if (entity is not null)
             {
-                _context.FormC3as.Add(entity);
+                if (!_context.FormC3as.Any(x =>
+                        x.ContractId == entity.ContractId &&
+                        x.IsOwnForces == entity.IsOwnForces &&
+                        (x.Period.HasValue && entity.Period.HasValue &&
+                        x.Period.Value.Date == entity.Period.Value.Date)))
+                {
+                    _context.FormC3as.Add(entity);
+                }
+
             }
         }
 
@@ -38,7 +46,7 @@ namespace DatabaseLayer.Repositories
         public IEnumerable<FormC3a> Find(Func<FormC3a, bool> where, Func<FormC3a, FormC3a> select)
         {
             return _context.FormC3as.Where(where).Select(select).ToList();
-        }        
+        }
 
         public IEnumerable<FormC3a> GetAll()
         {
@@ -78,7 +86,7 @@ namespace DatabaseLayer.Repositories
                     form.OffsetTargetPrepayment = entity.OffsetTargetPrepayment;
                     form.OffsetCurrentPrepayment = entity.OffsetCurrentPrepayment;
 
-                    form.SmrContractCost = entity.SmrContractCost ;
+                    form.SmrContractCost = entity.SmrContractCost;
                     form.MaterialClientCost = entity.MaterialClientCost;
                     form.EquipmentClientCost = entity.EquipmentClientCost;
                     form.IsExemptFromVAT = entity.IsExemptFromVAT ?? false;

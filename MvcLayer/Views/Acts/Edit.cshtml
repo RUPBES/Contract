@@ -1,229 +1,369 @@
 ﻿@model MvcLayer.Models.ActViewModel
 
 @{
-    ViewData["Title"] = "Редактирование";
+    ViewData["Title"] = "Редактирование акта приостановки/возобновления";
     int backId = 0;
     if (ViewBag.returnContractId == 0)
         backId = ViewBag.contractId;
     else backId = ViewBag.returnContractId;
     var contid = ViewBag.contractId;
+    var s = Model;
 }
+
+
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:960px;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (backId != null && backId > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@backId" class="close-btn"></a>
-                    }
-                    @if (backId == null || backId == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-                <div class="row">
-                    <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" class="row">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="dm-modal" style="max-width:760px; width:100%;">
+                <div class="org-modal" role="dialog" aria-modal="true"
+                     aria-labelledby="editOrgTitle">
+
+                    @*   {{-- ══ ШАПКА ══ --}} *@
+                    <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                        <div class="org-header-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="editOrgTitle"
+                                style="font-size:15px; margin:0 0 1px;">
+                                @ViewData["Title"]
+                            </h2>
+                            <p class="org-header-sub" style="font-size:11px;">
+                                Акт от @Model?.DateAct?.ToShortDateString()
+                            </p>
+                        </div>
+                        @if (backId != null && backId > 0)
+                        {
+                            <a asp-controller="Acts" asp-action="GetByContractId" asp-route-id="@backId" class="close-btn" aria-label="Закрыть"></a>
+                        }
+                        @if (backId == null || backId == 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                        }
+                    </div>
+
+                    @* {{-- ══ ФОРМА ══ --}} *@
+                    <form asp-action="Edit" asp-route-returnContractId="@ViewBag.returnContractId" method="post" novalidate>
                         <input type="hidden" asp-for="Id" />
                         <input asp-for="ContractId" value="@Model?.ContractId" hidden>
 
-                        <div class="form-group col-6">
-                            <label asp-for="Reason" class="control-label"></label>
-                            <input asp-for="Reason" class="form-control" />
-                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        <div class="org-body" style="padding:12px 16px; gap:10px;">
+                            @* {{-- ── Основные сведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Основные сведения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="Reason" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Reason)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <textarea rows="3" asp-for="Reason" class="md3-input" placeholder="Введите причину" required></textarea>
+                                        </div>
+                                        <span asp-validation-for="Reason" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field full-width-org">
+                                        <div class="md3-input-wrap">
+
+                                            <label class="md3-label" style="cursor:pointer;">
+                                                <span class="md3-input">
+                                                    <input type="checkbox" name="IsSuspension" value="true"
+                                                           @(Model?.IsSuspension == true ? "checked" : "") />
+                                                    <input type="hidden" name="IsSuspension" value="false" />
+                                                </span>
+                                                <span class="wz-opt-lbl" style="font-weight:600;">@Html.DisplayNameFor(m => m.IsSuspension)</span>
+                                            </label>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            @* {{-- ── Основание и содержание изменений ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Сроки
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="DateAct" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.DateAct)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateAct" type="text" value="@Model?.DateAct?.ToString("yyyy-MM-dd")" class="md3-input" required />
+                                        </div>
+                                        <span asp-validation-for="DateAct" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateSuspendedFrom" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateSuspendedFrom"
+                                                   type="text"
+                                                   value="@Model?.DateSuspendedFrom?.ToString("yyyy-MM-dd")"
+                                                   class="md3-input"
+                                                   required />
+                                        </div>
+                                        <span asp-validation-for="DateSuspendedFrom" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateSuspendedUntil" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateSuspendedUntil"
+                                                   type="text"
+                                                   value="@Model?.DateSuspendedUntil?.ToString("yyyy-MM-dd")"
+                                                   class="md3-input"
+                                                   required />
+                                        </div>
+                                        <span asp-validation-for="DateSuspendedUntil" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateRenewal" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateRenewal"
+                                                   type="text"
+                                                   value="@Model?.DateRenewal?.ToString("yyyy-MM-dd")"
+                                                   class="md3-input" />
+                                        </div>
+                                        <span asp-validation-for="DateRenewal" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* 
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Приложения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body">
+
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="FilesEntity" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.FilesEntity)
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="FilesEntity" type="file" class="md3-input" />
+                                        </div>
+                                        <span asp-validation-for="FilesEntity" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>*@
                         </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateAct" class="control-label"></label>
-                            <input asp-for="DateAct" class="form-control" type="text"
-                                   value="@Model.DateAct?.ToString("yyyy-MM-dd")" required id="DateAct" />
-                            <span asp-validation-for="DateAct" class="text-danger"></span>
+
+                        @*  {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer" style="padding:10px 16px 14px;">
+                            <a asp-controller="Acts" asp-action="@(backId > 0 ? "GetByContractId" : "Index")"
+                               asp-route-id=@(backId > 0 ? @backId : null)
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                            <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
                         </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateSuspendedFrom" class="control-label"></label>
-                            <input asp-for="DateSuspendedFrom" class="form-control" type="text"
-                                   value="@Model.DateSuspendedFrom?.ToString("yyyy-MM-dd")" id="DateSuspendedFrom" />
-                            <span asp-validation-for="DateSuspendedFrom" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateSuspendedUntil" class="control-label"></label>
-                            <input asp-for="DateSuspendedUntil" class="form-control" type="text"
-                                   value="@Model.DateSuspendedUntil?.ToString("yyyy-MM-dd")" id="DateSuspendedUntil" />
-                            <span asp-validation-for="DateSuspendedUntil" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateRenewal" class="control-label"></label>
-                            <input asp-for="DateRenewal" class="form-control" type="text"
-                                   value="@Model.DateRenewal?.ToString("yyyy-MM-dd")" id="DateRenewal" />
-                            <span asp-validation-for="DateRenewal" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label class="control-label">Приостановлено?</label>
-                            <input name="IsSuspension" type="checkbox" id="checkActId" />
-                        </div>
-                        <div class="form-group">
-                            <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
-                        </div>
+
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script type="text/javascript">
-        $("#checkActId").on("change", function () {
-            let isChange = $(this).prop('checked');
-            if (isChange === false) {
-                $(this).attr("value", "false")
-            }
-            else {
-                $(this).attr("value", "true")
-            }
-        });
+        $(document).ready(function () {
 
-        $("#DateAct").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true,
-            todayHighlight: true
-        });
-        $("#DateSuspendedFrom").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true,
-            todayHighlight: true
-        }).on('changeDate', function () {
-            changeDateBeg()
-        });
-        $("#DateSuspendedUntil").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true,
-            todayHighlight: true
-        }).on('changeDate', function () {
-            changeDateEnd()
-        });
-        $("#DateRenewal").datepicker({
-            format: "d MM yyyy",
-            language: "ru",
-            calendarWeeks: true,
-            autoclose: true,
-            keyboardNavigation: false,
-            assumeNearbyYear: true,
-            toggleActive: true,
-            todayHighlight: true
-        }).on('changeDate', function () {
-            changeDateRenew()
-        });
+            // 1. Управление значением чекбокса
+            $("#checkActId").on("change", function () {
+                $(this).val($(this).prop('checked') ? "true" : "false");
+            });
 
-        function changeDateBeg() {
-            let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
-            let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
-            let dateRenew = $("#DateRenewal").datepicker('getDate');
+            // 2. Инициализация календарей (datepicker)
+            let datepickerOptions = {
+                format: "d MM yyyy",
+                language: "ru",
+                calendarWeeks: true,
+                autoclose: true,
+                keyboardNavigation: false,
+                assumeNearbyYear: true,
+                toggleActive: true,
+                todayHighlight: true
+            };
 
-            if (dateBeg != null) {
-                let datePlusOne = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 1);
-                let datePlusTwo = addDays(new Date(dateBeg.toDateString('d-MM-yyyy')), 2);
-                if (dateEnd != null && dateBeg >= dateEnd) { $("#DateSuspendedUntil").datepicker('update', datePlusOne); }
-                if (dateRenew != null && dateBeg >= dateRenew) { $("#DateRenewal").datepicker('update', datePlusTwo); }
-            }
-        }
-        function changeDateEnd() {
-            let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
-            let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
-            let dateRenew = $("#DateRenewal").datepicker('getDate');
+            $("#DateAct").datepicker(datepickerOptions);
 
-            if (dateEnd != null) {
-                let datePlusOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), 1);
-                let dateDecOne = addDays(new Date(dateEnd.toDateString('d-MM-yyyy')), -1);
-                if (dateBeg != null && dateBeg >= dateEnd) { $("#DateSuspendedFrom").datepicker('update', dateDecOne); }
-                if (dateRenew != null && dateEnd >= dateRenew) { $("#DateRenewal").datepicker('update', datePlusOne); }
-            }
-        }
-        function changeDateRenew() {
-            let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
-            let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
-            let dateRenew = $("#DateRenewal").datepicker('getDate');
+            $("#DateSuspendedFrom").datepicker(datepickerOptions).on('changeDate', function () {
+                changeDateBeg();
+            });
 
-            if (dateRenew != null) {
-                let dateDecTwo = addDays(new Date(dateRenew.toDateString('d-MM-yyyy')), -2);
-                let dateDecOne = addDays(new Date(dateRenew.toDateString('d-MM-yyyy')), -1);
-                if (dateBeg != null && dateBeg >= dateRenew) { $("#DateSuspendedFrom").datepicker('update', dateDecTwo); }
-                if (dateEnd != null && dateEnd >= dateRenew) { $("#DateSuspendedUntil").datepicker('update', dateDecOne); }
-            }
-        }
-        let dateAct = document.querySelector("#DateAct");
-        let dateFrom = document.querySelector("#DateSuspendedFrom");
-        let dateUntil = document.querySelector("#DateSuspendedUntil");
-        let dateRenew = document.querySelector("#DateRenewal");
+            $("#DateSuspendedUntil").datepicker(datepickerOptions).on('changeDate', function () {
+                changeDateEnd();
+            });
 
-        $("#DateAct").datepicker("setDate", new Date(dateAct.value))
-        $("#DateSuspendedFrom").datepicker("setDate", new Date(dateFrom.value))
-        $("#DateSuspendedUntil").datepicker("setDate", new Date(dateUntil.value))
-        $("#DateRenewal").datepicker("setDate", new Date(dateRenew.value))
-        document.querySelector("#DateSuspendedFrom").addEventListener("change", (e) => {
-            changeDateBeg();
-        });
-        document.querySelector("#DateSuspendedUntil").addEventListener('change', (e) => {
-            changeDateEnd();
-        });
-        document.querySelector("#DateRenewal").addEventListener('change', (e) => {
-            changeDateRenew();
-        });
-        function addDays(date, countDays) {
-            let newDateOfyear = date.getFullYear() + ""; // год
-            let day = date.getDate() + countDays; // текущий день
-            let month = date.getMonth() + 1; //текущий месяц
-            let maxDateToday = new Date(newDateOfyear, month, 0).getDate()
-            if (day > maxDateToday) {
-                month = month + 1;
-                if (month > 12) {
-                    newDateOfyear = newDateOfyear + 1;
-                    month = 1;
-                    day = (day - 31);
-                }
-                else {
-                    day = (day - maxDateToday);
-                }
-            }
-            if (day < 1) {
-                month = month - 1;
-                if (month < 1) {
-                    newDateOfyear = newDateOfyear - 1;
-                    month = 12;
-                    day = 31 + day;
-                }
-                else {
-                    let maxDate = new Date(newDateOfyear, month, 0).getDate();
-                    day = maxDate + day;
+            $("#DateRenewal").datepicker(datepickerOptions).on('changeDate', function () {
+                changeDateRenew();
+            });
+
+            // 3. Функции зависимости дат (используем нативные методы JS Date)
+            function changeDateBeg() {
+                let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
+                let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
+                let dateRenew = $("#DateRenewal").datepicker('getDate');
+
+                if (dateBeg && !isNaN(dateBeg.getTime())) {
+                    let datePlusOne = addDays(dateBeg, 1);
+                    let datePlusTwo = addDays(dateBeg, 2);
+
+                    if (dateEnd && dateBeg >= dateEnd) {
+                        $("#DateSuspendedUntil").datepicker('update', datePlusOne);
+                    }
+                    if (dateRenew && dateBeg >= dateRenew) {
+                        $("#DateRenewal").datepicker('update', datePlusTwo);
+                    }
                 }
             }
 
-            let dayStr = day < 10 ? "0" + String(day) : String(day);
-            let monthStr = month < 10 ? "0" + String(month) : String(month);
-            return dayStr + '-' + monthStr + '-' + newDateOfyear;
-        }
+            function changeDateEnd() {
+                let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
+                let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
+                let dateRenew = $("#DateRenewal").datepicker('getDate');
+
+                if (dateEnd && !isNaN(dateEnd.getTime())) {
+                    let datePlusOne = addDays(dateEnd, 1);
+                    let dateDecOne = addDays(dateEnd, -1);
+
+                    if (dateBeg && dateBeg >= dateEnd) {
+                        $("#DateSuspendedFrom").datepicker('update', dateDecOne);
+                    }
+                    if (dateRenew && dateEnd >= dateRenew) {
+                        $("#DateRenewal").datepicker('update', datePlusOne);
+                    }
+                }
+            }
+
+            function changeDateRenew() {
+                let dateBeg = $("#DateSuspendedFrom").datepicker('getDate');
+                let dateEnd = $("#DateSuspendedUntil").datepicker('getDate');
+                let dateRenew = $("#DateRenewal").datepicker('getDate');
+
+                if (dateRenew && !isNaN(dateRenew.getTime())) {
+                    let dateDecTwo = addDays(dateRenew, -2);
+                    let dateDecOne = addDays(dateRenew, -1);
+
+                    if (dateBeg && dateBeg >= dateRenew) {
+                        $("#DateSuspendedFrom").datepicker('update', dateDecTwo);
+                    }
+                    if (dateEnd && dateEnd >= dateRenew) {
+                        $("#DateSuspendedUntil").datepicker('update', dateDecOne);
+                    }
+                }
+            }
+
+            // 4. Безопасный парсинг даты из формата "yyyy-MM-dd" (избегает сдвига часовых поясов)
+            function parseISODate(isoString) {
+                if (!isoString) return null;
+                let parts = isoString.split('-');
+                if (parts.length === 3) {
+                    let year = parseInt(parts[0], 10);
+                    let month = parseInt(parts[1], 10) - 1; // в JS месяцы начинаются с 0
+                    let day = parseInt(parts[2], 10);
+                    let date = new Date(year, month, day);
+                    return isNaN(date.getTime()) ? null : date;
+                }
+                return null;
+            }
+
+            // 5. Идеально работающая функция добавления дней (поддерживает переходы месяцев/лет)
+            function addDays(date, countDays) {
+                if (!date || isNaN(date.getTime())) return null;
+                let result = new Date(date);
+                result.setDate(result.getDate() + countDays);
+                return result;
+            }
+
+            // 6. Безопасная первоначальная установка значений (только если они есть в HTML)
+            setupInitialDate("#DateAct");
+            setupInitialDate("#DateSuspendedFrom");
+            setupInitialDate("#DateSuspendedUntil");
+            setupInitialDate("#DateRenewal");
+
+            function setupInitialDate(selector) {
+                let input = document.querySelector(selector);
+                if (input && input.value) {
+                    let parsedDate = parseISODate(input.value);
+                    if (parsedDate) {
+                        $(selector).datepicker("setDate", parsedDate);
+                    }
+                }
+            }
+        });
     </script>
 }

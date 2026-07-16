@@ -1,91 +1,287 @@
-﻿@model MvcLayer.Models.SelectionProcedureViewModel
+﻿@using BusinessLayer.Enums
+@using BusinessLayer.Interfaces.Shared
+@inject IConverterService Converter
+@model MvcLayer.Models.SelectionProcedureViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IContractService Contract
 
 @{
-    ViewData["Title"] = "Редактирование";
+    ViewData["Title"] = "Редактирование процедуры выбора";
     var contid = ViewData["contractId"];
     var contract = contid is not null && (int)contid > 0 ? Contract.GetById((int)contid) : null;
 }
-<style>
-        .text_input {
-            display: flex;
-            justify-content: space-between;
-            flex-direction: row;
-        }
-</style>
+
+
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
+
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:960px;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    @if (@contract?.Id != null && @contract?.Id > 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn"></a>
-                    }
-                    @if (@contract?.Id == null || @contract?.Id == 0)
-                    {
-                        <a asp-controller="Contracts" asp-action="" class="close-btn"></a>
-                    }
-                </div>
-                <hr class="modal-line" />
-                <div class="row">
-                    <form asp-action="Edit" class="row" enctype="multipart/form-data">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="dm-modal" style="max-width:760px; width:100%;">
+                <div class="org-modal" role="dialog" aria-modal="true"
+                     aria-labelledby="editOrgTitle">
+
+                    @*   {{-- ══ ШАПКА ══ --}} *@
+                    <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                        <div class="org-header-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="editOrgTitle"
+                                style="font-size:15px; margin:0 0 1px;">
+                                @ViewData["Title"]
+                            </h2>
+                            <p class="org-header-sub" style="font-size:11px;">
+                                @Model.TypeProcedure
+                            </p>
+                        </div>
+                        @if (@contract?.Id != null && @contract?.Id > 0)
+
+                        {
+                            <a asp-controller="Contracts" asp-action="Details" asp-route-id="@contract?.Id" class="close-btn" aria-label="Закрыть"></a>
+                        }
+          
+                        @if (@contract?.Id == null || @contract?.Id == 0)
+                        {
+                            <a asp-controller="Contracts" asp-action="" class="close-btn" aria-label="Закрыть"></a>
+                        }
+         
+                    </div>
+
+                    @* {{-- ══ ФОРМА ══ --}} *@
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="ContractId" value="@contract?.Id" />
-                        <div class="form-group col-6">
-                            <label asp-for="Name" class="control-label"></label>
-                            <input asp-for="Name" class="form-control" required />
-                            <span asp-validation-for="Name" class="text-danger"></span>
+                        <div class="org-body" style="padding:12px 16px; gap:10px;">
+
+                            @* {{-- ── Основные сведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Основная информация
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr  1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="Name" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Name)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Name" class="md3-input" placeholder="Введите наименование.." required />
+                                        </div>
+                                        <span asp-validation-for="Name" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="TypeProcedure" class="md3-label"></label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <select asp-for="TypeProcedure" class="js-chosen" style="width:100%;" required>
+                                                @foreach (var item in Enum.GetValues<Procedure>())
+                                                {
+                                                    var name = $"{Converter.ToProcedureType((int)item)}";
+                                                    bool ch = (Model?.TypeProcedure != null && (Model?.TypeProcedure?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false));
+
+                                                    @if (!string.IsNullOrEmpty(Model?.TypeProcedure))
+                                                    {
+                                                        <option selected value="@name">@name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@name">@name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>                                   
+                                </div>
+                            </div>
+
+                            @* {{-- ── Сроки проведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Сроки проведения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="DateBegin" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateBegin" type="text" value="@Model?.DateBegin?.ToString("dd MMMM yyyy")" class="md3-input " placeholder="Выберите дату.." required />
+                                        </div>
+                                        <span asp-validation-for="DateBegin" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateEnd" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateEnd" type="text" class="md3-input " value="@Model?.DateEnd?.ToString("dd MMMM yyyy")" placeholder="Выберите дату.." required />
+                                        </div>
+                                        <span asp-validation-for="DateEnd" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="DateAcceptance" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="DateAcceptance" type="text" value="@Model?.DateAcceptance?.ToString("dd MMMM yyyy")" class="md3-input" placeholder="Выберите дату.." required />
+                                        </div>
+                                        <span asp-validation-for="DateAcceptance" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* {{-- ── Итоги закупки ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Итоги закупки
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="StartPrice" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.StartPrice)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="StartPrice" class="md3-input cost-format" placeholder="Введите цену.." required />
+                                        </div>
+                                        <span asp-validation-for="StartPrice" class="md3-validation-msg"></span>
+                                    </div>
+                                  
+                                    <div class="md3-field">
+                                        <label asp-for="AcceptancePrice" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.AcceptancePrice)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="AcceptancePrice" class="md3-input cost-format" placeholder="Введите цену.." required />
+                                        </div>
+                                        <span asp-validation-for="AcceptancePrice" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="AcceptanceNumber" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.AcceptanceNumber)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="AcceptanceNumber" class="md3-input" placeholder="Номер акцепта" required />
+                                        </div>
+                                        <span asp-validation-for="AcceptanceNumber" class="md3-validation-msg"></span>
+                                    </div>                                  
+                                  
+                                </div>
+                            </div>
+
+                            @* {{-- ── Приложения ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Приложения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="FilesEntity" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.FilesEntity)
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="FilesEntity" type="file" class="md3-input" required multiple />
+                                        </div>
+                                        <span asp-validation-for="FilesEntity" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group col-6">
-                            <label asp-for="TypeProcedure" class="control-label"></label>
-                            <input asp-for="TypeProcedure" class="form-control" required />
-                            <span asp-validation-for="TypeProcedure" class="text-danger"></span>
+
+                        @*  {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer" style="padding:10px 16px 14px;">
+                            <a asp-controller="Contracts" asp-action="@(contract?.Id > 0 ? "Details" : "Index")"
+                               asp-route-id=@(contract?.Id > 0 ? contract?.Id : null)
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                            <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
                         </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateBegin" class="control-label"></label>
-                            <input asp-for="DateBegin" type="datetime" class="form-control datepickersNull" required />
-                            <span asp-validation-for="DateBegin" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateEnd" class="control-label"></label>
-                            <input asp-for="DateEnd" type="datetime" class="form-control datepickersNull" required />
-                            <span asp-validation-for="DateEnd" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="StartPrice" class="control-label"></label>
-                            <input asp-for="StartPrice" type="text" class="form-control cost" value="@Model.StartPrice" required />
-                            <span asp-validation-for="StartPrice" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="AcceptancePrice" class="control-label"></label>
-                            <input name="AcceptancePrice" type="text" class="form-control cost" value="@Model.AcceptancePrice" required />
-                            <span asp-validation-for="AcceptancePrice" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="AcceptanceNumber" class="control-label"></label>
-                            <input asp-for="AcceptanceNumber" class="form-control" required />
-                            <span asp-validation-for="AcceptanceNumber" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="DateAcceptance" class="control-label"></label>
-                            <input asp-for="DateAcceptance" type="datetime" class="form-control datepickersNull" required />
-                            <span asp-validation-for="DateAcceptance" class="text-danger"></span>
-                        </div>
-                        <div class="form-group col-6">
-                            <label asp-for="FilesEntity" class="control-label"></label>
-                            <input asp-for="FilesEntity" class="form-control" required multiple />
-                            <span asp-validation-for="FilesEntity" class="text-danger"></span>
-                        </div>
-                        <div class="text_input form-group btn_block">
-                            <a class="btn btn-success mt-3" asp-controller="Contracts" asp-action="Details" asp-route-id="@Model?.ContractId">Вернуться</a>
-                            <input type="submit" value="Сохранить" class="btn btn-primary col-3 mt-3" />
-                        </div>
+
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
@@ -95,14 +291,36 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
-        $(function ($) {
-            var allCost = $(".cost")
-            for (let el of allCost) {
-                digits_float(el)
-            }
-            $('body').on('input', '.cost', function (e) {
-                digits_float(this);
-            });
-        });
+        $("#DateBegin").datepicker({
+             format: "d MM yyyy",
+             language: "ru",
+             calendarWeeks: true,
+             autoclose: true,
+             keyboardNavigation: false,
+             assumeNearbyYear: true,
+             toggleActive: true,
+             todayHighlight: true
+         });
+         $("#DateEnd").datepicker({
+             format: "d MM yyyy",
+             language: "ru",
+             calendarWeeks: true,
+             autoclose: true,
+             keyboardNavigation: false,
+             assumeNearbyYear: true,
+             toggleActive: true,
+             todayHighlight: true
+         });
+         $("#DateAcceptance").datepicker({
+             format: "d MM yyyy",
+             language: "ru",
+             calendarWeeks: true,
+             autoclose: true,
+             keyboardNavigation: false,
+             assumeNearbyYear: true,
+             toggleActive: true,
+             todayHighlight: true
+         });
     </script>
+    <script src="~/js/cost-formatter.js"></script>
 }

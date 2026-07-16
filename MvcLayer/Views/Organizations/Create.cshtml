@@ -1,87 +1,253 @@
 ﻿@model MvcLayer.Models.OrganizationViewModel
 
-@{
-    ViewData["Title"] = "Новая организация";
+@{   
+    ViewData["Title"] = "Создать организацию";
 }
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:925px;">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Organizations" asp-action="" class="close-btn"></a>
-                </div>
-                <hr class="modal-line" />
-                <form asp-action="Create" class="row">
-                    @*Организация*@
-                    <div class="form-group mb-3">
-                        <label asp-for="Name" class="control-label" for="name"></label>
-                        <div class="input-group">
-                            <div class="input-group-text"><img src="~/icons/buildings.svg" /></div>
-                            <textarea asp-for="Name" class="form-control" id="name"></textarea>
-                        </div>
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="Abbr" for="abb" class="control-label"></label>
-                        <div class="input-group">
-                            <div class="input-group-text"><img src="~/icons/buildings.svg" /></div>
-                            <input asp-for="Abbr" class="form-control" id="abb">
-                        </div>
-                        <span asp-validation-for="Abbr" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6 mb-3">
-                        <label asp-for="Addresses[0].FullAddressFact">Адрес</label>
-                        <input asp-for="Addresses[0].FullAddressFact" class="form-control" placeholder="РБ, г.Минск, ул.Чичерина, д.19,...." />
-                    </div>
-                    <div class="form-group col-6 mb-3">
-                        <label asp-for="Addresses[0].FullAddress">Юр.адрес</label>
-                        <input asp-for="Addresses[0].FullAddress" class="form-control" placeholder="РБ, г.Минск, ул.Чичерина, д.19,...." />
-                    </div>
-                    <div class="form-group col-3 mb-3">
-                        <label asp-for="Addresses[0].PostIndex">Почтовый индекс</label>
-                        <input asp-for="Addresses[0].PostIndex" class="form-control" />
-                        <span asp-validation-for="Addresses[0].PostIndex" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-3 mb-3">
-                        <label asp-for="Unp"></label>
-                        <input asp-for="Unp" class="form-control" />
-                        <span asp-validation-for="Unp" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-6 mb-3">
-                        <label asp-for="PaymentAccount"  for="ac"></label>
-                        <div class="input-group">
-                            <div class="input-group-text"><img src="~/icons/account_balance_wallet.svg" /></div>
-                            <input asp-for="PaymentAccount" type="text" class="form-control ac" id="ac" placeholder="BY20OLMP31350000001000000933">
-                        </div>
-                        <span asp-validation-for="PaymentAccount" class="text-danger"></span>
-                    </div>
-                    
-                    <div class="form-group col-4 mb-3">
-                        <label asp-for="Phones[0].Number">Номер телефона</label>
-                        <input asp-for="Phones[0].Number" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55" pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" />
-                        <span asp-validation-for="Phones[0].Number" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-4 mb-3">
-                        <label asp-for="Email" for="em"></label>
-                        <div class="input-group">
-                            <div class="input-group-text"><img src="~/icons/alternate_email.svg" /></div>
-                            <input asp-for="Email" type="email" class="form-control" id="em">
-                        </div>
-                    </div>
-                    <div class="form-group col-4 mb-3">
-                        <label asp-for="Addresses[0].SiteAddress">Сайт организации</label>
-                        <input asp-for="Addresses[0].SiteAddress" class="form-control" />
-                    </div>
-                    @*Добавляем отдел со значением NULL*@
-                    <input asp-for="Departments[0].Name" value="@string.Empty" hidden />
+            <div class="dm-modal" style="max-width:960px; width:100%;">
+                <div class="org-modal" role="dialog" aria-modal="true"
+                     aria-labelledby="editOrgTitle">
 
-                    
-                    <div class="form-group mt-3 btn_block">
-                        <input type="submit" value="Добавить" class="btn btn-primary" />
+                    @*   {{-- ══ ШАПКА ══ --}} *@
+                    <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                        <div class="org-header-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="editOrgTitle"
+                                style="font-size:15px; margin:0 0 1px;">
+                                @ViewData["Title"]
+                            </h2>
+                            <p class="org-header-sub" style="font-size:11px;">
+                                Заполните реквизиты и контактные данные
+                            </p>
+                        </div>
+                        <a asp-controller="Organizations" asp-action="Index"
+                           class="close-btn" aria-label="Закрыть">
+
+                        </a>
                     </div>
-                </form>
+
+                    @* {{-- ══ ФОРМА ══ --}} *@
+                    <form asp-controller="Organizations" asp-action="Create" method="post" novalidate>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Addresses[0].Id" />
+
+                        <div class="org-body" style="padding:12px 16px; gap:10px;">
+
+                            @* {{-- ── Основные сведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Основные сведения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                
+                                <div class="org-fieldset-body">
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="Name" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Name)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Name" class="md3-input" placeholder="Полное наименование" />
+                                        </div>
+                                        <span asp-validation-for="Name" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field">
+                                        <label asp-for="Abbr" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Abbr)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Abbr" class="md3-input" placeholder="ОАО «Название»" />
+                                        </div>
+                                        <span asp-validation-for="Abbr" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field">
+                                        <label asp-for="Unp" class="md3-label">
+                                           
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="Unp" class="md3-input" placeholder="000000000" />
+                                        </div>
+                                        <span asp-validation-for="Unp" class="md3-validation-msg"></span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            @* {{-- ── Контакты ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Контакты
+                                </div>
+                            </div>
+                            <div class="org-fieldset">                                
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="Email" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Email" type="email" class="md3-input" placeholder="office@company.by" />
+                                        </div>
+                                        <span asp-validation-for="Email" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field">
+                                        <label class="md3-label">Телефон</label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Phones[0].Number"                                                  
+                                                   class="md3-input phone-number-pattern-fill"
+                                                   placeholder="+375335555555"
+                                                   pattern="8[0-9]{3} [0-9]{3}-[0-9]{2}-[0-9]{2}" />
+                                        </div>
+                                        <span asp-validation-for="Phones[0].Number" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field">
+                                        <label asp-for="Addresses[0].SiteAddress" class="md3-label">Сайт</label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Addresses[0].SiteAddress" class="md3-input" placeholder="http://www.company.by" />
+                                        </div>
+                                        <span asp-validation-for="Addresses[0].SiteAddress" class="md3-validation-msg"></span>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            @* {{-- ── Реквизиты + Адреса (одна строка) ── --}} *@
+                            <div>
+                                <div class="org-section-badge create-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Реквизиты и адреса
+                                </div>
+                            </div>
+                            <div class="org-fieldset">                                
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field ">
+                                        <label asp-for="PaymentAccount" class="md3-label"></label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2zM1 10h22"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="PaymentAccount" type="text"
+                                                   class="md3-input monospace ac" id="ac"
+                                                   placeholder="BY20-OLMP-3135-0000-0010-0000-0933" />
+                                        </div>
+                                        <span asp-validation-for="PaymentAccount" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="Addresses[0].PostIndex" class="md3-label"></label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="Addresses[0].PostIndex" class="md3-input" placeholder="220000" />
+                                        </div>
+                                        <span asp-validation-for="Addresses[0].PostIndex" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="Addresses[0].FullAddress" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.Addresses[0].FullAddress)
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="Addresses[0].FullAddress" class="md3-input" placeholder="Юридический адрес" />
+                                        </div>
+                                        <span asp-validation-for="Addresses[0].FullAddress" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="Addresses[0].FullAddressFact" class="md3-label"></label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="Addresses[0].FullAddressFact" class="md3-input" placeholder="Фактический адрес" />
+                                        </div>
+                                        <span asp-validation-for="Addresses[0].FullAddressFact" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            @*Добавляем отдел со значением NULL*@
+                            <input asp-for="Departments[0].Name" value="@string.Empty" hidden />
+
+                        </div>
+
+                        @*  {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer" style="padding:10px 16px 14px;">
+                            <a asp-controller="Organizations" asp-action="Index"
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                            <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -90,28 +256,5 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script>
-        fillPhoneInput();
-
-        // PaymentAccountSpace($('#ac'));
-        // $('body').on('input', '.ac', function (e) {
-        //     PaymentAccountSpace(this);
-        // });
-
-        // function PaymentAccountSpace(target) {
-        //     val = $(target).val().replace(/-/g, "");
-        //     val = val.substring(0, 28);
-        //     var val1 = '';
-        //     var c = 0;
-        //     Array.from(val).forEach(elem => {
-        //         if (c == 4) {
-        //             val1 += '-';
-        //             c = 0;
-        //         }
-        //         val1 += elem;
-        //         c++;
-        //     });
-        //     $(target).val(val1)
-        // }
-    </script>
+    
 }

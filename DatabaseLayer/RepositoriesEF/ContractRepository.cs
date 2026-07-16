@@ -189,9 +189,9 @@ namespace DatabaseLayer.Repositories
 
                             _context.ContractOrganizations.Update(contractOrg);
                         }
-                        _context.SaveChanges();
+                       
                     }
-
+ //_context.SaveChanges();
                     foreach (var item in entity.EmployeeContracts)
                     {
                         var target = item.IsSignatory != null ? "Signatory" : "Responsible";
@@ -247,9 +247,9 @@ namespace DatabaseLayer.Repositories
                             }
                         }
                         else { _context.EmployeeContracts.Add(item); }
-                        _context.SaveChanges();
+                       
                     }
-
+ //_context.SaveChanges();
                     foreach (var item in entity.TypeWorkContracts)
                     {
                         var currentObject = _context.TypeWorkContracts.Where(x => x.ContractId == item.ContractId).FirstOrDefault();

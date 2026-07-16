@@ -731,6 +731,9 @@
                     <th onclick="logSort('date')" style="width:140px;">
                         Дата <span class="sort-icon" id="ls-date"></span>
                     </th>
+                    <th onclick="logSort('userName')" style="width:130px;">
+                        Пользователь <span class="sort-icon" id="ls-userName"></span>
+                    </th>
                     <th onclick="logSort('message')">
                         Сообщение <span class="sort-icon" id="ls-message"></span>
                     </th>
@@ -740,9 +743,7 @@
                     <th onclick="logSort('methodName')" style="width:130px;">
                         Метод <span class="sort-icon" id="ls-methodName"></span>
                     </th>
-                    <th onclick="logSort('userName')" style="width:130px;">
-                        Пользователь <span class="sort-icon" id="ls-userName"></span>
-                    </th>
+                   
                 </tr>
             </thead>
             <tbody id="logTableBody"></tbody>
@@ -832,13 +833,24 @@
                 return true;
             });
 
-            /* Сортировка */
-            rows.sort((a, b) => {
-                let av = a[logSortKey] ?? '', bv = b[logSortKey] ?? '';
-                if (typeof av === 'string') av = av.toLowerCase();
-                if (typeof bv === 'string') bv = bv.toLowerCase();
-                return logSortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
-            });
+         
+                    /* Сортировка */
+        rows.sort((a, b) => {
+            let av, bv;
+            if (logSortKey === 'date') {
+                /* Сортируем по ISO-представлению даты, а не по отображаемой строке */
+                av = a.dateIso || a.date || '';
+                bv = b.dateIso || b.date || '';
+            } else {
+                av = a[logSortKey] ?? '';
+                bv = b[logSortKey] ?? '';
+            }
+            if (typeof av === 'string') av = av.toLowerCase();
+            if (typeof bv === 'string') bv = bv.toLowerCase();
+            return logSortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+        });
+
+
 
             /* Пагинация */
             const total = rows.length;
@@ -880,6 +892,15 @@
                         <div class="log-date">${datePart || '—'}</div>
                         <div class="log-date-time">${timePart || ''}</div>
                     </td>
+                     <td>
+                        ${l.userName
+                            ? `<div class="log-user">
+                                <div class="log-user-avatar">${init}</div>
+                                <span class="log-user-name">${l.userName}</span>
+                               </div>`
+                            : '<span style="color:var(--md3-on-surface-low);font-size:12px;">—</span>'
+                        }
+                    </td>
                     <td>
                         <div class="log-message-cell" title="${(l.message||'').replace(/"/g,'&quot;')}">
                             ${msgShort}
@@ -893,15 +914,7 @@
                     <td>
                         <span class="log-method">${l.methodName || '—'}</span>
                     </td>
-                    <td>
-                        ${l.userName
-                            ? `<div class="log-user">
-                                <div class="log-user-avatar">${init}</div>
-                                <span class="log-user-name">${l.userName}</span>
-                               </div>`
-                            : '<span style="color:var(--md3-on-surface-low);font-size:12px;">—</span>'
-                        }
-                    </td>
+                   
                 </tr>`;
             }).join('');
 

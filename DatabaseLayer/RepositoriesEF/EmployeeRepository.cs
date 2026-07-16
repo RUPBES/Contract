@@ -74,25 +74,26 @@ namespace DatabaseLayer.Repositories
 
                     var depEmp = _context.DepartmentEmployees.FirstOrDefault(x => x.EmployeeId == entity.Id);
 
-                    if (depEmp != null && entity.DepartmentEmployees.Count>0)
+                    if (depEmp != null && entity.DepartmentEmployees.Count > 0)
                     {
                         _context.DepartmentEmployees.Remove(depEmp);
                         _context.SaveChanges();
-
-                        depEmp.EmployeeId = entity.Id;
-                        depEmp.DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId;
-                        _context.DepartmentEmployees.Add(depEmp);
-                    }
-                    else if (entity.DepartmentEmployees.Count > 0)
-                    {                        
-                        _context.DepartmentEmployees.Add(new DepartmentEmployee
-                        {
-                            DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId,
-                            EmployeeId = entity.Id
-                        });
                     }
 
-                    //employee.DepartmentEmployees = entity.DepartmentEmployees;
+                        //    depEmp.EmployeeId = entity.Id;
+                        //    depEmp.DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId;
+                        //    _context.DepartmentEmployees.Add(depEmp);
+                        //}
+                        //else if (entity.DepartmentEmployees.Count > 0)
+                        //{                        
+                        //    _context.DepartmentEmployees.Add(new DepartmentEmployee
+                        //    {
+                        //        DepartmentId = entity.DepartmentEmployees.FirstOrDefault().DepartmentId,
+                        //        EmployeeId = entity.Id
+                        //    });
+                        //}
+
+                        employee.DepartmentEmployees = entity.DepartmentEmployees;
                     employee.Phones = entity.Phones;
                     _context.Employees.Update(employee);
                 }

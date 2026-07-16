@@ -13,16 +13,16 @@ namespace MvcLayer.Models
         [DisplayName("Дата акта")]
         public DateTime? DateAct { get; set; }
 
-        [DisplayName("Дата приостановления (\"с\")")]
+        [DisplayName("Приостановлен с")]
         public DateTime? DateSuspendedFrom { get; set; }
 
-        [DisplayName("Дата приостановления (\"по\")")]
+        [DisplayName("Приостановлен по")]
         public DateTime? DateSuspendedUntil { get; set; }
 
         [DisplayName("Дата возобновления")]
         public DateTime? DateRenewal { get; set; }
 
-        [DisplayName("")]
+        [DisplayName("Приостановлено?")]
         public bool? IsSuspension { get; set; }
         [DisplayName("Файл")]
         public IFormFileCollection FilesEntity { get; set; }

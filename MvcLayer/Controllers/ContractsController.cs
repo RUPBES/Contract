@@ -16,7 +16,7 @@ namespace MvcLayer.Controllers;
 
 [Authorize(Policy = "ViewPolicy")]
 public class ContractsController : Controller
-{
+{     
     private readonly IVContractService _vContractService;
     private readonly IVContractEnginService _vContractEnginService;
     private readonly IAdditionalTermService _additionalTermService;

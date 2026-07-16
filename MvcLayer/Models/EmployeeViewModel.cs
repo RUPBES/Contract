@@ -49,6 +49,9 @@ namespace MvcLayer.Models
         [DisplayName("Уволен")]
         public bool IsActive { get; set; }
 
+        public int? OrgId { get; set; }
+        public int? DepartId { get; set; }
+
         public List<EmployeeContractDTO> EmployeeContracts { get; set; } = new List<EmployeeContractDTO>();
                
         public List<PhoneViewModel> Phones { get; set; } = new List<PhoneViewModel>();

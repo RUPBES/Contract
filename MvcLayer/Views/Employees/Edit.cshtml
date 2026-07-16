@@ -1,128 +1,323 @@
 ﻿@model MvcLayer.Models.EmployeeViewModel
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
+
 @{
     ViewData["Title"] = "Редактирование";
     var lastName = Model.LastName;
     var firstName = Model.FirstName;
     var fatherName = Model.FatherName;
 }
+<link rel="stylesheet" href="~/css/organization-details.css" asp-append-version="true" />
 
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:700px">
-                <div class="top-modal-block">
-                    <label class="my-modal-title">@ViewData["Title"]</label>
-                    <a asp-controller="Employees" asp-action="Index" class="close-btn"></a>
+            <div class="dm-modal" style="max-width:960px; width:100%;">
+                <div class="org-modal" role="dialog" aria-modal="true"
+                     aria-labelledby="editOrgTitle">
+
+                    @*   {{-- ══ ШАПКА ══ --}} *@
+                    <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                        <div class="org-header-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <div class="org-header-info">
+                            <h2 class="org-header-title" id="editOrgTitle"
+                                style="font-size:15px; margin:0 0 1px;">
+                                @ViewData["Title"]
+                            </h2>
+                            <p class="org-header-sub" style="font-size:11px;">
+                                Сотрудник: @Model.FullName
+                            </p>
+                        </div>
+                        <a asp-controller="Employees" asp-action="Index"
+                           class="close-btn" aria-label="Закрыть">
+
+                        </a>
+                    </div>
+
+                    @* {{-- ══ ФОРМА ══ --}} *@
+                    <form asp-action="Edit" novalidate>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Author" />
+
+                        <div class="org-body" style="padding:12px 16px; gap:10px;">
+
+                            @* {{-- ── Основные сведения ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Основные сведения
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="LastName" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.LastName)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="LastName" class="md3-input" placeholder="Фамилия" />
+                                        </div>
+                                        <span asp-validation-for="LastName" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="FirstName" class="md3-label">
+                                            <span class="required-star">*</span>
+                                            @Html.DisplayNameFor(m => m.FirstName)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M3 21h18M3 7v1a3 3 0 006 0V7m0 1a3 3 0 006 0V7m0 1a3 3 0 006 0V7H3l2-4h14l2 4z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="FirstName" class="md3-input" placeholder="Имя" />
+                                        </div>
+                                        <span asp-validation-for="FirstName" class="md3-validation-msg"></span>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label asp-for="FatherName" class="md3-label">
+                                            @Html.DisplayNameFor(m => m.FatherName)
+                                        </label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M7 17l3.5-10L14 17M8.5 13h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="FatherName" class="md3-input" placeholder="Отчество (при наличии)" />
+                                        </div>
+                                        <span asp-validation-for="FatherName" class="md3-validation-msg"></span>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            @* {{-- ── Контакты ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Контакты
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">
+                                    <div class="md3-field">
+                                        <label asp-for="Email" class="md3-label">@Html.DisplayNameFor(m => m.Email)</label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="1.7" />
+                                                    <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Email" type="email" class="md3-input" placeholder="office@company.by" />
+                                        </div>
+                                        <span asp-validation-for="Email" class="md3-validation-msg"></span>
+                                    </div>
+
+                                    <div class="md3-field">
+                                        <label class="md3-label">Телефон</label>
+                                        <div class="md3-input-wrap">
+                                            <div class="md3-input-icon">
+                                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
+                                                          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                                                </svg>
+                                            </div>
+                                            <input asp-for="Phones[0].Id" value="@Model.Phones[0].Id" class="form-control" hidden>
+                                            <input asp-for="Phones[0].Number"
+                                                   value="@Model.Phones.FirstOrDefault()?.Number"
+                                                   type="text" class="md3-input"
+                                                   placeholder="+375335555555" />
+                                        </div>
+                                        <span asp-validation-for="Phones[0].Number" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* {{-- ── Место работы ── --}} *@
+                            <div>
+                                <div class="org-section-badge edit-bdg">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none">
+                                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    Место работы
+                                </div>
+                            </div>
+                            <div class="org-fieldset">
+                                <div class="org-fieldset-body" style="grid-template-columns: 1fr 1fr;">                                    
+                                    <div class="md3-field">
+                                        <label class="md3-label">
+                                            Организация
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <select name="OrgId" id="organizationNameSelect" class="js-chosen" style="width:100%;">
+                                                @if (Model.DepartmentEmployees[0].DepartmentId != 0)
+                                                {
+                                                    <option value="@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId" selected>@Organization.GetById((int)Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId).Name</option>
+                                                }
+                                                else
+                                                {
+                                                    <option disabled selected>Выберите организацию</option>
+                                                }
+                                                @foreach (var item in Organization.GetAll())
+                                                {
+                                                    <option value="@item.Id">@item.Name</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="md3-field">
+                                        <label class="md3-label">
+                                            Отдел
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <select id="departmentNameSelect" name="DepartId" class="js-chosen" style="width:100%;">
+                                                @if (Model.DepartmentEmployees[0] != null && Model.DepartmentEmployees[0].DepartmentId != 0)
+                                                {
+                                                    var orgId = @Model.DepartmentEmployees[0].Department?.OrganizationId;
+                                                    @* <option value="@Model.DepartmentEmployees[0].DepartmentId" selected>@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).Name</option> *@
+                                                    foreach (var item in Department.Find(x => x.OrganizationId == orgId))
+                                                    {
+                                                        if (item.Id == Model.DepartmentEmployees[0].DepartmentId)
+                                                            {
+                                                            <option value="@item?.Id" selected>@item?.Name</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@item?.Id">@item?.Name</option>
+                                                        }                                                        
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="md3-field full-width-org">
+                                        <label asp-for="Position" class="md3-label">
+                                            @Html.DisplayNameFor(m => m.Position)
+                                        </label>
+                                        <div class="md3-input-wrap no-icon">
+                                            <input asp-for="Position" class="md3-input" placeholder="Должность" />
+                                        </div>
+                                        <span asp-validation-for="Position" class="md3-validation-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        @*  {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer" style="padding:10px 16px 14px;">
+                            <a asp-controller="Employees" asp-action="Index"
+                               class="md3-btn md3-btn-ghost" style="padding:6px 14px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Отмена
+                            </a>
+                            <div class="org-footer-spacer"></div>
+                            <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                    <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M17 21v-8H7v8M7 3v5h8"
+                                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Сохранить
+                            </button>
+                        </div>
+
+                    </form>
                 </div>
-                <hr class="modal-line" />
-                <form asp-action="Edit" class="row">
-                    <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="Author" />
-                    <div class="form-group col-4">
-                        <label asp-for="LastName" class="control-label"></label>
-                        <input asp-for="LastName" class="form-control" />
-                        <span asp-validation-for="LastName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-4">
-                        <label asp-for="FirstName" class="control-label"></label>
-                        <input asp-for="FirstName" class="form-control" />
-                        <span asp-validation-for="FirstName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-4">
-                        <label asp-for="FatherName" class="control-label"></label>
-                        <input asp-for="FatherName" class="form-control" />
-                        <span asp-validation-for="FatherName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-12 mt-2">
-                        <label class="form-label">Организация</label>
-                        <select id="organizationNameSelect" class="form-control js-chosen" required>
-                            @if (Model.DepartmentEmployees[0].DepartmentId != 0)
-                            {
-                                <option value="@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId" selected>@Organization.GetById((int)Department.GetById(Model.DepartmentEmployees[0].DepartmentId).OrganizationId).Name</option>
-                            }
-                            else
-                            {
-                                <option disabled selected>Выберите организацию</option>
-                            }
-                            @foreach (var item in Organization.GetAll())
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
-                        </select>                        
-                    </div>
-                    <div class="form-group col-12 mt-2">
-                        <label class="form-label">Отдел</label>
-                        <select id="departmentNameSelect" name="DepartmentEmployees[0].DepartmentId" class="form-control">
-                            @if (Model.DepartmentEmployees[0] != null && Model.DepartmentEmployees[0].DepartmentId != 0)
-                            {
-                                var orgId = @Model.DepartmentEmployees[0].Department?.OrganizationId;
-                                <option value="@Model.DepartmentEmployees[0].DepartmentId" selected>@Department.GetById(Model.DepartmentEmployees[0].DepartmentId).Name</option>
-                                foreach (var item in Department.Find(x => x.OrganizationId == orgId))
-                                {
-                                    <option value="@item?.Id">@item?.Name</option>
-                                }
-                            }                           
-                        </select>
-                        <span asp-validation-for="DepartmentEmployees[0].DepartmentId" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-4 mt-2">
-                        <label asp-for="Position"></label>
-                        <input asp-for="Position" class="form-control"/>
-                        <span asp-validation-for="Position" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-4 mt-2">
-                        <label asp-for="Email"></label>
-                        <input asp-for="Email" type="email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group col-4 mt-2">
-                        <input asp-for="Phones[0].Id" value="@Model.Phones[0].Id" class="form-control" hidden>
-                        <label>Телефон</label>
-                        <input asp-for="Phones[0].Number" value="@Model.Phones[0]?.Number" class="form-control phone-number-pattern-fill" placeholder="8033 555-55-55"/>
-                        <span asp-validation-for="Phones[0].Number" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mt-3 btn_position">
-                        <input type="submit" value="Изменить" class="btn btn-primary" />
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script>
-        fillPhoneInput();
-    </script>
     <script type="text/javascript">
-
-        $("#organizationNameSelect").change(function () {
+                $(document).on('change', '#organizationNameSelect', function () {
             $.ajax({
                 type: 'POST',
-                url: '@Url.Action("GetJsonDepartments","Departments")',
+                url: '@Url.Action("GetJsonDepartments", "Departments")',
                 dataType: 'json',
-                data: { id: $("#organizationNameSelect").val() },
+                data: { id: $(this).val() },
                 success: function (department) {
-                    // $("#departmentNameSelect").children().remove();
-                    if (department.length == 0)
-                        return;
-
-                    // $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
+                    $("#departmentNameSelect").empty();
+                    if (department.length === 0) return;
                     $.each(department, function (index, value) {
                         let nameDep = value.name === null ? '' : value.name;
-                        $("#departmentNameSelect").append('<option value="' + value.id + '">' + nameDep + '</option>');
+                        $("#departmentNameSelect").append(
+                            '<option value="' + value.id + '">' + nameDep + '</option>'
+                        );
                     });
+                    // если departmentNameSelect тоже .js-chosen/selectize — обновить виджет:
+                    var deptSelectize = $("#departmentNameSelect")[0].selectize;
+                    if (deptSelectize) {
+                        deptSelectize.clearOptions();
+                        $.each(department, function (i, v) {
+                            deptSelectize.addOption({ value: v.id, text: v.name || '' });
+                        });
+                        deptSelectize.refreshOptions(false);
+                    }
                 },
                 error: function (ex) {
                     alert('Failed to retrieve departments.' + ex);
                 }
             });
         });
+        // $("#organizationNameSelect").change(function () {
+        //     $.ajax({
+        //         type: 'POST',
+        //         url: '@Url.Action("GetJsonDepartments", "Departments")',
+        //         dataType: 'json',
+        //         data: { id: $("#organizationNameSelect").val() },
+        //         success: function (department) {
+        //              $("#departmentNameSelect").children().remove();
+        //             if (department.length == 0)
+        //                 return;
+
+        //             // $("#departmentNameSelect").append('<option disabled selected>Выберите отдел</option>');
+        //             $.each(department, function (index, value) {
+        //                 let nameDep = value.name === null ? '' : value.name;
+        //                 $("#departmentNameSelect").append('<option value="' + value.id + '">' + nameDep + '</option>');
+        //             });
+        //         },
+        //         error: function (ex) {
+        //             alert('Failed to retrieve departments.' + ex);
+        //         }
+        //     });
+        // });
 
     </script>
+
 }

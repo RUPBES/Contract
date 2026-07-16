@@ -7,13 +7,26 @@
 <div data-bs-backdrop="static" id="staticBackdrop" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel" aria-hidden="false">
     <div>
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="staticBackdropLabel">Новый вид работ</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close">
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="@Url.Action("AddNewTypeWork","Contracts")" method="post" id="theFormEmp" style="padding-right: 20px; padding-left: 20px; width:350px;">
+            <div class="org-modal" role="dialog" aria-modal="true"
+                 aria-labelledby="editOrgTitle">
+                <div class="org-header" style="border-bottom:1.5px solid var(--md3-outline); gap:10px;">
+                    <div class="org-header-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <div class="org-header-info">
+                    </div>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close" style="margin: 10px 0;">
+                    </button>
+
+                </div>
+
+                <form asp-controller="Contracts" asp-action="AddNewTypeWork" id="theFormEmp" method="post" style="min-width: 500px;" novalidate>
+                    <input type="hidden" asp-for="EmployeeContracts[2].Employee.IsActive" value="true" />
                     <input asp-for="IsSubContract" hidden />
                     <input asp-for="SubContractId" type="number" hidden />
                     <input asp-for="IsAgreementContract" hidden />
@@ -28,9 +41,11 @@
 
                     <input asp-for="Number" hidden />
                     <input asp-for="FundingSource" hidden />
-                    <input asp-for="NameObject" type="text" hidden />
+                    <input asp-for="NameObject" hidden />
+
                     <input asp-for="EmployeeContracts[0].EmployeeId" hidden />
                     <input asp-for="EmployeeContracts[1].EmployeeId" hidden />
+
                     <input asp-for="ContractOrganizations[0].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[1].OrganizationId" type="number" hidden />
                     <input asp-for="ContractOrganizations[2].OrganizationId" type="number" hidden />
@@ -48,19 +63,52 @@
                         <input asp-for="FundingFS[indexFS]" hidden />
                         indexFS++;
                     }
-                    <input asp-for="PaymentСonditionsPrice" type="text" hidden>
+
                     <input asp-for="PaymentConditionsDaysRaschet" hidden />
                     <input asp-for="PaymentСonditionsRaschet" hidden />
                     <input asp-for="SelectionProcedures[0].TypeProcedure" hidden />
                     <input asp-for="TypeWorkContracts[0].TypeWorkId" hidden />
 
-                    <div class="form-group">
-                        <label asp-for="TypeWorkContracts[1].TypeWork.Name" class="control-label">Название</label>
-                        <input asp-for="TypeWorkContracts[1].TypeWork.Name" class="form-control" required />
-                        <span asp-validation-for="TypeWorkContracts[1].TypeWork.Name" class="text-danger"></span>
+
+                    <div class="org-body" style="padding:12px 16px; gap:10px;">
+
+                        @* {{-- ── Основные сведения ── --}} *@                        
+                        <div class="org-fieldset">
+                            <div class="org-fieldset-body">
+                                <div class="md3-field full-width-org">
+                                    <label asp-for="TypeWorkContracts[1].TypeWork.Name" class="md3-label">
+                                        <span class="required-star">*</span>
+                                        @Html.DisplayNameFor(x => x.TypeWorkContracts[1].TypeWork.Name)
+                                    </label>
+                                    <div class="md3-input-wrap">
+                                        <div class="md3-input-icon">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                                            </svg>
+                                        </div>
+                                        <input asp-for="TypeWorkContracts[1].TypeWork.Name" class="md3-input"/>
+                                    </div>
+                                    <span asp-validation-for="TypeWorkContracts[1].TypeWork.Name" class="md3-validation-msg"></span>
+                                </div>
+                              
+                            </div>
+                        </div>
                     </div>
-                   
-                    <button class="btn btn-primary mt-3" type="submit" id="submitForm3">Добавить</button>
+
+                    @*  {{-- ══ ФУТЕР ══ --}} *@
+                    <div class="org-footer" style="padding:10px 16px 14px;">
+                        <div class="org-footer-spacer"></div>
+                        <button type="submit" class="md3-btn md3-primary-btn" style="padding:6px 16px; font-size:12px;" id="submitForm3">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                                <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M17 21v-8H7v8M7 3v5h8"
+                                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            Сохранить
+                        </button>
+                    </div>
+
                 </form>
             </div>
         </div>
@@ -71,6 +119,6 @@
     $('button.btn-close').click(function () {
         $('#modDialog').modal('hide');
     });
-</script> 
+</script>
 <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

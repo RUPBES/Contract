@@ -20,7 +20,7 @@ public partial class VContract
     public string? NameObject { get; set; }
     public string? FundingSource { get; set; }
     //public bool? IsSubContract { get; set; }
-    //public bool? IsEngineering { get; set; }
+    public bool? IsEngineering { get; set; }
     //public bool? IsAgreementContract { get; set; }
     public string? PaymentСonditionsAvans { get; set; }
     public string? PaymentСonditionsRaschet { get; set; }

@@ -2,76 +2,183 @@
 @inject BusinessLayer.Interfaces.ContractInterfaces.IDepartmentService Department
 @inject BusinessLayer.Interfaces.ContractInterfaces.IOrganizationService Organization
 @inject BusinessLayer.Interfaces.ContractInterfaces.IPhoneService Phone
+@inject BusinessLayer.Interfaces.Shared.IHttpContextUserProvider HttpHelper
 @{
+    var permissions = HttpHelper.GetUserPermissions();
     ViewData["Title"] = "Детальная информация";
 }
+
 <div class="dm-overlay">
     <div class="dm-table">
         <div class="dm-cell">
-            <div class="dm-modal" style="max-width:50%">
-                <div class="top-modal-block flex-column">
-                    <div class="input-group m-2">
-                        <span class="my-modal-title m-auto">@ViewData["Title"]</span>
-                        <a asp-controller="Organizations" asp-action="Index" class="close-btn"></a>
+            <div class="dm-modal" style="width: 100%;max-width: 960px;">
+                <div>
+                    <div class="org-header">
+                                    <div class="org-header-info">
+                            <h2 class="org-header-title" id="orgModalTitle">@ViewData["Title"]</h2>
+                            <p class="org-header-sub">Сотрудник: @Model.FullName </p>
+                        </div>
+                        <a asp-controller="Employees" asp-action="Index" class="close-btn"></a>
                     </div>
-                    <hr class="modal-line" />
-                    <div>
-                        <dl class="row">
-                            <dt class="col-sm-3">
-                                @Html.DisplayNameFor(model => model.FullName)
-                            </dt>
-                            <dd class="col-sm-9">
-                                @Html.DisplayFor(model => model.FullName)
-                            </dd>
-                            <dt class="col-sm-3">
-                                Организация
-                            </dt>
-                            <dd class="col-sm-9">
-                                @foreach (var department in Model.DepartmentEmployees)
-                                {
-                                    <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Name</span>
+                    <div class="org-modal" role="dialog" aria-modal="true" aria-labelledby="orgModalTitle">
+                        <div class="org-body">
 
-                                }
+                            <div class="org-info-card">
+                                <div class="org-info-grid">
+                                    <div class="org-info-row">
+                                        <span class="org-info-label"> @Html.DisplayNameFor(model => model.FullName)</span>
+                                        <span class="org-info-value">@(string.IsNullOrWhiteSpace(Model.FullName) ? "—" : Model.FullName)</span>
+                                    </div>                                                                     
 
-                            </dd>
+                                    @{
+                                        var phonesEmp = Phone.Find(x => x.EmployeeId == Model.Id);
+                                    }
 
-                            <dt class="col-sm-3">
-                                Отдел
-                            </dt>
-                            <dd class="col-sm-9">
-                                @foreach (var department in Model.DepartmentEmployees)
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Телефон</span>
+                                        <span class="org-info-value @(!phonesEmp.Any() ? "empty" : "")">   
+                                            @(!phonesEmp.Any() ? "не указано" : "")
+                                            @foreach (var item in phonesEmp)
+                                            {
+                                                @if (!string.IsNullOrWhiteSpace(item.Number))
+                                                {
+                                                    <a href="tel:@item.Number">@item.Number</a>
+                                                }                                               
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">
+                                            @Html.DisplayNameFor(model => model.Email)
+                                        </span>
+                                        <span class="org-info-value @(string.IsNullOrWhiteSpace(Model.Email) ? "empty" : "")">
+                                            @if (!string.IsNullOrWhiteSpace(Model.Email))
+                                            {
+                                                <a href="mailto:@Model.Email">@Model.Email</a>
+                                            }
+                                            else
+                                            {
+                                                <span>не указан</span>
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Организация</span>
+                                        <span class="org-info-value @(Model?.DepartmentEmployees?.Any() != true ? "empty" : "")">
+                                            @(Model?.DepartmentEmployees?.Any() != true ? "не указано" : "")
+                                            @foreach (var department in Model.DepartmentEmployees)
+                                            {
+                                                <span>@Organization.GetById((int)Department.GetById(department.DepartmentId).OrganizationId).Name</span>
+
+                                            }
+
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">Отдел</span>
+                                        <span class="org-info-value @(Model?.DepartmentEmployees?.Any() != true ? "empty" : "")">
+                                            @(Model?.DepartmentEmployees?.Any() != true ? "не указано" : "")
+                                            @foreach (var department in Model.DepartmentEmployees)
+                                            {
+                                                <span>@Department.GetById(@department.DepartmentId).Name</span>
+                                            }
+                                        </span>
+                                    </div>
+
+                                    <div class="org-info-row">
+                                        <span class="org-info-label">
+                                            @Html.DisplayNameFor(model => model.Position)
+                                        </span>
+                                        <span class="org-info-value @(string.IsNullOrWhiteSpace(Model.Position) ? "empty" : "")">
+                                            @(string.IsNullOrWhiteSpace(Model.Position) ? "не указано" : Model.Position)
+                                        </span>
+                                    </div>
+
+                                </div>
+                            </div>                         
+                          
+                        </div>
+
+                        @* {{-- ══ ФУТЕР ══ --}} *@
+                        <div class="org-footer">
+                            <a asp-action="Index" asp-route-page="@ViewBag.Page" asp-route-currentFilter="@ViewBag.Filter"
+                               class="md3-btn md3-btn-ghost restore-page-state">
+                                <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                                    <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                Вернуться назад
+                            </a>
+
+                            <div class="org-footer-spacer"></div>
+
+                            @*   @if (permissions?.IsCreator is true)
                                 {
-                                    <span>@Department.GetById(@department.DepartmentId).Name</span>
-                                }
-                            </dd>
-                            <dt class="col-sm-3">
-                                @Html.DisplayNameFor(model => model.Position)
-                            </dt>
-                            <dd class="col-sm-9">
-                                @Html.DisplayFor(model => model.Position)
-                            </dd>
-                            <dt class="col-sm-3">
-                                Телефон
-                            </dt>
-                            <dd class="col-sm-9">
-                                @foreach (var phone in Phone.Find(x => x.EmployeeId == Model.Id))
-                                {
-                                    <span>@phone.Number</span>
-                                }
-                            </dd>
-                            <dt class="col-sm-3">
-                                @Html.DisplayNameFor(model => model.Email)
-                            </dt>
-                            <dd class="col-sm-9">
-                                @Html.DisplayFor(model => model.Email)
-                            </dd>
-                        </dl>
-                    </div>
-                    <div>
-                        <a asp-action="Index" asp-route-page="@ViewBag.Page" asp-route-currentFilter="@ViewBag.Filter">Вернуться назад</a>
+                                    <a asp-controller="Departments" asp-action="Create" asp-route-idOrg="@Model.Id"
+                                       class="md3-btn md3-btn-ghost">
+                                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                                            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        Добавить отдел
+                                    </a>
+                                } *@
+
+                            @if (permissions?.IsEditor is true)
+                            {
+                                <a asp-controller="Employees" asp-action="Edit" asp-route-id="@Model.Id"
+                                   class="md3-btn md3-primary-btn">
+                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"
+                                              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                    Редактировать
+                                </a>
+                            }
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@section Scripts {
+
+    <script type="text/javascript">
+
+        function deleteDepart(id) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ShowDeleteMessage", "Home")',
+                contentType: "application/html; charset=utf-8",
+                dataType: 'html',
+                success: function (result) {
+                    $('#dialogContent').html(result);
+                    $('#modDialog').modal('show');
+
+                    let elementDeleteButton = document.querySelectorAll('#modal-button-delete');
+                    elementDeleteButton[0].addEventListener('click', () => {
+                        $.ajax({
+                            type: 'GET',
+                            url: '@Url.Action("Delete", "Departments")',
+                            data: { id: id },
+                            success: function (result) {
+                                window.location.reload();
+                            },
+                            error: function (result) {
+                                window.location.reload();
+                            }
+                        });
+                    });
+                },
+                error: function (result) {
+                    console.log(result, 'error 2');
+                }
+            })
+        }
+    </script>
+}
